@@ -1,0 +1,13 @@
+{
+  "name": "g3-scouting-scripts",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "import:tba": "node import_tba.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.1",
+    "dotenv": "^16.4.5",
+    "node-fetch": "^3.3.2"
+  }
+}
