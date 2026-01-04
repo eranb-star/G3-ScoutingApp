@@ -1,0 +1,326 @@
+{
+  "template_version": "2026-prekickoff-1.0",
+  "name": "G3 Scouting (Pre-Kickoff Flexible Template)",
+  "description": "Flexible match scouting template designed to be updated on kickoff day by editing targets/labels without changing app logic.",
+  "config": {
+    "ui": {
+      "language_default": "en",
+      "no_text_during_match": true,
+      "counter_step": 1,
+      "counter_min": 0,
+      "counter_max": 99,
+      "large_buttons": true
+    }
+  },
+  "match_header": {
+    "fields": [
+      {
+        "id": "event_key",
+        "type": "select",
+        "required": true,
+        "source": "tba.events"
+      },
+      {
+        "id": "match_number",
+        "type": "number",
+        "required": true,
+        "min": 1,
+        "max": 999
+      },
+      {
+        "id": "alliance",
+        "type": "select",
+        "required": true,
+        "options": [
+          "red",
+          "blue"
+        ]
+      },
+      {
+        "id": "station",
+        "type": "select",
+        "required": true,
+        "options": [
+          "1",
+          "2",
+          "3"
+        ]
+      },
+      {
+        "id": "team_number",
+        "type": "number",
+        "required": true,
+        "min": 1,
+        "max": 99999
+      }
+    ],
+    "locks": {
+      "event_key": true
+    }
+  },
+  "phases": [
+    {
+      "id": "auto",
+      "title": "Auto",
+      "blocks": [
+        {
+          "id": "auto_mobility",
+          "type": "toggle",
+          "label": "Mobility",
+          "value_map": {
+            "off": 0,
+            "on": 1
+          },
+          "default": "off"
+        },
+        {
+          "id": "auto_score_targets",
+          "type": "group",
+          "label": "Auto Scoring",
+          "items": [
+            {
+              "id": "auto_A",
+              "type": "counter",
+              "label": "Auto A",
+              "min": 0,
+              "max": 30
+            },
+            {
+              "id": "auto_A_fail",
+              "type": "counter",
+              "label": "Fail/Dropped A",
+              "min": 0,
+              "max": 30
+            },
+            {
+              "id": "auto_B",
+              "type": "counter",
+              "label": "Auto B",
+              "min": 0,
+              "max": 30
+            },
+            {
+              "id": "auto_B_fail",
+              "type": "counter",
+              "label": "Fail/Dropped B",
+              "min": 0,
+              "max": 30
+            },
+            {
+              "id": "auto_C",
+              "type": "counter",
+              "label": "Auto C (optional)",
+              "min": 0,
+              "max": 30,
+              "enabled": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "teleop",
+      "title": "Teleop",
+      "blocks": [
+        {
+          "id": "teleop_score_targets",
+          "type": "group",
+          "label": "Teleop Scoring",
+          "items": [
+            {
+              "id": "teleop_A",
+              "type": "counter",
+              "label": "Teleop A",
+              "min": 0,
+              "max": 99
+            },
+            {
+              "id": "teleop_B",
+              "type": "counter",
+              "label": "Teleop B",
+              "min": 0,
+              "max": 99
+            },
+            {
+              "id": "teleop_C",
+              "type": "counter",
+              "label": "Teleop C (optional)",
+              "min": 0,
+              "max": 99,
+              "enabled": false
+            }
+          ]
+        },
+        {
+          "id": "pickup",
+          "type": "group",
+          "label": "Pickup",
+          "items": [
+            {
+              "id": "pickup_mode",
+              "type": "select",
+              "label": "Pickup",
+              "options": [
+                "floor",
+                "human",
+                "both",
+                "unknown"
+              ],
+              "default": "unknown"
+            },
+            {
+              "id": "pickup_fail",
+              "type": "counter",
+              "label": "Pickup Fail",
+              "min": 0,
+              "max": 99
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "endgame",
+      "title": "Endgame",
+      "blocks": [
+        {
+          "id": "end_attempted",
+          "type": "toggle",
+          "label": "Attempted",
+          "value_map": {
+            "off": 0,
+            "on": 1
+          },
+          "default": "off"
+        },
+        {
+          "id": "end_result",
+          "type": "select",
+          "label": "Result",
+          "options": [
+            "none",
+            "success",
+            "partial",
+            "fail"
+          ],
+          "default": "none"
+        },
+        {
+          "id": "end_time_bucket",
+          "type": "select",
+          "label": "Time",
+          "options": [
+            "unknown",
+            "<5s",
+            "5-10s",
+            "10-20s",
+            ">20s"
+          ],
+          "default": "unknown"
+        }
+      ]
+    },
+    {
+      "id": "reliability",
+      "title": "Reliability",
+      "blocks": [
+        {
+          "id": "disable_state",
+          "type": "select",
+          "label": "Disable",
+          "options": [
+            "none",
+            "brief",
+            "long",
+            "dead"
+          ],
+          "default": "none"
+        },
+        {
+          "id": "brownout_or_comms",
+          "type": "toggle",
+          "label": "Brownout/Comms",
+          "value_map": {
+            "off": 0,
+            "on": 1
+          },
+          "default": "off"
+        },
+        {
+          "id": "penalty_pattern",
+          "type": "toggle",
+          "label": "Penalty Pattern",
+          "value_map": {
+            "off": 0,
+            "on": 1
+          },
+          "default": "off"
+        }
+      ]
+    },
+    {
+      "id": "postmatch",
+      "title": "Post\u2011Match",
+      "availability": {
+        "after_phase": "endgame"
+      },
+      "blocks": [
+        {
+          "id": "driver_skill",
+          "type": "rating",
+          "label": "Driver Skill",
+          "min": 1,
+          "max": 5,
+          "default": 3
+        },
+        {
+          "id": "consistency_rating",
+          "type": "rating",
+          "label": "Consistency",
+          "min": 1,
+          "max": 5,
+          "default": 3
+        },
+        {
+          "id": "defense_value",
+          "type": "rating",
+          "label": "Defense Value",
+          "min": 1,
+          "max": 5,
+          "default": 3
+        },
+        {
+          "id": "notes",
+          "type": "text",
+          "label": "Notes (optional)",
+          "max_len": 180,
+          "enabled_during_match": false
+        }
+      ]
+    }
+  ],
+  "analytics": {
+    "derived_fields": [
+      {
+        "id": "auto_success_total",
+        "formula": "auto_A + auto_B + (auto_C if enabled else 0)"
+      },
+      {
+        "id": "teleop_output_total",
+        "formula": "teleop_A + teleop_B + (teleop_C if enabled else 0)"
+      },
+      {
+        "id": "output_total",
+        "formula": "auto_success_total + teleop_output_total"
+      },
+      {
+        "id": "auto_attempt_rate",
+        "formula": "1 if (auto_mobility==1 or auto_success_total>0) else 0"
+      },
+      {
+        "id": "reliability_ok",
+        "formula": "1 if disable_state=='none' else 0"
+      }
+    ]
+  }
+}
