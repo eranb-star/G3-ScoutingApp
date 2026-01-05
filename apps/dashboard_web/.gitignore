@@ -1,22 +1,73 @@
-# Node
+############################
+# Node / JS
+############################
 node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+############################
+# Lock files (choose ONE)
+############################
+# If you use npm:
 package-lock.json
 
-# Env files
+# If you use pnpm:
+# pnpm-lock.yaml
+
+# If you use yarn:
+# yarn.lock
+
+############################
+# Environment variables
+############################
 .env
+.env.*
 .env.local
 .env.*.local
 
-# Mac / OS
-.DS_Store
-
-# Build
+############################
+# Build outputs
+############################
 dist/
 build/
-
-# Vite
+.out/
 .vite/
+.vercel/
 
-# Supabase secrets
+############################
+# OS / Editor junk
+############################
+.DS_Store
+.DS_Store?
+Thumbs.db
+*.swp
+*.swo
+
+############################
+# Supabase / backend secrets
+############################
 backend/scripts/.env
+
+############################
+# Capacitor / Mobile (future)
+############################
+ios/App/Pods/
+ios/App/Podfile.lock
+android/.gradle/
+android/app/build/
+android/build/
+
+############################
+# Logs
+############################
+logs/
+*.log
+
+############################
+# Misc
+############################
+coverage/
+
 
