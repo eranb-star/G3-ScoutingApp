@@ -8,7 +8,7 @@ import PicklistPage from "./pages/PicklistPage";
 import ComparePage from "./pages/ComparePage";
 import SavedAlliancesPage from "./pages/SavedAlliancesPage";
 import "./index.css";
-import logo from "./assets/logoG3.png"; // adjust path if needed
+import logo from "./assets/LogoG3.png"; // adjust path if needed
 
 function TopNav() {
   // Israel time (live)
