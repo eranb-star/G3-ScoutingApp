@@ -2,36 +2,84 @@ import React from "react";
 
 type AnyObj = any;
 
+// Simple breakpoint hook (UI only)
+function useIsNarrow(breakpointPx = 600) {
+  const [isNarrow, setIsNarrow] = React.useState(() => window.innerWidth <= breakpointPx);
+
+  React.useEffect(() => {
+    const onResize = () => setIsNarrow(window.innerWidth <= breakpointPx);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [breakpointPx]);
+
+  return isNarrow;
+}
+
 function CounterRow({
   label,
   value,
   onChange,
+  isNarrow,
 }: {
   label: string;
   value: number;
   onChange: (v: number) => void;
+  isNarrow: boolean;
 }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "12px 0" }}>
-      <div style={{ width: 260, fontWeight: 800 }}>{label}</div>
+    <div style={{ margin: "12px 0" }}>
+      <div style={{ fontWeight: 800, marginBottom: 8 }}>{label}</div>
 
-      <button
-        type="button"
-        onClick={() => onChange(Math.max(0, value - 1))}
-        style={{ width: 48, height: 48, fontSize: 24, borderRadius: 12, border: "1px solid #ccc" }}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          flexWrap: "wrap",
+        }}
       >
-        -
-      </button>
+        <button
+          type="button"
+          onClick={() => onChange(Math.max(0, value - 1))}
+          style={{
+            width: isNarrow ? 56 : 48,
+            height: isNarrow ? 56 : 48,
+            fontSize: 24,
+            borderRadius: 12,
+            border: "1px solid #ccc",
+            flex: "0 0 auto",
+          }}
+        >
+          -
+        </button>
 
-      <div style={{ width: 64, textAlign: "center", fontSize: 24, fontWeight: 900 }}>{value}</div>
+        <div
+          style={{
+            minWidth: 64,
+            textAlign: "center",
+            fontSize: 24,
+            fontWeight: 900,
+            flex: "0 0 auto",
+          }}
+        >
+          {value}
+        </div>
 
-      <button
-        type="button"
-        onClick={() => onChange(value + 1)}
-        style={{ width: 48, height: 48, fontSize: 24, borderRadius: 12, border: "1px solid #ccc" }}
-      >
-        +
-      </button>
+        <button
+          type="button"
+          onClick={() => onChange(value + 1)}
+          style={{
+            width: isNarrow ? 56 : 48,
+            height: isNarrow ? 56 : 48,
+            fontSize: 24,
+            borderRadius: 12,
+            border: "1px solid #ccc",
+            flex: "0 0 auto",
+          }}
+        >
+          +
+        </button>
+      </div>
     </div>
   );
 }
@@ -45,11 +93,13 @@ function PicklistCounter({
   options,
   value,
   onChange,
+  isNarrow,
 }: {
   label: string;
   options: AnyObj[];
   value: Record<string, number>;
   onChange: (v: Record<string, number>) => void;
+  isNarrow: boolean;
 }) {
   const optionValues = (options ?? []).map((o: AnyObj) => String(o?.value ?? o));
   const [selected, setSelected] = React.useState<string>(optionValues[0] ?? "");
@@ -69,41 +119,67 @@ function PicklistCounter({
     });
   };
 
+  const controlStyle: React.CSSProperties = {
+    width: "100%",
+    boxSizing: "border-box",
+    padding: 10,
+    borderRadius: 12,
+    border: "1px solid #ccc",
+    fontSize: 16,
+  };
+
   return (
     <div style={{ margin: "12px 0" }}>
       <div style={{ fontWeight: 900, marginBottom: 6 }}>{label}</div>
 
-      <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
-        <select
-          value={selected}
-          onChange={(e) => setSelected(e.target.value)}
-          style={{ width: 260, padding: 10, borderRadius: 12, border: "1px solid #ccc", fontSize: 16 }}
-        >
-          {(options ?? []).map((o: AnyObj, idx: number) => {
-            const v = String(o?.value ?? o);
-            const t = String(o?.label ?? o?.value ?? o);
-            return (
-              <option key={`${v}_${idx}`} value={v}>
-                {t}
-              </option>
-            );
-          })}
-        </select>
+      <div
+        style={{
+          display: "flex",
+          gap: 12,
+          alignItems: "center",
+          flexWrap: "wrap",
+        }}
+      >
+        <div style={{ width: "100%", maxWidth: isNarrow ? "100%" : 320 }}>
+          <select value={selected} onChange={(e) => setSelected(e.target.value)} style={controlStyle}>
+            {(options ?? []).map((o: AnyObj, idx: number) => {
+              const v = String(o?.value ?? o);
+              const t = String(o?.label ?? o?.value ?? o);
+              return (
+                <option key={`${v}_${idx}`} value={v}>
+                  {t}
+                </option>
+              );
+            })}
+          </select>
+        </div>
 
         <button
           type="button"
           onClick={() => setCount(currentCount - 1)}
-          style={{ width: 48, height: 48, fontSize: 24, borderRadius: 12, border: "1px solid #ccc" }}
+          style={{
+            width: isNarrow ? 56 : 48,
+            height: isNarrow ? 56 : 48,
+            fontSize: 24,
+            borderRadius: 12,
+            border: "1px solid #ccc",
+          }}
         >
           -
         </button>
 
-        <div style={{ width: 64, textAlign: "center", fontSize: 24, fontWeight: 900 }}>{currentCount}</div>
+        <div style={{ minWidth: 64, textAlign: "center", fontSize: 24, fontWeight: 900 }}>{currentCount}</div>
 
         <button
           type="button"
           onClick={() => setCount(currentCount + 1)}
-          style={{ width: 48, height: 48, fontSize: 24, borderRadius: 12, border: "1px solid #ccc" }}
+          style={{
+            width: isNarrow ? 56 : 48,
+            height: isNarrow ? 56 : 48,
+            fontSize: 24,
+            borderRadius: 12,
+            border: "1px solid #ccc",
+          }}
         >
           +
         </button>
@@ -122,6 +198,15 @@ export default function TemplateForm({
   setValue: (id: string, value: any) => void;
 }) {
   const phases = template?.phases ?? [];
+  const isNarrow = useIsNarrow(600);
+
+  const controlStyle: React.CSSProperties = {
+    width: "100%",
+    boxSizing: "border-box",
+    padding: 10,
+    borderRadius: 12,
+    border: "1px solid #ccc",
+  };
 
   const renderItem = (item: AnyObj) => {
     const itemId = item?.id;
@@ -132,7 +217,7 @@ export default function TemplateForm({
 
     if (type === "counter") {
       const v = typeof values[itemId] === "number" ? values[itemId] : 0;
-      return <CounterRow key={itemId} label={label} value={v} onChange={(nv) => setValue(itemId, nv)} />;
+      return <CounterRow key={itemId} label={label} value={v} onChange={(nv) => setValue(itemId, nv)} isNarrow={isNarrow} />;
     }
 
     if (type === "toggle") {
@@ -151,22 +236,20 @@ export default function TemplateForm({
       return (
         <div key={itemId} style={{ margin: "12px 0" }}>
           <div style={{ fontWeight: 900, marginBottom: 6 }}>{label}</div>
-          <select
-            value={v}
-            onChange={(e) => setValue(itemId, e.target.value)}
-            style={{ width: 360, padding: 10, borderRadius: 12, border: "1px solid #ccc" }}
-          >
-            <option value="">Select…</option>
-            {opts.map((o: AnyObj, idx: number) => {
-              const ov = String(o?.value ?? o);
-              const ot = String(o?.label ?? o?.value ?? o);
-              return (
-                <option key={`${ov}_${idx}`} value={ov}>
-                  {ot}
-                </option>
-              );
-            })}
-          </select>
+          <div style={{ width: "100%", maxWidth: isNarrow ? "100%" : 420 }}>
+            <select value={v} onChange={(e) => setValue(itemId, e.target.value)} style={controlStyle}>
+              <option value="">Select…</option>
+              {opts.map((o: AnyObj, idx: number) => {
+                const ov = String(o?.value ?? o);
+                const ot = String(o?.label ?? o?.value ?? o);
+                return (
+                  <option key={`${ov}_${idx}`} value={ov}>
+                    {ot}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
         </div>
       );
     }
@@ -174,7 +257,16 @@ export default function TemplateForm({
     if (type === "picklist_counter") {
       const opts = Array.isArray(item?.options) ? item.options : [];
       const v = typeof values[itemId] === "object" && values[itemId] ? values[itemId] : {};
-      return <PicklistCounter key={itemId} label={label} options={opts} value={v} onChange={(nv) => setValue(itemId, nv)} />;
+      return (
+        <PicklistCounter
+          key={itemId}
+          label={label}
+          options={opts}
+          value={v}
+          onChange={(nv) => setValue(itemId, nv)}
+          isNarrow={isNarrow}
+        />
+      );
     }
 
     // default text
@@ -182,12 +274,14 @@ export default function TemplateForm({
     return (
       <div key={itemId} style={{ margin: "12px 0" }}>
         <div style={{ fontWeight: 900, marginBottom: 6 }}>{label}</div>
-        <input
-          value={v}
-          onChange={(e) => setValue(itemId, e.target.value)}
-          placeholder={item?.placeholder ?? ""}
-          style={{ width: 460, padding: 10, borderRadius: 12, border: "1px solid #ccc" }}
-        />
+        <div style={{ width: "100%", maxWidth: isNarrow ? "100%" : 520 }}>
+          <input
+            value={v}
+            onChange={(e) => setValue(itemId, e.target.value)}
+            placeholder={item?.placeholder ?? ""}
+            style={controlStyle}
+          />
+        </div>
       </div>
     );
   };
@@ -201,7 +295,13 @@ export default function TemplateForm({
           {(phase.blocks ?? []).map((block: AnyObj) => (
             <div
               key={block.id}
-              style={{ margin: "10px 0", padding: 14, border: "1px solid #eee", borderRadius: 14, background: "#fff" }}
+              style={{
+                margin: "10px 0",
+                padding: isNarrow ? 12 : 14,
+                border: "1px solid #eee",
+                borderRadius: 14,
+                background: "#fff",
+              }}
             >
               <div style={{ fontWeight: 950, marginBottom: 10 }}>{block.label ?? block.id}</div>
               {(block.items ?? []).map((item: AnyObj) => renderItem(item))}

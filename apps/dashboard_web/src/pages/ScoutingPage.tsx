@@ -48,7 +48,22 @@ function niceMatchLabel(m: MatchRow) {
   return `Match ${m.id.slice(0, 8)}…`;
 }
 
+// UI-only helper: responsive breakpoint
+function useIsNarrow(breakpointPx = 600) {
+  const [isNarrow, setIsNarrow] = useState(() => window.innerWidth <= breakpointPx);
+
+  useEffect(() => {
+    const onResize = () => setIsNarrow(window.innerWidth <= breakpointPx);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [breakpointPx]);
+
+  return isNarrow;
+}
+
 export default function ScoutingPage() {
+  const isNarrow = useIsNarrow(600);
+
   // =====================
   // Event + Template
   // =====================
@@ -68,7 +83,7 @@ export default function ScoutingPage() {
   const [matchId, setMatchId] = useState<string>("");
 
   // =====================
-  // Teams for Selected Match (NEW)
+  // Teams for Selected Match
   // =====================
   const [matchTeams, setMatchTeams] = useState<number[]>([]);
   const [matchTeamsLoading, setMatchTeamsLoading] = useState(false);
@@ -155,14 +170,10 @@ export default function ScoutingPage() {
 
       setMatchesLoading(true);
       try {
-        // IMPORTANT:
-        // We fetch only columns you confirmed exist (id,event_id,match_number,match_type)
-        // and order by match_number.
         const { data, error } = await supabase
           .from("matches")
           .select("id,event_id,match_number,match_type")
           .eq("event_id", cleanEventId)
-          // show quals first; if your table uses 'qual' instead of 'qm', both still load
           .order("match_type", { ascending: true })
           .order("match_number", { ascending: true });
 
@@ -188,7 +199,7 @@ export default function ScoutingPage() {
   }, [matches, matchId]);
 
   // =====================
-  // Load Match Teams when match changes (NEW)
+  // Load Match Teams when match changes
   // =====================
   useEffect(() => {
     const loadMatchTeams = async () => {
@@ -214,7 +225,6 @@ export default function ScoutingPage() {
           .order("team_number", { ascending: true });
 
         if (error) {
-          // If view doesn't exist, we fall back gracefully (manual input still works)
           console.error("LOAD MATCH TEAMS ERROR:", error);
           setMatchTeamsError(
             `Could not load match teams (v_match_teams). You can still type team number manually. Error: ${error.message}`
@@ -315,27 +325,38 @@ export default function ScoutingPage() {
     }
   };
 
+  // Shared input styles (UI-only)
+  const controlStyle: React.CSSProperties = {
+    width: "100%",
+    boxSizing: "border-box",
+    padding: 10,
+    borderRadius: 12,
+    border: "1px solid #ccc",
+  };
+
   // =====================
   // UI
   // =====================
   return (
-    <div style={{ padding: 16, maxWidth: 1020 }}>
+    <div style={{ padding: isNarrow ? 10 : 16, maxWidth: 1020 }}>
       <h1 style={{ marginBottom: 6 }}>Scouting</h1>
 
       {/* EVENT PICKER */}
       <div style={{ marginBottom: 14 }}>
         <div style={{ fontWeight: 900, marginBottom: 6 }}>Select Event</div>
-        <select
-          value={eventId}
-          onChange={(e) => setEventId(e.target.value)}
-          style={{ width: 520, padding: 10, borderRadius: 12, border: "1px solid #ccc" }}
-        >
-          <option value="">Select Event</option>
-          <option value="f34e67ec-bac9-433e-a97a-1e295aef8f30">ISR District Event #1</option>
-          <option value="9fa31339-9f79-4d5b-9272-934b15d098d6">ISR District Event #2</option>
-          <option value="948f95ba-2935-4c5d-860b-6c90429a66c3">ISR District Event #3</option>
-          <option value="773deb87-bbfe-41d9-9537-7fd201f8998c">ISR District Event #4</option>
-        </select>
+        <div style={{ width: "100%", maxWidth: 520 }}>
+          <select
+            value={eventId}
+            onChange={(e) => setEventId(e.target.value)}
+            style={controlStyle}
+          >
+            <option value="">Select Event</option>
+            <option value="f34e67ec-bac9-433e-a97a-1e295aef8f30">ISR District Event #1</option>
+            <option value="9fa31339-9f79-4d5b-9272-934b15d098d6">ISR District Event #2</option>
+            <option value="948f95ba-2935-4c5d-860b-6c90429a66c3">ISR District Event #3</option>
+            <option value="773deb87-bbfe-41d9-9537-7fd201f8998c">ISR District Event #4</option>
+          </select>
+        </div>
       </div>
 
       {!eventId && <div style={{ opacity: 0.8 }}>בחר Event כדי לטעון טופס ומאצ׳ים.</div>}
@@ -362,7 +383,7 @@ export default function ScoutingPage() {
           style={{
             marginTop: 14,
             marginBottom: 14,
-            padding: 14,
+            padding: isNarrow ? 12 : 14,
             border: "1px solid #eee",
             borderRadius: 14,
             background: "#fff",
@@ -387,21 +408,23 @@ export default function ScoutingPage() {
           )}
 
           {!matchesLoading && !matchesError && (
-            <select
-              value={matchId}
-              onChange={(e) => setMatchId(e.target.value)}
-              style={{ width: 520, padding: 10, borderRadius: 12, border: "1px solid #ccc" }}
-            >
-              <option value="">Select Match</option>
-              {matches.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {niceMatchLabel(m)}
-                </option>
-              ))}
-            </select>
+            <div style={{ width: "100%", maxWidth: 520 }}>
+              <select
+                value={matchId}
+                onChange={(e) => setMatchId(e.target.value)}
+                style={controlStyle}
+              >
+                <option value="">Select Match</option>
+                {matches.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {niceMatchLabel(m)}
+                  </option>
+                ))}
+              </select>
+            </div>
           )}
 
-          {/* Match teams status (NEW) */}
+          {/* Match teams status */}
           {matchId && (
             <div style={{ marginTop: 10 }}>
               {matchTeamsLoading ? <div style={{ opacity: 0.8 }}>Loading teams for this match…</div> : null}
@@ -413,8 +436,25 @@ export default function ScoutingPage() {
               ) : null}
 
               {!matchTeamsLoading && !matchTeamsError && hasMatchTeams ? (
-                <div style={{ marginTop: 6, opacity: 0.9, fontWeight: 800 }}>
-                  Teams in this match: {matchTeams.join(", ")}
+                <div style={{ marginTop: 6 }}>
+                  <div style={{ opacity: 0.85, fontWeight: 900, marginBottom: 6 }}>Teams in this match</div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                    {matchTeams.map((t) => (
+                      <span
+                        key={`chip-${t}`}
+                        style={{
+                          padding: "6px 10px",
+                          borderRadius: 999,
+                          border: "1px solid rgba(0,0,0,0.10)",
+                          background: "#fafafa",
+                          fontWeight: 900,
+                          fontSize: 14,
+                        }}
+                      >
+                        {t}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               ) : null}
 
@@ -434,25 +474,28 @@ export default function ScoutingPage() {
           <div
             style={{
               display: "flex",
+              flexDirection: isNarrow ? "column" : "row",
               gap: 12,
-              flexWrap: "wrap",
+              flexWrap: isNarrow ? "nowrap" : "wrap",
               marginBottom: 16,
-              padding: 14,
+              padding: isNarrow ? 12 : 14,
               border: "1px solid #eee",
               borderRadius: 14,
               background: "#fff",
             }}
           >
             {/* Team picker */}
-            <div>
+            <div style={{ width: "100%", maxWidth: isNarrow ? "100%" : 280 }}>
               <div style={{ fontWeight: 900, marginBottom: 6 }}>Team Number</div>
 
-              {/* If we have 6 teams for match -> enforce dropdown */}
               {hasMatchTeams ? (
                 <select
                   value={values.team_number ? String(values.team_number) : ""}
                   onChange={(e) => setValue("team_number", e.target.value ? Number(e.target.value) : "")}
-                  style={{ padding: 10, borderRadius: 12, border: "1px solid #ccc", width: 280 }}
+                  style={{
+                    ...controlStyle,
+                    maxWidth: isNarrow ? "100%" : 280,
+                  }}
                   disabled={!matchId}
                 >
                   <option value="">{matchId ? "Select team from this match…" : "Select match first"}</option>
@@ -463,12 +506,14 @@ export default function ScoutingPage() {
                   ))}
                 </select>
               ) : (
-                // Fallback: manual input (doesn't break existing behavior)
                 <input
                   type="number"
                   value={values.team_number ?? ""}
                   onChange={(e) => setValue("team_number", Number(e.target.value))}
-                  style={{ padding: 10, borderRadius: 12, border: "1px solid #ccc", width: 180 }}
+                  style={{
+                    ...controlStyle,
+                    maxWidth: isNarrow ? "100%" : 180,
+                  }}
                   placeholder={matchId ? "Type team number…" : "Select match first"}
                   disabled={!matchId}
                 />
@@ -476,18 +521,21 @@ export default function ScoutingPage() {
             </div>
 
             {/* Notes */}
-            <div>
+            <div style={{ width: "100%", maxWidth: isNarrow ? "100%" : 520 }}>
               <div style={{ fontWeight: 900, marginBottom: 6 }}>Notes (optional)</div>
               <input
                 value={values.notes ?? ""}
                 onChange={(e) => setValue("notes", e.target.value)}
-                style={{ padding: 10, borderRadius: 12, border: "1px solid #ccc", width: 420 }}
+                style={{
+                  ...controlStyle,
+                  maxWidth: "100%",
+                }}
                 placeholder="Anything important after the match…"
               />
             </div>
 
             {/* Save */}
-            <div style={{ alignSelf: "flex-end" }}>
+            <div style={{ alignSelf: isNarrow ? "stretch" : "flex-end" }}>
               <button
                 type="button"
                 onClick={handleSave}
@@ -498,13 +546,18 @@ export default function ScoutingPage() {
                   border: "1px solid #ccc",
                   fontWeight: 950,
                   cursor: "pointer",
+                  width: isNarrow ? "100%" : "auto",
                 }}
               >
                 {saving ? "Saving..." : "Save"}
               </button>
             </div>
 
-            {saveMsg && <div style={{ alignSelf: "flex-end", fontWeight: 900, opacity: 0.9 }}>{saveMsg}</div>}
+            {saveMsg && (
+              <div style={{ alignSelf: isNarrow ? "stretch" : "flex-end", fontWeight: 900, opacity: 0.9 }}>
+                {saveMsg}
+              </div>
+            )}
           </div>
 
           {/* Full dynamic form */}

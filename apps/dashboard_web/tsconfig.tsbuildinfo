@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/main.tsx","./src/supabase.ts","./src/vite-env.d.ts","./src/components/templateform.tsx","./src/lib/allianceintel.ts","./src/pages/alliancepage.tsx","./src/pages/analysispage.tsx","./src/pages/comparepage.tsx","./src/pages/picklistpage.tsx","./src/pages/savedalliancespage.tsx","./src/pages/scoutingpage.tsx"],"version":"5.9.3"}
