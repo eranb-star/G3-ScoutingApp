@@ -16,10 +16,54 @@ function useIsNarrow(breakpointPx = 600) {
 }
 
 function clamp(n: number, min?: number, max?: number) {
-  let v = n;
-  if (typeof min === "number") v = Math.max(min, v);
-  if (typeof max === "number") v = Math.min(max, v);
-  return v;
+  let x = n;
+  if (typeof min === "number") x = Math.max(min, x);
+  if (typeof max === "number") x = Math.min(max, x);
+  return x;
+}
+
+function asNum(x: any, fallback = 0) {
+  const n = typeof x === "number" ? x : Number(x);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+function QuickButtonsRow({
+  quickButtons,
+  onDelta,
+  isNarrow,
+}: {
+  quickButtons: number[];
+  onDelta: (delta: number) => void;
+  isNarrow: boolean;
+}) {
+  if (!quickButtons || quickButtons.length === 0) return null;
+
+  const unique = Array.from(new Set(quickButtons.map((x) => Math.abs(asNum(x, 0))).filter((x) => x > 0))).sort((a, b) => a - b);
+  if (unique.length === 0) return null;
+
+  const btnStyle: React.CSSProperties = {
+    padding: isNarrow ? "10px 14px" : "8px 12px",
+    borderRadius: 999,
+    border: "1px solid #ccc",
+    background: "#fff",
+    fontWeight: 900,
+    cursor: "pointer",
+  };
+
+  return (
+    <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
+      {[...unique].reverse().map((q) => (
+        <button key={`m${q}`} type="button" onClick={() => onDelta(-q)} style={btnStyle}>
+          -{q}
+        </button>
+      ))}
+      {unique.map((q) => (
+        <button key={`p${q}`} type="button" onClick={() => onDelta(+q)} style={btnStyle}>
+          +{q}
+        </button>
+      ))}
+    </div>
+  );
 }
 
 function CounterRow({
@@ -27,9 +71,9 @@ function CounterRow({
   value,
   onChange,
   isNarrow,
-  min,
+  min = 0,
   max,
-  step,
+  step = 1,
   quickButtons,
 }: {
   label: string;
@@ -41,25 +85,16 @@ function CounterRow({
   step?: number;
   quickButtons?: number[];
 }) {
-  const stepSafe = Number.isFinite(step as any) && Number(step) > 0 ? Number(step) : 1;
+  const dec = () => onChange(clamp(value - step, min, max));
+  const inc = () => onChange(clamp(value + step, min, max));
 
-  const dec = () => onChange(clamp(value - stepSafe, min ?? 0, max));
-  const inc = () => onChange(clamp(value + stepSafe, min ?? 0, max));
-
-  const addQuick = (delta: number) => onChange(clamp(value + delta, min ?? 0, max));
+  const onDelta = (delta: number) => onChange(clamp(value + delta, min, max));
 
   return (
     <div style={{ margin: "12px 0" }}>
       <div style={{ fontWeight: 800, marginBottom: 8 }}>{label}</div>
 
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-          flexWrap: "wrap",
-        }}
-      >
+      <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
         <button
           type="button"
           onClick={dec}
@@ -102,38 +137,12 @@ function CounterRow({
           +
         </button>
 
-        {/* min/max hint */}
-        <div style={{ opacity: 0.75, fontWeight: 800, fontSize: 16 }}>
+        <div style={{ opacity: 0.65, fontWeight: 800 }}>
           min {typeof min === "number" ? min : 0} · max {typeof max === "number" ? max : "∞"}
         </div>
-
-        {/* quick buttons (+1/+5/+10 וכו׳) */}
-        {Array.isArray(quickButtons) && quickButtons.length > 0 ? (
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginLeft: 6 }}>
-            {quickButtons.map((qb, idx) => {
-              const d = Number(qb);
-              if (!Number.isFinite(d) || d === 0) return null;
-              return (
-                <button
-                  key={`${d}_${idx}`}
-                  type="button"
-                  onClick={() => addQuick(d)}
-                  style={{
-                    padding: "10px 12px",
-                    borderRadius: 12,
-                    border: "1px solid #ccc",
-                    fontWeight: 900,
-                    background: "#fff",
-                    cursor: "pointer",
-                  }}
-                >
-                  +{d}
-                </button>
-              );
-            })}
-          </div>
-        ) : null}
       </div>
+
+      <QuickButtonsRow quickButtons={quickButtons ?? []} onDelta={onDelta} isNarrow={isNarrow} />
     </div>
   );
 }
@@ -148,20 +157,12 @@ function PicklistCounter({
   value,
   onChange,
   isNarrow,
-  min,
-  max,
-  step,
-  quickButtons,
 }: {
   label: string;
   options: AnyObj[];
   value: Record<string, number>;
   onChange: (v: Record<string, number>) => void;
   isNarrow: boolean;
-  min?: number;
-  max?: number;
-  step?: number;
-  quickButtons?: number[];
 }) {
   const optionValues = (options ?? []).map((o: AnyObj) => String(o?.value ?? o));
   const [selected, setSelected] = React.useState<string>(optionValues[0] ?? "");
@@ -173,16 +174,13 @@ function PicklistCounter({
   }, [optionValues, selected]);
 
   const currentCount = value?.[selected] ?? 0;
-  const stepSafe = Number.isFinite(step as any) && Number(step) > 0 ? Number(step) : 1;
 
   const setCount = (newCount: number) => {
     onChange({
       ...(value ?? {}),
-      [selected]: clamp(newCount, min ?? 0, max),
+      [selected]: Math.max(0, newCount),
     });
   };
-
-  const addQuick = (delta: number) => setCount(currentCount + delta);
 
   const controlStyle: React.CSSProperties = {
     width: "100%",
@@ -197,14 +195,7 @@ function PicklistCounter({
     <div style={{ margin: "12px 0" }}>
       <div style={{ fontWeight: 900, marginBottom: 6 }}>{label}</div>
 
-      <div
-        style={{
-          display: "flex",
-          gap: 12,
-          alignItems: "center",
-          flexWrap: "wrap",
-        }}
-      >
+      <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
         <div style={{ width: "100%", maxWidth: isNarrow ? "100%" : 320 }}>
           <select value={selected} onChange={(e) => setSelected(e.target.value)} style={controlStyle}>
             {(options ?? []).map((o: AnyObj, idx: number) => {
@@ -221,7 +212,7 @@ function PicklistCounter({
 
         <button
           type="button"
-          onClick={() => setCount(currentCount - stepSafe)}
+          onClick={() => setCount(currentCount - 1)}
           style={{
             width: isNarrow ? 56 : 48,
             height: isNarrow ? 56 : 48,
@@ -237,7 +228,7 @@ function PicklistCounter({
 
         <button
           type="button"
-          onClick={() => setCount(currentCount + stepSafe)}
+          onClick={() => setCount(currentCount + 1)}
           style={{
             width: isNarrow ? 56 : 48,
             height: isNarrow ? 56 : 48,
@@ -248,36 +239,6 @@ function PicklistCounter({
         >
           +
         </button>
-
-        <div style={{ opacity: 0.75, fontWeight: 800, fontSize: 16 }}>
-          min {typeof min === "number" ? min : 0} · max {typeof max === "number" ? max : "∞"}
-        </div>
-
-        {Array.isArray(quickButtons) && quickButtons.length > 0 ? (
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginLeft: 6 }}>
-            {quickButtons.map((qb, idx) => {
-              const d = Number(qb);
-              if (!Number.isFinite(d) || d === 0) return null;
-              return (
-                <button
-                  key={`${d}_${idx}`}
-                  type="button"
-                  onClick={() => addQuick(d)}
-                  style={{
-                    padding: "10px 12px",
-                    borderRadius: 12,
-                    border: "1px solid #ccc",
-                    fontWeight: 900,
-                    background: "#fff",
-                    cursor: "pointer",
-                  }}
-                >
-                  +{d}
-                </button>
-              );
-            })}
-          </div>
-        ) : null}
       </div>
     </div>
   );
@@ -303,57 +264,29 @@ export default function TemplateForm({
     border: "1px solid #ccc",
   };
 
-  // ✅ central helper to decide if an item should be hidden
-  const shouldHideItem = (item: AnyObj) => {
-    const label = String(item?.label ?? "").trim().toLowerCase();
-
-    const isExplicitHidden =
-      item?.hidden === true ||
-      item?.ui?.hidden === true ||
-      item?.meta?.hidden === true;
-
-    const tags = Array.isArray(item?.tags) ? item.tags.map((t: any) => String(t).toLowerCase()) : [];
-    const isTaggedHidden = tags.includes("hidden") || tags.includes("legacy");
-    const isDeprecated = item?.deprecated === true;
-
-    const isLegacyLabel =
-      label.includes("hidden (legacy)") ||
-      label.startsWith("hidden") ||
-      label.includes("legacy");
-
-    // If it’s explicitly hidden → hide no matter what
-    if (isExplicitHidden) return true;
-
-    // Extra safety: if someone forgot hidden:true but kept the label/tags
-    if (isDeprecated || isTaggedHidden || isLegacyLabel) return true;
-
-    return false;
-  };
-
   const renderItem = (item: AnyObj) => {
     const itemId = item?.id;
     if (!itemId) return null;
 
-    // ✅ hide support
-    if (shouldHideItem(item)) return null;
+    // ✅ hide legacy/hidden fields
+    if (item?.hidden === true) return null;
 
     const label = item?.label ?? itemId;
     const type = item?.type ?? "counter";
 
-    // Common numeric controls
-    const min = typeof item?.min === "number" ? item.min : 0;
-    const max = typeof item?.max === "number" ? item.max : undefined;
-    const step = typeof item?.step === "number" ? item.step : 1;
-    const quickButtons = Array.isArray(item?.quick_buttons) ? item.quick_buttons : undefined;
-
     if (type === "counter") {
       const v = typeof values[itemId] === "number" ? values[itemId] : 0;
+      const min = typeof item?.min === "number" ? item.min : 0;
+      const max = typeof item?.max === "number" ? item.max : undefined;
+      const step = typeof item?.step === "number" ? item.step : 1;
+      const quickButtons = Array.isArray(item?.quick_buttons) ? item.quick_buttons : [];
+
       return (
         <CounterRow
           key={itemId}
           label={label}
-          value={v}
-          onChange={(nv) => setValue(itemId, nv)}
+          value={clamp(v, min, max)}
+          onChange={(nv) => setValue(itemId, clamp(nv, min, max))}
           isNarrow={isNarrow}
           min={min}
           max={max}
@@ -408,10 +341,6 @@ export default function TemplateForm({
           value={v}
           onChange={(nv) => setValue(itemId, nv)}
           isNarrow={isNarrow}
-          min={min}
-          max={max}
-          step={step}
-          quickButtons={quickButtons}
         />
       );
     }
@@ -439,26 +368,21 @@ export default function TemplateForm({
         <div key={phase.id} style={{ marginTop: 18, paddingTop: 10, borderTop: "1px solid #eee" }}>
           <h2 style={{ margin: "6px 0" }}>{phase.label ?? phase.id}</h2>
 
-          {(phase.blocks ?? []).map((block: AnyObj) => {
-            const visibleItems = (block.items ?? []).filter((it: AnyObj) => !shouldHideItem(it));
-            if (visibleItems.length === 0) return null;
-
-            return (
-              <div
-                key={block.id}
-                style={{
-                  margin: "10px 0",
-                  padding: isNarrow ? 12 : 14,
-                  border: "1px solid #eee",
-                  borderRadius: 14,
-                  background: "#fff",
-                }}
-              >
-                <div style={{ fontWeight: 950, marginBottom: 10 }}>{block.label ?? block.id}</div>
-                {(block.items ?? []).map((item: AnyObj) => renderItem(item))}
-              </div>
-            );
-          })}
+          {(phase.blocks ?? []).map((block: AnyObj) => (
+            <div
+              key={block.id}
+              style={{
+                margin: "10px 0",
+                padding: isNarrow ? 12 : 14,
+                border: "1px solid #eee",
+                borderRadius: 14,
+                background: "#fff",
+              }}
+            >
+              <div style={{ fontWeight: 950, marginBottom: 10 }}>{block.label ?? block.id}</div>
+              {(block.items ?? []).map((item: AnyObj) => renderItem(item))}
+            </div>
+          ))}
         </div>
       ))}
     </div>
