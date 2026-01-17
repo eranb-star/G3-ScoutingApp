@@ -10,15 +10,12 @@ import ComparePage from "./pages/ComparePage";
 import SavedAlliancesPage from "./pages/SavedAlliancesPage";
 
 import "./index.css";
-//import logo from "./assets/logoG3.png";
-
 import { supabase } from "./supabase";
 
 // ----------------------
 // Small helpers
 // ----------------------
 function fmtIsraelNow(d: Date) {
-  // Israel time (Asia/Jerusalem)
   return new Intl.DateTimeFormat("he-IL", {
     timeZone: "Asia/Jerusalem",
     weekday: "short",
@@ -45,15 +42,25 @@ type NextMatch = {
   scheduled_time: string | null;
 };
 
+type AdminState = {
+  userEmail: string;
+  isAdmin: boolean;
+  userId: string;
+};
+
 // ----------------------
 // Admin Modal (Option 2)
 // ----------------------
 function AdminModal({
   open,
   onClose,
+  onAdminState,
+  initialEventId,
 }: {
   open: boolean;
   onClose: () => void;
+  onAdminState: (s: AdminState) => void;
+  initialEventId?: string;
 }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -63,52 +70,70 @@ function AdminModal({
 
   const [userEmail, setUserEmail] = useState<string>("");
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [userId, setUserId] = useState<string>("");
 
   // Sync form
-  const [syncEventId, setSyncEventId] = useState<string>("");
+  const [syncEventId, setSyncEventId] = useState<string>(initialEventId ?? "");
   const [replace, setReplace] = useState<boolean>(false);
   const [syncResult, setSyncResult] = useState<any>(null);
+
+  // Keep eventId input updated when modal opens (use localStorage selection if available)
+  useEffect(() => {
+    if (!open) return;
+    const stored = (localStorage.getItem("g3_event_id") ?? "").trim();
+    setSyncEventId((prev) => (prev?.trim() ? prev : stored));
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
 
-    // When modal opens, load current session + admin status
     const load = async () => {
       setMsg("");
       setSyncResult(null);
+
       const { data } = await supabase.auth.getSession();
       const session = data.session;
 
       if (!session?.user) {
         setUserEmail("");
         setIsAdmin(false);
+        setUserId("");
+        onAdminState({ userEmail: "", isAdmin: false, userId: "" });
         return;
       }
 
-      setUserEmail(session.user.email ?? "");
-      // Check admin
+      const emailNow = session.user.email ?? "";
+      const uid = session.user.id;
+
+      setUserEmail(emailNow);
+      setUserId(uid);
+
       const { data: adminRow, error: adminErr } = await supabase
         .from("app_admins")
         .select("user_id")
-        .eq("user_id", session.user.id)
+        .eq("user_id", uid)
         .maybeSingle();
 
       if (adminErr) {
         setIsAdmin(false);
         setMsg("Admin check failed: " + adminErr.message);
+        onAdminState({ userEmail: emailNow, isAdmin: false, userId: uid });
         return;
       }
 
-      setIsAdmin(!!adminRow);
+      const ok = !!adminRow;
+      setIsAdmin(ok);
+      onAdminState({ userEmail: emailNow, isAdmin: ok, userId: uid });
     };
 
     load();
-  }, [open]);
+  }, [open, onAdminState]);
 
   const signIn = async () => {
     setLoading(true);
     setMsg("");
     setSyncResult(null);
+
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
@@ -120,22 +145,38 @@ function AdminModal({
         return;
       }
 
-      setUserEmail(data.user?.email ?? "");
+      const emailNow = data.user?.email ?? "";
+      const uid = data.user?.id ?? "";
+
+      setUserEmail(emailNow);
+      setUserId(uid);
+
       // Re-check admin
       const { data: adminRow, error: adminErr } = await supabase
         .from("app_admins")
         .select("user_id")
-        .eq("user_id", data.user!.id)
+        .eq("user_id", uid)
         .maybeSingle();
 
       if (adminErr) {
         setIsAdmin(false);
         setMsg("Admin check failed: " + adminErr.message);
+        onAdminState({ userEmail: emailNow, isAdmin: false, userId: uid });
         return;
       }
 
-      setIsAdmin(!!adminRow);
-      setMsg("Logged in ✅");
+      const ok = !!adminRow;
+      setIsAdmin(ok);
+      onAdminState({ userEmail: emailNow, isAdmin: ok, userId: uid });
+
+      if (ok) {
+        setMsg("Logged in ✅ (ADMIN)");
+        // ✅ KEY FIX: auto-close so it won't sit on top forever
+        // still leaves you logged-in and able to open tools when needed
+        setTimeout(() => onClose(), 250);
+      } else {
+        setMsg("Logged in ✅ (NOT ADMIN)");
+      }
     } finally {
       setLoading(false);
     }
@@ -145,15 +186,22 @@ function AdminModal({
     setLoading(true);
     setMsg("");
     setSyncResult(null);
+
     try {
       const { error } = await supabase.auth.signOut();
       if (error) {
         setMsg("Logout failed: " + error.message);
         return;
       }
+
       setUserEmail("");
       setIsAdmin(false);
+      setUserId("");
+      onAdminState({ userEmail: "", isAdmin: false, userId: "" });
+
       setMsg("Logged out ✅");
+      // Close after logout so it doesn’t remain a blocker
+      setTimeout(() => onClose(), 200);
     } finally {
       setLoading(false);
     }
@@ -171,8 +219,6 @@ function AdminModal({
         return;
       }
 
-      // Call your EXISTING edge function:
-      // supabase/functions/sync_tba_matches
       const { data, error } = await supabase.functions.invoke("sync_tba_matches", {
         body: { event_id: cleanEventId, replace },
       });
@@ -241,11 +287,27 @@ function AdminModal({
             <div>
               Logged in as <b>{userEmail}</b>{" "}
               {isAdmin ? (
-                <span style={{ marginLeft: 8, padding: "3px 8px", borderRadius: 999, background: "#e8fff6", fontWeight: 900 }}>
+                <span
+                  style={{
+                    marginLeft: 8,
+                    padding: "3px 8px",
+                    borderRadius: 999,
+                    background: "#e8fff6",
+                    fontWeight: 900,
+                  }}
+                >
                   ADMIN
                 </span>
               ) : (
-                <span style={{ marginLeft: 8, padding: "3px 8px", borderRadius: 999, background: "#ffe0e0", fontWeight: 900 }}>
+                <span
+                  style={{
+                    marginLeft: 8,
+                    padding: "3px 8px",
+                    borderRadius: 999,
+                    background: "#ffe0e0",
+                    fontWeight: 900,
+                  }}
+                >
                   NOT ADMIN
                 </span>
               )}
@@ -379,22 +441,65 @@ function AdminModal({
           )}
         </div>
 
-        {msg ? (
-          <div style={{ marginTop: 12, fontWeight: 900, opacity: 0.9 }}>
-            {msg}
-          </div>
-        ) : null}
+        {msg ? <div style={{ marginTop: 12, fontWeight: 900, opacity: 0.9 }}>{msg}</div> : null}
       </div>
     </div>
   );
 }
 
 // ----------------------
-// TopNav with active link highlight + time + countdown + admin modal button
+// TopNav with active link highlight + time + countdown + admin tools
 // ----------------------
 function TopNav() {
   const location = useLocation();
   const [adminOpen, setAdminOpen] = useState(false);
+
+  // Global admin state (so UI does not "stick" wrongly)
+  const [adminState, setAdminState] = useState<AdminState>({
+    userEmail: "",
+    isAdmin: false,
+    userId: "",
+  });
+
+  // Keep adminState synced across refresh/navigation
+  useEffect(() => {
+    let alive = true;
+
+    const refresh = async () => {
+      const { data } = await supabase.auth.getSession();
+      const s = data.session;
+      if (!alive) return;
+
+      if (!s?.user) {
+        setAdminState({ userEmail: "", isAdmin: false, userId: "" });
+        return;
+      }
+
+      const uid = s.user.id;
+      const emailNow = s.user.email ?? "";
+
+      const { data: adminRow } = await supabase
+        .from("app_admins")
+        .select("user_id")
+        .eq("user_id", uid)
+        .maybeSingle();
+
+      if (!alive) return;
+
+      setAdminState({ userEmail: emailNow, isAdmin: !!adminRow, userId: uid });
+    };
+
+    refresh();
+
+    const { data: sub } = supabase.auth.onAuthStateChange(() => {
+      refresh();
+    });
+
+    return () => {
+      alive = false;
+      sub.subscription.unsubscribe();
+    };
+  }, []);
 
   // Israel time ticker
   const [now, setNow] = useState<Date>(() => new Date());
@@ -417,7 +522,6 @@ function TopNav() {
         return;
       }
 
-      // upcoming by scheduled_time
       const isoNow = new Date().toISOString();
       const { data, error } = await supabase
         .from("matches")
@@ -431,17 +535,15 @@ function TopNav() {
       if (!alive) return;
 
       if (error) {
-        // If this fails, just hide countdown (don’t break navigation)
         setNextMatch(null);
         return;
       }
 
-      const row = (data?.[0] ?? null) as NextMatch | null;
-      setNextMatch(row);
+      setNextMatch((data?.[0] ?? null) as NextMatch | null);
     };
 
     loadNext();
-    const interval = setInterval(loadNext, 60_000); // refresh next match every minute
+    const interval = setInterval(loadNext, 60_000);
 
     return () => {
       alive = false;
@@ -473,7 +575,6 @@ function TopNav() {
   });
 
   const titlePill = useMemo(() => {
-    const label = "G3 Scouting App";
     return (
       <div
         style={{
@@ -487,11 +588,12 @@ function TopNav() {
           display: "flex",
           gap: 10,
           alignItems: "center",
+          maxWidth: "100%",
         }}
       >
-        <span>{label}</span>
+        <span>G3 Scouting App</span>
 
-        <span style={{ opacity: 0.75, fontWeight: 900, fontSize: 16 }}>
+        <span style={{ opacity: 0.75, fontWeight: 900, fontSize: 16, whiteSpace: "nowrap" }}>
           {fmtIsraelNow(now)}
         </span>
 
@@ -515,26 +617,67 @@ function TopNav() {
           )}
         </span>
 
-        <button
-          type="button"
-          onClick={() => setAdminOpen(true)}
-          style={{
-            padding: "6px 10px",
-            borderRadius: 999,
-            border: "1px solid rgba(0,0,0,0.15)",
-            background: "#fff",
-            fontWeight: 1000,
-            cursor: "pointer",
-          }}
-          title="Admin"
-        >
-          Admin
-        </button>
+        {/* Show admin badge + quick open only if admin */}
+        {adminState.isAdmin ? (
+          <>
+            <span
+              style={{
+                padding: "4px 10px",
+                borderRadius: 999,
+                background: "#e8fff6",
+                border: "1px solid rgba(0,0,0,0.06)",
+                fontWeight: 1000,
+                fontSize: 14,
+                whiteSpace: "nowrap",
+              }}
+              title={adminState.userEmail}
+            >
+              ADMIN
+            </span>
 
-        <AdminModal open={adminOpen} onClose={() => setAdminOpen(false)} />
+            <button
+              type="button"
+              onClick={() => setAdminOpen(true)}
+              style={{
+                padding: "6px 10px",
+                borderRadius: 999,
+                border: "1px solid rgba(0,0,0,0.15)",
+                background: "#fff",
+                fontWeight: 1000,
+                cursor: "pointer",
+              }}
+              title="Admin tools (Fetch matches)"
+            >
+              Fetch
+            </button>
+          </>
+        ) : (
+          // Keep small Admin entry available (for you to log in), but not scary
+          <button
+            type="button"
+            onClick={() => setAdminOpen(true)}
+            style={{
+              padding: "6px 10px",
+              borderRadius: 999,
+              border: "1px solid rgba(0,0,0,0.15)",
+              background: "#fff",
+              fontWeight: 1000,
+              cursor: "pointer",
+            }}
+            title="Admin login"
+          >
+            Admin
+          </button>
+        )}
+
+        <AdminModal
+          open={adminOpen}
+          onClose={() => setAdminOpen(false)}
+          onAdminState={(s) => setAdminState(s)}
+        />
       </div>
     );
-  }, [now, nextMatch, countdownMs, adminOpen]);
+  }, [now, nextMatch, countdownMs, adminOpen, adminState.isAdmin, adminState.userEmail]);
 
   return (
     <div
@@ -550,16 +693,17 @@ function TopNav() {
         position: "sticky",
         top: 0,
         zIndex: 50,
+        flexWrap: "wrap",         // helps on phone
+        maxWidth: "100%",
       }}
     >
       {/* Logo */}
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginRight: 10 }}>
         <img
-  src="/logoG3.png"
-  alt="Logo"
-  style={{ width: 115, height: 115, borderRadius: 10, objectFit: "cover" }}
-/>
-
+          src="/logoG3.png"
+          alt="Logo"
+          style={{ width: 115, height: 115, borderRadius: 10, objectFit: "cover" }}
+        />
       </div>
 
       {/* Links */}

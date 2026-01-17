@@ -7,10 +7,25 @@
   --text: #1a1a1a;
 }
 
-html, body, #root {
-  height: 100%;
+/* ---- Layout safety (fix "pages to the right") ---- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  max-width: 100%;
+}
+
+html,
+body {
+  overflow-x: hidden; /* KEY: prevent sideways overflow */
+}
+
+/* optional but helps on mobile */
 body {
   margin: 0;
   color: var(--text);
@@ -19,4 +34,33 @@ body {
               linear-gradient(180deg, #ff2fcf 0%, #ff86cf 55%, #ffd1ec 100%);
   background-attachment: fixed;
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+}
+
+/* Ensure media never causes overflow */
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ---- Tables: allow horizontal scroll INSIDE the table area (not whole page) ---- */
+.table-scroll {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ---- Mobile: shrink UI a bit so less scrolling ---- */
+@media (max-width: 420px) {
+  html { font-size: 14px; }
+
+  button, input, select, textarea {
+    font-size: 14px !important;
+  }
+
+  h1 { font-size: 20px; }
+  h2 { font-size: 16px; }
 }
