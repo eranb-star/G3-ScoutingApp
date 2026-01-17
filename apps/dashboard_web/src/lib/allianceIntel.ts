@@ -1,7 +1,5 @@
 // apps/dashboard_web/src/lib/allianceIntel.ts
 
-export type Risk = "LOW" | "MED" | "HIGH";
-
 export type TeamRow = {
   event_id: string;
   team_number: number;
@@ -28,7 +26,9 @@ export type TeamRow = {
   overall_value_avg?: any;
 
   playoff_score?: any;
-  pick_score?: any; // if present in v_picklist_v1
+
+  // some views also expose:
+  pick_score?: any;
 };
 
 export type Role =
@@ -39,17 +39,19 @@ export type Role =
   | "SUPPORT"
   | "UNKNOWN";
 
+export type Risk = "LOW" | "MED" | "HIGH";
+
 export function toNum(x: any, fallback = 0) {
   const n = typeof x === "number" ? x : Number(x);
   return Number.isFinite(n) ? n : fallback;
 }
 
-export function num(x: any, digits = 2) {
-  return toNum(x, 0).toFixed(digits);
-}
-
 export function pct(x: any) {
   return `${Math.round(toNum(x, 0) * 100)}%`;
+}
+
+export function num(x: any, digits = 2) {
+  return toNum(x, 0).toFixed(digits);
 }
 
 export function riskLabel(disabledRate: any, brownoutRate: any): Risk {
@@ -78,6 +80,23 @@ export function roleFor(t: TeamRow | null): Role {
   return "UNKNOWN";
 }
 
+// ---------- Normalization helpers ----------
+function clamp01(x: number) {
+  return Math.max(0, Math.min(1, x));
+}
+
+// Smooth saturation: 0..1 where x=target ~0.63, x=2*target ~0.86 etc.
+function softCap(x: number, target: number) {
+  const v = toNum(x, 0);
+  if (target <= 0) return 0;
+  return 1 - Math.exp(-v / target);
+}
+
+function clamp100(x: number) {
+  if (!Number.isFinite(x)) return 0;
+  return Math.max(0, Math.min(100, x));
+}
+
 export function computeAllianceIntel(teamStats: (TeamRow | null)[]) {
   const present = teamStats.filter(Boolean) as TeamRow[];
   const haveAll = present.length === 3;
@@ -99,34 +118,56 @@ export function computeAllianceIntel(teamStats: (TeamRow | null)[]) {
   const disabled = avg(teamStats.map((t) => toNum(t?.disabled_rate)));
   const brownout = avg(teamStats.map((t) => toNum(t?.brownout_rate)));
 
+  // Risk label
   const risk = riskLabel(disabled, brownout);
 
+  // Weaknesses (simple + stable)
   const weaknesses: string[] = [];
   if (autoScore < 1.5 && autoMob < 0.5) weaknesses.push("AUTO");
   if (endgame < 0.35) weaknesses.push("ENDGAME");
   if (cycles < 6) weaknesses.push("CYCLES");
   if (defense < 0.6) weaknesses.push("DEFENSE");
 
+  // Roles
   const roles = teamStats.map((t) => roleFor(t));
 
-  // ONE formula everywhere (0..100)
-  const synergyRaw =
-    autoScore * 4 +
-    autoMob * 8 +
-    teleop * 1.5 +
-    cycles * 2.2 +
-    endgame * 18 +
-    defense * 6 +
-    consistency * 6 -
-    missed * 1.2 -
-    disabled * 40 -
-    brownout * 15;
+  // ✅ NEW: normalized synergy (no “always 100”)
+  //
+  // We convert raw metrics into 0..1 components using softCap.
+  // Targets are tuned so good alliances land ~70–90, elite can reach ~95+, but not everyone hits 100.
+  //
+  // If later you want tighter/looser spread: adjust targets + weights only here.
+  const autoScore01 = softCap(autoScore, 10); // target “good” combined auto
+  const autoMob01 = clamp01(autoMob); // already 0..1
 
-  const synergy = Math.max(0, Math.min(100, synergyRaw));
+  const teleop01 = softCap(teleop, 90); // combined teleop points typical “good”
+  const cycles01 = softCap(cycles, 24); // combined cycles target
+  const endgame01 = clamp01(endgame); // 0..1
+  const defense01 = softCap(defense, 1.8); // sum of 3 teams 0..3-ish depending on view
+  const consistency01 = clamp01(consistency / 5); // your form uses 0..5
+
+  const missed01 = softCap(missed, 18); // higher is worse
+  const reliabilityPenalty01 = clamp01(disabled * 1.6 + brownout * 0.9); // 0..~1+
+
+  // weighted score 0..100
+  const base =
+    18 * autoScore01 +
+    8 * autoMob01 +
+    22 * teleop01 +
+    12 * cycles01 +
+    22 * endgame01 +
+    10 * defense01 +
+    8 * consistency01;
+
+  const penalties =
+    14 * missed01 +
+    22 * reliabilityPenalty01;
+
+  const synergy = clamp100(base - penalties);
 
   return {
     haveAll,
-    synergy,
+    synergy, // 0..100
     riskLabel: risk,
     weaknessText: weaknesses.length ? weaknesses.join(", ") : "NONE",
     weaknesses: weaknesses.length ? weaknesses : ["NONE"],
@@ -142,6 +183,19 @@ export function computeAllianceIntel(teamStats: (TeamRow | null)[]) {
       consistency,
       disabled,
       brownout,
+
+      // helpful debug for verifying consistency across pages
+      _norm: {
+        autoScore01,
+        autoMob01,
+        teleop01,
+        cycles01,
+        endgame01,
+        defense01,
+        consistency01,
+        missed01,
+        reliabilityPenalty01,
+      },
     },
   };
 }

@@ -39,8 +39,14 @@ function riskBadge(risk: Risk) {
 }
 
 function synergyBadge(score: number) {
-  const bg = score >= 75 ? "#e8fff6" : score >= 50 ? "#fff4cc" : "#ffe0e0";
+  const bg = score >= 80 ? "#e8fff6" : score >= 60 ? "#fff4cc" : "#ffe0e0";
   return <Badge text={`${Math.round(score)}/100`} bg={bg} />;
+}
+
+function coverageBadge(minMatches: number) {
+  const bg = minMatches >= 6 ? "#e8ffe8" : minMatches >= 3 ? "#fff4cc" : "#ffe0e0";
+  const label = minMatches >= 6 ? "STRONG" : minMatches >= 3 ? "OK" : minMatches >= 1 ? "WEAK" : "NO DATA";
+  return <Badge text={`${label} · min ${minMatches}`} bg={bg} />;
 }
 
 function fmtDate(x: string | null) {
@@ -112,6 +118,7 @@ export default function SavedAlliancesPage() {
       if (e2) {
         console.error("LOAD STATS ERROR:", e2);
         setStatsRows([]);
+        setErr(e2.message);
         return;
       }
 
@@ -136,6 +143,7 @@ export default function SavedAlliancesPage() {
       return;
     }
 
+    // keep UI in sync
     setRows((prev) => prev.filter((r) => r.id !== id));
   };
 
@@ -150,12 +158,12 @@ export default function SavedAlliancesPage() {
 
   if (!eventId) {
     return (
-      <div style={{ padding: 16, maxWidth: 1200 }}>
-        <h1 style={{ margin: 0 }}>Saved Alliances</h1>
-        <div style={{ marginTop: 10, opacity: 0.85 }}>
-          Missing <b>event_id</b> in URL.
+      <div style={{ padding: 16 }}>
+        <h1>Saved Alliances</h1>
+        <div style={{ color: "crimson", fontWeight: 900 }}>Missing event_id in URL.</div>
+        <div style={{ opacity: 0.85, marginTop: 6 }}>
+          Use: <code>/analysis/saved?event_id=UUID</code>
         </div>
-        <div style={{ marginTop: 6, fontFamily: "monospace" }}>Example: /analysis/saved?event_id=YOUR_EVENT_UUID</div>
       </div>
     );
   }
@@ -209,9 +217,7 @@ export default function SavedAlliancesPage() {
       </div>
 
       <div style={{ marginTop: 14, border: "1px solid #eee", borderRadius: 14, overflow: "hidden", background: "#fff" }}>
-        <div style={{ padding: 12, borderBottom: "1px solid #eee", fontWeight: 1000 }}>
-          Saved ({rows.length})
-        </div>
+        <div style={{ padding: 12, borderBottom: "1px solid #eee", fontWeight: 1000 }}>Saved ({rows.length})</div>
 
         {rows.length === 0 ? (
           <div style={{ padding: 12, opacity: 0.85 }}>No saved alliances yet.</div>
@@ -223,6 +229,7 @@ export default function SavedAlliancesPage() {
                 <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>Synergy</th>
                 <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>Risk</th>
                 <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>Weakness</th>
+                <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>Coverage</th>
                 <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>Created</th>
                 <th style={{ textAlign: "right", padding: 10, borderBottom: "1px solid #eee" }}>Actions</th>
               </tr>
@@ -234,6 +241,7 @@ export default function SavedAlliancesPage() {
                 const t2 = statsByTeam.get(Number(r.t2)) ?? null;
                 const t3 = statsByTeam.get(Number(r.t3)) ?? null;
 
+                // ✅ Always recompute (never trust stored synergy)
                 const intel = computeAllianceIntel([t1, t2, t3]);
 
                 const minMatches =
@@ -244,45 +252,33 @@ export default function SavedAlliancesPage() {
                 return (
                   <tr key={r.id} style={{ borderBottom: "1px solid #f2f2f2" }}>
                     <td style={{ padding: 10, fontWeight: 1000 }}>
-                      {r.name ?? `#${r.t1} + #${r.t2} + #${r.t3}`}
-                      <div style={{ marginTop: 4, fontFamily: "monospace", opacity: 0.8 }}>
-                        #{r.t1} + #{r.t2} + #{r.t3}
-                      </div>
-
-                      {!intel.haveAll ? (
-                        <div style={{ marginTop: 6, fontSize: 12, opacity: 0.75 }}>
-                          Some teams have no scouting stats yet (still OK).
-                        </div>
-                      ) : (
-                        <div style={{ marginTop: 6, fontSize: 12, opacity: 0.75 }}>
-                          Coverage: min matches {minMatches} · Auto {num(intel.quick.autoScore, 1)} · End {pct(intel.quick.endgame)}
-                        </div>
-                      )}
+                      {r.name ?? `#${r.t1} + #${r.t2} + #${r.t3}`}{" "}
+                      <span style={{ opacity: 0.75, fontWeight: 900 }}>
+                        (#{r.t1}, #{r.t2}, #{r.t3})
+                      </span>
                     </td>
 
                     <td style={{ padding: 10 }}>{synergyBadge(intel.synergy)}</td>
-
                     <td style={{ padding: 10 }}>{riskBadge(intel.riskLabel)}</td>
-
-                    <td style={{ padding: 10, fontWeight: 900 }}>{intel.weaknessText}</td>
-
+                    <td style={{ padding: 10, fontWeight: 900, opacity: 0.9 }}>{intel.weaknessText}</td>
+                    <td style={{ padding: 10 }}>{coverageBadge(minMatches)}</td>
                     <td style={{ padding: 10, opacity: 0.85 }}>{fmtDate(r.created_at)}</td>
 
                     <td style={{ padding: 10, textAlign: "right" }}>
-                      <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, flexWrap: "wrap" }}>
+                      <div style={{ display: "inline-flex", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
                         <button
                           type="button"
                           onClick={() => openAlliance(r)}
                           style={{
                             padding: "8px 10px",
-                            borderRadius: 12,
+                            borderRadius: 10,
                             border: "1px solid #ddd",
                             background: "#fff",
-                            fontWeight: 1000,
+                            fontWeight: 900,
                             cursor: "pointer",
                           }}
                         >
-                          Open
+                          Open →
                         </button>
 
                         <button
@@ -290,10 +286,10 @@ export default function SavedAlliancesPage() {
                           onClick={() => deleteAlliance(r.id)}
                           style={{
                             padding: "8px 10px",
-                            borderRadius: 12,
+                            borderRadius: 10,
                             border: "1px solid #ddd",
                             background: "#fff",
-                            fontWeight: 1000,
+                            fontWeight: 900,
                             cursor: "pointer",
                           }}
                         >
@@ -309,8 +305,8 @@ export default function SavedAlliancesPage() {
         )}
       </div>
 
-      <div style={{ marginTop: 12, opacity: 0.8, fontSize: 12 }}>
-        Note: Synergy/Risk/Weakness are calculated live from <b>v_picklist_v1</b> via <b>computeAllianceIntel()</b>.
+      <div style={{ marginTop: 10, opacity: 0.85 }}>
+        Tip: <b>Coverage</b> is critical. High synergy with low min-matches can be misleading early in the event.
       </div>
     </div>
   );
