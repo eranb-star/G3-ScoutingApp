@@ -10,7 +10,7 @@ import ComparePage from "./pages/ComparePage";
 import SavedAlliancesPage from "./pages/SavedAlliancesPage";
 
 import "./index.css";
-import logo from "./assets/logoG3.png";
+//import logo from "./assets/logoG3.png";
 
 import { supabase } from "./supabase";
 
@@ -554,7 +554,12 @@ function TopNav() {
     >
       {/* Logo */}
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginRight: 10 }}>
-        <img src={logo} alt="Logo" style={{ width: 115, height: 115, borderRadius: 10, objectFit: "cover" }} />
+        <img
+  src="/logoG3.png"
+  alt="Logo"
+  style={{ width: 115, height: 115, borderRadius: 10, objectFit: "cover" }}
+/>
+
       </div>
 
       {/* Links */}
