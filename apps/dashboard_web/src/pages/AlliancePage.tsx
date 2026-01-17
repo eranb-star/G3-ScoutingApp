@@ -1,7 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../supabase";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { computeAllianceIntel, num, pct, riskLabel, roleFor, toNum, type TeamRow, type Risk, type Role } from "../lib/allianceIntel";
+import {
+  computeAllianceIntel,
+  num,
+  pct,
+  riskLabel,
+  roleFor,
+  toNum,
+  type TeamRow,
+  type Risk,
+  type Role,
+} from "../lib/allianceIntel";
 
 function Badge({ text, bg }: { text: string; bg: string }) {
   return (
@@ -65,6 +75,88 @@ export default function AlliancePage() {
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string>("");
 
+  // -------------------------
+  // Admin-only: Fetch matches (TBA)
+  // -------------------------
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [authLabel, setAuthLabel] = useState<string>("");
+  const [fetchingMatches, setFetchingMatches] = useState(false);
+  const [fetchMsg, setFetchMsg] = useState<string>("");
+
+  useEffect(() => {
+    const checkAdmin = async () => {
+      setIsAdmin(false);
+      setAuthLabel("");
+      setFetchMsg("");
+
+      // No event selected => no need
+      if (!eventId) return;
+
+      // Must be logged in
+      const { data: u } = await supabase.auth.getUser();
+      const user = u?.user ?? null;
+      if (!user) return;
+
+      setAuthLabel(user.email ?? user.id);
+
+      // Check app_admins table
+      const { data: adminRow, error: adminErr } = await supabase
+        .from("app_admins")
+        .select("user_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (adminErr) {
+        // Don't block the page if admin check fails; just hide the buttons.
+        console.warn("Admin check failed:", adminErr.message);
+        return;
+      }
+
+      setIsAdmin(!!adminRow);
+    };
+
+    checkAdmin();
+  }, [eventId]);
+
+  const fetchQmFromTBA = async (replace: boolean) => {
+    if (!eventId) return;
+
+    if (replace) {
+      const ok = window.confirm(
+        "This will DELETE existing QM matches for this event and re-import from TBA.\n\nContinue?"
+      );
+      if (!ok) return;
+    }
+
+    setFetchingMatches(true);
+    setFetchMsg("");
+
+    try {
+      const { data, error } = await supabase.functions.invoke("sync_tba_matches", {
+        body: { event_id: eventId, replace },
+      });
+
+      if (error) {
+        console.error("sync_tba_matches invoke error:", error);
+        setFetchMsg("Fetch failed: " + (error.message ?? "unknown error"));
+        return;
+      }
+
+      // The edge function returns fields like qm_count, mode, ok...
+      const qmCount = (data as any)?.qm_count;
+      const mode = (data as any)?.mode;
+      setFetchMsg(`Fetched QM from TBA ✅ (qm_count=${qmCount ?? "?"}, mode=${mode ?? "ok"})`);
+    } catch (e: any) {
+      console.error("Fetch QM exception:", e);
+      setFetchMsg("Fetch failed: " + String(e?.message ?? e));
+    } finally {
+      setFetchingMatches(false);
+    }
+  };
+
+  // -------------------------
+  // Load alliance team stats
+  // -------------------------
   useEffect(() => {
     const load = async () => {
       if (!eventId) return;
@@ -107,6 +199,7 @@ export default function AlliancePage() {
     return [a, b, c] as (TeamStats | null)[];
   }, [byTeam, captain, partnerA, partnerB]);
 
+  // Single source of truth
   const intel = useMemo(() => computeAllianceIntel(ordered), [ordered]);
 
   const allianceMetrics = useMemo(() => {
@@ -149,7 +242,10 @@ export default function AlliancePage() {
       metrics: { alliance: allianceMetrics },
     };
 
-    const { error } = await supabase.from("saved_alliances").upsert([payload], { onConflict: "event_id,t1,t2,t3" });
+    const { error } = await supabase
+      .from("saved_alliances")
+      .upsert([payload], { onConflict: "event_id,t1,t2,t3" });
+
     if (error) {
       alert("Save failed: " + error.message);
       return;
@@ -257,6 +353,64 @@ export default function AlliancePage() {
         </div>
       </div>
 
+      {/* Admin Tools (Fetch matches) */}
+      <div style={{ marginTop: 12 }}>
+        {isAdmin ? (
+          <div style={{ padding: 12, borderRadius: 14, border: "1px solid #eee", background: "#fff" }}>
+            <div style={{ fontWeight: 1000, marginBottom: 8 }}>
+              Admin Tools <span style={{ opacity: 0.7, fontWeight: 800 }}>({authLabel})</span>
+            </div>
+
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+              <button
+                type="button"
+                onClick={() => fetchQmFromTBA(false)}
+                disabled={fetchingMatches}
+                style={{
+                  padding: "10px 12px",
+                  borderRadius: 12,
+                  border: "1px solid #ddd",
+                  background: "#fff",
+                  fontWeight: 1000,
+                  cursor: fetchingMatches ? "not-allowed" : "pointer",
+                  opacity: fetchingMatches ? 0.6 : 1,
+                }}
+              >
+                {fetchingMatches ? "Fetching…" : "Fetch QM from TBA"}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => fetchQmFromTBA(true)}
+                disabled={fetchingMatches}
+                style={{
+                  padding: "10px 12px",
+                  borderRadius: 12,
+                  border: "1px solid #ddd",
+                  background: "#fff",
+                  fontWeight: 1000,
+                  cursor: fetchingMatches ? "not-allowed" : "pointer",
+                  opacity: fetchingMatches ? 0.6 : 1,
+                }}
+              >
+                {fetchingMatches ? "Fetching…" : "Replace QM (delete + reimport)"}
+              </button>
+
+              {fetchMsg ? <div style={{ fontWeight: 900, opacity: 0.9 }}>{fetchMsg}</div> : null}
+            </div>
+
+            <div style={{ marginTop: 8, fontSize: 12, opacity: 0.75 }}>
+              Uses edge function <code>sync_tba_matches</code>. Buttons appear only for admins (table{" "}
+              <code>app_admins</code>).
+            </div>
+          </div>
+        ) : (
+          <div style={{ fontSize: 12, opacity: 0.65 }}>
+            Admin tools hidden (login required + must be in <code>app_admins</code>).
+          </div>
+        )}
+      </div>
+
       <div style={{ marginTop: 14, border: "1px solid #eee", borderRadius: 14, padding: 12, background: "#fff" }}>
         <div style={{ fontWeight: 1000, marginBottom: 8 }}>Weakness Coverage</div>
         <div style={{ fontWeight: 900, opacity: 0.9 }}>{intel.weaknessText}</div>
@@ -287,7 +441,11 @@ export default function AlliancePage() {
 
               <div style={{ marginTop: 8, display: "flex", gap: 8, flexWrap: "wrap" }}>
                 <Badge text={rb.text} bg={rb.bg} />
-                {s ? <Badge text={`Matches ${s.matches_scouted ?? 0}`} bg="#f0f0f0" /> : <Badge text="NO DATA" bg="#ffe0e0" />}
+                {s ? (
+                  <Badge text={`Matches ${s.matches_scouted ?? 0}`} bg="#f0f0f0" />
+                ) : (
+                  <Badge text="NO DATA" bg="#ffe0e0" />
+                )}
               </div>
 
               {!s ? (

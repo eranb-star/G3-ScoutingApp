@@ -347,7 +347,12 @@ export default function ScoutingPage() {
         <div style={{ width: "100%", maxWidth: 520 }}>
           <select
             value={eventId}
-            onChange={(e) => setEventId(e.target.value)}
+            onChange={(e) => {
+  const v = e.target.value;
+  setEventId(v);
+  localStorage.setItem("g3_event_id", v); // ✅ for countdown + admin convenience
+}}
+
             style={controlStyle}
           >
             <option value="">Select Event</option>
