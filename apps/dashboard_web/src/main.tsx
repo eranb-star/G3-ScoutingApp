@@ -13,30 +13,18 @@ import "./index.css";
 import { supabase } from "./supabase";
 
 // ----------------------
-// Small helpers
+// Helpers
 // ----------------------
-function fmtIsraelNowFull(d: Date) {
+function fmtIsraelNow(d: Date, compact: boolean) {
   return new Intl.DateTimeFormat("he-IL", {
     timeZone: "Asia/Jerusalem",
-    weekday: "short",
+    weekday: compact ? undefined : "short",
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-    second: "2-digit",
-  }).format(d);
-}
-
-function fmtIsraelNowShort(d: Date) {
-  // Shorter for mobile (no weekday, no seconds)
-  return new Intl.DateTimeFormat("he-IL", {
-    timeZone: "Asia/Jerusalem",
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
+    second: compact ? undefined : "2-digit",
   }).format(d);
 }
 
@@ -54,16 +42,22 @@ type NextMatch = {
   scheduled_time: string | null;
 };
 
+function useIsMobile(breakpointPx = 720) {
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= breakpointPx);
+
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth <= breakpointPx);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [breakpointPx]);
+
+  return isMobile;
+}
+
 // ----------------------
 // Admin Modal (Option 2)
 // ----------------------
-function AdminModal({
-  open,
-  onClose,
-}: {
-  open: boolean;
-  onClose: () => void;
-}) {
+function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -73,7 +67,6 @@ function AdminModal({
   const [userEmail, setUserEmail] = useState<string>("");
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
-  // Sync form
   const [syncEventId, setSyncEventId] = useState<string>("");
   const [replace, setReplace] = useState<boolean>(false);
   const [syncResult, setSyncResult] = useState<any>(null);
@@ -84,6 +77,7 @@ function AdminModal({
     const load = async () => {
       setMsg("");
       setSyncResult(null);
+
       const { data } = await supabase.auth.getSession();
       const session = data.session;
 
@@ -219,12 +213,10 @@ function AdminModal({
           border: "1px solid rgba(0,0,0,0.12)",
           boxShadow: "0 10px 40px rgba(0,0,0,0.18)",
           padding: 16,
-          maxHeight: "85vh",
-          overflowY: "auto",
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 10, position: "sticky", top: 0, background: "#fff", paddingBottom: 10 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{ fontWeight: 1000, fontSize: 18 }}>Admin</div>
           <div style={{ marginLeft: "auto" }}>
             <button
@@ -346,7 +338,7 @@ function AdminModal({
 
                 <label style={{ display: "flex", gap: 8, alignItems: "center", fontWeight: 900 }}>
                   <input type="checkbox" checked={replace} onChange={(e) => setReplace(e.target.checked)} />
-                  Replace QM (delete existing then import)
+                  Replace QM
                 </label>
 
                 <button
@@ -385,29 +377,27 @@ function AdminModal({
           )}
         </div>
 
-        {msg ? (
-          <div style={{ marginTop: 12, fontWeight: 900, opacity: 0.9 }}>{msg}</div>
-        ) : null}
+        {msg ? <div style={{ marginTop: 12, fontWeight: 900, opacity: 0.9 }}>{msg}</div> : null}
       </div>
     </div>
   );
 }
 
 // ----------------------
-// TopNav responsive
+// TopNav (mobile-friendly)
 // ----------------------
 function TopNav() {
   const location = useLocation();
+  const isMobile = useIsMobile(720);
+
   const [adminOpen, setAdminOpen] = useState(false);
 
-  // Israel time ticker
   const [now, setNow] = useState<Date>(() => new Date());
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(t);
   }, []);
 
-  // Next match countdown (uses localStorage selected event)
   const [nextMatch, setNextMatch] = useState<NextMatch | null>(null);
   const [countdownMs, setCountdownMs] = useState<number>(0);
 
@@ -438,8 +428,7 @@ function TopNav() {
         return;
       }
 
-      const row = (data?.[0] ?? null) as NextMatch | null;
-      setNextMatch(row);
+      setNextMatch((data?.[0] ?? null) as NextMatch | null);
     };
 
     loadNext();
@@ -467,65 +456,124 @@ function TopNav() {
   const linkStyle = ({ isActive }: { isActive: boolean }) => ({
     textDecoration: "none",
     color: "inherit",
-    fontWeight: isActive ? 1000 : 850,
-    padding: "8px 10px",
+    fontWeight: isActive ? 1000 : 800,
+    padding: isMobile ? "6px 8px" : "8px 10px",
     borderRadius: 12,
     background: isActive ? "rgba(255, 0, 170, 0.12)" : "transparent",
     border: isActive ? "1px solid rgba(255, 0, 170, 0.22)" : "1px solid transparent",
+    fontSize: isMobile ? 16 : 22,
     whiteSpace: "nowrap",
   });
 
+  const headerH = isMobile ? 64 : 125;
+  const logoSize = isMobile ? 46 : 90;
+
   return (
-    <div className="topnav">
-      <div className="topnav__left">
+    <div
+      style={{
+        padding: isMobile ? 8 : 12,
+        borderBottom: "1px solid rgba(0,0,0,0.08)",
+        display: "flex",
+        gap: isMobile ? 8 : 12,
+        alignItems: "center",
+        backdropFilter: "blur(8px)",
+        background: "rgba(255,255,255,0.72)",
+        position: "sticky",
+        top: 0,
+        zIndex: 50,
+
+        /* ✅ prevent sideways overflow on mobile */
+        maxWidth: "100%",
+        overflow: "hidden",
+        minHeight: headerH,
+        flexWrap: "wrap",
+      }}
+    >
+      {/* Left: Logo + Admin button always visible */}
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         <img
           src="/logoG3.png"
           alt="Logo"
-          className="topnav__logo"
+          style={{ width: logoSize, height: logoSize, borderRadius: 10, objectFit: "cover" }}
         />
-
-        <div className="topnav__links">
-          <NavLink to="/scouting" style={linkStyle}>
-            Scouting
-          </NavLink>
-          <NavLink to="/analysis" style={linkStyle}>
-            Analysis
-          </NavLink>
-          <NavLink to="/analysis/alliance" style={linkStyle}>
-            Alliance Builder
-          </NavLink>
-          <NavLink to="/analysis/picklist" style={linkStyle}>
-            Picklist
-          </NavLink>
-        </div>
-      </div>
-
-      <div className="topnav__right">
-        <div className="topnav__pill">
-          <span className="topnav__title">G3 Scouting App</span>
-
-          <span className="topnav__timeFull">{fmtIsraelNowFull(now)}</span>
-          <span className="topnav__timeShort">{fmtIsraelNowShort(now)}</span>
-
-          <span className="topnav__countdown" title="Next QM countdown (based on selected event in scouting)">
-            {nextMatch?.scheduled_time ? (
-              <>Next QM {nextMatch.match_number ?? "?"} · {msToClock(countdownMs)}</>
-            ) : (
-              <>No next match</>
-            )}
-          </span>
-        </div>
 
         <button
           type="button"
           onClick={() => setAdminOpen(true)}
-          className="topnav__adminBtn"
+          style={{
+            padding: isMobile ? "6px 10px" : "8px 12px",
+            borderRadius: 999,
+            border: "1px solid rgba(0,0,0,0.15)",
+            background: "#fff",
+            fontWeight: 1000,
+            cursor: "pointer",
+            fontSize: isMobile ? 14 : 16,
+            whiteSpace: "nowrap",
+          }}
           title="Admin"
         >
           Admin
         </button>
 
         <AdminModal open={adminOpen} onClose={() => setAdminOpen(false)} />
+      </div>
+
+      {/* Middle: Links (wrap nicely) */}
+      <div style={{ display: "flex", gap: isMobile ? 6 : 10, alignItems: "center", flexWrap: "wrap" }}>
+        <NavLink to="/scouting" style={linkStyle}>
+          Scouting
+        </NavLink>
+        <NavLink to="/analysis" style={linkStyle}>
+          Analysis
+        </NavLink>
+        <NavLink to="/analysis/alliance" style={linkStyle}>
+          Alliance Builder
+        </NavLink>
+        <NavLink to="/analysis/picklist" style={linkStyle}>
+          Picklist
+        </NavLink>
+      </div>
+
+      {/* Right: time + countdown (compact on mobile) */}
+      <div
+        style={{
+          marginLeft: "auto",
+          padding: isMobile ? "6px 10px" : "8px 12px",
+          borderRadius: 999,
+          background: "rgba(0,0,0,0.06)",
+          fontWeight: 1000,
+          letterSpacing: 0.2,
+          display: "flex",
+          gap: 10,
+          alignItems: "center",
+          maxWidth: "100%",
+        }}
+      >
+        {!isMobile && <span style={{ fontSize: 18 }}>G3 Scouting</span>}
+
+        <span style={{ opacity: 0.8, fontWeight: 900, fontSize: isMobile ? 13 : 16, whiteSpace: "nowrap" }}>
+          {fmtIsraelNow(now, isMobile)}
+        </span>
+
+        <span
+          style={{
+            padding: "4px 10px",
+            borderRadius: 999,
+            background: "rgba(0,0,0,0.06)",
+            fontWeight: 900,
+            fontSize: isMobile ? 12 : 14,
+            whiteSpace: "nowrap",
+          }}
+          title="Next QM countdown (based on selected event in scouting)"
+        >
+          {nextMatch?.scheduled_time ? (
+            <>
+              QM {nextMatch.match_number ?? "?"} · {msToClock(countdownMs)}
+            </>
+          ) : (
+            <>No next</>
+          )}
+        </span>
       </div>
     </div>
   );
