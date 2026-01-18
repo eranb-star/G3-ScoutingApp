@@ -13,18 +13,18 @@ import "./index.css";
 import { supabase } from "./supabase";
 
 // ----------------------
-// Helpers
+// Small helpers
 // ----------------------
-function fmtIsraelNow(d: Date, compact: boolean) {
+function fmtIsraelNow(d: Date) {
   return new Intl.DateTimeFormat("he-IL", {
     timeZone: "Asia/Jerusalem",
-    weekday: compact ? undefined : "short",
+    weekday: "short",
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-    second: compact ? undefined : "2-digit",
+    second: "2-digit",
   }).format(d);
 }
 
@@ -42,69 +42,95 @@ type NextMatch = {
   scheduled_time: string | null;
 };
 
-function useIsMobile(breakpointPx = 720) {
-  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= breakpointPx);
+// ----------------------
+// Admin status hook (single source)
+// ----------------------
+function useAdminStatus() {
+  const [loading, setLoading] = useState(true);
+  const [userEmail, setUserEmail] = useState<string>("");
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    const onResize = () => setIsMobile(window.innerWidth <= breakpointPx);
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, [breakpointPx]);
+    let alive = true;
 
-  return isMobile;
+    const refresh = async () => {
+      setLoading(true);
+      const { data } = await supabase.auth.getSession();
+      const session = data.session;
+
+      if (!alive) return;
+
+      if (!session?.user) {
+        setUserEmail("");
+        setIsAdmin(false);
+        setLoading(false);
+        return;
+      }
+
+      setUserEmail(session.user.email ?? "");
+
+      // IMPORTANT: this requires the RLS policy:
+      // app_admins SELECT where user_id = auth.uid()
+      const { data: adminRow, error } = await supabase
+        .from("app_admins")
+        .select("user_id")
+        .eq("user_id", session.user.id)
+        .maybeSingle();
+
+      if (!alive) return;
+
+      if (error) {
+        // If RLS is wrong, you’ll see false here. Fix policies first.
+        setIsAdmin(false);
+      } else {
+        setIsAdmin(!!adminRow);
+      }
+
+      setLoading(false);
+    };
+
+    refresh();
+
+    const { data: sub } = supabase.auth.onAuthStateChange(() => refresh());
+
+    return () => {
+      alive = false;
+      sub.subscription.unsubscribe();
+    };
+  }, []);
+
+  return { loading, userEmail, isAdmin };
 }
 
 // ----------------------
-// Admin Modal (Option 2)
+// Admin Modal (your existing modal, lightly adjusted)
 // ----------------------
-function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+function AdminModal({
+  open,
+  onClose,
+  isAdmin,
+  userEmail,
+}: {
+  open: boolean;
+  onClose: () => void;
+  isAdmin: boolean;
+  userEmail: string;
+}) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState<string>("");
 
-  const [userEmail, setUserEmail] = useState<string>("");
-  const [isAdmin, setIsAdmin] = useState<boolean>(false);
-
+  // Sync form
   const [syncEventId, setSyncEventId] = useState<string>("");
   const [replace, setReplace] = useState<boolean>(false);
   const [syncResult, setSyncResult] = useState<any>(null);
 
   useEffect(() => {
     if (!open) return;
-
-    const load = async () => {
-      setMsg("");
-      setSyncResult(null);
-
-      const { data } = await supabase.auth.getSession();
-      const session = data.session;
-
-      if (!session?.user) {
-        setUserEmail("");
-        setIsAdmin(false);
-        return;
-      }
-
-      setUserEmail(session.user.email ?? "");
-
-      const { data: adminRow, error: adminErr } = await supabase
-        .from("app_admins")
-        .select("user_id")
-        .eq("user_id", session.user.id)
-        .maybeSingle();
-
-      if (adminErr) {
-        setIsAdmin(false);
-        setMsg("Admin check failed: " + adminErr.message);
-        return;
-      }
-
-      setIsAdmin(!!adminRow);
-    };
-
-    load();
+    setMsg("");
+    setSyncResult(null);
   }, [open]);
 
   const signIn = async () => {
@@ -112,31 +138,14 @@ function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
     setMsg("");
     setSyncResult(null);
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
       });
-
       if (error) {
         setMsg("Login failed: " + error.message);
         return;
       }
-
-      setUserEmail(data.user?.email ?? "");
-
-      const { data: adminRow, error: adminErr } = await supabase
-        .from("app_admins")
-        .select("user_id")
-        .eq("user_id", data.user!.id)
-        .maybeSingle();
-
-      if (adminErr) {
-        setIsAdmin(false);
-        setMsg("Admin check failed: " + adminErr.message);
-        return;
-      }
-
-      setIsAdmin(!!adminRow);
       setMsg("Logged in ✅");
     } finally {
       setLoading(false);
@@ -153,8 +162,6 @@ function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
         setMsg("Logout failed: " + error.message);
         return;
       }
-      setUserEmail("");
-      setIsAdmin(false);
       setMsg("Logged out ✅");
     } finally {
       setLoading(false);
@@ -213,6 +220,8 @@ function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
           border: "1px solid rgba(0,0,0,0.12)",
           boxShadow: "0 10px 40px rgba(0,0,0,0.18)",
           padding: 16,
+          maxHeight: "85vh",
+          overflow: "auto",
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -255,6 +264,7 @@ function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
           )}
         </div>
 
+        {/* Login / Logout */}
         <div style={{ marginTop: 12, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "end" }}>
           {!userEmail ? (
             <>
@@ -314,6 +324,7 @@ function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
           )}
         </div>
 
+        {/* Admin-only actions */}
         <div style={{ marginTop: 14, borderTop: "1px solid #eee", paddingTop: 14 }}>
           <div style={{ fontWeight: 1000, marginBottom: 8 }}>Admin tools</div>
 
@@ -384,20 +395,30 @@ function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
 }
 
 // ----------------------
-// TopNav (mobile-friendly)
+// Route guard
+// ----------------------
+function RequireAdmin({ isAdmin, children }: { isAdmin: boolean; children: React.ReactNode }) {
+  if (!isAdmin) return <Navigate to="/scouting" replace />;
+  return <>{children}</>;
+}
+
+// ----------------------
+// TopNav responsive + admin gating
 // ----------------------
 function TopNav() {
   const location = useLocation();
-  const isMobile = useIsMobile(720);
-
   const [adminOpen, setAdminOpen] = useState(false);
 
+  const { loading: adminLoading, userEmail, isAdmin } = useAdminStatus();
+
+  // Israel time ticker
   const [now, setNow] = useState<Date>(() => new Date());
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(t);
   }, []);
 
+  // Next match countdown (based on localStorage event)
   const [nextMatch, setNextMatch] = useState<NextMatch | null>(null);
   const [countdownMs, setCountdownMs] = useState<number>(0);
 
@@ -428,7 +449,8 @@ function TopNav() {
         return;
       }
 
-      setNextMatch((data?.[0] ?? null) as NextMatch | null);
+      const row = (data?.[0] ?? null) as NextMatch | null;
+      setNextMatch(row);
     };
 
     loadNext();
@@ -457,140 +479,202 @@ function TopNav() {
     textDecoration: "none",
     color: "inherit",
     fontWeight: isActive ? 1000 : 800,
-    padding: isMobile ? "6px 8px" : "8px 10px",
+    padding: "8px 10px",
     borderRadius: 12,
     background: isActive ? "rgba(255, 0, 170, 0.12)" : "transparent",
     border: isActive ? "1px solid rgba(255, 0, 170, 0.22)" : "1px solid transparent",
-    fontSize: isMobile ? 16 : 22,
-    whiteSpace: "nowrap",
+    whiteSpace: "nowrap" as const,
   });
-
-  const headerH = isMobile ? 64 : 125;
-  const logoSize = isMobile ? 46 : 90;
 
   return (
     <div
+      className="topnav"
       style={{
-        padding: isMobile ? 8 : 12,
+        padding: 10,
         borderBottom: "1px solid rgba(0,0,0,0.08)",
-        display: "flex",
-        gap: isMobile ? 8 : 12,
-        alignItems: "center",
         backdropFilter: "blur(8px)",
-        background: "rgba(255,255,255,0.72)",
+        background: "rgba(255,255,255,0.65)",
         position: "sticky",
         top: 0,
         zIndex: 50,
-
-        /* ✅ prevent sideways overflow on mobile */
-        maxWidth: "100%",
-        overflow: "hidden",
-        minHeight: headerH,
-        flexWrap: "wrap",
       }}
     >
-      {/* Left: Logo + Admin button always visible */}
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      {/* Row 1: Logo + Admin button */}
+      <div
+        className="topnav-row"
+        style={{ display: "flex", alignItems: "center", gap: 10 }}
+      >
         <img
+          className="topnav-logo"
           src="/logoG3.png"
           alt="Logo"
-          style={{ width: logoSize, height: logoSize, borderRadius: 10, objectFit: "cover" }}
+          style={{ width: 72, height: 72, borderRadius: 10, objectFit: "cover" }}
         />
 
-        <button
-          type="button"
-          onClick={() => setAdminOpen(true)}
-          style={{
-            padding: isMobile ? "6px 10px" : "8px 12px",
-            borderRadius: 999,
-            border: "1px solid rgba(0,0,0,0.15)",
-            background: "#fff",
-            fontWeight: 1000,
-            cursor: "pointer",
-            fontSize: isMobile ? 14 : 16,
-            whiteSpace: "nowrap",
-          }}
-          title="Admin"
-        >
-          Admin
-        </button>
-
-        <AdminModal open={adminOpen} onClose={() => setAdminOpen(false)} />
+        <div style={{ marginLeft: "auto", display: "flex", gap: 8, alignItems: "center" }}>
+          <button
+            type="button"
+            onClick={() => setAdminOpen(true)}
+            style={{
+              padding: "8px 10px",
+              borderRadius: 999,
+              border: "1px solid rgba(0,0,0,0.15)",
+              background: "#fff",
+              fontWeight: 1000,
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+            }}
+            title="Admin"
+          >
+            Admin
+          </button>
+        </div>
       </div>
 
-      {/* Middle: Links (wrap nicely) */}
-      <div style={{ display: "flex", gap: isMobile ? 6 : 10, alignItems: "center", flexWrap: "wrap" }}>
+      {/* Row 2: Links (kids only see Scouting) */}
+      <div
+        className="topnav-links"
+        style={{
+          display: "flex",
+          gap: 8,
+          alignItems: "center",
+          overflowX: "auto",
+          paddingTop: 8,
+          paddingBottom: 6,
+        }}
+      >
         <NavLink to="/scouting" style={linkStyle}>
           Scouting
         </NavLink>
-        <NavLink to="/analysis" style={linkStyle}>
-          Analysis
-        </NavLink>
-        <NavLink to="/analysis/alliance" style={linkStyle}>
-          Alliance Builder
-        </NavLink>
-        <NavLink to="/analysis/picklist" style={linkStyle}>
-          Picklist
-        </NavLink>
+
+        {isAdmin ? (
+          <>
+            <NavLink to="/analysis" style={linkStyle}>
+              Analysis
+            </NavLink>
+            <NavLink to="/analysis/alliance" style={linkStyle}>
+              Alliance Builder
+            </NavLink>
+            <NavLink to="/analysis/picklist" style={linkStyle}>
+              Picklist
+            </NavLink>
+          </>
+        ) : null}
       </div>
 
-      {/* Right: time + countdown (compact on mobile) */}
+      {/* Row 3: Status pill (time + countdown) */}
       <div
+        className="topnav-status"
         style={{
-          marginLeft: "auto",
-          padding: isMobile ? "6px 10px" : "8px 12px",
-          borderRadius: 999,
-          background: "rgba(0,0,0,0.06)",
-          fontWeight: 1000,
-          letterSpacing: 0.2,
           display: "flex",
           gap: 10,
           alignItems: "center",
-          maxWidth: "100%",
+          flexWrap: "wrap",
+          paddingTop: 4,
         }}
       >
-        {!isMobile && <span style={{ fontSize: 18 }}>G3 Scouting</span>}
-
-        <span style={{ opacity: 0.8, fontWeight: 900, fontSize: isMobile ? 13 : 16, whiteSpace: "nowrap" }}>
-          {fmtIsraelNow(now, isMobile)}
-        </span>
-
-        <span
+        <div
           style={{
-            padding: "4px 10px",
+            padding: "6px 10px",
             borderRadius: 999,
             background: "rgba(0,0,0,0.06)",
-            fontWeight: 900,
-            fontSize: isMobile ? 12 : 14,
-            whiteSpace: "nowrap",
+            fontWeight: 1000,
+            display: "flex",
+            gap: 10,
+            alignItems: "center",
+            flexWrap: "wrap",
           }}
-          title="Next QM countdown (based on selected event in scouting)"
         >
-          {nextMatch?.scheduled_time ? (
-            <>
-              QM {nextMatch.match_number ?? "?"} · {msToClock(countdownMs)}
-            </>
-          ) : (
-            <>No next</>
-          )}
-        </span>
+          <span>G3 Scouting</span>
+
+          <span style={{ opacity: 0.8, fontWeight: 900 }}>
+            {fmtIsraelNow(now)}
+          </span>
+
+          <span
+            style={{
+              padding: "4px 10px",
+              borderRadius: 999,
+              background: "rgba(0,0,0,0.06)",
+              fontWeight: 900,
+              whiteSpace: "nowrap",
+            }}
+            title="Next QM countdown"
+          >
+            {nextMatch?.scheduled_time ? (
+              <>Next QM {nextMatch.match_number ?? "?"} · {msToClock(countdownMs)}</>
+            ) : (
+              <>No next match</>
+            )}
+          </span>
+
+          <span style={{ opacity: 0.75, fontWeight: 900 }}>
+            {adminLoading ? "Checking admin…" : isAdmin ? "ADMIN" : ""}
+          </span>
+        </div>
       </div>
+
+      <AdminModal
+        open={adminOpen}
+        onClose={() => setAdminOpen(false)}
+        isAdmin={isAdmin}
+        userEmail={userEmail}
+      />
     </div>
   );
 }
 
 function AppShell() {
+  const { isAdmin } = useAdminStatus();
+
   return (
     <>
       <TopNav />
       <Routes>
         <Route path="/" element={<Navigate to="/scouting" replace />} />
         <Route path="/scouting" element={<ScoutingPage />} />
-        <Route path="/analysis" element={<AnalysisPage />} />
-        <Route path="/analysis/alliance" element={<AlliancePage />} />
-        <Route path="/analysis/picklist" element={<PicklistPage />} />
-        <Route path="/analysis/compare" element={<ComparePage />} />
-        <Route path="/analysis/saved" element={<SavedAlliancesPage />} />
+
+        {/* Admin-only */}
+        <Route
+          path="/analysis"
+          element={
+            <RequireAdmin isAdmin={isAdmin}>
+              <AnalysisPage />
+            </RequireAdmin>
+          }
+        />
+        <Route
+          path="/analysis/alliance"
+          element={
+            <RequireAdmin isAdmin={isAdmin}>
+              <AlliancePage />
+            </RequireAdmin>
+          }
+        />
+        <Route
+          path="/analysis/picklist"
+          element={
+            <RequireAdmin isAdmin={isAdmin}>
+              <PicklistPage />
+            </RequireAdmin>
+          }
+        />
+        <Route
+          path="/analysis/compare"
+          element={
+            <RequireAdmin isAdmin={isAdmin}>
+              <ComparePage />
+            </RequireAdmin>
+          }
+        />
+        <Route
+          path="/analysis/saved"
+          element={
+            <RequireAdmin isAdmin={isAdmin}>
+              <SavedAlliancesPage />
+            </RequireAdmin>
+          }
+        />
       </Routes>
     </>
   );

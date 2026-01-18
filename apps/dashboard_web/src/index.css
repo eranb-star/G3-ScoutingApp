@@ -25,8 +25,19 @@ body {
 }
 
 /* ✅ Mobile browsers sometimes behave badly with fixed backgrounds */
-@media (max-width: 720px) {
-  body {
-    background-attachment: scroll;
+@media (max-width: 520px) {
+  .topnav {
+    padding: 8px !important;
+  }
+  .topnav-logo {
+    width: 52px !important;
+    height: 52px !important;
+  }
+  .topnav-links {
+    font-size: 16px !important;
+  }
+  .topnav-status {
+    font-size: 14px !important;
   }
 }
+

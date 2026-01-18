@@ -14,3 +14,7 @@ cat >> .gitignore << 'EOF'
 **/www
 
 EOF
+apps/dashboard_web/tsconfig.tsbuildinfo
+.DS_Store
+apps/dashboard_web/tsconfig.tsbuildinfo
+.DS_Store
