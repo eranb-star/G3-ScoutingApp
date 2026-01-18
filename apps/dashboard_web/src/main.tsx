@@ -43,84 +43,25 @@ type NextMatch = {
 };
 
 // ----------------------
-// Admin status hook (single source)
-// ----------------------
-function useAdminStatus() {
-  const [loading, setLoading] = useState(true);
-  const [userEmail, setUserEmail] = useState<string>("");
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  useEffect(() => {
-    let alive = true;
-
-    const refresh = async () => {
-      setLoading(true);
-      const { data } = await supabase.auth.getSession();
-      const session = data.session;
-
-      if (!alive) return;
-
-      if (!session?.user) {
-        setUserEmail("");
-        setIsAdmin(false);
-        setLoading(false);
-        return;
-      }
-
-      setUserEmail(session.user.email ?? "");
-
-      // IMPORTANT: this requires the RLS policy:
-      // app_admins SELECT where user_id = auth.uid()
-      const { data: adminRow, error } = await supabase
-        .from("app_admins")
-        .select("user_id")
-        .eq("user_id", session.user.id)
-        .maybeSingle();
-
-      if (!alive) return;
-
-      if (error) {
-        // If RLS is wrong, you’ll see false here. Fix policies first.
-        setIsAdmin(false);
-      } else {
-        setIsAdmin(!!adminRow);
-      }
-
-      setLoading(false);
-    };
-
-    refresh();
-
-    const { data: sub } = supabase.auth.onAuthStateChange(() => refresh());
-
-    return () => {
-      alive = false;
-      sub.subscription.unsubscribe();
-    };
-  }, []);
-
-  return { loading, userEmail, isAdmin };
-}
-
-// ----------------------
-// Admin Modal (your existing modal, lightly adjusted)
+// Admin Modal
+// - closes immediately after successful login/logout
+// - does NOT block navigation (it’s just a modal)
 // ----------------------
 function AdminModal({
   open,
   onClose,
-  isAdmin,
-  userEmail,
 }: {
   open: boolean;
   onClose: () => void;
-  isAdmin: boolean;
-  userEmail: string;
 }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState<string>("");
+
+  const [userEmail, setUserEmail] = useState<string>("");
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
   // Sync form
   const [syncEventId, setSyncEventId] = useState<string>("");
@@ -129,24 +70,76 @@ function AdminModal({
 
   useEffect(() => {
     if (!open) return;
-    setMsg("");
-    setSyncResult(null);
+
+    const load = async () => {
+      setMsg("");
+      setSyncResult(null);
+
+      const { data } = await supabase.auth.getSession();
+      const session = data.session;
+
+      if (!session?.user) {
+        setUserEmail("");
+        setIsAdmin(false);
+        return;
+      }
+
+      setUserEmail(session.user.email ?? "");
+
+      const { data: adminRow, error: adminErr } = await supabase
+        .from("app_admins")
+        .select("user_id")
+        .eq("user_id", session.user.id)
+        .maybeSingle();
+
+      if (adminErr) {
+        setIsAdmin(false);
+        setMsg("Admin check failed: " + adminErr.message);
+        return;
+      }
+
+      setIsAdmin(!!adminRow);
+    };
+
+    load();
   }, [open]);
 
   const signIn = async () => {
     setLoading(true);
     setMsg("");
     setSyncResult(null);
+
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
       });
+
       if (error) {
         setMsg("Login failed: " + error.message);
         return;
       }
+
+      setUserEmail(data.user?.email ?? "");
+
+      // re-check admin
+      const { data: adminRow, error: adminErr } = await supabase
+        .from("app_admins")
+        .select("user_id")
+        .eq("user_id", data.user!.id)
+        .maybeSingle();
+
+      if (adminErr) {
+        setIsAdmin(false);
+        setMsg("Admin check failed: " + adminErr.message);
+        return;
+      }
+
+      setIsAdmin(!!adminRow);
       setMsg("Logged in ✅");
+
+      // ✅ close immediately (fixes the “stuck white page” UX)
+      onClose();
     } finally {
       setLoading(false);
     }
@@ -156,13 +149,20 @@ function AdminModal({
     setLoading(true);
     setMsg("");
     setSyncResult(null);
+
     try {
       const { error } = await supabase.auth.signOut();
       if (error) {
         setMsg("Logout failed: " + error.message);
         return;
       }
+
+      setUserEmail("");
+      setIsAdmin(false);
       setMsg("Logged out ✅");
+
+      // ✅ close immediately
+      onClose();
     } finally {
       setLoading(false);
     }
@@ -180,6 +180,7 @@ function AdminModal({
         return;
       }
 
+      // Calls your EXISTING edge function:
       const { data, error } = await supabase.functions.invoke("sync_tba_matches", {
         body: { event_id: cleanEventId, replace },
       });
@@ -220,8 +221,6 @@ function AdminModal({
           border: "1px solid rgba(0,0,0,0.12)",
           boxShadow: "0 10px 40px rgba(0,0,0,0.18)",
           padding: 16,
-          maxHeight: "85vh",
-          overflow: "auto",
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -349,7 +348,7 @@ function AdminModal({
 
                 <label style={{ display: "flex", gap: 8, alignItems: "center", fontWeight: 900 }}>
                   <input type="checkbox" checked={replace} onChange={(e) => setReplace(e.target.checked)} />
-                  Replace QM
+                  Replace QM (delete existing then import)
                 </label>
 
                 <button
@@ -395,21 +394,79 @@ function AdminModal({
 }
 
 // ----------------------
-// Route guard
-// ----------------------
-function RequireAdmin({ isAdmin, children }: { isAdmin: boolean; children: React.ReactNode }) {
-  if (!isAdmin) return <Navigate to="/scouting" replace />;
-  return <>{children}</>;
-}
-
-// ----------------------
-// TopNav responsive + admin gating
+// TopNav
+// - Active link highlight
+// - Israel time
+// - Next match countdown
+// - Compact login/admin/logout (mobile friendly)
+// - Kids see only scouting links unless admin
 // ----------------------
 function TopNav() {
   const location = useLocation();
+
+  // Admin modal toggle
   const [adminOpen, setAdminOpen] = useState(false);
 
-  const { loading: adminLoading, userEmail, isAdmin } = useAdminStatus();
+  // Shared auth/admin state (single source of truth)
+  const [authEmail, setAuthEmail] = useState<string>("");
+  const [authIsAdmin, setAuthIsAdmin] = useState<boolean>(false);
+  const [authChecking, setAuthChecking] = useState<boolean>(true);
+
+  useEffect(() => {
+    let alive = true;
+
+    const refresh = async () => {
+      setAuthChecking(true);
+      try {
+        const { data } = await supabase.auth.getSession();
+        const session = data.session;
+
+        if (!alive) return;
+
+        if (!session?.user) {
+          setAuthEmail("");
+          setAuthIsAdmin(false);
+          return;
+        }
+
+        setAuthEmail(session.user.email ?? "");
+
+        const { data: adminRow, error } = await supabase
+          .from("app_admins")
+          .select("user_id")
+          .eq("user_id", session.user.id)
+          .maybeSingle();
+
+        if (!alive) return;
+
+        if (error) {
+          setAuthIsAdmin(false);
+          return;
+        }
+
+        setAuthIsAdmin(!!adminRow);
+      } finally {
+        if (!alive) return;
+        setAuthChecking(false);
+      }
+    };
+
+    refresh();
+
+    const { data: sub } = supabase.auth.onAuthStateChange(() => {
+      refresh();
+    });
+
+    return () => {
+      alive = false;
+      sub.subscription.unsubscribe();
+    };
+  }, []);
+
+  const navLogout = async () => {
+    await supabase.auth.signOut();
+    setAdminOpen(false);
+  };
 
   // Israel time ticker
   const [now, setNow] = useState<Date>(() => new Date());
@@ -418,7 +475,7 @@ function TopNav() {
     return () => clearInterval(t);
   }, []);
 
-  // Next match countdown (based on localStorage event)
+  // Next match countdown
   const [nextMatch, setNextMatch] = useState<NextMatch | null>(null);
   const [countdownMs, setCountdownMs] = useState<number>(0);
 
@@ -449,8 +506,7 @@ function TopNav() {
         return;
       }
 
-      const row = (data?.[0] ?? null) as NextMatch | null;
-      setNextMatch(row);
+      setNextMatch((data?.[0] ?? null) as NextMatch | null);
     };
 
     loadNext();
@@ -486,146 +542,136 @@ function TopNav() {
     whiteSpace: "nowrap" as const,
   });
 
-  return (
-    <div
-      className="topnav"
-      style={{
-        padding: 10,
-        borderBottom: "1px solid rgba(0,0,0,0.08)",
-        backdropFilter: "blur(8px)",
-        background: "rgba(255,255,255,0.65)",
-        position: "sticky",
-        top: 0,
-        zIndex: 50,
-      }}
-    >
-      {/* Row 1: Logo + Admin button */}
-      <div
-        className="topnav-row"
-        style={{ display: "flex", alignItems: "center", gap: 10 }}
-      >
-        <img
-          className="topnav-logo"
-          src="/logoG3.png"
-          alt="Logo"
-          style={{ width: 72, height: 72, borderRadius: 10, objectFit: "cover" }}
-        />
-
-        <div style={{ marginLeft: "auto", display: "flex", gap: 8, alignItems: "center" }}>
-          <button
-            type="button"
-            onClick={() => setAdminOpen(true)}
-            style={{
-              padding: "8px 10px",
-              borderRadius: 999,
-              border: "1px solid rgba(0,0,0,0.15)",
-              background: "#fff",
-              fontWeight: 1000,
-              cursor: "pointer",
-              whiteSpace: "nowrap",
-            }}
-            title="Admin"
-          >
-            Admin
-          </button>
+  const RightCluster = useMemo(() => {
+    return (
+      <div className="topnav-right">
+        <div className="topnav-pill" title="Israel time">
+          {fmtIsraelNow(now)}
         </div>
-      </div>
 
-      {/* Row 2: Links (kids only see Scouting) */}
-      <div
-        className="topnav-links"
-        style={{
-          display: "flex",
-          gap: 8,
-          alignItems: "center",
-          overflowX: "auto",
-          paddingTop: 8,
-          paddingBottom: 6,
-        }}
-      >
-        <NavLink to="/scouting" style={linkStyle}>
-          Scouting
-        </NavLink>
+        <div className="topnav-pill" title="Next QM countdown (based on selected event in scouting)">
+          {nextMatch?.scheduled_time ? (
+            <>
+              Next QM {nextMatch.match_number ?? "?"} · {msToClock(countdownMs)}
+            </>
+          ) : (
+            <>No next match</>
+          )}
+        </div>
 
-        {isAdmin ? (
+        {authChecking ? (
+          <div className="topnav-pill" style={{ opacity: 0.75, fontWeight: 900 }}>
+            Checking…
+          </div>
+        ) : authEmail ? (
           <>
-            <NavLink to="/analysis" style={linkStyle}>
-              Analysis
-            </NavLink>
-            <NavLink to="/analysis/alliance" style={linkStyle}>
-              Alliance Builder
-            </NavLink>
-            <NavLink to="/analysis/picklist" style={linkStyle}>
-              Picklist
-            </NavLink>
+            <div
+              className="topnav-pill"
+              style={{
+                background: authIsAdmin ? "rgba(0,180,90,0.14)" : "rgba(255,0,0,0.12)",
+                border: authIsAdmin ? "1px solid rgba(0,180,90,0.25)" : "1px solid rgba(255,0,0,0.22)",
+                fontWeight: 1000,
+              }}
+              title={authEmail}
+            >
+              {authIsAdmin ? "ADMIN ✅" : "USER"}
+            </div>
+
+            <button className="topnav-btn" type="button" onClick={navLogout} title="Logout">
+              Logout
+            </button>
           </>
-        ) : null}
+        ) : (
+          <button className="topnav-btn" type="button" onClick={() => setAdminOpen(true)} title="Admin login">
+            Login
+          </button>
+        )}
+
+        <AdminModal open={adminOpen} onClose={() => setAdminOpen(false)} />
       </div>
+    );
+  }, [now, nextMatch, countdownMs, authChecking, authEmail, authIsAdmin, adminOpen]);
 
-      {/* Row 3: Status pill (time + countdown) */}
-      <div
-        className="topnav-status"
-        style={{
-          display: "flex",
-          gap: 10,
-          alignItems: "center",
-          flexWrap: "wrap",
-          paddingTop: 4,
-        }}
-      >
-        <div
-          style={{
-            padding: "6px 10px",
-            borderRadius: 999,
-            background: "rgba(0,0,0,0.06)",
-            fontWeight: 1000,
-            display: "flex",
-            gap: 10,
-            alignItems: "center",
-            flexWrap: "wrap",
-          }}
-        >
-          <span>G3 Scouting</span>
+  return (
+    <div className="topnav">
+      <div className="topnav-left">
+        <img className="topnav-logo" src="/logoG3.png" alt="Logo" />
 
-          <span style={{ opacity: 0.8, fontWeight: 900 }}>
-            {fmtIsraelNow(now)}
-          </span>
+        <div className="topnav-links">
+          <NavLink to="/scouting" style={linkStyle}>
+            Scouting
+          </NavLink>
 
-          <span
-            style={{
-              padding: "4px 10px",
-              borderRadius: 999,
-              background: "rgba(0,0,0,0.06)",
-              fontWeight: 900,
-              whiteSpace: "nowrap",
-            }}
-            title="Next QM countdown"
-          >
-            {nextMatch?.scheduled_time ? (
-              <>Next QM {nextMatch.match_number ?? "?"} · {msToClock(countdownMs)}</>
-            ) : (
-              <>No next match</>
-            )}
-          </span>
-
-          <span style={{ opacity: 0.75, fontWeight: 900 }}>
-            {adminLoading ? "Checking admin…" : isAdmin ? "ADMIN" : ""}
-          </span>
+          {/* Admin-only navigation */}
+          {authIsAdmin ? (
+            <>
+              <NavLink to="/analysis" style={linkStyle}>
+                Analysis
+              </NavLink>
+              <NavLink to="/analysis/alliance" style={linkStyle}>
+                Alliance
+              </NavLink>
+              <NavLink to="/analysis/picklist" style={linkStyle}>
+                Picklist
+              </NavLink>
+            </>
+          ) : null}
         </div>
       </div>
 
-      <AdminModal
-        open={adminOpen}
-        onClose={() => setAdminOpen(false)}
-        isAdmin={isAdmin}
-        userEmail={userEmail}
-      />
+      {RightCluster}
     </div>
   );
 }
 
 function AppShell() {
-  const { isAdmin } = useAdminStatus();
+  // Use the same shared “admin gate” idea at route level.
+  // For simplicity (and no regressions), we do a lightweight session check here too.
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [checking, setChecking] = useState(true);
+
+  useEffect(() => {
+    let alive = true;
+
+    const refresh = async () => {
+      setChecking(true);
+      try {
+        const { data } = await supabase.auth.getSession();
+        const session = data.session;
+
+        if (!alive) return;
+
+        if (!session?.user) {
+          setIsAdmin(false);
+          return;
+        }
+
+        const { data: adminRow } = await supabase
+          .from("app_admins")
+          .select("user_id")
+          .eq("user_id", session.user.id)
+          .maybeSingle();
+
+        if (!alive) return;
+        setIsAdmin(!!adminRow);
+      } finally {
+        if (!alive) return;
+        setChecking(false);
+      }
+    };
+
+    refresh();
+    const { data: sub } = supabase.auth.onAuthStateChange(() => refresh());
+
+    return () => {
+      alive = false;
+      sub.subscription.unsubscribe();
+    };
+  }, []);
+
+  // Important: never block the app UI with admin checks.
+  // We only “gate” admin pages; scouting always works.
+  const adminOrScouting = (node: JSX.Element) => (isAdmin ? node : <Navigate to="/scouting" replace />);
 
   return (
     <>
@@ -634,47 +680,11 @@ function AppShell() {
         <Route path="/" element={<Navigate to="/scouting" replace />} />
         <Route path="/scouting" element={<ScoutingPage />} />
 
-        {/* Admin-only */}
-        <Route
-          path="/analysis"
-          element={
-            <RequireAdmin isAdmin={isAdmin}>
-              <AnalysisPage />
-            </RequireAdmin>
-          }
-        />
-        <Route
-          path="/analysis/alliance"
-          element={
-            <RequireAdmin isAdmin={isAdmin}>
-              <AlliancePage />
-            </RequireAdmin>
-          }
-        />
-        <Route
-          path="/analysis/picklist"
-          element={
-            <RequireAdmin isAdmin={isAdmin}>
-              <PicklistPage />
-            </RequireAdmin>
-          }
-        />
-        <Route
-          path="/analysis/compare"
-          element={
-            <RequireAdmin isAdmin={isAdmin}>
-              <ComparePage />
-            </RequireAdmin>
-          }
-        />
-        <Route
-          path="/analysis/saved"
-          element={
-            <RequireAdmin isAdmin={isAdmin}>
-              <SavedAlliancesPage />
-            </RequireAdmin>
-          }
-        />
+        <Route path="/analysis" element={checking ? <Navigate to="/scouting" replace /> : adminOrScouting(<AnalysisPage />)} />
+        <Route path="/analysis/alliance" element={checking ? <Navigate to="/scouting" replace /> : adminOrScouting(<AlliancePage />)} />
+        <Route path="/analysis/picklist" element={checking ? <Navigate to="/scouting" replace /> : adminOrScouting(<PicklistPage />)} />
+        <Route path="/analysis/compare" element={checking ? <Navigate to="/scouting" replace /> : adminOrScouting(<ComparePage />)} />
+        <Route path="/analysis/saved" element={checking ? <Navigate to="/scouting" replace /> : adminOrScouting(<SavedAlliancesPage />)} />
       </Routes>
     </>
   );

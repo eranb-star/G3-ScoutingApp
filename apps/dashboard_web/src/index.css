@@ -25,19 +25,84 @@ body {
 }
 
 /* ✅ Mobile browsers sometimes behave badly with fixed backgrounds */
-@media (max-width: 520px) {
-  .topnav {
-    padding: 8px !important;
-  }
-  .topnav-logo {
-    width: 52px !important;
-    height: 52px !important;
-  }
-  .topnav-links {
-    font-size: 16px !important;
-  }
-  .topnav-status {
-    font-size: 14px !important;
-  }
+/* ---------- TopNav responsive fixes (mobile friendly) ---------- */
+.topnav {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  backdrop-filter: blur(8px);
+  background: rgba(255,255,255,0.65);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  flex-wrap: wrap;
 }
 
+.topnav-left {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.topnav-logo {
+  width: 72px;
+  height: 72px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.topnav-links {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  font-size: 18px;
+}
+
+.topnav-right {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.topnav-pill {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.06);
+  border: 1px solid rgba(0,0,0,0.08);
+  font-weight: 900;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.topnav-btn {
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,0.15);
+  background: #fff;
+  font-weight: 1000;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+/* Smaller devices: keep everything visible without rotating */
+@media (max-width: 420px) {
+  .topnav-logo {
+    width: 56px;
+    height: 56px;
+  }
+  .topnav-links {
+    font-size: 16px;
+  }
+  .topnav-pill,
+  .topnav-btn {
+    font-size: 12px;
+    padding: 5px 8px;
+  }
+}
