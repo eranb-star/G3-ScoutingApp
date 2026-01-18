@@ -15,7 +15,7 @@ import { supabase } from "./supabase";
 // ----------------------
 // Small helpers
 // ----------------------
-function fmtIsraelNow(d: Date) {
+function fmtIsraelNowFull(d: Date) {
   return new Intl.DateTimeFormat("he-IL", {
     timeZone: "Asia/Jerusalem",
     weekday: "short",
@@ -25,6 +25,18 @@ function fmtIsraelNow(d: Date) {
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
+  }).format(d);
+}
+
+function fmtIsraelNowShort(d: Date) {
+  // Shorter for mobile (no weekday, no seconds)
+  return new Intl.DateTimeFormat("he-IL", {
+    timeZone: "Asia/Jerusalem",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   }).format(d);
 }
 
@@ -42,25 +54,15 @@ type NextMatch = {
   scheduled_time: string | null;
 };
 
-type AdminState = {
-  userEmail: string;
-  isAdmin: boolean;
-  userId: string;
-};
-
 // ----------------------
 // Admin Modal (Option 2)
 // ----------------------
 function AdminModal({
   open,
   onClose,
-  onAdminState,
-  initialEventId,
 }: {
   open: boolean;
   onClose: () => void;
-  onAdminState: (s: AdminState) => void;
-  initialEventId?: string;
 }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -70,19 +72,11 @@ function AdminModal({
 
   const [userEmail, setUserEmail] = useState<string>("");
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
-  const [userId, setUserId] = useState<string>("");
 
   // Sync form
-  const [syncEventId, setSyncEventId] = useState<string>(initialEventId ?? "");
+  const [syncEventId, setSyncEventId] = useState<string>("");
   const [replace, setReplace] = useState<boolean>(false);
   const [syncResult, setSyncResult] = useState<any>(null);
-
-  // Keep eventId input updated when modal opens (use localStorage selection if available)
-  useEffect(() => {
-    if (!open) return;
-    const stored = (localStorage.getItem("g3_event_id") ?? "").trim();
-    setSyncEventId((prev) => (prev?.trim() ? prev : stored));
-  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -90,50 +84,39 @@ function AdminModal({
     const load = async () => {
       setMsg("");
       setSyncResult(null);
-
       const { data } = await supabase.auth.getSession();
       const session = data.session;
 
       if (!session?.user) {
         setUserEmail("");
         setIsAdmin(false);
-        setUserId("");
-        onAdminState({ userEmail: "", isAdmin: false, userId: "" });
         return;
       }
 
-      const emailNow = session.user.email ?? "";
-      const uid = session.user.id;
-
-      setUserEmail(emailNow);
-      setUserId(uid);
+      setUserEmail(session.user.email ?? "");
 
       const { data: adminRow, error: adminErr } = await supabase
         .from("app_admins")
         .select("user_id")
-        .eq("user_id", uid)
+        .eq("user_id", session.user.id)
         .maybeSingle();
 
       if (adminErr) {
         setIsAdmin(false);
         setMsg("Admin check failed: " + adminErr.message);
-        onAdminState({ userEmail: emailNow, isAdmin: false, userId: uid });
         return;
       }
 
-      const ok = !!adminRow;
-      setIsAdmin(ok);
-      onAdminState({ userEmail: emailNow, isAdmin: ok, userId: uid });
+      setIsAdmin(!!adminRow);
     };
 
     load();
-  }, [open, onAdminState]);
+  }, [open]);
 
   const signIn = async () => {
     setLoading(true);
     setMsg("");
     setSyncResult(null);
-
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
@@ -145,38 +128,22 @@ function AdminModal({
         return;
       }
 
-      const emailNow = data.user?.email ?? "";
-      const uid = data.user?.id ?? "";
+      setUserEmail(data.user?.email ?? "");
 
-      setUserEmail(emailNow);
-      setUserId(uid);
-
-      // Re-check admin
       const { data: adminRow, error: adminErr } = await supabase
         .from("app_admins")
         .select("user_id")
-        .eq("user_id", uid)
+        .eq("user_id", data.user!.id)
         .maybeSingle();
 
       if (adminErr) {
         setIsAdmin(false);
         setMsg("Admin check failed: " + adminErr.message);
-        onAdminState({ userEmail: emailNow, isAdmin: false, userId: uid });
         return;
       }
 
-      const ok = !!adminRow;
-      setIsAdmin(ok);
-      onAdminState({ userEmail: emailNow, isAdmin: ok, userId: uid });
-
-      if (ok) {
-        setMsg("Logged in ✅ (ADMIN)");
-        // ✅ KEY FIX: auto-close so it won't sit on top forever
-        // still leaves you logged-in and able to open tools when needed
-        setTimeout(() => onClose(), 250);
-      } else {
-        setMsg("Logged in ✅ (NOT ADMIN)");
-      }
+      setIsAdmin(!!adminRow);
+      setMsg("Logged in ✅");
     } finally {
       setLoading(false);
     }
@@ -186,22 +153,15 @@ function AdminModal({
     setLoading(true);
     setMsg("");
     setSyncResult(null);
-
     try {
       const { error } = await supabase.auth.signOut();
       if (error) {
         setMsg("Logout failed: " + error.message);
         return;
       }
-
       setUserEmail("");
       setIsAdmin(false);
-      setUserId("");
-      onAdminState({ userEmail: "", isAdmin: false, userId: "" });
-
       setMsg("Logged out ✅");
-      // Close after logout so it doesn’t remain a blocker
-      setTimeout(() => onClose(), 200);
     } finally {
       setLoading(false);
     }
@@ -259,10 +219,12 @@ function AdminModal({
           border: "1px solid rgba(0,0,0,0.12)",
           boxShadow: "0 10px 40px rgba(0,0,0,0.18)",
           padding: 16,
+          maxHeight: "85vh",
+          overflowY: "auto",
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, position: "sticky", top: 0, background: "#fff", paddingBottom: 10 }}>
           <div style={{ fontWeight: 1000, fontSize: 18 }}>Admin</div>
           <div style={{ marginLeft: "auto" }}>
             <button
@@ -287,27 +249,11 @@ function AdminModal({
             <div>
               Logged in as <b>{userEmail}</b>{" "}
               {isAdmin ? (
-                <span
-                  style={{
-                    marginLeft: 8,
-                    padding: "3px 8px",
-                    borderRadius: 999,
-                    background: "#e8fff6",
-                    fontWeight: 900,
-                  }}
-                >
+                <span style={{ marginLeft: 8, padding: "3px 8px", borderRadius: 999, background: "#e8fff6", fontWeight: 900 }}>
                   ADMIN
                 </span>
               ) : (
-                <span
-                  style={{
-                    marginLeft: 8,
-                    padding: "3px 8px",
-                    borderRadius: 999,
-                    background: "#ffe0e0",
-                    fontWeight: 900,
-                  }}
-                >
+                <span style={{ marginLeft: 8, padding: "3px 8px", borderRadius: 999, background: "#ffe0e0", fontWeight: 900 }}>
                   NOT ADMIN
                 </span>
               )}
@@ -317,7 +263,6 @@ function AdminModal({
           )}
         </div>
 
-        {/* Login / Logout */}
         <div style={{ marginTop: 12, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "end" }}>
           {!userEmail ? (
             <>
@@ -377,7 +322,6 @@ function AdminModal({
           )}
         </div>
 
-        {/* Admin-only actions */}
         <div style={{ marginTop: 14, borderTop: "1px solid #eee", paddingTop: 14 }}>
           <div style={{ fontWeight: 1000, marginBottom: 8 }}>Admin tools</div>
 
@@ -441,65 +385,20 @@ function AdminModal({
           )}
         </div>
 
-        {msg ? <div style={{ marginTop: 12, fontWeight: 900, opacity: 0.9 }}>{msg}</div> : null}
+        {msg ? (
+          <div style={{ marginTop: 12, fontWeight: 900, opacity: 0.9 }}>{msg}</div>
+        ) : null}
       </div>
     </div>
   );
 }
 
 // ----------------------
-// TopNav with active link highlight + time + countdown + admin tools
+// TopNav responsive
 // ----------------------
 function TopNav() {
   const location = useLocation();
   const [adminOpen, setAdminOpen] = useState(false);
-
-  // Global admin state (so UI does not "stick" wrongly)
-  const [adminState, setAdminState] = useState<AdminState>({
-    userEmail: "",
-    isAdmin: false,
-    userId: "",
-  });
-
-  // Keep adminState synced across refresh/navigation
-  useEffect(() => {
-    let alive = true;
-
-    const refresh = async () => {
-      const { data } = await supabase.auth.getSession();
-      const s = data.session;
-      if (!alive) return;
-
-      if (!s?.user) {
-        setAdminState({ userEmail: "", isAdmin: false, userId: "" });
-        return;
-      }
-
-      const uid = s.user.id;
-      const emailNow = s.user.email ?? "";
-
-      const { data: adminRow } = await supabase
-        .from("app_admins")
-        .select("user_id")
-        .eq("user_id", uid)
-        .maybeSingle();
-
-      if (!alive) return;
-
-      setAdminState({ userEmail: emailNow, isAdmin: !!adminRow, userId: uid });
-    };
-
-    refresh();
-
-    const { data: sub } = supabase.auth.onAuthStateChange(() => {
-      refresh();
-    });
-
-    return () => {
-      alive = false;
-      sub.subscription.unsubscribe();
-    };
-  }, []);
 
   // Israel time ticker
   const [now, setNow] = useState<Date>(() => new Date());
@@ -539,7 +438,8 @@ function TopNav() {
         return;
       }
 
-      setNextMatch((data?.[0] ?? null) as NextMatch | null);
+      const row = (data?.[0] ?? null) as NextMatch | null;
+      setNextMatch(row);
     };
 
     loadNext();
@@ -567,160 +467,66 @@ function TopNav() {
   const linkStyle = ({ isActive }: { isActive: boolean }) => ({
     textDecoration: "none",
     color: "inherit",
-    fontWeight: isActive ? 1000 : 800,
+    fontWeight: isActive ? 1000 : 850,
     padding: "8px 10px",
     borderRadius: 12,
     background: isActive ? "rgba(255, 0, 170, 0.12)" : "transparent",
     border: isActive ? "1px solid rgba(255, 0, 170, 0.22)" : "1px solid transparent",
+    whiteSpace: "nowrap",
   });
 
-  const titlePill = useMemo(() => {
-    return (
-      <div
-        style={{
-          marginLeft: "auto",
-          padding: "6px 12px",
-          borderRadius: 999,
-          background: "rgba(0,0,0,0.06)",
-          fontWeight: 1000,
-          fontSize: "22px",
-          letterSpacing: 0.3,
-          display: "flex",
-          gap: 10,
-          alignItems: "center",
-          maxWidth: "100%",
-        }}
-      >
-        <span>G3 Scouting App</span>
-
-        <span style={{ opacity: 0.75, fontWeight: 900, fontSize: 16, whiteSpace: "nowrap" }}>
-          {fmtIsraelNow(now)}
-        </span>
-
-        <span
-          style={{
-            padding: "4px 10px",
-            borderRadius: 999,
-            background: "rgba(0,0,0,0.06)",
-            fontWeight: 900,
-            fontSize: 14,
-            whiteSpace: "nowrap",
-          }}
-          title="Next QM countdown (based on selected event in scouting)"
-        >
-          {nextMatch?.scheduled_time ? (
-            <>
-              Next QM {nextMatch.match_number ?? "?"} · {msToClock(countdownMs)}
-            </>
-          ) : (
-            <>No next match</>
-          )}
-        </span>
-
-        {/* Show admin badge + quick open only if admin */}
-        {adminState.isAdmin ? (
-          <>
-            <span
-              style={{
-                padding: "4px 10px",
-                borderRadius: 999,
-                background: "#e8fff6",
-                border: "1px solid rgba(0,0,0,0.06)",
-                fontWeight: 1000,
-                fontSize: 14,
-                whiteSpace: "nowrap",
-              }}
-              title={adminState.userEmail}
-            >
-              ADMIN
-            </span>
-
-            <button
-              type="button"
-              onClick={() => setAdminOpen(true)}
-              style={{
-                padding: "6px 10px",
-                borderRadius: 999,
-                border: "1px solid rgba(0,0,0,0.15)",
-                background: "#fff",
-                fontWeight: 1000,
-                cursor: "pointer",
-              }}
-              title="Admin tools (Fetch matches)"
-            >
-              Fetch
-            </button>
-          </>
-        ) : (
-          // Keep small Admin entry available (for you to log in), but not scary
-          <button
-            type="button"
-            onClick={() => setAdminOpen(true)}
-            style={{
-              padding: "6px 10px",
-              borderRadius: 999,
-              border: "1px solid rgba(0,0,0,0.15)",
-              background: "#fff",
-              fontWeight: 1000,
-              cursor: "pointer",
-            }}
-            title="Admin login"
-          >
-            Admin
-          </button>
-        )}
-
-        <AdminModal
-          open={adminOpen}
-          onClose={() => setAdminOpen(false)}
-          onAdminState={(s) => setAdminState(s)}
-        />
-      </div>
-    );
-  }, [now, nextMatch, countdownMs, adminOpen, adminState.isAdmin, adminState.userEmail]);
-
   return (
-    <div
-      style={{
-        padding: 12,
-        borderBottom: "1px solid rgba(0,0,0,0.08)",
-        display: "flex",
-        gap: 12,
-        fontSize: "22px",
-        alignItems: "center",
-        backdropFilter: "blur(8px)",
-        background: "rgba(255,255,255,0.65)",
-        position: "sticky",
-        top: 0,
-        zIndex: 50,
-        flexWrap: "wrap",         // helps on phone
-        maxWidth: "100%",
-      }}
-    >
-      {/* Logo */}
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginRight: 10 }}>
+    <div className="topnav">
+      <div className="topnav__left">
         <img
           src="/logoG3.png"
           alt="Logo"
-          style={{ width: 115, height: 115, borderRadius: 10, objectFit: "cover" }}
+          className="topnav__logo"
         />
+
+        <div className="topnav__links">
+          <NavLink to="/scouting" style={linkStyle}>
+            Scouting
+          </NavLink>
+          <NavLink to="/analysis" style={linkStyle}>
+            Analysis
+          </NavLink>
+          <NavLink to="/analysis/alliance" style={linkStyle}>
+            Alliance Builder
+          </NavLink>
+          <NavLink to="/analysis/picklist" style={linkStyle}>
+            Picklist
+          </NavLink>
+        </div>
       </div>
 
-      {/* Links */}
-      <NavLink to="/scouting" style={linkStyle}>
-        Scouting
-      </NavLink>
-      <NavLink to="/analysis" style={linkStyle}>
-        Analysis
-      </NavLink>
-      <NavLink to="/analysis/alliance" style={linkStyle}>
-        Alliance Builder
-      </NavLink>
-      <NavLink to="/analysis/picklist" style={linkStyle}>
-        Picklist
-      </NavLink>
+      <div className="topnav__right">
+        <div className="topnav__pill">
+          <span className="topnav__title">G3 Scouting App</span>
 
-      {titlePill}
+          <span className="topnav__timeFull">{fmtIsraelNowFull(now)}</span>
+          <span className="topnav__timeShort">{fmtIsraelNowShort(now)}</span>
+
+          <span className="topnav__countdown" title="Next QM countdown (based on selected event in scouting)">
+            {nextMatch?.scheduled_time ? (
+              <>Next QM {nextMatch.match_number ?? "?"} · {msToClock(countdownMs)}</>
+            ) : (
+              <>No next match</>
+            )}
+          </span>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setAdminOpen(true)}
+          className="topnav__adminBtn"
+          title="Admin"
+        >
+          Admin
+        </button>
+
+        <AdminModal open={adminOpen} onClose={() => setAdminOpen(false)} />
+      </div>
     </div>
   );
 }

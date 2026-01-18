@@ -7,25 +7,12 @@
   --text: #1a1a1a;
 }
 
-/* ---- Layout safety (fix "pages to the right") ---- */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 html, body, #root {
   height: 100%;
-  width: 100%;
-  max-width: 100%;
 }
 
-html,
-body {
-  overflow-x: hidden; /* KEY: prevent sideways overflow */
-}
-
-/* optional but helps on mobile */
 body {
   margin: 0;
   color: var(--text);
@@ -36,31 +23,134 @@ body {
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
 }
 
-/* Ensure media never causes overflow */
-img,
-video,
-canvas,
-svg {
-  max-width: 100%;
-  height: auto;
+/* Links: keep them clean */
+a { color: inherit; }
+
+/* ---------- TopNav layout ---------- */
+.topnav {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;                 /* IMPORTANT: allows 2-row on mobile */
+  backdrop-filter: blur(8px);
+  background: rgba(255,255,255,0.65);
+  position: sticky;
+  top: 0;
+  z-index: 50;
 }
 
-/* ---- Tables: allow horizontal scroll INSIDE the table area (not whole page) ---- */
-.table-scroll {
-  width: 100%;
-  max-width: 100%;
+.topnav__left {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  min-width: 0;
+}
+
+.topnav__logo {
+  width: 78px;
+  height: 78px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex: 0 0 auto;
+}
+
+.topnav__links {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+
+  /* IMPORTANT: on narrow screens, keep links on one row with scroll */
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  padding-bottom: 2px;
+  max-width: calc(100vw - 120px);
 }
 
-/* ---- Mobile: shrink UI a bit so less scrolling ---- */
-@media (max-width: 420px) {
-  html { font-size: 14px; }
+.topnav__links::-webkit-scrollbar { height: 6px; }
+.topnav__links::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 999px; }
 
-  button, input, select, textarea {
-    font-size: 14px !important;
+.topnav__right {
+  margin-left: auto;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.topnav__pill {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.06);
+  border: 1px solid rgba(0,0,0,0.06);
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  max-width: 100%;
+}
+
+.topnav__title {
+  font-weight: 1000;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+
+.topnav__timeFull { opacity: 0.80; font-weight: 900; white-space: nowrap; }
+.topnav__timeShort { opacity: 0.80; font-weight: 900; white-space: nowrap; display: none; }
+
+.topnav__countdown {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.06);
+  font-weight: 900;
+  white-space: nowrap;
+  border: 1px solid rgba(0,0,0,0.06);
+}
+
+.topnav__adminBtn {
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,0.15);
+  background: #fff;
+  font-weight: 1000;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* ---------- Make wide tables behave on mobile ---------- */
+/* This prevents the “broken pink” look when you scroll sideways */
+.tableWrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+/* Optional: slightly smaller overall font on phones */
+@media (max-width: 640px) {
+  body { font-size: 15px; }
+
+  .topnav { padding: 8px 10px; gap: 8px; }
+
+  .topnav__logo {
+    width: 56px;
+    height: 56px;
   }
 
-  h1 { font-size: 20px; }
-  h2 { font-size: 16px; }
+  .topnav__links { max-width: calc(100vw - 80px); }
+
+  /* hide the long clock, show a shorter one on mobile */
+  .topnav__timeFull { display: none; }
+  .topnav__timeShort { display: inline; }
+
+  /* keep admin visible */
+  .topnav__adminBtn { padding: 8px 10px; }
+
+  /* tighten pill spacing */
+  .topnav__pill { gap: 8px; padding: 6px 10px; }
 }
