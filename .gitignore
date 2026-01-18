@@ -1,2 +1,16 @@
+cat >> .gitignore << 'EOF'
+
+# macOS
 .DS_Store
+
+# TypeScript build info
 **/tsconfig.tsbuildinfo
+
+# Node
+**/node_modules
+
+# Vite / build outputs (if you ever generate them)
+**/dist
+**/www
+
+EOF
