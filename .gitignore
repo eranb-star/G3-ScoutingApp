@@ -18,3 +18,15 @@ apps/dashboard_web/tsconfig.tsbuildinfo
 .DS_Store
 apps/dashboard_web/tsconfig.tsbuildinfo
 .DS_Store
+# macOS
+.DS_Store
+
+# TypeScript build cache
+**/tsconfig.tsbuildinfo
+
+# Node
+**/node_modules
+
+# Vite / build outputs
+**/dist
+**/www

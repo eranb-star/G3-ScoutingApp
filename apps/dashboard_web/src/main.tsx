@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, createContext, useContext } from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, NavLink, Route, Routes, Navigate, useLocation } from "react-router-dom";
 
@@ -42,26 +42,102 @@ type NextMatch = {
   scheduled_time: string | null;
 };
 
+type AdminState = {
+  checking: boolean;
+  email: string;
+  isAdmin: boolean;
+  refresh: () => Promise<void>;
+};
+
+const AdminCtx = createContext<AdminState | null>(null);
+
+function useAdmin() {
+  const v = useContext(AdminCtx);
+  if (!v) throw new Error("useAdmin must be used within AdminProvider");
+  return v;
+}
+
+async function checkIsAdmin(userId: string): Promise<boolean> {
+  // If RLS blocks this, we treat as NOT admin (but we do not freeze UI).
+  const { data, error } = await supabase
+    .from("app_admins")
+    .select("user_id")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (error) return false;
+  return !!data;
+}
+
+function AdminProvider({ children }: { children: React.ReactNode }) {
+  const [checking, setChecking] = useState(true);
+  const [email, setEmail] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  const refresh = async () => {
+    setChecking(true);
+    try {
+      const { data } = await supabase.auth.getSession();
+      const session = data.session;
+
+      if (!session?.user) {
+        setEmail("");
+        setIsAdmin(false);
+        return;
+      }
+
+      setEmail(session.user.email ?? "");
+      const ok = await checkIsAdmin(session.user.id);
+      setIsAdmin(ok);
+    } catch {
+      // Never block UI
+      setEmail("");
+      setIsAdmin(false);
+    } finally {
+      setChecking(false);
+    }
+  };
+
+  useEffect(() => {
+    let alive = true;
+
+    const run = async () => {
+      await refresh();
+    };
+
+    run();
+
+    // Correct typed destructuring (fixes TS errors)
+    const { data } = supabase.auth.onAuthStateChange(async () => {
+      if (!alive) return;
+      await refresh();
+    });
+
+    return () => {
+      alive = false;
+      data.subscription.unsubscribe();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const value: AdminState = { checking, email, isAdmin, refresh };
+
+  return <AdminCtx.Provider value={value}>{children}</AdminCtx.Provider>;
+}
+
 // ----------------------
 // Admin Modal
 // - closes immediately after successful login/logout
-// - does NOT block navigation (it’s just a modal)
+// - does NOT block navigation
 // ----------------------
-function AdminModal({
-  open,
-  onClose,
-}: {
-  open: boolean;
-  onClose: () => void;
-}) {
+function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { email: authEmail, isAdmin, refresh } = useAdmin();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState<string>("");
-
-  const [userEmail, setUserEmail] = useState<string>("");
-  const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
   // Sync form
   const [syncEventId, setSyncEventId] = useState<string>("");
@@ -70,38 +146,8 @@ function AdminModal({
 
   useEffect(() => {
     if (!open) return;
-
-    const load = async () => {
-      setMsg("");
-      setSyncResult(null);
-
-      const { data } = await supabase.auth.getSession();
-      const session = data.session;
-
-      if (!session?.user) {
-        setUserEmail("");
-        setIsAdmin(false);
-        return;
-      }
-
-      setUserEmail(session.user.email ?? "");
-
-      const { data: adminRow, error: adminErr } = await supabase
-        .from("app_admins")
-        .select("user_id")
-        .eq("user_id", session.user.id)
-        .maybeSingle();
-
-      if (adminErr) {
-        setIsAdmin(false);
-        setMsg("Admin check failed: " + adminErr.message);
-        return;
-      }
-
-      setIsAdmin(!!adminRow);
-    };
-
-    load();
+    setMsg("");
+    setSyncResult(null);
   }, [open]);
 
   const signIn = async () => {
@@ -110,7 +156,7 @@ function AdminModal({
     setSyncResult(null);
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
       });
@@ -120,26 +166,9 @@ function AdminModal({
         return;
       }
 
-      setUserEmail(data.user?.email ?? "");
-
-      // re-check admin
-      const { data: adminRow, error: adminErr } = await supabase
-        .from("app_admins")
-        .select("user_id")
-        .eq("user_id", data.user!.id)
-        .maybeSingle();
-
-      if (adminErr) {
-        setIsAdmin(false);
-        setMsg("Admin check failed: " + adminErr.message);
-        return;
-      }
-
-      setIsAdmin(!!adminRow);
+      await refresh();
       setMsg("Logged in ✅");
-
-      // ✅ close immediately (fixes the “stuck white page” UX)
-      onClose();
+      onClose(); // close immediately for good UX
     } finally {
       setLoading(false);
     }
@@ -157,11 +186,8 @@ function AdminModal({
         return;
       }
 
-      setUserEmail("");
-      setIsAdmin(false);
+      await refresh();
       setMsg("Logged out ✅");
-
-      // ✅ close immediately
       onClose();
     } finally {
       setLoading(false);
@@ -180,8 +206,8 @@ function AdminModal({
         return;
       }
 
-      // Calls your EXISTING edge function:
-      const { data, error } = await supabase.functions.invoke("sync_tba_matches", {
+      // ✅ Generic makes TS happy (invoke returns unknown by default)
+      const { data, error } = await supabase.functions.invoke<any>("sync_tba_matches", {
         body: { event_id: cleanEventId, replace },
       });
 
@@ -244,10 +270,10 @@ function AdminModal({
           </div>
         </div>
 
-        <div style={{ marginTop: 10, opacity: 0.85 }}>
-          {userEmail ? (
+        <div style={{ marginTop: 10, opacity: 0.9 }}>
+          {authEmail ? (
             <div>
-              Logged in as <b>{userEmail}</b>{" "}
+              Logged in as <b>{authEmail}</b>{" "}
               {isAdmin ? (
                 <span style={{ marginLeft: 8, padding: "3px 8px", borderRadius: 999, background: "#e8fff6", fontWeight: 900 }}>
                   ADMIN
@@ -265,7 +291,7 @@ function AdminModal({
 
         {/* Login / Logout */}
         <div style={{ marginTop: 12, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "end" }}>
-          {!userEmail ? (
+          {!authEmail ? (
             <>
               <div style={{ display: "grid", gap: 6 }}>
                 <div style={{ fontWeight: 900 }}>Email</div>
@@ -327,7 +353,7 @@ function AdminModal({
         <div style={{ marginTop: 14, borderTop: "1px solid #eee", paddingTop: 14 }}>
           <div style={{ fontWeight: 1000, marginBottom: 8 }}>Admin tools</div>
 
-          {!userEmail ? (
+          {!authEmail ? (
             <div style={{ opacity: 0.8 }}>Login to access admin tools.</div>
           ) : !isAdmin ? (
             <div style={{ color: "crimson", fontWeight: 900 }}>
@@ -348,7 +374,7 @@ function AdminModal({
 
                 <label style={{ display: "flex", gap: 8, alignItems: "center", fontWeight: 900 }}>
                   <input type="checkbox" checked={replace} onChange={(e) => setReplace(e.target.checked)} />
-                  Replace QM (delete existing then import)
+                  Replace QM
                 </label>
 
                 <button
@@ -394,79 +420,13 @@ function AdminModal({
 }
 
 // ----------------------
-// TopNav
-// - Active link highlight
-// - Israel time
-// - Next match countdown
-// - Compact login/admin/logout (mobile friendly)
-// - Kids see only scouting links unless admin
+// TopNav (mobile friendly)
 // ----------------------
 function TopNav() {
   const location = useLocation();
+  const { checking, email, isAdmin } = useAdmin();
 
-  // Admin modal toggle
   const [adminOpen, setAdminOpen] = useState(false);
-
-  // Shared auth/admin state (single source of truth)
-  const [authEmail, setAuthEmail] = useState<string>("");
-  const [authIsAdmin, setAuthIsAdmin] = useState<boolean>(false);
-  const [authChecking, setAuthChecking] = useState<boolean>(true);
-
-  useEffect(() => {
-    let alive = true;
-
-    const refresh = async () => {
-      setAuthChecking(true);
-      try {
-        const { data } = await supabase.auth.getSession();
-        const session = data.session;
-
-        if (!alive) return;
-
-        if (!session?.user) {
-          setAuthEmail("");
-          setAuthIsAdmin(false);
-          return;
-        }
-
-        setAuthEmail(session.user.email ?? "");
-
-        const { data: adminRow, error } = await supabase
-          .from("app_admins")
-          .select("user_id")
-          .eq("user_id", session.user.id)
-          .maybeSingle();
-
-        if (!alive) return;
-
-        if (error) {
-          setAuthIsAdmin(false);
-          return;
-        }
-
-        setAuthIsAdmin(!!adminRow);
-      } finally {
-        if (!alive) return;
-        setAuthChecking(false);
-      }
-    };
-
-    refresh();
-
-    const { data: sub } = supabase.auth.onAuthStateChange(() => {
-      refresh();
-    });
-
-    return () => {
-      alive = false;
-      sub.subscription.unsubscribe();
-    };
-  }, []);
-
-  const navLogout = async () => {
-    await supabase.auth.signOut();
-    setAdminOpen(false);
-  };
 
   // Israel time ticker
   const [now, setNow] = useState<Date>(() => new Date());
@@ -531,20 +491,84 @@ function TopNav() {
     return () => clearInterval(t);
   }, [nextMatch]);
 
+  const navLogout = async () => {
+    await supabase.auth.signOut();
+    setAdminOpen(false);
+  };
+
   const linkStyle = ({ isActive }: { isActive: boolean }) => ({
     textDecoration: "none",
     color: "inherit",
     fontWeight: isActive ? 1000 : 800,
-    padding: "8px 10px",
+    padding: "6px 8px",
     borderRadius: 12,
     background: isActive ? "rgba(255, 0, 170, 0.12)" : "transparent",
     border: isActive ? "1px solid rgba(255, 0, 170, 0.22)" : "1px solid transparent",
     whiteSpace: "nowrap" as const,
   });
 
-  const RightCluster = useMemo(() => {
-    return (
-      <div className="topnav-right">
+  return (
+    <div className="topnav">
+      {/* Row 1: Logo + Links */}
+      <div className="topnav-row topnav-row-1">
+        <div className="topnav-left">
+          <img className="topnav-logo" src="/logoG3.png" alt="Logo" />
+          <div className="topnav-links">
+            <NavLink to="/scouting" style={linkStyle}>
+              Scouting
+            </NavLink>
+
+            {/* Admin-only navigation */}
+            {isAdmin ? (
+              <>
+                <NavLink to="/analysis" style={linkStyle}>
+                  Analysis
+                </NavLink>
+                <NavLink to="/analysis/alliance" style={linkStyle}>
+                  Alliance
+                </NavLink>
+                <NavLink to="/analysis/picklist" style={linkStyle}>
+                  Picklist
+                </NavLink>
+              </>
+            ) : null}
+          </div>
+        </div>
+
+        {/* Right: Auth controls always visible */}
+        <div className="topnav-auth">
+          {checking ? (
+            <div className="topnav-pill" style={{ opacity: 0.75, fontWeight: 900 }}>
+              Checking…
+            </div>
+          ) : email ? (
+            <>
+              <div
+                className="topnav-pill"
+                style={{
+                  background: isAdmin ? "rgba(0,180,90,0.14)" : "rgba(255,0,0,0.12)",
+                  border: isAdmin ? "1px solid rgba(0,180,90,0.25)" : "1px solid rgba(255,0,0,0.22)",
+                  fontWeight: 1000,
+                }}
+                title={email}
+              >
+                {isAdmin ? "ADMIN ✅" : "USER"}
+              </div>
+
+              <button className="topnav-btn" type="button" onClick={navLogout} title="Logout">
+                Logout
+              </button>
+            </>
+          ) : (
+            <button className="topnav-btn" type="button" onClick={() => setAdminOpen(true)} title="Admin login">
+              Login
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Row 2: Time + Countdown (wraps nicely on mobile) */}
+      <div className="topnav-row topnav-row-2">
         <div className="topnav-pill" title="Israel time">
           {fmtIsraelNow(now)}
         </div>
@@ -559,120 +583,30 @@ function TopNav() {
           )}
         </div>
 
-        {authChecking ? (
-          <div className="topnav-pill" style={{ opacity: 0.75, fontWeight: 900 }}>
-            Checking…
-          </div>
-        ) : authEmail ? (
-          <>
-            <div
-              className="topnav-pill"
-              style={{
-                background: authIsAdmin ? "rgba(0,180,90,0.14)" : "rgba(255,0,0,0.12)",
-                border: authIsAdmin ? "1px solid rgba(0,180,90,0.25)" : "1px solid rgba(255,0,0,0.22)",
-                fontWeight: 1000,
-              }}
-              title={authEmail}
-            >
-              {authIsAdmin ? "ADMIN ✅" : "USER"}
-            </div>
-
-            <button className="topnav-btn" type="button" onClick={navLogout} title="Logout">
-              Logout
-            </button>
-          </>
-        ) : (
-          <button className="topnav-btn" type="button" onClick={() => setAdminOpen(true)} title="Admin login">
-            Login
-          </button>
-        )}
-
+        {/* Admin modal (only opens when you click Login) */}
         <AdminModal open={adminOpen} onClose={() => setAdminOpen(false)} />
       </div>
-    );
-  }, [now, nextMatch, countdownMs, authChecking, authEmail, authIsAdmin, adminOpen]);
-
-  return (
-    <div className="topnav">
-      <div className="topnav-left">
-        <img className="topnav-logo" src="/logoG3.png" alt="Logo" />
-
-        <div className="topnav-links">
-          <NavLink to="/scouting" style={linkStyle}>
-            Scouting
-          </NavLink>
-
-          {/* Admin-only navigation */}
-          {authIsAdmin ? (
-            <>
-              <NavLink to="/analysis" style={linkStyle}>
-                Analysis
-              </NavLink>
-              <NavLink to="/analysis/alliance" style={linkStyle}>
-                Alliance
-              </NavLink>
-              <NavLink to="/analysis/picklist" style={linkStyle}>
-                Picklist
-              </NavLink>
-            </>
-          ) : null}
-        </div>
-      </div>
-
-      {RightCluster}
     </div>
   );
 }
 
+function AdminGate({ children }: { children: JSX.Element }) {
+  // Gate only by current admin state (do not block the whole app while checking).
+  const { checking, isAdmin } = useAdmin();
+
+  if (checking) {
+    return (
+      <div style={{ padding: 16, maxWidth: 900 }}>
+        <h2 style={{ marginTop: 0 }}>Checking admin…</h2>
+        <div style={{ opacity: 0.85 }}>If this takes too long, you can still use Scouting.</div>
+      </div>
+    );
+  }
+
+  return isAdmin ? children : <Navigate to="/scouting" replace />;
+}
+
 function AppShell() {
-  // Use the same shared “admin gate” idea at route level.
-  // For simplicity (and no regressions), we do a lightweight session check here too.
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [checking, setChecking] = useState(true);
-
-  useEffect(() => {
-    let alive = true;
-
-    const refresh = async () => {
-      setChecking(true);
-      try {
-        const { data } = await supabase.auth.getSession();
-        const session = data.session;
-
-        if (!alive) return;
-
-        if (!session?.user) {
-          setIsAdmin(false);
-          return;
-        }
-
-        const { data: adminRow } = await supabase
-          .from("app_admins")
-          .select("user_id")
-          .eq("user_id", session.user.id)
-          .maybeSingle();
-
-        if (!alive) return;
-        setIsAdmin(!!adminRow);
-      } finally {
-        if (!alive) return;
-        setChecking(false);
-      }
-    };
-
-    refresh();
-    const { data: sub } = supabase.auth.onAuthStateChange(() => refresh());
-
-    return () => {
-      alive = false;
-      sub.subscription.unsubscribe();
-    };
-  }, []);
-
-  // Important: never block the app UI with admin checks.
-  // We only “gate” admin pages; scouting always works.
-  const adminOrScouting = (node: JSX.Element) => (isAdmin ? node : <Navigate to="/scouting" replace />);
-
   return (
     <>
       <TopNav />
@@ -680,11 +614,12 @@ function AppShell() {
         <Route path="/" element={<Navigate to="/scouting" replace />} />
         <Route path="/scouting" element={<ScoutingPage />} />
 
-        <Route path="/analysis" element={checking ? <Navigate to="/scouting" replace /> : adminOrScouting(<AnalysisPage />)} />
-        <Route path="/analysis/alliance" element={checking ? <Navigate to="/scouting" replace /> : adminOrScouting(<AlliancePage />)} />
-        <Route path="/analysis/picklist" element={checking ? <Navigate to="/scouting" replace /> : adminOrScouting(<PicklistPage />)} />
-        <Route path="/analysis/compare" element={checking ? <Navigate to="/scouting" replace /> : adminOrScouting(<ComparePage />)} />
-        <Route path="/analysis/saved" element={checking ? <Navigate to="/scouting" replace /> : adminOrScouting(<SavedAlliancesPage />)} />
+        {/* Admin-only routes */}
+        <Route path="/analysis" element={<AdminGate><AnalysisPage /></AdminGate>} />
+        <Route path="/analysis/alliance" element={<AdminGate><AlliancePage /></AdminGate>} />
+        <Route path="/analysis/picklist" element={<AdminGate><PicklistPage /></AdminGate>} />
+        <Route path="/analysis/compare" element={<AdminGate><ComparePage /></AdminGate>} />
+        <Route path="/analysis/saved" element={<AdminGate><SavedAlliancesPage /></AdminGate>} />
       </Routes>
     </>
   );
@@ -693,7 +628,9 @@ function AppShell() {
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <BrowserRouter>
-      <AppShell />
+      <AdminProvider>
+        <AppShell />
+      </AdminProvider>
     </BrowserRouter>
   </React.StrictMode>
 );
