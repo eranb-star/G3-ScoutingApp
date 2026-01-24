@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, NavLink, Route, Routes, Navigate, useLocation } from "react-router-dom";
 
@@ -42,8 +42,27 @@ type NextMatch = {
   scheduled_time: string | null;
 };
 
+function withTimeout<T>(p: PromiseLike<T>, ms = 5000): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`timeout after ${ms}ms`)), ms);
+    p.then(
+      (v) => {
+        clearTimeout(t);
+        resolve(v);
+      },
+      (e) => {
+        clearTimeout(t);
+        reject(e);
+      }
+    );
+  });
+}
+
+// ----------------------
+// Admin context
+// ----------------------
 type AdminState = {
-  bootstrapped: boolean; // only false at app start
+  bootstrapped: boolean; // false only at first app boot
   email: string;
   isAdmin: boolean;
   refresh: () => Promise<void>;
@@ -57,16 +76,25 @@ function useAdmin() {
   return v;
 }
 
-async function checkIsAdmin(userId: string): Promise<boolean> {
-  // If RLS blocks this, we treat as NOT admin (but we do not freeze UI).
-  const { data, error } = await supabase
-    .from("app_admins")
-    .select("user_id")
-    .eq("user_id", userId)
-    .maybeSingle();
+type AdminRow = { user_id: string };
 
-  if (error) return false;
-  return !!data;
+async function checkIsAdmin(userId: string): Promise<boolean> {
+  try {
+    // Note: Postgrest query builders are "thenable"; this cast makes TS + await stable.
+    const q = supabase
+      .from("app_admins")
+      .select("user_id")
+      .eq("user_id", userId)
+      .maybeSingle() as unknown as PromiseLike<{ data: AdminRow | null; error: any }>;
+
+    const { data, error } = await withTimeout(q, 4000);
+
+    // If RLS blocks or any error: treat as NOT admin (never freeze the UI).
+    if (error) return false;
+    return !!data;
+  } catch {
+    return false;
+  }
 }
 
 function AdminProvider({ children }: { children: React.ReactNode }) {
@@ -74,46 +102,57 @@ function AdminProvider({ children }: { children: React.ReactNode }) {
   const [email, setEmail] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
 
-  const refresh = async () => {
-    try {
-      const { data } = await supabase.auth.getSession();
-      const session = data.session;
+  // prevent overlapping refresh calls (avoids flicker + "checking" loops)
+  const inflight = useRef<Promise<void> | null>(null);
 
-      if (!session?.user) {
+  const refresh = async () => {
+    if (inflight.current) return inflight.current;
+
+    inflight.current = (async () => {
+      try {
+        const sessionResp = await withTimeout(supabase.auth.getSession(), 4000);
+        const session = sessionResp.data.session;
+
+        if (!session?.user) {
+          setEmail("");
+          setIsAdmin(false);
+          return;
+        }
+
+        setEmail(session.user.email ?? "");
+        const ok = await checkIsAdmin(session.user.id);
+        setIsAdmin(ok);
+      } catch {
+        // Never block UI
         setEmail("");
         setIsAdmin(false);
-        return;
+      } finally {
+        // IMPORTANT: only flips to true; never back to false
+        setBootstrapped(true);
       }
+    })().finally(() => {
+      inflight.current = null;
+    });
 
-      setEmail(session.user.email ?? "");
-      const ok = await checkIsAdmin(session.user.id);
-      setIsAdmin(ok);
-    } catch {
-      // Never block UI
-      setEmail("");
-      setIsAdmin(false);
-    } finally {
-      // IMPORTANT: only show "Checking..." on first boot, not on every auth refresh
-      setBootstrapped(true);
-    }
+    return inflight.current;
   };
 
   useEffect(() => {
     let alive = true;
 
-    const run = async () => {
+    (async () => {
+      if (!alive) return;
       await refresh();
-    };
-    run();
+    })();
 
-    const { data } = supabase.auth.onAuthStateChange(async () => {
+    const { data: listener } = supabase.auth.onAuthStateChange(async () => {
       if (!alive) return;
       await refresh();
     });
 
     return () => {
       alive = false;
-      data.subscription.unsubscribe();
+      listener.subscription.unsubscribe();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -123,7 +162,7 @@ function AdminProvider({ children }: { children: React.ReactNode }) {
 }
 
 // ----------------------
-// Admin Modal
+// Admin Modal (Login + Tools)
 // ----------------------
 function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { email: authEmail, isAdmin, refresh } = useAdmin();
@@ -134,7 +173,7 @@ function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState<string>("");
 
-  // Sync form
+  // Tools
   const [syncEventId, setSyncEventId] = useState<string>("");
   const [replace, setReplace] = useState<boolean>(false);
   const [syncResult, setSyncResult] = useState<any>(null);
@@ -162,8 +201,7 @@ function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
       }
 
       await refresh();
-      setMsg("Logged in ✅");
-      onClose(); // close immediately for good UX
+      onClose(); // close immediately for better UX
     } finally {
       setLoading(false);
     }
@@ -175,14 +213,13 @@ function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
     setSyncResult(null);
 
     try {
-      const { error } = await supabase.auth.signOut();
+      // "local" works even when offline / flaky network
+      const { error } = await supabase.auth.signOut({ scope: "local" });
       if (error) {
         setMsg("Logout failed: " + error.message);
         return;
       }
-
-      await refresh();
-      setMsg("Logged out ✅");
+      await refresh(); // force UI update immediately
       onClose();
     } finally {
       setLoading(false);
@@ -195,13 +232,17 @@ function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
     setSyncResult(null);
 
     try {
+      if (!isAdmin) {
+        setMsg("Admin only.");
+        return;
+      }
+
       const cleanEventId = syncEventId.trim();
       if (!cleanEventId) {
         setMsg("Enter event UUID (event_id).");
         return;
       }
 
-      // Generic makes TS happy (invoke returns unknown by default)
       const { data, error } = await supabase.functions.invoke<any>("sync_tba_matches", {
         body: { event_id: cleanEventId, replace },
       });
@@ -270,11 +311,27 @@ function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
             <div>
               Logged in as <b>{authEmail}</b>{" "}
               {isAdmin ? (
-                <span style={{ marginLeft: 8, padding: "3px 8px", borderRadius: 999, background: "#e8fff6", fontWeight: 900 }}>
+                <span
+                  style={{
+                    marginLeft: 8,
+                    padding: "3px 8px",
+                    borderRadius: 999,
+                    background: "#e8fff6",
+                    fontWeight: 900,
+                  }}
+                >
                   ADMIN
                 </span>
               ) : (
-                <span style={{ marginLeft: 8, padding: "3px 8px", borderRadius: 999, background: "#ffe0e0", fontWeight: 900 }}>
+                <span
+                  style={{
+                    marginLeft: 8,
+                    padding: "3px 8px",
+                    borderRadius: 999,
+                    background: "#ffe0e0",
+                    fontWeight: 900,
+                  }}
+                >
                   NOT ADMIN
                 </span>
               )}
@@ -284,6 +341,7 @@ function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
           )}
         </div>
 
+        {/* Login / Logout */}
         <div style={{ marginTop: 12, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "end" }}>
           {!authEmail ? (
             <>
@@ -343,6 +401,7 @@ function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
           )}
         </div>
 
+        {/* Admin-only tools */}
         <div style={{ marginTop: 14, borderTop: "1px solid #eee", paddingTop: 14 }}>
           <div style={{ fontWeight: 1000, marginBottom: 8 }}>Admin tools</div>
 
@@ -413,12 +472,14 @@ function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
 }
 
 // ----------------------
-// TopNav (mobile friendly)
+// TopNav
+// - Checking only on first boot (bootstrapped)
+// - Analysis visible to kids
+// - Admin sees Tools button (to reach Fetch TBA)
 // ----------------------
 function TopNav() {
   const location = useLocation();
-  const { bootstrapped, email, isAdmin } = useAdmin();
-
+  const { bootstrapped, email, isAdmin, refresh } = useAdmin();
   const [adminOpen, setAdminOpen] = useState(false);
 
   // Israel time ticker
@@ -485,8 +546,12 @@ function TopNav() {
   }, [nextMatch]);
 
   const navLogout = async () => {
-    await supabase.auth.signOut();
-    setAdminOpen(false);
+    try {
+      await supabase.auth.signOut({ scope: "local" });
+    } finally {
+      await refresh(); // force immediate UI update
+      setAdminOpen(false);
+    }
   };
 
   const linkStyle = ({ isActive }: { isActive: boolean }) => ({
@@ -510,11 +575,14 @@ function TopNav() {
               Scouting
             </NavLink>
 
+            {/* Kids can see Analysis */}
+            <NavLink to="/analysis" style={linkStyle}>
+              Analysis
+            </NavLink>
+
+            {/* Admin-only navigation */}
             {isAdmin ? (
               <>
-                <NavLink to="/analysis" style={linkStyle}>
-                  Analysis
-                </NavLink>
                 <NavLink to="/analysis/alliance" style={linkStyle}>
                   Alliance
                 </NavLink>
@@ -536,14 +604,20 @@ function TopNav() {
               <div
                 className="topnav-pill"
                 style={{
-                  background: isAdmin ? "rgba(0,180,90,0.14)" : "rgba(255,0,0,0.12)",
-                  border: isAdmin ? "1px solid rgba(0,180,90,0.25)" : "1px solid rgba(255,0,0,0.22)",
+                  background: isAdmin ? "rgba(0,180,90,0.14)" : "rgba(0,0,0,0.06)",
+                  border: isAdmin ? "1px solid rgba(0,180,90,0.25)" : "1px solid rgba(0,0,0,0.10)",
                   fontWeight: 1000,
                 }}
                 title={email}
               >
                 {isAdmin ? "ADMIN ✅" : "USER"}
               </div>
+
+              {isAdmin ? (
+                <button className="topnav-btn" type="button" onClick={() => setAdminOpen(true)} title="Admin tools">
+                  Tools
+                </button>
+              ) : null}
 
               <button className="topnav-btn" type="button" onClick={navLogout} title="Logout">
                 Logout
@@ -580,8 +654,6 @@ function TopNav() {
 
 function AdminGate({ children }: { children: JSX.Element }) {
   const { bootstrapped, isAdmin } = useAdmin();
-
-  // Don’t block the app. If not bootstrapped yet, just send to scouting.
   if (!bootstrapped) return <Navigate to="/scouting" replace />;
   return isAdmin ? children : <Navigate to="/scouting" replace />;
 }
@@ -594,11 +666,42 @@ function AppShell() {
         <Route path="/" element={<Navigate to="/scouting" replace />} />
         <Route path="/scouting" element={<ScoutingPage />} />
 
-        <Route path="/analysis" element={<AdminGate><AnalysisPage /></AdminGate>} />
-        <Route path="/analysis/alliance" element={<AdminGate><AlliancePage /></AdminGate>} />
-        <Route path="/analysis/picklist" element={<AdminGate><PicklistPage /></AdminGate>} />
-        <Route path="/analysis/compare" element={<AdminGate><ComparePage /></AdminGate>} />
-        <Route path="/analysis/saved" element={<AdminGate><SavedAlliancesPage /></AdminGate>} />
+        {/* Kids can see Analysis */}
+        <Route path="/analysis" element={<AnalysisPage />} />
+
+        {/* Admin-only routes */}
+        <Route
+          path="/analysis/alliance"
+          element={
+            <AdminGate>
+              <AlliancePage />
+            </AdminGate>
+          }
+        />
+        <Route
+          path="/analysis/picklist"
+          element={
+            <AdminGate>
+              <PicklistPage />
+            </AdminGate>
+          }
+        />
+        <Route
+          path="/analysis/compare"
+          element={
+            <AdminGate>
+              <ComparePage />
+            </AdminGate>
+          }
+        />
+        <Route
+          path="/analysis/saved"
+          element={
+            <AdminGate>
+              <SavedAlliancesPage />
+            </AdminGate>
+          }
+        />
       </Routes>
     </>
   );
