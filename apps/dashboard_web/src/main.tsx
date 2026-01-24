@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, createContext, useContext } from "react";
+import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, NavLink, Route, Routes, Navigate, useLocation } from "react-router-dom";
 
@@ -43,7 +43,7 @@ type NextMatch = {
 };
 
 type AdminState = {
-  checking: boolean;
+  bootstrapped: boolean; // only false at app start
   email: string;
   isAdmin: boolean;
   refresh: () => Promise<void>;
@@ -70,12 +70,11 @@ async function checkIsAdmin(userId: string): Promise<boolean> {
 }
 
 function AdminProvider({ children }: { children: React.ReactNode }) {
-  const [checking, setChecking] = useState(true);
+  const [bootstrapped, setBootstrapped] = useState(false);
   const [email, setEmail] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
 
   const refresh = async () => {
-    setChecking(true);
     try {
       const { data } = await supabase.auth.getSession();
       const session = data.session;
@@ -94,7 +93,8 @@ function AdminProvider({ children }: { children: React.ReactNode }) {
       setEmail("");
       setIsAdmin(false);
     } finally {
-      setChecking(false);
+      // IMPORTANT: only show "Checking..." on first boot, not on every auth refresh
+      setBootstrapped(true);
     }
   };
 
@@ -104,10 +104,8 @@ function AdminProvider({ children }: { children: React.ReactNode }) {
     const run = async () => {
       await refresh();
     };
-
     run();
 
-    // Correct typed destructuring (fixes TS errors)
     const { data } = supabase.auth.onAuthStateChange(async () => {
       if (!alive) return;
       await refresh();
@@ -120,15 +118,12 @@ function AdminProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const value: AdminState = { checking, email, isAdmin, refresh };
-
+  const value: AdminState = { bootstrapped, email, isAdmin, refresh };
   return <AdminCtx.Provider value={value}>{children}</AdminCtx.Provider>;
 }
 
 // ----------------------
 // Admin Modal
-// - closes immediately after successful login/logout
-// - does NOT block navigation
 // ----------------------
 function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { email: authEmail, isAdmin, refresh } = useAdmin();
@@ -206,7 +201,7 @@ function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
         return;
       }
 
-      // ✅ Generic makes TS happy (invoke returns unknown by default)
+      // Generic makes TS happy (invoke returns unknown by default)
       const { data, error } = await supabase.functions.invoke<any>("sync_tba_matches", {
         body: { event_id: cleanEventId, replace },
       });
@@ -289,7 +284,6 @@ function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
           )}
         </div>
 
-        {/* Login / Logout */}
         <div style={{ marginTop: 12, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "end" }}>
           {!authEmail ? (
             <>
@@ -349,7 +343,6 @@ function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
           )}
         </div>
 
-        {/* Admin-only actions */}
         <div style={{ marginTop: 14, borderTop: "1px solid #eee", paddingTop: 14 }}>
           <div style={{ fontWeight: 1000, marginBottom: 8 }}>Admin tools</div>
 
@@ -424,7 +417,7 @@ function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
 // ----------------------
 function TopNav() {
   const location = useLocation();
-  const { checking, email, isAdmin } = useAdmin();
+  const { bootstrapped, email, isAdmin } = useAdmin();
 
   const [adminOpen, setAdminOpen] = useState(false);
 
@@ -509,7 +502,6 @@ function TopNav() {
 
   return (
     <div className="topnav">
-      {/* Row 1: Logo + Links */}
       <div className="topnav-row topnav-row-1">
         <div className="topnav-left">
           <img className="topnav-logo" src="/logoG3.png" alt="Logo" />
@@ -518,7 +510,6 @@ function TopNav() {
               Scouting
             </NavLink>
 
-            {/* Admin-only navigation */}
             {isAdmin ? (
               <>
                 <NavLink to="/analysis" style={linkStyle}>
@@ -535,9 +526,8 @@ function TopNav() {
           </div>
         </div>
 
-        {/* Right: Auth controls always visible */}
         <div className="topnav-auth">
-          {checking ? (
+          {!bootstrapped ? (
             <div className="topnav-pill" style={{ opacity: 0.75, fontWeight: 900 }}>
               Checking…
             </div>
@@ -567,7 +557,6 @@ function TopNav() {
         </div>
       </div>
 
-      {/* Row 2: Time + Countdown (wraps nicely on mobile) */}
       <div className="topnav-row topnav-row-2">
         <div className="topnav-pill" title="Israel time">
           {fmtIsraelNow(now)}
@@ -583,7 +572,6 @@ function TopNav() {
           )}
         </div>
 
-        {/* Admin modal (only opens when you click Login) */}
         <AdminModal open={adminOpen} onClose={() => setAdminOpen(false)} />
       </div>
     </div>
@@ -591,18 +579,10 @@ function TopNav() {
 }
 
 function AdminGate({ children }: { children: JSX.Element }) {
-  // Gate only by current admin state (do not block the whole app while checking).
-  const { checking, isAdmin } = useAdmin();
+  const { bootstrapped, isAdmin } = useAdmin();
 
-  if (checking) {
-    return (
-      <div style={{ padding: 16, maxWidth: 900 }}>
-        <h2 style={{ marginTop: 0 }}>Checking admin…</h2>
-        <div style={{ opacity: 0.85 }}>If this takes too long, you can still use Scouting.</div>
-      </div>
-    );
-  }
-
+  // Don’t block the app. If not bootstrapped yet, just send to scouting.
+  if (!bootstrapped) return <Navigate to="/scouting" replace />;
   return isAdmin ? children : <Navigate to="/scouting" replace />;
 }
 
@@ -614,7 +594,6 @@ function AppShell() {
         <Route path="/" element={<Navigate to="/scouting" replace />} />
         <Route path="/scouting" element={<ScoutingPage />} />
 
-        {/* Admin-only routes */}
         <Route path="/analysis" element={<AdminGate><AnalysisPage /></AdminGate>} />
         <Route path="/analysis/alliance" element={<AdminGate><AlliancePage /></AdminGate>} />
         <Route path="/analysis/picklist" element={<AdminGate><PicklistPage /></AdminGate>} />

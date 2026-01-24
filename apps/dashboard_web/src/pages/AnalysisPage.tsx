@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { supabase } from "../supabase";
 
 type TeamPlayoffRow = {
@@ -54,11 +54,11 @@ type DefenseMatchupRow = {
   match_number: number | null;
 
   defender_team_number: number;
-  defender_alliance: "red" | "blue";
+  defender_alliance: string | null;
 
-  opp_alliance_teleop_gpa: number;
-  opp_alliance_expected_gpa: number;
-  defense_impact_gpa: number;
+  opp_alliance_teleop_gpa: number | null;
+  opp_alliance_expected_gpa: number | null;
+  defense_impact_gpa: number | null;
 };
 
 function pct(x: number) {
@@ -100,12 +100,12 @@ function riskBadge(r: TeamPlayoffRow) {
 }
 
 function roleBadges(r: TeamPlayoffRow) {
-  const badges: JSX.Element[] = [];
-  if ((r.auto_score_avg ?? 0) >= 3 || (r.auto_mobility_rate ?? 0) >= 0.8) badges.push(badge("AUTO", "#e8f0ff"));
-  if ((r.endgame_success_rate ?? 0) >= 0.6) badges.push(badge("ENDGAME", "#f2e8ff"));
-  if ((r.defense_effectiveness_score ?? 0) >= 0.6 || (r.played_defense_rate ?? 0) >= 0.4) badges.push(badge("DEFENSE", "#e8fff6"));
-  if ((r.consistency_avg ?? 0) >= 3.5) badges.push(badge("CONSISTENT", "#f0f0f0"));
-  return <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>{badges.length ? badges : badge("—", "#f5f5f5")}</div>;
+  const b: React.ReactNode[] = [];
+  if ((r.auto_score_avg ?? 0) >= 3 || (r.auto_mobility_rate ?? 0) >= 0.8) b.push(badge("AUTO", "#e8f0ff"));
+  if ((r.endgame_success_rate ?? 0) >= 0.6) b.push(badge("ENDGAME", "#f2e8ff"));
+  if ((r.defense_effectiveness_score ?? 0) >= 0.6 || (r.played_defense_rate ?? 0) >= 0.4) b.push(badge("DEFENSE", "#e8fff6"));
+  if ((r.consistency_avg ?? 0) >= 3.5) b.push(badge("CONSISTENT", "#f0f0f0"));
+  return <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>{b.length ? b : badge("—", "#f5f5f5")}</div>;
 }
 
 function impactBadge(impact: number) {
@@ -122,6 +122,13 @@ function ratioBadge(ratio: number | null) {
   if (ratio <= 0.85) return badge(num(ratio, 2), "#e8ffe8");
   if (ratio <= 1.0) return badge(num(ratio, 2), "#fff4cc");
   return badge(num(ratio, 2), "#ffe0e0");
+}
+
+function normalizeAlliance(a: string | null): "red" | "blue" | "unknown" {
+  const v = (a ?? "").toLowerCase().trim();
+  if (v === "red") return "red";
+  if (v === "blue") return "blue";
+  return "unknown";
 }
 
 export default function AnalysisPage() {
@@ -174,7 +181,7 @@ export default function AnalysisPage() {
           return;
         }
 
-        setRows((data as any[]) as TeamPlayoffRow[]);
+        setRows((data ?? []) as TeamPlayoffRow[]);
       } finally {
         setLoading(false);
       }
@@ -253,9 +260,16 @@ export default function AnalysisPage() {
 
   const defSummary = useMemo(() => {
     const total = defFiltered.length;
+
     const avgImpact = total > 0 ? defFiltered.reduce((a, x) => a + (Number(x.defense_impact_avg) || 0), 0) / total : 0;
-    const avgRatio =
-      total > 0 ? defFiltered.reduce((a, x) => a + (Number(x.opp_actual_over_expected_avg) || 0), 0) / total : 0;
+
+    // Only compute avg ratio over finite values
+    const ratios = defFiltered
+      .map((x) => x.opp_actual_over_expected_avg)
+      .filter((v): v is number => typeof v === "number" && Number.isFinite(v));
+
+    const avgRatio = ratios.length > 0 ? ratios.reduce((a, v) => a + v, 0) / ratios.length : null;
+
     return { total, avgImpact, avgRatio };
   }, [defFiltered]);
 
@@ -363,7 +377,7 @@ export default function AnalysisPage() {
 
           <div style={{ padding: 12, borderRadius: 14, border: "1px solid #eee", background: "#fff" }}>
             <div style={{ fontWeight: 950 }}>Avg Opp Actual/Expected</div>
-            <div style={{ fontSize: 22, fontWeight: 950 }}>{defSummary.avgRatio ? num(defSummary.avgRatio, 2) : "—"}</div>
+            <div style={{ fontSize: 22, fontWeight: 950 }}>{defSummary.avgRatio == null ? "—" : num(defSummary.avgRatio, 2)}</div>
           </div>
         </div>
       )}
@@ -392,7 +406,7 @@ export default function AnalysisPage() {
       {!eventId && <div style={{ marginTop: 14, opacity: 0.85 }}>Select an event to load data.</div>}
 
       {/* =========================
-          TAB: TEAM RANKING (existing)
+          TAB: TEAM RANKING
           ========================= */}
       {tab === "ranking" && !loading && !err && eventId && (
         <>
@@ -594,9 +608,7 @@ export default function AnalysisPage() {
                 <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 10 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
                     <div style={{ fontSize: 22, fontWeight: 1000 }}>#{selectedDefenseTeam.team_number}</div>
-                    <div style={{ fontWeight: 950 }}>
-                      Total: {num(Number(selectedDefenseTeam.defense_impact_total) || 0, 1)}
-                    </div>
+                    <div style={{ fontWeight: 950 }}>Total: {num(Number(selectedDefenseTeam.defense_impact_total) || 0, 1)}</div>
                   </div>
 
                   <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -631,17 +643,25 @@ export default function AnalysisPage() {
                             </tr>
                           </thead>
                           <tbody>
-                            {defMatchups.map((m) => (
-                              <tr key={m.match_id} style={{ borderBottom: "1px solid #f2f2f2" }}>
-                                <td style={{ padding: 10, fontWeight: 900 }}>{m.match_number ?? "—"}</td>
-                                <td style={{ padding: 10 }}>
-                                  {badge(m.defender_alliance.toUpperCase(), m.defender_alliance === "red" ? "#ffe0f0" : "#e8f0ff")}
-                                </td>
-                                <td style={{ padding: 10 }}>{num(Number(m.opp_alliance_teleop_gpa) || 0, 1)}</td>
-                                <td style={{ padding: 10 }}>{num(Number(m.opp_alliance_expected_gpa) || 0, 1)}</td>
-                                <td style={{ padding: 10 }}>{impactBadge(Number(m.defense_impact_gpa) || 0)}</td>
-                              </tr>
-                            ))}
+                            {defMatchups.map((m) => {
+                              const al = normalizeAlliance(m.defender_alliance);
+                              const alBadge =
+                                al === "red" ? badge("RED", "#ffe0f0") : al === "blue" ? badge("BLUE", "#e8f0ff") : badge("—", "#f0f0f0");
+
+                              const oppA = Number(m.opp_alliance_teleop_gpa ?? 0);
+                              const oppE = Number(m.opp_alliance_expected_gpa ?? 0);
+                              const imp = Number(m.defense_impact_gpa ?? 0);
+
+                              return (
+                                <tr key={m.match_id} style={{ borderBottom: "1px solid #f2f2f2" }}>
+                                  <td style={{ padding: 10, fontWeight: 900 }}>{m.match_number ?? "—"}</td>
+                                  <td style={{ padding: 10 }}>{alBadge}</td>
+                                  <td style={{ padding: 10 }}>{num(oppA, 1)}</td>
+                                  <td style={{ padding: 10 }}>{num(oppE, 1)}</td>
+                                  <td style={{ padding: 10 }}>{impactBadge(imp)}</td>
+                                </tr>
+                              );
+                            })}
                           </tbody>
                         </table>
                       )}
