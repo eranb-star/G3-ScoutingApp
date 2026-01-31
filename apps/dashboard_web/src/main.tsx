@@ -12,6 +12,8 @@ import SavedAlliancesPage from "./pages/SavedAlliancesPage";
 import "./index.css";
 import { supabase } from "./supabase";
 
+import { GuestGateOverlay, GuestGateProvider } from "./lib/guestGate";
+
 // ----------------------
 // Small helpers
 // ----------------------
@@ -76,13 +78,11 @@ function useAdmin() {
   return v;
 }
 
-// ✅ STEP 1 CHANGE: use RPC is_admin() instead of querying app_admins
+// ✅ uses RPC is_admin()
 async function checkIsAdmin(): Promise<boolean> {
   try {
     const q = supabase.rpc("is_admin") as unknown as PromiseLike<{ data: boolean | null; error: any }>;
     const { data, error } = await withTimeout(q, 4000);
-
-    // If RLS blocks or any error: treat as NOT admin (never freeze the UI).
     if (error) return false;
     return Boolean(data);
   } catch {
@@ -95,7 +95,6 @@ function AdminProvider({ children }: { children: React.ReactNode }) {
   const [email, setEmail] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
 
-  // prevent overlapping refresh calls (avoids flicker + "checking" loops)
   const inflight = useRef<Promise<void> | null>(null);
 
   const refresh = async () => {
@@ -113,16 +112,12 @@ function AdminProvider({ children }: { children: React.ReactNode }) {
         }
 
         setEmail(session.user.email ?? "");
-
-        // ✅ STEP 1 CHANGE: no userId needed; rpc uses auth.uid()
         const ok = await checkIsAdmin();
         setIsAdmin(ok);
       } catch {
-        // Never block UI
         setEmail("");
         setIsAdmin(false);
       } finally {
-        // IMPORTANT: only flips to true; never back to false
         setBootstrapped(true);
       }
     })().finally(() => {
@@ -168,7 +163,6 @@ function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState<string>("");
 
-  // Tools
   const [syncEventId, setSyncEventId] = useState<string>("");
   const [replace, setReplace] = useState<boolean>(false);
   const [syncResult, setSyncResult] = useState<any>(null);
@@ -196,7 +190,7 @@ function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
       }
 
       await refresh();
-      onClose(); // close immediately for better UX
+      onClose();
     } finally {
       setLoading(false);
     }
@@ -208,13 +202,12 @@ function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
     setSyncResult(null);
 
     try {
-      // "local" works even when offline / flaky network
       const { error } = await supabase.auth.signOut({ scope: "local" });
       if (error) {
         setMsg("Logout failed: " + error.message);
         return;
       }
-      await refresh(); // force immediate UI update
+      await refresh();
       onClose();
     } finally {
       setLoading(false);
@@ -336,7 +329,6 @@ function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
           )}
         </div>
 
-        {/* Login / Logout */}
         <div style={{ marginTop: 12, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "end" }}>
           {!authEmail ? (
             <>
@@ -396,7 +388,6 @@ function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
           )}
         </div>
 
-        {/* Admin-only tools */}
         <div style={{ marginTop: 14, borderTop: "1px solid #eee", paddingTop: 14 }}>
           <div style={{ fontWeight: 1000, marginBottom: 8 }}>Admin tools</div>
 
@@ -468,23 +459,18 @@ function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
 
 // ----------------------
 // TopNav
-// - Checking only on first boot (bootstrapped)
-// - Analysis visible to kids
-// - Admin sees Tools button (to reach Fetch TBA)
 // ----------------------
 function TopNav() {
   const location = useLocation();
   const { bootstrapped, email, isAdmin, refresh } = useAdmin();
   const [adminOpen, setAdminOpen] = useState(false);
 
-  // Israel time ticker
   const [now, setNow] = useState<Date>(() => new Date());
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(t);
   }, []);
 
-  // Next match countdown
   const [nextMatch, setNextMatch] = useState<NextMatch | null>(null);
   const [countdownMs, setCountdownMs] = useState<number>(0);
 
@@ -544,7 +530,7 @@ function TopNav() {
     try {
       await supabase.auth.signOut({ scope: "local" });
     } finally {
-      await refresh(); // force immediate UI update
+      await refresh();
       setAdminOpen(false);
     }
   };
@@ -570,12 +556,10 @@ function TopNav() {
               Scouting
             </NavLink>
 
-            {/* Kids can see Analysis */}
             <NavLink to="/analysis" style={linkStyle}>
               Analysis
             </NavLink>
 
-            {/* Admin-only navigation */}
             {isAdmin ? (
               <>
                 <NavLink to="/analysis/alliance" style={linkStyle}>
@@ -656,15 +640,16 @@ function AdminGate({ children }: { children: JSX.Element }) {
 function AppShell() {
   return (
     <>
+      {/* Blocks the whole app until passcode entered */}
+      <GuestGateOverlay />
+
       <TopNav />
       <Routes>
         <Route path="/" element={<Navigate to="/scouting" replace />} />
         <Route path="/scouting" element={<ScoutingPage />} />
 
-        {/* Kids can see Analysis */}
         <Route path="/analysis" element={<AnalysisPage />} />
 
-        {/* Admin-only routes */}
         <Route
           path="/analysis/alliance"
           element={
@@ -704,10 +689,12 @@ function AppShell() {
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <BrowserRouter>
-      <AdminProvider>
-        <AppShell />
-      </AdminProvider>
-    </BrowserRouter>
+    <GuestGateProvider>
+      <BrowserRouter>
+        <AdminProvider>
+          <AppShell />
+        </AdminProvider>
+      </BrowserRouter>
+    </GuestGateProvider>
   </React.StrictMode>
 );
