@@ -79,7 +79,7 @@ function useIsNarrow(breakpointPx = 600) {
 function offlineLikelyFromErrorMessage(msg: string) {
   return (
     (typeof navigator !== "undefined" && navigator.onLine === false) ||
-    /failed to fetch|networkerror|fetch|load failed/i.test(msg)
+    /failed to fetch|networkerror|fetch|load failed|internet disconnected/i.test(msg)
   );
 }
 
@@ -151,14 +151,16 @@ export default function ScoutingPage() {
   // Step 4.6: Background sync queued scout entries when back online
   // - Uses UPSERT with ignoreDuplicates so we DON'T need UPDATE RLS permission
   // - Removes from queue only when server accepted (or duplicate ignored)
+  //
+  // IMPORTANT (Android/WebView):
+  // - Do NOT rely on navigator.onLine or the "online" event (often unreliable).
+  // - Attempt sync; if network is still down, fetch will fail and we stop safely.
   // =====================
   const syncQueuedNow = async () => {
     if (syncInflight.current) return syncInflight.current;
 
     syncInflight.current = (async () => {
-      if (typeof navigator !== "undefined" && navigator.onLine === false) return;
-
-      let queued = [];
+      let queued: any[] = [];
       try {
         queued = await listQueuedScoutEntries();
       } catch {
@@ -175,9 +177,7 @@ export default function ScoutingPage() {
 
       let sent = 0;
 
-      for (const entry of queued as any[]) {
-        if (typeof navigator !== "undefined" && navigator.onLine === false) break;
-
+      for (const entry of queued) {
         try {
           // IMPORTANT: ignoreDuplicates means ON CONFLICT DO NOTHING (idempotent)
           // This avoids needing UPDATE permission under RLS.
@@ -200,7 +200,7 @@ export default function ScoutingPage() {
           // Success OR duplicate ignored => safe to remove from queue
           await removeQueuedScoutEntry(entry.entry_uuid);
           sent += 1;
-        } catch {
+        } catch (e: any) {
           // likely network -> stop
           break;
         }
@@ -211,7 +211,12 @@ export default function ScoutingPage() {
         setOfflineQueuedCount(n);
 
         if (sent > 0) {
-          setOfflineInfo((prev) => (prev ? prev : `Synced ${sent} offline entries ✅`));
+          setOfflineInfo(`Synced ${sent} offline entries ✅`);
+        }
+        if (n === 0 && sent > 0) {
+          // Optional: clear message after full drain.
+          // If you prefer to keep the "Synced ✅" banner, comment this out.
+          // setOfflineInfo("");
         }
       } catch {
         // ignore
@@ -223,7 +228,10 @@ export default function ScoutingPage() {
     return syncInflight.current;
   };
 
-  // Sync triggers: boot, online event, and periodic while queued>0
+  // Sync triggers:
+  // - boot
+  // - focus/visibility (critical on mobile)
+  // - periodic while queued>0
   useEffect(() => {
     let alive = true;
 
@@ -233,7 +241,7 @@ export default function ScoutingPage() {
         if (!alive) return;
         setOfflineQueuedCount(n);
 
-        if (n > 0 && typeof navigator !== "undefined" && navigator.onLine !== false) {
+        if (n > 0) {
           await syncQueuedNow();
         }
       } catch {
@@ -241,23 +249,27 @@ export default function ScoutingPage() {
       }
     })();
 
-    const onOnline = async () => {
+    const onFocusOrVisible = async () => {
       if (!alive) return;
-      await syncQueuedNow();
+      if (offlineQueuedCount > 0) await syncQueuedNow();
     };
 
-    window.addEventListener("online", onOnline);
+    window.addEventListener("focus", onFocusOrVisible);
+    const onVis = () => {
+      if (document.visibilityState === "visible") void onFocusOrVisible();
+    };
+    document.addEventListener("visibilitychange", onVis);
 
+    // Keep a periodic retry loop (do NOT trust navigator.onLine on Android)
     const interval = setInterval(() => {
       if (!alive) return;
-      if (offlineQueuedCount > 0 && typeof navigator !== "undefined" && navigator.onLine !== false) {
-        void syncQueuedNow();
-      }
+      if (offlineQueuedCount > 0) void syncQueuedNow();
     }, 10_000);
 
     return () => {
       alive = false;
-      window.removeEventListener("online", onOnline);
+      window.removeEventListener("focus", onFocusOrVisible);
+      document.removeEventListener("visibilitychange", onVis);
       clearInterval(interval);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -317,6 +329,9 @@ export default function ScoutingPage() {
 
         const schema = (data[0] as any).schema ?? null;
         setTemplate(schema);
+
+        // ✅ ONLINE success => clear sticky offline banner
+        setOfflineInfo("");
 
         if (schema) {
           try {
@@ -386,6 +401,9 @@ export default function ScoutingPage() {
 
         const rows = ((data as any[]) ?? []) as MatchRow[];
         setMatches(rows);
+
+        // ✅ ONLINE success => clear sticky offline banner
+        setOfflineInfo("");
 
         // cache matches for offline
         try {
@@ -478,6 +496,9 @@ export default function ScoutingPage() {
         // unique + stable order
         const uniq = Array.from(new Set(list));
         setMatchTeams(uniq);
+
+        // ✅ ONLINE success => clear sticky offline banner
+        setOfflineInfo("");
 
         // cache match teams for offline use
         try {
@@ -584,6 +605,10 @@ export default function ScoutingPage() {
         team_number: prev.team_number, // keep team selection
         notes: "",
       }));
+
+      // If we had queued items and we just successfully saved online,
+      // give sync a chance to run soon.
+      void syncQueuedNow();
     } finally {
       setSaving(false);
     }
