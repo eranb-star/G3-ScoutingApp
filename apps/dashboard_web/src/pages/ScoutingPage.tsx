@@ -348,6 +348,17 @@ export default function ScoutingPage() {
     loadTemplate();
   }, [eventId]);
 
+
+  useEffect(() => {
+  // If sync emptied the queue, clear the stale "Saved offline..." message
+  if (offlineQueuedCount === 0) {
+    setSaveMsg((prev) => {
+      if (!prev) return prev;
+      return /saved offline/i.test(prev) ? "" : prev;
+    });
+  }
+}, [offlineQueuedCount]);
+
   // =====================
   // Load Matches when event changes (ONLINE -> cache, OFFLINE -> cached fallback)
   // =====================
