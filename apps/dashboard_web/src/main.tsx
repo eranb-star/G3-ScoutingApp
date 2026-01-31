@@ -76,22 +76,15 @@ function useAdmin() {
   return v;
 }
 
-type AdminRow = { user_id: string };
-
-async function checkIsAdmin(userId: string): Promise<boolean> {
+// ✅ STEP 1 CHANGE: use RPC is_admin() instead of querying app_admins
+async function checkIsAdmin(): Promise<boolean> {
   try {
-    // Note: Postgrest query builders are "thenable"; this cast makes TS + await stable.
-    const q = supabase
-      .from("app_admins")
-      .select("user_id")
-      .eq("user_id", userId)
-      .maybeSingle() as unknown as PromiseLike<{ data: AdminRow | null; error: any }>;
-
+    const q = supabase.rpc("is_admin") as unknown as PromiseLike<{ data: boolean | null; error: any }>;
     const { data, error } = await withTimeout(q, 4000);
 
     // If RLS blocks or any error: treat as NOT admin (never freeze the UI).
     if (error) return false;
-    return !!data;
+    return Boolean(data);
   } catch {
     return false;
   }
@@ -120,7 +113,9 @@ function AdminProvider({ children }: { children: React.ReactNode }) {
         }
 
         setEmail(session.user.email ?? "");
-        const ok = await checkIsAdmin(session.user.id);
+
+        // ✅ STEP 1 CHANGE: no userId needed; rpc uses auth.uid()
+        const ok = await checkIsAdmin();
         setIsAdmin(ok);
       } catch {
         // Never block UI
@@ -219,7 +214,7 @@ function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
         setMsg("Logout failed: " + error.message);
         return;
       }
-      await refresh(); // force UI update immediately
+      await refresh(); // force immediate UI update
       onClose();
     } finally {
       setLoading(false);
