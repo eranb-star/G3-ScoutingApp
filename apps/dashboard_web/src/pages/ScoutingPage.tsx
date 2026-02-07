@@ -1,3 +1,5 @@
+// apps/dashboard_web/src/pages/ScoutingPage.tsx
+
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "../supabase";
 import TemplateForm from "../components/TemplateForm";
@@ -20,8 +22,16 @@ type MatchRow = {
   match_number?: number | null;
   match_type?: string | null; // qual/qm/qf/sf/f
   set_number?: number | null;
+
+  // NOTE: matches table in your DB does NOT have "description".
+  // Keep it optional for forward-compat (or cached data), but do NOT select it from DB.
   description?: string | null;
+
+  // legacy compatibility field (some UI code used "key")
   key?: string | null;
+
+  // actual column in your DB: matches.match_key
+  match_key?: string | null; // matches.match_key
 
   // Needed for pre-caching match teams for complete offline (even if match not opened before)
   red_teams?: number[] | null;
@@ -34,15 +44,22 @@ type MatchTeamRow = {
   alliance?: string | null; // "red"/"blue" if view includes it
 };
 
-type ScoutRow = {
-  id?: string;
+// ---- Scouter list types ----
+type ScouterRow = {
+  id?: string | null; // optional uuid if your table has it
+  display_name?: string | null;
+  name?: string | null; // fallback
   event_id?: string | null;
-  display_name: string;
-  active?: boolean;
+  is_active?: boolean | null;
 };
 
 function niceMatchLabel(m: MatchRow) {
   if (m.description && m.description.trim().length > 0) return m.description;
+
+  // Prefer the real DB column:
+  if ((m.match_key ?? "").trim().length > 0) return String(m.match_key);
+
+  // Fallback (legacy / cached)
   if (m.key && m.key.trim().length > 0) return m.key;
 
   const t = (m.match_type ?? "").toLowerCase();
@@ -93,44 +110,16 @@ function offlineLikelyFromErrorMessage(msg: string) {
 export default function ScoutingPage() {
   const isNarrow = useIsNarrow(600);
 
-  // Online indicator (pure UI)
-  const [isOnline, setIsOnline] = useState<boolean>(() =>
-    typeof navigator !== "undefined" ? navigator.onLine !== false : true
-  );
-  useEffect(() => {
-    const onOnline = () => setIsOnline(true);
-    const onOffline = () => setIsOnline(false);
-    window.addEventListener("online", onOnline);
-    window.addEventListener("offline", onOffline);
-    return () => {
-      window.removeEventListener("online", onOnline);
-      window.removeEventListener("offline", onOffline);
-    };
-  }, []);
-
   // =====================
   // Event + Template
   // =====================
-  const [eventId, setEventId] = useState<string>(() => (localStorage.getItem("g3_event_id") ?? "").trim());
+  const [eventId, setEventId] = useState<string>("");
   const [template, setTemplate] = useState<any>(null);
   const [templateLoading, setTemplateLoading] = useState(false);
   const [templateError, setTemplateError] = useState<string>("");
 
   // soft offline info banner (no red errors when cache works)
   const [offlineInfo, setOfflineInfo] = useState<string>("");
-
-  // =====================
-  // Scouts (scouter names directory) for Event
-  // =====================
-  const [scouts, setScouts] = useState<ScoutRow[]>([]);
-  const [scoutsLoading, setScoutsLoading] = useState(false);
-  const [scoutsError, setScoutsError] = useState<string>("");
-
-  // Scout identity (locked per device)
-  const [scoutName, setScoutName] = useState<string>(() => localStorage.getItem("g3_scout_name") ?? "");
-  const [scoutLocked, setScoutLocked] = useState<boolean>(() => localStorage.getItem("g3_scout_name_locked") === "1");
-  const [scoutMode, setScoutMode] = useState<"pick" | "manual">("pick");
-  const [scoutManual, setScoutManual] = useState<string>("");
 
   // =====================
   // Matches for Event
@@ -163,6 +152,17 @@ export default function ScoutingPage() {
   // Prevent overlapping sync runs
   const syncInflight = useRef<Promise<void> | null>(null);
 
+  // -------------------------
+  // Scouters (from Supabase)
+  // -------------------------
+  const [scouters, setScouters] = useState<ScouterRow[]>([]);
+  const [scoutersLoading, setScoutersLoading] = useState(false);
+  const [scoutersError, setScoutersError] = useState<string>("");
+
+  // Locked scouter (device-based)
+  const [lockedScouterName, setLockedScouterName] = useState<string>("");
+  const [lockedScouterId, setLockedScouterId] = useState<string>("");
+
   useEffect(() => {
     let alive = true;
     (async () => {
@@ -177,16 +177,6 @@ export default function ScoutingPage() {
       alive = false;
     };
   }, []);
-
-  // אם הסינק הוריד את התור ל-0 — ננקה הודעת "Saved offline" שלא תישאר תקועה
-  useEffect(() => {
-    if (offlineQueuedCount === 0) {
-      setSaveMsg((prev) => {
-        if (!prev) return prev;
-        return /saved offline/i.test(prev) ? "" : prev;
-      });
-    }
-  }, [offlineQueuedCount]);
 
   const setValue = (id: string, value: any) => {
     setValues((prev) => ({ ...prev, [id]: value }));
@@ -213,7 +203,8 @@ export default function ScoutingPage() {
         return;
       }
 
-      queued.sort((a, b) => String(a.created_at).localeCompare(String(b.created_at)));
+      // oldest-first (stable)
+      queued.sort((a: any, b: any) => String(a.created_at).localeCompare(String(b.created_at)));
 
       let sent = 0;
 
@@ -227,8 +218,11 @@ export default function ScoutingPage() {
 
           if (error) {
             const msg = error.message ?? String(error);
-            if (offlineLikelyFromErrorMessage(msg)) break; // network -> stop
-            continue; // keep queued on other errors
+
+            if (offlineLikelyFromErrorMessage(msg)) {
+              break;
+            }
+            continue;
           }
 
           await removeQueuedScoutEntry(entry.entry_uuid);
@@ -241,8 +235,9 @@ export default function ScoutingPage() {
       try {
         const n = await getQueuedScoutEntryCount();
         setOfflineQueuedCount(n);
+
         if (sent > 0) {
-          setOfflineInfo(`Synced ${sent} offline entries ✅`);
+          setOfflineInfo((prev) => (prev ? prev : `Synced ${sent} offline entries ✅`));
         }
       } catch {
         // ignore
@@ -294,43 +289,95 @@ export default function ScoutingPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [offlineQueuedCount]);
 
+  useEffect(() => {
+    // If sync emptied the queue, clear the stale "Saved offline..." message
+    if (offlineQueuedCount === 0) {
+      setSaveMsg((prev) => {
+        if (!prev) return prev;
+        return /saved offline/i.test(prev) ? "" : prev;
+      });
+    }
+  }, [offlineQueuedCount]);
+
   // =====================
-  // Load Scouts when event changes (ONLINE -> load, OFFLINE -> keep last list; manual still possible)
+  // Device ID
+  // =====================
+  const deviceId =
+    localStorage.getItem("g3_device_id") ??
+    (() => {
+      const id = crypto.randomUUID();
+      localStorage.setItem("g3_device_id", id);
+      return id;
+    })();
+
+  // =====================
+  // Load locked scouter from device
   // =====================
   useEffect(() => {
-    const loadScouts = async () => {
-      const cleanEventId = (eventId ?? "").trim();
-      setScouts([]);
-      setScoutsError("");
-      if (!cleanEventId) return;
+    const name = (localStorage.getItem("g3_scouter_name") ?? "").trim();
+    const id = (localStorage.getItem("g3_scouter_id") ?? "").trim();
+    setLockedScouterName(name);
+    setLockedScouterId(id);
+  }, []);
 
-      setScoutsLoading(true);
+  // =====================
+  // Load scouters list (Supabase) for event
+  // =====================
+  useEffect(() => {
+    const loadScouters = async () => {
+      setScouters([]);
+      setScoutersError("");
+      if (!eventId) return;
+
+      setScoutersLoading(true);
       try {
-        // NOTE: adjust table name if yours differs. (This matches what you already used when it started working.)
-        const { data, error } = await supabase
-          .from("event_scouts")
-          .select("id,event_id,display_name,active")
-          .eq("event_id", cleanEventId)
-          .order("display_name", { ascending: true });
+        const cleanEventId = (eventId ?? "").trim();
+        if (!cleanEventId) return;
 
-        if (error) {
-          const msg = error.message ?? String(error);
-          if (offlineLikelyFromErrorMessage(msg)) {
-            setScoutsError("Offline: scouts list not available (you can Type your name).");
+        // Try common table names (keep your existing logic)
+        const candidates = [
+          { table: "event_scouts", nameCol: "display_name" },
+          { table: "event_scouts", nameCol: "name" },
+        ] as const;
+
+        let found: ScouterRow[] = [];
+        let lastErr = "";
+
+        for (const c of candidates) {
+          const { data, error } = await supabase
+            .from(c.table)
+            .select(`id,${c.nameCol},event_id,is_active`)
+            .eq("event_id", cleanEventId)
+            .order(c.nameCol, { ascending: true });
+
+          if (error) {
+            lastErr = error.message ?? String(error);
+            continue;
+          }
+
+          if (Array.isArray(data)) {
+            found = data as any[];
+            break;
+          }
+        }
+
+        if (!found.length && lastErr) {
+          if (offlineLikelyFromErrorMessage(lastErr)) {
+            // no hard error – just show empty list offline
+            setScouters([]);
             return;
           }
-          setScoutsError(msg);
+          setScoutersError(lastErr);
           return;
         }
 
-        const rows = ((data as any[]) ?? []).filter((r) => r && r.display_name) as ScoutRow[];
-        setScouts(rows);
+        setScouters(found);
       } finally {
-        setScoutsLoading(false);
+        setScoutersLoading(false);
       }
     };
 
-    loadScouts();
+    loadScouters();
   }, [eventId]);
 
   // =====================
@@ -414,10 +461,12 @@ export default function ScoutingPage() {
       setMatchesError("");
       setMatchId("");
 
+      // reset match teams state too
       setMatchTeams([]);
       setMatchTeamsError("");
       setMatchTeamsLoading(false);
 
+      // reset team selection to avoid saving wrong team to new event
       setValues((prev) => ({
         ...prev,
         team_number: "",
@@ -429,7 +478,8 @@ export default function ScoutingPage() {
       try {
         const { data, error } = await supabase
           .from("matches")
-          .select("id,event_id,match_number,match_type,red_teams,blue_teams")
+          // ✅ FIX: remove "description" (column does not exist)
+          .select("id,event_id,match_number,match_type,red_teams,blue_teams,match_key")
           .eq("event_id", cleanEventId)
           .order("match_type", { ascending: true })
           .order("match_number", { ascending: true });
@@ -452,9 +502,16 @@ export default function ScoutingPage() {
           return;
         }
 
-        const rows = ((data as any[]) ?? []) as MatchRow[];
+        const rowsRaw = ((data as any[]) ?? []) as any[];
+        const rows = rowsRaw.map((r) => ({
+          ...r,
+          // keep compatibility: some UI expects "key"
+          key: r.key ?? r.match_key ?? null,
+        })) as MatchRow[];
+
         setMatches(rows);
 
+        // cache matches for offline
         try {
           await cacheMatches(cleanEventId, rows);
         } catch {
@@ -498,6 +555,7 @@ export default function ScoutingPage() {
       setMatchTeams([]);
       setMatchTeamsError("");
 
+      // also reset team selection when match changes (prevents wrong team)
       setValues((prev) => ({
         ...prev,
         team_number: "",
@@ -539,9 +597,12 @@ export default function ScoutingPage() {
 
         const nums = (data as MatchTeamRow[] | null | undefined) ?? [];
         const list = nums.map((x) => Number(x.team_number)).filter((n) => Number.isFinite(n));
+
+        // unique + stable order
         const uniq = Array.from(new Set(list));
         setMatchTeams(uniq);
 
+        // cache match teams for offline use
         try {
           await cacheMatchTeams(matchId, uniq);
         } catch {
@@ -555,7 +616,8 @@ export default function ScoutingPage() {
     loadMatchTeams();
   }, [matchId]);
 
-  const hasMatchTeams = matchTeams.length >= 6;
+  // Derived: whether we can enforce dropdown-only selection
+  const hasMatchTeams = matchTeams.length >= 6; // normally exactly 6
 
   // =====================
   // Save entry to scout_entries (ONLINE or queue offline)
@@ -566,10 +628,12 @@ export default function ScoutingPage() {
       setSaveMsg("");
 
       const cleanEventId = (eventId ?? "").trim();
+
       if (!cleanEventId) {
         setSaveMsg("בחר Event קודם.");
         return;
       }
+
       if (!matchId) {
         setSaveMsg("בחר Match קודם.");
         return;
@@ -581,25 +645,11 @@ export default function ScoutingPage() {
         return;
       }
 
+      // Critical validation:
       if (hasMatchTeams && !matchTeams.includes(teamNumber)) {
         setSaveMsg("הקבוצה שנבחרה לא נמצאת במשחק הזה. בחר קבוצה מתוך הרשימה.");
         return;
       }
-
-      // Scout name (locked to this device after first save)
-      const finalScoutName = (scoutLocked ? scoutName : scoutMode === "manual" ? scoutManual : scoutName).trim();
-      if (!finalScoutName) {
-        setSaveMsg("בחר/הקלד שם סקאוטר לפני שמירה.");
-        return;
-      }
-
-      const deviceId =
-        localStorage.getItem("g3_device_id") ??
-        (() => {
-          const id = crypto.randomUUID();
-          localStorage.setItem("g3_device_id", id);
-          return id;
-        })();
 
       const entry_uuid = crypto.randomUUID();
       const created_at = new Date().toISOString();
@@ -615,29 +665,24 @@ export default function ScoutingPage() {
         data: {
           ...values,
           match_id: matchId,
-          scout_name: finalScoutName,
+          scouter_name: lockedScouterName || null,
+          scouter_id: lockedScouterId || null,
         },
         notes: values.notes ?? null,
       };
 
-      const { error } = await supabase.from("scout_entries").upsert([row], { onConflict: "entry_uuid", ignoreDuplicates: true });
+      // upsert idempotently (no duplicates if retried)
+      const { error } = await supabase
+        .from("scout_entries")
+        .upsert([row], { onConflict: "entry_uuid", ignoreDuplicates: true });
 
       if (error) {
         const msg = error.message ?? String(error);
 
         if (offlineLikelyFromErrorMessage(msg)) {
           try {
-            await enqueueScoutEntry(row);
+            await enqueueScoutEntry(row as any);
             const n = await getQueuedScoutEntryCount();
-
-            // lock scout name on first save (even offline)
-            if (!scoutLocked) {
-              localStorage.setItem("g3_scout_name", finalScoutName);
-              localStorage.setItem("g3_scout_name_locked", "1");
-              setScoutName(finalScoutName);
-              setScoutLocked(true);
-            }
-
             setOfflineQueuedCount(n);
             setSaveMsg(`Saved offline ✅ (queued: ${n})`);
           } catch (e) {
@@ -651,17 +696,9 @@ export default function ScoutingPage() {
         return;
       }
 
-      // lock scout name on first successful save
-      if (!scoutLocked) {
-        localStorage.setItem("g3_scout_name", finalScoutName);
-        localStorage.setItem("g3_scout_name_locked", "1");
-        setScoutName(finalScoutName);
-        setScoutLocked(true);
-      }
-
       setSaveMsg(`Saved ✅ (${selectedMatchLabel || "match"})`);
       setValues((prev) => ({
-        team_number: prev.team_number,
+        team_number: prev.team_number, // keep team selection
         notes: "",
       }));
     } finally {
@@ -669,6 +706,7 @@ export default function ScoutingPage() {
     }
   };
 
+  // Shared input styles (UI-only)
   const controlStyle: React.CSSProperties = {
     width: "100%",
     boxSizing: "border-box",
@@ -677,36 +715,14 @@ export default function ScoutingPage() {
     border: "1px solid #ccc",
   };
 
-  // ===== Step 3 (Mobile UX): sticky bottom bar on narrow screens
-  const showBottomBar = isNarrow && eventId && template;
-
-  const bottomBarStyle: React.CSSProperties = {
-    position: "fixed",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 999,
-    background: "rgba(255,255,255,0.98)",
-    borderTop: "1px solid rgba(0,0,0,0.10)",
-    padding: "10px 12px",
-    boxShadow: "0 -8px 22px rgba(0,0,0,0.08)",
-  };
-
-  const pillStyle: React.CSSProperties = {
-    padding: "6px 10px",
-    borderRadius: 999,
-    border: "1px solid rgba(0,0,0,0.12)",
-    fontWeight: 900,
-    fontSize: 12,
-    whiteSpace: "nowrap",
-    background: "#fafafa",
-  };
-
+  // =====================
+  // UI
+  // =====================
   return (
-    <div style={{ padding: isNarrow ? 10 : 16, maxWidth: 1020, paddingBottom: showBottomBar ? 92 : undefined }}>
+    <div style={{ padding: isNarrow ? 10 : 16, maxWidth: 1020 }}>
       <h1 style={{ marginBottom: 6 }}>Scouting</h1>
 
-      {/* Soft offline info banner (keep — but on mobile we also show status in bottom bar) */}
+      {/* Soft offline info banner */}
       {offlineInfo ? (
         <div
           style={{
@@ -732,7 +748,7 @@ export default function ScoutingPage() {
             onChange={(e) => {
               const v = e.target.value;
               setEventId(v);
-              localStorage.setItem("g3_event_id", v);
+              localStorage.setItem("g3_event_id", v); // ✅ for countdown + admin convenience
             }}
             style={controlStyle}
           >
@@ -746,6 +762,64 @@ export default function ScoutingPage() {
       </div>
 
       {!eventId && <div style={{ opacity: 0.8 }}>בחר Event כדי לטעון טופס ומאצ׳ים.</div>}
+
+      {/* SCOUTER PICKER (locked per device) */}
+      {eventId ? (
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontWeight: 900, marginBottom: 6 }}>Scout name</div>
+
+          {lockedScouterName ? (
+            <div style={{ padding: 10, border: "1px solid #eee", borderRadius: 12, background: "#fff" }}>
+              Locked to: <b>{lockedScouterName}</b>
+              <div style={{ marginTop: 6, opacity: 0.7, fontWeight: 800 }}>Device ID: {deviceId.slice(0, 8)}…</div>
+            </div>
+          ) : (
+            <div style={{ display: "grid", gap: 8, maxWidth: 520 }}>
+              {scoutersLoading ? <div style={{ opacity: 0.75 }}>Loading names…</div> : null}
+              {scoutersError ? (
+                <div style={{ padding: 10, borderRadius: 12, background: "#fff5f5", border: "1px solid #ffb3b3" }}>
+                  <b>Scouters error:</b> {scoutersError}
+                </div>
+              ) : null}
+
+              <select
+                style={controlStyle}
+                value={lockedScouterId || ""}
+                onChange={(e) => {
+                  const id = e.target.value;
+                  const row = scouters.find((s) => String((s as any).id ?? "") === id);
+                  const name = (row?.display_name ?? row?.name ?? "").trim();
+
+                  if (!id || !name) return;
+
+                  localStorage.setItem("g3_scouter_id", id);
+                  localStorage.setItem("g3_scouter_name", name);
+                  setLockedScouterId(id);
+                  setLockedScouterName(name);
+                }}
+              >
+                <option value="">Select your name…</option>
+                {scouters
+                  .filter((s) => (s.is_active ?? true) !== false)
+                  .map((s, idx) => {
+                    const id = String((s as any).id ?? `row-${idx}`);
+                    const name = (s.display_name ?? s.name ?? "").trim();
+                    if (!name) return null;
+                    return (
+                      <option key={id} value={id}>
+                        {name}
+                      </option>
+                    );
+                  })}
+              </select>
+
+              <div style={{ opacity: 0.7, fontWeight: 800 }}>
+                (Once selected, it locks to this device. Mentors/Admin can still log in separately.)
+              </div>
+            </div>
+          )}
+        </div>
+      ) : null}
 
       {/* TEMPLATE STATUS */}
       {eventId && templateLoading && <div style={{ opacity: 0.8 }}>Loading template…</div>}
@@ -842,7 +916,8 @@ export default function ScoutingPage() {
 
               {!matchTeamsLoading && !matchTeamsError && matchTeams.length > 0 && !hasMatchTeams ? (
                 <div style={{ marginTop: 6, padding: 10, borderRadius: 12, background: "#fff4cc", fontWeight: 800 }}>
-                  Loaded {matchTeams.length} teams for this match (expected 6). You can still scout, but verify schedule data.
+                  Loaded {matchTeams.length} teams for this match (expected 6). You can still scout, but verify schedule
+                  data.
                 </div>
               ) : null}
             </div>
@@ -902,108 +977,6 @@ export default function ScoutingPage() {
               )}
             </div>
 
-            {/* Scout name */}
-            <div style={{ width: "100%", maxWidth: isNarrow ? "100%" : 280 }}>
-              <div style={{ fontWeight: 900, marginBottom: 6 }}>Scout Name</div>
-
-              {scoutLocked ? (
-                <div
-                  style={{
-                    ...controlStyle,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    gap: 10,
-                    background: "#fafafa",
-                    border: "1px solid rgba(0,0,0,0.12)",
-                    fontWeight: 900,
-                  }}
-                  title="Locked to this device"
-                >
-                  <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{scoutName || "—"}</span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const ok = window.confirm(
-                        "Change scout name on this device?\n\nThis should be used only if a different scout is using the same phone."
-                      );
-                      if (!ok) return;
-                      localStorage.removeItem("g3_scout_name_locked");
-                      setScoutLocked(false);
-                      setScoutMode("pick");
-                      setScoutManual("");
-                    }}
-                    style={{
-                      padding: "6px 10px",
-                      borderRadius: 12,
-                      border: "1px solid #ddd",
-                      background: "#fff",
-                      fontWeight: 900,
-                      cursor: "pointer",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    Change
-                  </button>
-                </div>
-              ) : (
-                <div style={{ display: "grid", gap: 8 }}>
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                    <button
-                      type="button"
-                      onClick={() => setScoutMode("pick")}
-                      style={{
-                        padding: "6px 10px",
-                        borderRadius: 12,
-                        border: "1px solid #ddd",
-                        background: scoutMode === "pick" ? "rgba(0,0,0,0.06)" : "#fff",
-                        fontWeight: 900,
-                        cursor: "pointer",
-                      }}
-                    >
-                      Pick
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setScoutMode("manual")}
-                      style={{
-                        padding: "6px 10px",
-                        borderRadius: 12,
-                        border: "1px solid #ddd",
-                        background: scoutMode === "manual" ? "rgba(0,0,0,0.06)" : "#fff",
-                        fontWeight: 900,
-                        cursor: "pointer",
-                      }}
-                    >
-                      Type
-                    </button>
-                  </div>
-
-                  {scoutMode === "pick" ? (
-                    <select value={scoutName} onChange={(e) => setScoutName(e.target.value)} style={controlStyle} disabled={!eventId}>
-                      <option value="">{eventId ? "Select your name…" : "Select event first"}</option>
-                      {scouts.map((s) => (
-                        <option key={s.id ?? s.display_name} value={s.display_name}>
-                          {s.display_name}
-                        </option>
-                      ))}
-                    </select>
-                  ) : (
-                    <input
-                      value={scoutManual}
-                      onChange={(e) => setScoutManual(e.target.value)}
-                      style={controlStyle}
-                      placeholder="Type your name…"
-                      disabled={!eventId}
-                    />
-                  )}
-
-                  {scoutsLoading ? <div style={{ opacity: 0.8, fontWeight: 800 }}>Loading scouts…</div> : null}
-                  {scoutsError ? <div style={{ opacity: 0.85, fontWeight: 800 }}>{scoutsError}</div> : null}
-                </div>
-              )}
-            </div>
-
             {/* Notes */}
             <div style={{ width: "100%", maxWidth: isNarrow ? "100%" : 520 }}>
               <div style={{ fontWeight: 900, marginBottom: 6 }}>Notes (optional)</div>
@@ -1018,92 +991,42 @@ export default function ScoutingPage() {
               />
             </div>
 
-            {/* Save button (desktop/tablet). On mobile it lives in the bottom bar */}
-            {!isNarrow ? (
-              <div style={{ alignSelf: "flex-end" }}>
-                <button
-                  type="button"
-                  onClick={handleSave}
-                  disabled={saving}
-                  style={{
-                    padding: "12px 18px",
-                    borderRadius: 12,
-                    border: "1px solid #ccc",
-                    fontWeight: 950,
-                    cursor: "pointer",
-                  }}
-                >
-                  {saving ? "Saving..." : "Save"}
-                </button>
+            {/* Save */}
+            <div style={{ alignSelf: isNarrow ? "stretch" : "flex-end" }}>
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={saving}
+                style={{
+                  padding: "12px 18px",
+                  borderRadius: 12,
+                  border: "1px solid #ccc",
+                  fontWeight: 950,
+                  cursor: "pointer",
+                  width: isNarrow ? "100%" : "auto",
+                }}
+              >
+                {saving ? "Saving..." : "Save"}
+              </button>
+            </div>
+
+            {saveMsg && (
+              <div style={{ alignSelf: isNarrow ? "stretch" : "flex-end", fontWeight: 900, opacity: 0.9 }}>
+                {saveMsg}
               </div>
-            ) : null}
+            )}
 
-            {!isNarrow && saveMsg ? (
-              <div style={{ alignSelf: "flex-end", fontWeight: 900, opacity: 0.9 }}>{saveMsg}</div>
-            ) : null}
-
-            {!isNarrow && offlineQueuedCount > 0 ? (
-              <div style={{ alignSelf: "flex-end", fontWeight: 900, opacity: 0.7 }}>Offline queued: {offlineQueuedCount}</div>
-            ) : null}
+            {offlineQueuedCount > 0 && (
+              <div style={{ alignSelf: isNarrow ? "stretch" : "flex-end", fontWeight: 900, opacity: 0.7 }}>
+                Offline queued: {offlineQueuedCount}
+              </div>
+            )}
           </div>
 
           {/* Full dynamic form */}
           <TemplateForm template={template} values={values} setValue={setValue} />
         </>
       )}
-
-      {/* Sticky bottom bar (mobile) */}
-      {showBottomBar ? (
-        <div style={bottomBarStyle}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              <span
-                style={{
-                  ...pillStyle,
-                  background: isOnline ? "rgba(0,180,90,0.14)" : "rgba(255,0,0,0.10)",
-                  border: isOnline ? "1px solid rgba(0,180,90,0.25)" : "1px solid rgba(255,0,0,0.20)",
-                }}
-              >
-                {isOnline ? "ONLINE" : "OFFLINE"}
-              </span>
-
-              <span style={pillStyle}>Queued: {offlineQueuedCount}</span>
-            </div>
-
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div
-                style={{
-                  fontWeight: 900,
-                  fontSize: 12,
-                  opacity: 0.85,
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                }}
-                title={saveMsg || offlineInfo || ""}
-              >
-                {saveMsg || offlineInfo || ""}
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={handleSave}
-              disabled={saving}
-              style={{
-                padding: "12px 16px",
-                borderRadius: 14,
-                border: "1px solid rgba(0,0,0,0.18)",
-                background: "#fff",
-                fontWeight: 1000,
-                cursor: "pointer",
-              }}
-            >
-              {saving ? "Saving…" : "Save"}
-            </button>
-          </div>
-        </div>
-      ) : null}
     </div>
   );
 }
