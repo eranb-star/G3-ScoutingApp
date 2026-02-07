@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, NavLink, Route, Routes, Navigate, useLocation } from "react-router-dom";
 
@@ -58,32 +58,6 @@ function withTimeout<T>(p: PromiseLike<T>, ms = 5000): Promise<T> {
   });
 }
 
-// UI-only helper: responsive breakpoint
-function useIsNarrow(breakpointPx = 720) {
-  const [isNarrow, setIsNarrow] = useState(() => (typeof window !== "undefined" ? window.innerWidth <= breakpointPx : false));
-  useEffect(() => {
-    const onResize = () => setIsNarrow(window.innerWidth <= breakpointPx);
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, [breakpointPx]);
-  return isNarrow;
-}
-
-function useOnlineStatus() {
-  const [online, setOnline] = useState(() => (typeof navigator !== "undefined" ? navigator.onLine : true));
-  useEffect(() => {
-    const on = () => setOnline(true);
-    const off = () => setOnline(false);
-    window.addEventListener("online", on);
-    window.addEventListener("offline", off);
-    return () => {
-      window.removeEventListener("online", on);
-      window.removeEventListener("offline", off);
-    };
-  }, []);
-  return online;
-}
-
 // ----------------------
 // Admin context
 // ----------------------
@@ -102,13 +76,11 @@ function useAdmin() {
   return v;
 }
 
-// ✅ STEP 1 CHANGE: use RPC is_admin() instead of querying app_admins
+// ✅ use RPC is_admin() instead of querying app_admins
 async function checkIsAdmin(): Promise<boolean> {
   try {
     const q = supabase.rpc("is_admin") as unknown as PromiseLike<{ data: boolean | null; error: any }>;
     const { data, error } = await withTimeout(q, 4000);
-
-    // If RLS blocks or any error: treat as NOT admin (never freeze the UI).
     if (error) return false;
     return Boolean(data);
   } catch {
@@ -121,7 +93,6 @@ function AdminProvider({ children }: { children: React.ReactNode }) {
   const [email, setEmail] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
 
-  // prevent overlapping refresh calls (avoids flicker + "checking" loops)
   const inflight = useRef<Promise<void> | null>(null);
 
   const refresh = async () => {
@@ -139,16 +110,12 @@ function AdminProvider({ children }: { children: React.ReactNode }) {
         }
 
         setEmail(session.user.email ?? "");
-
-        // ✅ no userId needed; rpc uses auth.uid()
         const ok = await checkIsAdmin();
         setIsAdmin(ok);
       } catch {
-        // Never block UI
         setEmail("");
         setIsAdmin(false);
       } finally {
-        // IMPORTANT: only flips to true; never back to false
         setBootstrapped(true);
       }
     })().finally(() => {
@@ -184,13 +151,8 @@ function AdminProvider({ children }: { children: React.ReactNode }) {
 
 // ----------------------
 // Admin Modal (Login + Tools)
-// - Updated for mobile UX:
-//   - bottom-sheet style
-//   - scrollable content
-//   - bigger touch targets
 // ----------------------
 function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const isNarrow = useIsNarrow(720);
   const { email: authEmail, isAdmin, refresh } = useAdmin();
 
   const [email, setEmail] = useState("");
@@ -227,7 +189,7 @@ function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
       }
 
       await refresh();
-      onClose(); // close immediately for better UX
+      onClose();
     } finally {
       setLoading(false);
     }
@@ -239,13 +201,12 @@ function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
     setSyncResult(null);
 
     try {
-      // "local" works even when offline / flaky network
       const { error } = await supabase.auth.signOut({ scope: "local" });
       if (error) {
         setMsg("Logout failed: " + error.message);
         return;
       }
-      await refresh(); // force UI update immediately
+      await refresh();
       onClose();
     } finally {
       setLoading(false);
@@ -285,82 +246,79 @@ function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
     }
   };
 
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open, onClose]);
-
   if (!open) return null;
 
-  const overlayStyle: React.CSSProperties = {
-    position: "fixed",
-    inset: 0,
-    background: "rgba(0,0,0,0.38)",
-    zIndex: 9999,
-    display: "flex",
-    alignItems: isNarrow ? "flex-end" : "center",
-    justifyContent: "center",
-    padding: isNarrow ? 0 : 16,
-  };
-
-  const sheetStyle: React.CSSProperties = {
-    width: isNarrow ? "100%" : "min(920px, 100%)",
-    maxHeight: isNarrow ? "92vh" : "88vh",
-    borderTopLeftRadius: isNarrow ? 18 : 18,
-    borderTopRightRadius: isNarrow ? 18 : 18,
-    borderRadius: isNarrow ? undefined : 18,
-    background: "#fff",
-    border: "1px solid rgba(0,0,0,0.12)",
-    boxShadow: "0 10px 40px rgba(0,0,0,0.18)",
-    padding: 16,
-    overflowY: "auto",
-    WebkitOverflowScrolling: "touch",
-    paddingBottom: "calc(16px + env(safe-area-inset-bottom))",
-  };
-
-  const inputStyle: React.CSSProperties = {
-    padding: 12,
-    borderRadius: 12,
-    border: "1px solid #ccc",
-    width: isNarrow ? "100%" : 260,
-  };
-
-  const btnStyle: React.CSSProperties = {
-    padding: "12px 14px",
-    borderRadius: 14,
-    border: "1px solid #ddd",
-    background: "#fff",
-    fontWeight: 1000,
-    cursor: "pointer",
-    width: isNarrow ? "100%" : "auto",
-  };
-
   return (
-    <div style={overlayStyle} onClick={onClose}>
-      <div style={sheetStyle} onClick={(e) => e.stopPropagation()}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, position: "sticky", top: 0, background: "#fff", zIndex: 2, paddingBottom: 10 }}>
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(0,0,0,0.35)",
+        zIndex: 9999,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 16,
+      }}
+      onClick={onClose}
+    >
+      <div
+        style={{
+          width: "min(920px, 100%)",
+          borderRadius: 18,
+          background: "#fff",
+          border: "1px solid rgba(0,0,0,0.12)",
+          boxShadow: "0 10px 40px rgba(0,0,0,0.18)",
+          padding: 16,
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{ fontWeight: 1000, fontSize: 18 }}>Admin</div>
           <div style={{ marginLeft: "auto" }}>
-            <button type="button" onClick={onClose} style={btnStyle}>
+            <button
+              type="button"
+              onClick={onClose}
+              style={{
+                padding: "8px 10px",
+                borderRadius: 12,
+                border: "1px solid #ddd",
+                background: "#fff",
+                fontWeight: 900,
+                cursor: "pointer",
+              }}
+            >
               Close
             </button>
           </div>
         </div>
 
-        <div style={{ marginTop: 8, opacity: 0.92 }}>
+        <div style={{ marginTop: 10, opacity: 0.9 }}>
           {authEmail ? (
-            <div style={{ lineHeight: 1.4 }}>
+            <div>
               Logged in as <b>{authEmail}</b>{" "}
               {isAdmin ? (
-                <span style={{ marginLeft: 8, padding: "4px 10px", borderRadius: 999, background: "#e8fff6", fontWeight: 900 }}>
+                <span
+                  style={{
+                    marginLeft: 8,
+                    padding: "3px 8px",
+                    borderRadius: 999,
+                    background: "#e8fff6",
+                    fontWeight: 900,
+                  }}
+                >
                   ADMIN
                 </span>
               ) : (
-                <span style={{ marginLeft: 8, padding: "4px 10px", borderRadius: 999, background: "#ffe0e0", fontWeight: 900 }}>
+                <span
+                  style={{
+                    marginLeft: 8,
+                    padding: "3px 8px",
+                    borderRadius: 999,
+                    background: "#ffe0e0",
+                    fontWeight: 900,
+                  }}
+                >
                   NOT ADMIN
                 </span>
               )}
@@ -370,13 +328,17 @@ function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
           )}
         </div>
 
-        {/* Login / Logout */}
-        <div style={{ marginTop: 14, display: "grid", gap: 10 }}>
+        <div style={{ marginTop: 12, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "end" }}>
           {!authEmail ? (
             <>
               <div style={{ display: "grid", gap: 6 }}>
                 <div style={{ fontWeight: 900 }}>Email</div>
-                <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="admin@email.com" style={inputStyle} />
+                <input
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="admin@email.com"
+                  style={{ padding: 10, borderRadius: 12, border: "1px solid #ccc", width: 260 }}
+                />
               </div>
 
               <div style={{ display: "grid", gap: 6 }}>
@@ -386,23 +348,46 @@ function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   type="password"
-                  style={inputStyle}
+                  style={{ padding: 10, borderRadius: 12, border: "1px solid #ccc", width: 260 }}
                 />
               </div>
 
-              <button type="button" onClick={signIn} disabled={loading} style={btnStyle}>
+              <button
+                type="button"
+                onClick={signIn}
+                disabled={loading}
+                style={{
+                  padding: "10px 12px",
+                  borderRadius: 14,
+                  border: "1px solid #ddd",
+                  background: "#fff",
+                  fontWeight: 1000,
+                  cursor: "pointer",
+                }}
+              >
                 {loading ? "Working..." : "Login"}
               </button>
             </>
           ) : (
-            <button type="button" onClick={signOut} disabled={loading} style={btnStyle}>
+            <button
+              type="button"
+              onClick={signOut}
+              disabled={loading}
+              style={{
+                padding: "10px 12px",
+                borderRadius: 14,
+                border: "1px solid #ddd",
+                background: "#fff",
+                fontWeight: 1000,
+                cursor: "pointer",
+              }}
+            >
               {loading ? "Working..." : "Logout"}
             </button>
           )}
         </div>
 
-        {/* Admin-only tools */}
-        <div style={{ marginTop: 16, borderTop: "1px solid #eee", paddingTop: 14 }}>
+        <div style={{ marginTop: 14, borderTop: "1px solid #eee", paddingTop: 14 }}>
           <div style={{ fontWeight: 1000, marginBottom: 8 }}>Admin tools</div>
 
           {!authEmail ? (
@@ -412,24 +397,36 @@ function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
               You are logged in but not in <code>app_admins</code>.
             </div>
           ) : (
-            <div style={{ display: "grid", gap: 12 }}>
-              <div style={{ display: "grid", gap: 8 }}>
+            <div style={{ display: "grid", gap: 10 }}>
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "end" }}>
                 <div style={{ display: "grid", gap: 6 }}>
                   <div style={{ fontWeight: 900 }}>event_id (UUID)</div>
                   <input
                     value={syncEventId}
                     onChange={(e) => setSyncEventId(e.target.value)}
                     placeholder="f34e67ec-bac9-433e-a97a-1e295aef8f30"
-                    style={{ ...inputStyle, width: "100%" }}
+                    style={{ padding: 10, borderRadius: 12, border: "1px solid #ccc", width: 360 }}
                   />
                 </div>
 
-                <label style={{ display: "flex", gap: 10, alignItems: "center", fontWeight: 900 }}>
+                <label style={{ display: "flex", gap: 8, alignItems: "center", fontWeight: 900 }}>
                   <input type="checkbox" checked={replace} onChange={(e) => setReplace(e.target.checked)} />
                   Replace QM
                 </label>
 
-                <button type="button" onClick={syncMatches} disabled={loading} style={btnStyle}>
+                <button
+                  type="button"
+                  onClick={syncMatches}
+                  disabled={loading}
+                  style={{
+                    padding: "10px 12px",
+                    borderRadius: 14,
+                    border: "1px solid #ddd",
+                    background: "#fff",
+                    fontWeight: 1000,
+                    cursor: "pointer",
+                  }}
+                >
                   {loading ? "Working..." : "Fetch matches from TBA"}
                 </button>
               </div>
@@ -464,18 +461,30 @@ function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
 // ----------------------
 function TopNav() {
   const location = useLocation();
-  const online = useOnlineStatus();
   const { bootstrapped, email, isAdmin, refresh } = useAdmin();
   const [adminOpen, setAdminOpen] = useState(false);
 
-  // Israel time ticker
+  // Online / Offline indicator (updates live)
+  const [isOnline, setIsOnline] = useState<boolean>(() =>
+    typeof navigator === "undefined" ? true : navigator.onLine
+  );
+  useEffect(() => {
+    const goOnline = () => setIsOnline(true);
+    const goOffline = () => setIsOnline(false);
+    window.addEventListener("online", goOnline);
+    window.addEventListener("offline", goOffline);
+    return () => {
+      window.removeEventListener("online", goOnline);
+      window.removeEventListener("offline", goOffline);
+    };
+  }, []);
+
   const [now, setNow] = useState<Date>(() => new Date());
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(t);
   }, []);
 
-  // Next match countdown
   const [nextMatch, setNextMatch] = useState<NextMatch | null>(null);
   const [countdownMs, setCountdownMs] = useState<number>(0);
 
@@ -535,7 +544,7 @@ function TopNav() {
     try {
       await supabase.auth.signOut({ scope: "local" });
     } finally {
-      await refresh(); // force immediate UI update
+      await refresh();
       setAdminOpen(false);
     }
   };
@@ -561,12 +570,10 @@ function TopNav() {
               Scouting
             </NavLink>
 
-            {/* Kids can see Analysis */}
             <NavLink to="/analysis" style={linkStyle}>
               Analysis
             </NavLink>
 
-            {/* Admin-only navigation */}
             {isAdmin ? (
               <>
                 <NavLink to="/analysis/alliance" style={linkStyle}>
@@ -581,18 +588,17 @@ function TopNav() {
         </div>
 
         <div className="topnav-auth">
-          {/* Online/Offline pill (non-blocking) */}
           <div
             className="topnav-pill"
             style={{
-              background: online ? "rgba(0,0,0,0.06)" : "rgba(255,165,0,0.16)",
-              border: online ? "1px solid rgba(0,0,0,0.10)" : "1px solid rgba(255,165,0,0.35)",
+              opacity: 0.85,
               fontWeight: 900,
-              opacity: 0.95,
+              background: isOnline ? "rgba(0,180,90,0.14)" : "rgba(255,0,0,0.10)",
+              border: isOnline ? "1px solid rgba(0,180,90,0.25)" : "1px solid rgba(255,0,0,0.20)",
             }}
-            title={online ? "Online" : "Offline"}
+            title={isOnline ? "Online" : "Offline"}
           >
-            {online ? "ONLINE" : "OFFLINE"}
+            {isOnline ? "Online" : "Offline"}
           </div>
 
           {!bootstrapped ? (
@@ -666,10 +672,8 @@ function AppShell() {
         <Route path="/" element={<Navigate to="/scouting" replace />} />
         <Route path="/scouting" element={<ScoutingPage />} />
 
-        {/* Kids can see Analysis */}
         <Route path="/analysis" element={<AnalysisPage />} />
 
-        {/* Admin-only routes */}
         <Route
           path="/analysis/alliance"
           element={

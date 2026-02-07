@@ -38,7 +38,9 @@ function QuickButtonsRow({
 }) {
   if (!quickButtons || quickButtons.length === 0) return null;
 
-  const unique = Array.from(new Set(quickButtons.map((x) => Math.abs(asNum(x, 0))).filter((x) => x > 0))).sort((a, b) => a - b);
+  const unique = Array.from(new Set(quickButtons.map((x) => Math.abs(asNum(x, 0))).filter((x) => x > 0))).sort(
+    (a, b) => a - b
+  );
   if (unique.length === 0) return null;
 
   const btnStyle: React.CSSProperties = {
@@ -87,7 +89,6 @@ function CounterRow({
 }) {
   const dec = () => onChange(clamp(value - step, min, max));
   const inc = () => onChange(clamp(value + step, min, max));
-
   const onDelta = (delta: number) => onChange(clamp(value + delta, min, max));
 
   return (
@@ -244,6 +245,15 @@ function PicklistCounter({
   );
 }
 
+function normalizeLabel(s: string) {
+  return String(s || "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .replace(/\(optional\)/gi, "")
+    .trim()
+    .toLowerCase();
+}
+
 export default function TemplateForm({
   template,
   values,
@@ -264,12 +274,58 @@ export default function TemplateForm({
     border: "1px solid #ccc",
   };
 
+  // ✅ IDs to hide (works even if label changes)
+  const HIDE_ITEM_IDS = new Set<string>([
+    // legacy Scout Name field (now irrelevant due to device-locked picklist)
+    "scout_name",
+    "scouter_name",
+    "scoutName",
+    "scouter",
+    "name",
+
+    // your requested removals (if template IDs happen to match)
+    "starting_mechanism_config",
+    "startingMechanismConfig",
+    "mobility_setup",
+    "mobilitySetup",
+    "auto_attempted",
+    "autoAttempted",
+    "mobility_leave_start_zone",
+    "mobilityLeaveStartZone",
+    "auto_path_quality",
+    "autoPathQuality",
+  ]);
+
+  // ✅ Labels to hide (case-insensitive, ignores "(optional)")
+  const HIDE_LABELS = new Set<string>([
+    normalizeLabel("Scout Name (optional)"),
+    normalizeLabel("Starting Mechanism Config (optional)"),
+    normalizeLabel("Mobility / Setup"),
+    normalizeLabel("Auto Attempted"),
+    normalizeLabel("Mobility / Leave Start Zone"),
+    normalizeLabel("Auto Path Quality"),
+  ]);
+
+  const shouldHideItem = (item: AnyObj) => {
+    if (!item) return true;
+
+    // hide legacy/explicit hidden fields
+    if (item?.hidden === true) return true;
+
+    const itemId = String(item?.id ?? "").trim();
+    if (itemId && HIDE_ITEM_IDS.has(itemId)) return true;
+
+    const label = normalizeLabel(String(item?.label ?? ""));
+    if (label && HIDE_LABELS.has(label)) return true;
+
+    return false;
+  };
+
   const renderItem = (item: AnyObj) => {
     const itemId = item?.id;
     if (!itemId) return null;
 
-    // ✅ hide legacy/hidden fields
-    if (item?.hidden === true) return null;
+    if (shouldHideItem(item)) return null;
 
     const label = item?.label ?? itemId;
     const type = item?.type ?? "counter";
@@ -351,12 +407,7 @@ export default function TemplateForm({
       <div key={itemId} style={{ margin: "12px 0" }}>
         <div style={{ fontWeight: 900, marginBottom: 6 }}>{label}</div>
         <div style={{ width: "100%", maxWidth: isNarrow ? "100%" : 520 }}>
-          <input
-            value={v}
-            onChange={(e) => setValue(itemId, e.target.value)}
-            placeholder={item?.placeholder ?? ""}
-            style={controlStyle}
-          />
+          <input value={v} onChange={(e) => setValue(itemId, e.target.value)} placeholder={item?.placeholder ?? ""} style={controlStyle} />
         </div>
       </div>
     );
@@ -364,27 +415,43 @@ export default function TemplateForm({
 
   return (
     <div>
-      {phases.map((phase: AnyObj) => (
-        <div key={phase.id} style={{ marginTop: 18, paddingTop: 10, borderTop: "1px solid #eee" }}>
-          <h2 style={{ margin: "6px 0" }}>{phase.label ?? phase.id}</h2>
+      {phases.map((phase: AnyObj) => {
+        // ✅ filter blocks that have at least 1 visible item
+        const blocks = (phase.blocks ?? []).filter((block: AnyObj) => {
+          const items = (block.items ?? []).filter((it: AnyObj) => !shouldHideItem(it) && !!it?.id);
+          return items.length > 0;
+        });
 
-          {(phase.blocks ?? []).map((block: AnyObj) => (
-            <div
-              key={block.id}
-              style={{
-                margin: "10px 0",
-                padding: isNarrow ? 12 : 14,
-                border: "1px solid #eee",
-                borderRadius: 14,
-                background: "#fff",
-              }}
-            >
-              <div style={{ fontWeight: 950, marginBottom: 10 }}>{block.label ?? block.id}</div>
-              {(block.items ?? []).map((item: AnyObj) => renderItem(item))}
-            </div>
-          ))}
-        </div>
-      ))}
+        // ✅ if phase became empty, don't render it
+        if (!blocks.length) return null;
+
+        return (
+          <div key={phase.id} style={{ marginTop: 18, paddingTop: 10, borderTop: "1px solid #eee" }}>
+            <h2 style={{ margin: "6px 0" }}>{phase.label ?? phase.id}</h2>
+
+            {blocks.map((block: AnyObj) => {
+              const visibleItems = (block.items ?? []).filter((it: AnyObj) => !shouldHideItem(it) && !!it?.id);
+              if (!visibleItems.length) return null; // extra safety
+
+              return (
+                <div
+                  key={block.id}
+                  style={{
+                    margin: "10px 0",
+                    padding: isNarrow ? 12 : 14,
+                    border: "1px solid #eee",
+                    borderRadius: 14,
+                    background: "#fff",
+                  }}
+                >
+                  <div style={{ fontWeight: 950, marginBottom: 10 }}>{block.label ?? block.id}</div>
+                  {visibleItems.map((item: AnyObj) => renderItem(item))}
+                </div>
+              );
+            })}
+          </div>
+        );
+      })}
     </div>
   );
 }

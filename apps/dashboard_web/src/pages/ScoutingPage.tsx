@@ -16,22 +16,15 @@ import {
   removeQueuedScoutEntry,
 } from "../lib/offlineDb";
 
+// --------------------
+// Types
+// --------------------
 type MatchRow = {
   id: string; // uuid
   event_id: string; // uuid
   match_number?: number | null;
-  match_type?: string | null; // qual/qm/qf/sf/f
-  set_number?: number | null;
-
-  // NOTE: matches table in your DB does NOT have "description".
-  // Keep it optional for forward-compat (or cached data), but do NOT select it from DB.
-  description?: string | null;
-
-  // legacy compatibility field (some UI code used "key")
-  key?: string | null;
-
-  // actual column in your DB: matches.match_key
-  match_key?: string | null; // matches.match_key
+  match_type?: string | null; // qm/qf/sf/f etc
+  match_key?: string | null; // actual column in DB
 
   // Needed for pre-caching match teams for complete offline (even if match not opened before)
   red_teams?: number[] | null;
@@ -44,45 +37,33 @@ type MatchTeamRow = {
   alliance?: string | null; // "red"/"blue" if view includes it
 };
 
-// ---- Scouter list types ----
-type ScouterRow = {
-  id?: string | null; // optional uuid if your table has it
-  display_name?: string | null;
-  name?: string | null; // fallback
-  event_id?: string | null;
+type ScoutRow = {
+  id: string;
+  event_id: string;
+  name: string;
   is_active?: boolean | null;
 };
 
+// --------------------
+// Helpers
+// --------------------
+
+// ✅ Requirement #1: show short names like QM1, QM2 ...
 function niceMatchLabel(m: MatchRow) {
-  if (m.description && m.description.trim().length > 0) return m.description;
-
-  // Prefer the real DB column:
-  if ((m.match_key ?? "").trim().length > 0) return String(m.match_key);
-
-  // Fallback (legacy / cached)
-  if (m.key && m.key.trim().length > 0) return m.key;
-
   const t = (m.match_type ?? "").toLowerCase();
   const num = m.match_number ?? null;
-  const setNum = m.set_number ?? null;
 
+  // Only show short names (QM1, QF1, SF2, F1...)
   if (t && num != null) {
-    const prefix =
-      t === "qual" || t === "qm"
-        ? "Qual"
-        : t === "qf"
-        ? "QF"
-        : t === "sf"
-        ? "SF"
-        : t === "f"
-        ? "Final"
-        : t.toUpperCase();
-
-    if (setNum != null && setNum > 0 && (t === "qf" || t === "sf" || t === "f")) {
-      return `${prefix} ${setNum}-${num}`;
-    }
-    return `${prefix} ${num}`;
+    if (t === "qm" || t === "qual") return `QM${num}`;
+    if (t === "qf") return `QF${num}`;
+    if (t === "sf") return `SF${num}`;
+    if (t === "f") return `F${num}`;
+    return `${t.toUpperCase()}${num}`;
   }
+
+  // fallback: match_key if exists
+  if (m.match_key && m.match_key.trim().length > 0) return m.match_key;
 
   return `Match ${m.id.slice(0, 8)}…`;
 }
@@ -122,6 +103,17 @@ export default function ScoutingPage() {
   const [offlineInfo, setOfflineInfo] = useState<string>("");
 
   // =====================
+  // Scouts (scouter names directory) for Event
+  // =====================
+  const [scouts, setScouts] = useState<ScoutRow[]>([]);
+  const [scoutsLoading, setScoutsLoading] = useState(false);
+  const [scoutsError, setScoutsError] = useState<string>("");
+
+  // Scout identity (locked per device)
+  const [scoutName, setScoutName] = useState<string>(() => localStorage.getItem("g3_scout_name") ?? "");
+  const [scoutLocked, setScoutLocked] = useState<boolean>(() => localStorage.getItem("g3_scout_name_locked") === "1");
+
+  // =====================
   // Matches for Event
   // =====================
   const [matches, setMatches] = useState<MatchRow[]>([]);
@@ -151,17 +143,6 @@ export default function ScoutingPage() {
 
   // Prevent overlapping sync runs
   const syncInflight = useRef<Promise<void> | null>(null);
-
-  // -------------------------
-  // Scouters (from Supabase)
-  // -------------------------
-  const [scouters, setScouters] = useState<ScouterRow[]>([]);
-  const [scoutersLoading, setScoutersLoading] = useState(false);
-  const [scoutersError, setScoutersError] = useState<string>("");
-
-  // Locked scouter (device-based)
-  const [lockedScouterName, setLockedScouterName] = useState<string>("");
-  const [lockedScouterId, setLockedScouterId] = useState<string>("");
 
   useEffect(() => {
     let alive = true;
@@ -218,11 +199,8 @@ export default function ScoutingPage() {
 
           if (error) {
             const msg = error.message ?? String(error);
-
-            if (offlineLikelyFromErrorMessage(msg)) {
-              break;
-            }
-            continue;
+            if (offlineLikelyFromErrorMessage(msg)) break;
+            continue; // keep queued
           }
 
           await removeQueuedScoutEntry(entry.entry_uuid);
@@ -237,7 +215,7 @@ export default function ScoutingPage() {
         setOfflineQueuedCount(n);
 
         if (sent > 0) {
-          setOfflineInfo((prev) => (prev ? prev : `Synced ${sent} offline entries ✅`));
+          setOfflineInfo(`Synced ${sent} offline entries ✅`);
         }
       } catch {
         // ignore
@@ -258,7 +236,6 @@ export default function ScoutingPage() {
         const n = await getQueuedScoutEntryCount();
         if (!alive) return;
         setOfflineQueuedCount(n);
-
         if (n > 0 && typeof navigator !== "undefined" && navigator.onLine !== false) {
           await syncQueuedNow();
         }
@@ -289,95 +266,46 @@ export default function ScoutingPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [offlineQueuedCount]);
 
+  // ✅ If sync emptied the queue, clear stale "Saved offline..." message
   useEffect(() => {
-    // If sync emptied the queue, clear the stale "Saved offline..." message
     if (offlineQueuedCount === 0) {
-      setSaveMsg((prev) => {
-        if (!prev) return prev;
-        return /saved offline/i.test(prev) ? "" : prev;
-      });
+      setSaveMsg((prev) => (/saved offline/i.test(prev ?? "") ? "" : prev));
     }
   }, [offlineQueuedCount]);
 
   // =====================
-  // Device ID
-  // =====================
-  const deviceId =
-    localStorage.getItem("g3_device_id") ??
-    (() => {
-      const id = crypto.randomUUID();
-      localStorage.setItem("g3_device_id", id);
-      return id;
-    })();
-
-  // =====================
-  // Load locked scouter from device
+  // Load Scouts when event changes
   // =====================
   useEffect(() => {
-    const name = (localStorage.getItem("g3_scouter_name") ?? "").trim();
-    const id = (localStorage.getItem("g3_scouter_id") ?? "").trim();
-    setLockedScouterName(name);
-    setLockedScouterId(id);
-  }, []);
+    const loadScouts = async () => {
+      const cleanEventId = (eventId ?? "").trim();
+      setScouts([]);
+      setScoutsError("");
+      if (!cleanEventId) return;
 
-  // =====================
-  // Load scouters list (Supabase) for event
-  // =====================
-  useEffect(() => {
-    const loadScouters = async () => {
-      setScouters([]);
-      setScoutersError("");
-      if (!eventId) return;
-
-      setScoutersLoading(true);
+      setScoutsLoading(true);
       try {
-        const cleanEventId = (eventId ?? "").trim();
-        if (!cleanEventId) return;
+        // NOTE: adjust table name if yours differs
+        const { data, error } = await supabase
+          .from("event_scouts")
+          .select("id,event_id,name,is_active")
+          .eq("event_id", cleanEventId)
+          .order("name", { ascending: true });
 
-        // Try common table names (keep your existing logic)
-        const candidates = [
-          { table: "event_scouts", nameCol: "display_name" },
-          { table: "event_scouts", nameCol: "name" },
-        ] as const;
-
-        let found: ScouterRow[] = [];
-        let lastErr = "";
-
-        for (const c of candidates) {
-          const { data, error } = await supabase
-            .from(c.table)
-            .select(`id,${c.nameCol},event_id,is_active`)
-            .eq("event_id", cleanEventId)
-            .order(c.nameCol, { ascending: true });
-
-          if (error) {
-            lastErr = error.message ?? String(error);
-            continue;
-          }
-
-          if (Array.isArray(data)) {
-            found = data as any[];
-            break;
-          }
-        }
-
-        if (!found.length && lastErr) {
-          if (offlineLikelyFromErrorMessage(lastErr)) {
-            // no hard error – just show empty list offline
-            setScouters([]);
-            return;
-          }
-          setScoutersError(lastErr);
+        if (error) {
+          setScoutsError(error.message ?? String(error));
           return;
         }
 
-        setScouters(found);
+        const rows = ((data as any[]) ?? []) as ScoutRow[];
+        const active = rows.filter((r) => r.is_active !== false);
+        setScouts(active);
       } finally {
-        setScoutersLoading(false);
+        setScoutsLoading(false);
       }
     };
 
-    loadScouters();
+    loadScouts();
   }, [eventId]);
 
   // =====================
@@ -415,7 +343,6 @@ export default function ScoutingPage() {
             setTemplateError("Offline: no cached template for this event. Go online once to cache it.");
             return;
           }
-
           setTemplateError(msg);
           return;
         }
@@ -427,7 +354,6 @@ export default function ScoutingPage() {
             setOfflineInfo("Loaded cached template ✅");
             return;
           }
-
           setTemplateError("No template found for this event.");
           return;
         }
@@ -452,6 +378,7 @@ export default function ScoutingPage() {
 
   // =====================
   // Load Matches when event changes (ONLINE -> cache, OFFLINE -> cached fallback)
+  // ✅ FIX: do NOT select set_number/description (they don't exist in your matches table)
   // =====================
   useEffect(() => {
     const loadMatches = async () => {
@@ -478,8 +405,7 @@ export default function ScoutingPage() {
       try {
         const { data, error } = await supabase
           .from("matches")
-          // ✅ FIX: remove "description" (column does not exist)
-          .select("id,event_id,match_number,match_type,red_teams,blue_teams,match_key")
+          .select("id,event_id,match_number,match_type,match_key,red_teams,blue_teams")
           .eq("event_id", cleanEventId)
           .order("match_type", { ascending: true })
           .order("match_number", { ascending: true });
@@ -502,13 +428,7 @@ export default function ScoutingPage() {
           return;
         }
 
-        const rowsRaw = ((data as any[]) ?? []) as any[];
-        const rows = rowsRaw.map((r) => ({
-          ...r,
-          // keep compatibility: some UI expects "key"
-          key: r.key ?? r.match_key ?? null,
-        })) as MatchRow[];
-
+        const rows = ((data as any[]) ?? []) as MatchRow[];
         setMatches(rows);
 
         // cache matches for offline
@@ -523,9 +443,7 @@ export default function ScoutingPage() {
           for (const m of rows) {
             const red = Array.isArray(m.red_teams) ? m.red_teams : [];
             const blue = Array.isArray(m.blue_teams) ? m.blue_teams : [];
-            const combined = [...red, ...blue]
-              .map((x) => Number(x))
-              .filter((n) => Number.isFinite(n) && n > 0);
+            const combined = [...red, ...blue].map((x) => Number(x)).filter((n) => Number.isFinite(n) && n > 0);
             const uniq = Array.from(new Set(combined));
             if (uniq.length > 0) {
               await cacheMatchTeams(m.id, uniq);
@@ -542,6 +460,7 @@ export default function ScoutingPage() {
     loadMatches();
   }, [eventId]);
 
+  // Helpful derived info
   const selectedMatchLabel = useMemo(() => {
     const m = matches.find((x) => x.id === matchId);
     return m ? niceMatchLabel(m) : "";
@@ -634,6 +553,11 @@ export default function ScoutingPage() {
         return;
       }
 
+      if (!scoutLocked || !scoutName.trim()) {
+        setSaveMsg("בחר את השם שלך (נעול לפי המכשיר) לפני שמירה.");
+        return;
+      }
+
       if (!matchId) {
         setSaveMsg("בחר Match קודם.");
         return;
@@ -651,6 +575,14 @@ export default function ScoutingPage() {
         return;
       }
 
+      const deviceId =
+        localStorage.getItem("g3_device_id") ??
+        (() => {
+          const id = crypto.randomUUID();
+          localStorage.setItem("g3_device_id", id);
+          return id;
+        })();
+
       const entry_uuid = crypto.randomUUID();
       const created_at = new Date().toISOString();
 
@@ -665,13 +597,12 @@ export default function ScoutingPage() {
         data: {
           ...values,
           match_id: matchId,
-          scouter_name: lockedScouterName || null,
-          scouter_id: lockedScouterId || null,
+          scout_name: scoutName.trim(), // saved inside JSON for now (no DB change needed)
         },
         notes: values.notes ?? null,
       };
 
-      // upsert idempotently (no duplicates if retried)
+      // idempotent upsert
       const { error } = await supabase
         .from("scout_entries")
         .upsert([row], { onConflict: "entry_uuid", ignoreDuplicates: true });
@@ -681,7 +612,7 @@ export default function ScoutingPage() {
 
         if (offlineLikelyFromErrorMessage(msg)) {
           try {
-            await enqueueScoutEntry(row as any);
+            await enqueueScoutEntry(row);
             const n = await getQueuedScoutEntryCount();
             setOfflineQueuedCount(n);
             setSaveMsg(`Saved offline ✅ (queued: ${n})`);
@@ -763,76 +694,87 @@ export default function ScoutingPage() {
 
       {!eventId && <div style={{ opacity: 0.8 }}>בחר Event כדי לטעון טופס ומאצ׳ים.</div>}
 
-      {/* SCOUTER PICKER (locked per device) */}
-      {eventId ? (
-        <div style={{ marginBottom: 14 }}>
-          <div style={{ fontWeight: 900, marginBottom: 6 }}>Scout name</div>
+      {/* SCOUT PICKER (picklist only — no manual “previous scout name” UI) */}
+      {eventId && (
+        <div style={{ marginBottom: 14, maxWidth: 520 }}>
+          <div style={{ fontWeight: 900, marginBottom: 6 }}>בחר/י את השם שלך (ננעל לפי המכשיר)</div>
 
-          {lockedScouterName ? (
-            <div style={{ padding: 10, border: "1px solid #eee", borderRadius: 12, background: "#fff" }}>
-              Locked to: <b>{lockedScouterName}</b>
-              <div style={{ marginTop: 6, opacity: 0.7, fontWeight: 800 }}>Device ID: {deviceId.slice(0, 8)}…</div>
+          {scoutsLoading ? <div style={{ opacity: 0.8 }}>Loading scouters…</div> : null}
+
+          {scoutsError ? (
+            <div style={{ marginTop: 6, padding: 10, borderRadius: 12, background: "#fff5f5", border: "1px solid #ffb3b3" }}>
+              <b>Scouters error:</b> {scoutsError}
             </div>
           ) : (
-            <div style={{ display: "grid", gap: 8, maxWidth: 520 }}>
-              {scoutersLoading ? <div style={{ opacity: 0.75 }}>Loading names…</div> : null}
-              {scoutersError ? (
-                <div style={{ padding: 10, borderRadius: 12, background: "#fff5f5", border: "1px solid #ffb3b3" }}>
-                  <b>Scouters error:</b> {scoutersError}
-                </div>
-              ) : null}
+            <select
+              value={scoutName}
+              disabled={scoutLocked}
+              onChange={(e) => setScoutName(e.target.value)}
+              style={controlStyle}
+            >
+              <option value="">{scoutLocked ? "Locked ✅" : "Select your name…"}</option>
+              {scouts.map((s) => (
+                <option key={s.id} value={s.name}>
+                  {s.name}
+                </option>
+              ))}
+            </select>
+          )}
 
-              <select
-                style={controlStyle}
-                value={lockedScouterId || ""}
-                onChange={(e) => {
-                  const id = e.target.value;
-                  const row = scouters.find((s) => String((s as any).id ?? "") === id);
-                  const name = (row?.display_name ?? row?.name ?? "").trim();
-
-                  if (!id || !name) return;
-
-                  localStorage.setItem("g3_scouter_id", id);
-                  localStorage.setItem("g3_scouter_name", name);
-                  setLockedScouterId(id);
-                  setLockedScouterName(name);
+          {!scoutLocked ? (
+            <div style={{ marginTop: 8, display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <button
+                type="button"
+                disabled={!scoutName.trim()}
+                onClick={() => {
+                  const n = scoutName.trim();
+                  if (!n) return;
+                  localStorage.setItem("g3_scout_name", n);
+                  localStorage.setItem("g3_scout_name_locked", "1");
+                  setScoutLocked(true);
+                  setSaveMsg("");
+                }}
+                style={{
+                  padding: "10px 12px",
+                  borderRadius: 12,
+                  border: "1px solid #ccc",
+                  background: "#fff",
+                  fontWeight: 950,
+                  cursor: "pointer",
                 }}
               >
-                <option value="">Select your name…</option>
-                {scouters
-                  .filter((s) => (s.is_active ?? true) !== false)
-                  .map((s, idx) => {
-                    const id = String((s as any).id ?? `row-${idx}`);
-                    const name = (s.display_name ?? s.name ?? "").trim();
-                    if (!name) return null;
-                    return (
-                      <option key={id} value={id}>
-                        {name}
-                      </option>
-                    );
-                  })}
-              </select>
+                Lock name
+              </button>
 
-              <div style={{ opacity: 0.7, fontWeight: 800 }}>
-                (Once selected, it locks to this device. Mentors/Admin can still log in separately.)
-              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  localStorage.removeItem("g3_scout_name");
+                  localStorage.removeItem("g3_scout_name_locked");
+                  setScoutName("");
+                  setScoutLocked(false);
+                }}
+                style={{
+                  padding: "10px 12px",
+                  borderRadius: 12,
+                  border: "1px solid #ddd",
+                  background: "#fff",
+                  fontWeight: 900,
+                  cursor: "pointer",
+                  opacity: 0.85,
+                }}
+              >
+                Reset
+              </button>
             </div>
-          )}
+          ) : null}
         </div>
-      ) : null}
+      )}
 
       {/* TEMPLATE STATUS */}
       {eventId && templateLoading && <div style={{ opacity: 0.8 }}>Loading template…</div>}
       {eventId && templateError && (
-        <div
-          style={{
-            marginTop: 10,
-            padding: 12,
-            borderRadius: 12,
-            border: "1px solid #ffb3b3",
-            background: "#fff5f5",
-          }}
-        >
+        <div style={{ marginTop: 10, padding: 12, borderRadius: 12, border: "1px solid #ffb3b3", background: "#fff5f5" }}>
           <b>Template error:</b> {templateError}
         </div>
       )}
@@ -854,15 +796,7 @@ export default function ScoutingPage() {
           {matchesLoading && <div style={{ opacity: 0.8 }}>Loading matches…</div>}
 
           {matchesError && (
-            <div
-              style={{
-                padding: 10,
-                borderRadius: 12,
-                border: "1px solid #ffb3b3",
-                background: "#fff5f5",
-                marginBottom: 10,
-              }}
-            >
+            <div style={{ padding: 10, borderRadius: 12, border: "1px solid #ffb3b3", background: "#fff5f5", marginBottom: 10 }}>
               <b>Matches error:</b> {matchesError}
             </div>
           )}
@@ -891,7 +825,7 @@ export default function ScoutingPage() {
                 </div>
               ) : null}
 
-              {!matchTeamsLoading && !matchTeamsError && hasMatchTeams ? (
+              {!matchTeamsLoading && !matchTeamsError && matchTeams.length >= 6 ? (
                 <div style={{ marginTop: 6 }}>
                   <div style={{ opacity: 0.85, fontWeight: 900, marginBottom: 6 }}>Teams in this match</div>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
@@ -911,13 +845,6 @@ export default function ScoutingPage() {
                       </span>
                     ))}
                   </div>
-                </div>
-              ) : null}
-
-              {!matchTeamsLoading && !matchTeamsError && matchTeams.length > 0 && !hasMatchTeams ? (
-                <div style={{ marginTop: 6, padding: 10, borderRadius: 12, background: "#fff4cc", fontWeight: 800 }}>
-                  Loaded {matchTeams.length} teams for this match (expected 6). You can still scout, but verify schedule
-                  data.
                 </div>
               ) : null}
             </div>
@@ -945,7 +872,7 @@ export default function ScoutingPage() {
             <div style={{ width: "100%", maxWidth: isNarrow ? "100%" : 280 }}>
               <div style={{ fontWeight: 900, marginBottom: 6 }}>Team Number</div>
 
-              {hasMatchTeams ? (
+              {matchTeams.length >= 6 ? (
                 <select
                   value={values.team_number ? String(values.team_number) : ""}
                   onChange={(e) => setValue("team_number", e.target.value ? Number(e.target.value) : "")}
