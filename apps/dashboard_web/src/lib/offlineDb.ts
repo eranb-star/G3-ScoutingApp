@@ -1,7 +1,7 @@
 // apps/dashboard_web/src/lib/offlineDb.ts
 // Offline cache + queue using IndexedDB (no deps)
 // Fixes: VersionError (requested version < existing version)
-// Adds: template/matches/matchTeams caches + entry queue
+// Adds: template/matches/matchTeams/scouts caches + entry queue
 
 export type QueuedScoutEntry = {
   entry_uuid: string;
@@ -33,15 +33,21 @@ type MatchTeamsCacheRow = {
   cached_at: string; // ISO
 };
 
-type StoreName = "entryQueue" | "templateCache" | "matchesCache" | "matchTeamsCache";
+type ScoutsCacheRow = {
+  event_id: string;
+  scouts: any[]; // { display_name: string, ... }[]
+  cached_at: string; // ISO
+};
+
+type StoreName = "entryQueue" | "templateCache" | "matchesCache" | "matchTeamsCache" | "scoutsCache";
 
 const DB_NAME = "g3_scouting_offline_v1";
 
 // IMPORTANT:
 // If ANY device already created DB at version 2,
 // opening with version 1 will throw VersionError.
-// We bump to 3 to be safe for future store additions.
-const DB_VERSION = 3;
+// We bump to 4 to be safe for future store additions.
+const DB_VERSION = 4;
 
 function openDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -62,6 +68,9 @@ function openDb(): Promise<IDBDatabase> {
       }
       if (!db.objectStoreNames.contains("matchTeamsCache")) {
         db.createObjectStore("matchTeamsCache", { keyPath: "match_id" });
+      }
+      if (!db.objectStoreNames.contains("scoutsCache")) {
+        db.createObjectStore("scoutsCache", { keyPath: "event_id" });
       }
     };
 
@@ -188,5 +197,22 @@ export async function getCachedMatchTeams(match_id: string): Promise<MatchTeamsC
     "readonly",
     (store) => store.get(match_id)
   );
+  return row ?? null;
+}
+
+// =======================
+// Cache: scouts by event (scouter names directory)
+// =======================
+export async function cacheScouts(event_id: string, scouts: any[]): Promise<void> {
+  const row: ScoutsCacheRow = {
+    event_id,
+    scouts,
+    cached_at: new Date().toISOString(),
+  };
+  await withStore<void>("scoutsCache", "readwrite", (store) => store.put(row));
+}
+
+export async function getCachedScouts(event_id: string): Promise<ScoutsCacheRow | null> {
+  const row = await withStore<ScoutsCacheRow | undefined>("scoutsCache", "readonly", (store) => store.get(event_id));
   return row ?? null;
 }

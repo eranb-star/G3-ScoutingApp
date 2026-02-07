@@ -10,6 +10,8 @@ import {
   getCachedMatches,
   cacheMatchTeams,
   getCachedMatchTeams,
+  cacheScouts,
+  getCachedScouts,
   listQueuedScoutEntries,
   removeQueuedScoutEntry,
 } from "../lib/offlineDb";
@@ -26,6 +28,13 @@ type MatchRow = {
   // Needed for pre-caching match teams for complete offline (even if match not opened before)
   red_teams?: number[] | null;
   blue_teams?: number[] | null;
+};
+
+type ScoutRow = {
+  id?: string;
+  event_id?: string | null;
+  display_name: string;
+  active?: boolean;
 };
 
 type MatchTeamRow = {
@@ -79,7 +88,7 @@ function useIsNarrow(breakpointPx = 600) {
 function offlineLikelyFromErrorMessage(msg: string) {
   return (
     (typeof navigator !== "undefined" && navigator.onLine === false) ||
-    /failed to fetch|networkerror|fetch|load failed|internet disconnected/i.test(msg)
+    /failed to fetch|networkerror|fetch|load failed/i.test(msg)
   );
 }
 
@@ -96,6 +105,19 @@ export default function ScoutingPage() {
 
   // soft offline info banner (no red errors when cache works)
   const [offlineInfo, setOfflineInfo] = useState<string>("");
+
+  // =====================
+  // Scouts (scouter names directory) for Event
+  // =====================
+  const [scouts, setScouts] = useState<ScoutRow[]>([]);
+  const [scoutsLoading, setScoutsLoading] = useState(false);
+  const [scoutsError, setScoutsError] = useState<string>("");
+
+  // Scout identity (locked per device)
+  const [scoutName, setScoutName] = useState<string>(() => localStorage.getItem("g3_scout_name") ?? "");
+  const [scoutLocked, setScoutLocked] = useState<boolean>(() => localStorage.getItem("g3_scout_name_locked") === "1");
+  const [scoutMode, setScoutMode] = useState<"pick" | "manual">("pick");
+  const [scoutManual, setScoutManual] = useState<string>("");
 
   // =====================
   // Matches for Event
@@ -151,15 +173,13 @@ export default function ScoutingPage() {
   // Step 4.6: Background sync queued scout entries when back online
   // - Uses UPSERT with ignoreDuplicates so we DON'T need UPDATE RLS permission
   // - Removes from queue only when server accepted (or duplicate ignored)
-  //
-  // IMPORTANT (Android/WebView):
-  // - Do NOT rely on navigator.onLine or the "online" event (often unreliable).
-  // - Attempt sync; if network is still down, fetch will fail and we stop safely.
   // =====================
   const syncQueuedNow = async () => {
     if (syncInflight.current) return syncInflight.current;
 
     syncInflight.current = (async () => {
+      if (typeof navigator !== "undefined" && navigator.onLine === false) return;
+
       let queued: any[] = [];
       try {
         queued = await listQueuedScoutEntries();
@@ -178,9 +198,9 @@ export default function ScoutingPage() {
       let sent = 0;
 
       for (const entry of queued) {
+        if (typeof navigator !== "undefined" && navigator.onLine === false) break;
+
         try {
-          // IMPORTANT: ignoreDuplicates means ON CONFLICT DO NOTHING (idempotent)
-          // This avoids needing UPDATE permission under RLS.
           const { error } = await supabase
             .from("scout_entries")
             .upsert([entry], { onConflict: "entry_uuid", ignoreDuplicates: true });
@@ -189,7 +209,6 @@ export default function ScoutingPage() {
             const msg = error.message ?? String(error);
 
             if (offlineLikelyFromErrorMessage(msg)) {
-              // stop; keep remaining queued
               break;
             }
 
@@ -200,8 +219,7 @@ export default function ScoutingPage() {
           // Success OR duplicate ignored => safe to remove from queue
           await removeQueuedScoutEntry(entry.entry_uuid);
           sent += 1;
-        } catch (e: any) {
-          // likely network -> stop
+        } catch {
           break;
         }
       }
@@ -211,12 +229,7 @@ export default function ScoutingPage() {
         setOfflineQueuedCount(n);
 
         if (sent > 0) {
-          setOfflineInfo(`Synced ${sent} offline entries ✅`);
-        }
-        if (n === 0 && sent > 0) {
-          // Optional: clear message after full drain.
-          // If you prefer to keep the "Synced ✅" banner, comment this out.
-          // setOfflineInfo("");
+          setOfflineInfo((prev) => (prev ? prev : `Synced ${sent} offline entries ✅`));
         }
       } catch {
         // ignore
@@ -228,10 +241,7 @@ export default function ScoutingPage() {
     return syncInflight.current;
   };
 
-  // Sync triggers:
-  // - boot
-  // - focus/visibility (critical on mobile)
-  // - periodic while queued>0
+  // Sync triggers: boot, online event, and periodic while queued>0
   useEffect(() => {
     let alive = true;
 
@@ -241,7 +251,7 @@ export default function ScoutingPage() {
         if (!alive) return;
         setOfflineQueuedCount(n);
 
-        if (n > 0) {
+        if (n > 0 && typeof navigator !== "undefined" && navigator.onLine !== false) {
           await syncQueuedNow();
         }
       } catch {
@@ -249,30 +259,36 @@ export default function ScoutingPage() {
       }
     })();
 
-    const onFocusOrVisible = async () => {
+    const onOnline = async () => {
       if (!alive) return;
-      if (offlineQueuedCount > 0) await syncQueuedNow();
+      await syncQueuedNow();
     };
 
-    window.addEventListener("focus", onFocusOrVisible);
-    const onVis = () => {
-      if (document.visibilityState === "visible") void onFocusOrVisible();
-    };
-    document.addEventListener("visibilitychange", onVis);
+    window.addEventListener("online", onOnline);
 
-    // Keep a periodic retry loop (do NOT trust navigator.onLine on Android)
     const interval = setInterval(() => {
       if (!alive) return;
-      if (offlineQueuedCount > 0) void syncQueuedNow();
+      if (offlineQueuedCount > 0 && typeof navigator !== "undefined" && navigator.onLine !== false) {
+        void syncQueuedNow();
+      }
     }, 10_000);
 
     return () => {
       alive = false;
-      window.removeEventListener("focus", onFocusOrVisible);
-      document.removeEventListener("visibilitychange", onVis);
+      window.removeEventListener("online", onOnline);
       clearInterval(interval);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [offlineQueuedCount]);
+
+  // If sync emptied the queue, clear stale "Saved offline..." message
+  useEffect(() => {
+    if (offlineQueuedCount === 0) {
+      setSaveMsg((prev) => {
+        if (!prev) return prev;
+        return /saved offline/i.test(prev) ? "" : prev;
+      });
+    }
   }, [offlineQueuedCount]);
 
   // =====================
@@ -330,9 +346,6 @@ export default function ScoutingPage() {
         const schema = (data[0] as any).schema ?? null;
         setTemplate(schema);
 
-        // ✅ ONLINE success => clear sticky offline banner
-        setOfflineInfo("");
-
         if (schema) {
           try {
             await cacheTemplate(cleanEventId, schema);
@@ -348,16 +361,60 @@ export default function ScoutingPage() {
     loadTemplate();
   }, [eventId]);
 
-
+  // =====================
+  // Load Scouts when event changes (ONLINE -> cache, OFFLINE -> cached fallback)
+  // =====================
   useEffect(() => {
-  // If sync emptied the queue, clear the stale "Saved offline..." message
-  if (offlineQueuedCount === 0) {
-    setSaveMsg((prev) => {
-      if (!prev) return prev;
-      return /saved offline/i.test(prev) ? "" : prev;
-    });
-  }
-}, [offlineQueuedCount]);
+    const loadScouts = async () => {
+      const cleanEventId = (eventId ?? "").trim();
+
+      setScouts([]);
+      setScoutsError("");
+
+      if (!cleanEventId) return;
+
+      setScoutsLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from("scouts")
+          .select("id,event_id,display_name,active")
+          .eq("event_id", cleanEventId)
+          .eq("active", true)
+          .order("display_name", { ascending: true });
+
+        if (error) {
+          const msg = (error as any).message ?? String(error);
+
+          if (offlineLikelyFromErrorMessage(msg)) {
+            const cached = await getCachedScouts(cleanEventId);
+            if (cached?.scouts?.length) {
+              setScouts(cached.scouts as ScoutRow[]);
+              setOfflineInfo((prev) => (prev ? prev : "Offline: loaded cached scouts ✅"));
+              return;
+            }
+            setScoutsError("Offline: no cached scouts for this event. You can type your name manually.");
+            return;
+          }
+
+          setScoutsError(msg);
+          return;
+        }
+
+        const rows = ((data as any[]) ?? []) as ScoutRow[];
+        setScouts(rows);
+
+        try {
+          await cacheScouts(cleanEventId, rows);
+        } catch {
+          // ignore
+        }
+      } finally {
+        setScoutsLoading(false);
+      }
+    };
+
+    loadScouts();
+  }, [eventId]);
 
   // =====================
   // Load Matches when event changes (ONLINE -> cache, OFFLINE -> cached fallback)
@@ -370,12 +427,10 @@ export default function ScoutingPage() {
       setMatchesError("");
       setMatchId("");
 
-      // reset match teams state too
       setMatchTeams([]);
       setMatchTeamsError("");
       setMatchTeamsLoading(false);
 
-      // reset team selection to avoid saving wrong team to new event
       setValues((prev) => ({
         ...prev,
         team_number: "",
@@ -413,10 +468,6 @@ export default function ScoutingPage() {
         const rows = ((data as any[]) ?? []) as MatchRow[];
         setMatches(rows);
 
-        // ✅ ONLINE success => clear sticky offline banner
-        setOfflineInfo("");
-
-        // cache matches for offline
         try {
           await cacheMatches(cleanEventId, rows);
         } catch {
@@ -428,9 +479,7 @@ export default function ScoutingPage() {
           for (const m of rows) {
             const red = Array.isArray(m.red_teams) ? m.red_teams : [];
             const blue = Array.isArray(m.blue_teams) ? m.blue_teams : [];
-            const combined = [...red, ...blue]
-              .map((x) => Number(x))
-              .filter((n) => Number.isFinite(n) && n > 0);
+            const combined = [...red, ...blue].map((x) => Number(x)).filter((n) => Number.isFinite(n) && n > 0);
             const uniq = Array.from(new Set(combined));
             if (uniq.length > 0) {
               await cacheMatchTeams(m.id, uniq);
@@ -461,7 +510,6 @@ export default function ScoutingPage() {
       setMatchTeams([]);
       setMatchTeamsError("");
 
-      // also reset team selection when match changes (prevents wrong team)
       setValues((prev) => ({
         ...prev,
         team_number: "",
@@ -503,15 +551,9 @@ export default function ScoutingPage() {
 
         const nums = (data as MatchTeamRow[] | null | undefined) ?? [];
         const list = nums.map((x) => Number(x.team_number)).filter((n) => Number.isFinite(n));
-
-        // unique + stable order
         const uniq = Array.from(new Set(list));
         setMatchTeams(uniq);
 
-        // ✅ ONLINE success => clear sticky offline banner
-        setOfflineInfo("");
-
-        // cache match teams for offline use
         try {
           await cacheMatchTeams(matchId, uniq);
         } catch {
@@ -525,8 +567,7 @@ export default function ScoutingPage() {
     loadMatchTeams();
   }, [matchId]);
 
-  // Derived: whether we can enforce dropdown-only selection
-  const hasMatchTeams = matchTeams.length >= 6; // normally exactly 6
+  const hasMatchTeams = matchTeams.length >= 6;
 
   // =====================
   // Save entry to scout_entries (ONLINE or queue offline)
@@ -554,9 +595,15 @@ export default function ScoutingPage() {
         return;
       }
 
-      // Critical validation:
       if (hasMatchTeams && !matchTeams.includes(teamNumber)) {
         setSaveMsg("הקבוצה שנבחרה לא נמצאת במשחק הזה. בחר קבוצה מתוך הרשימה.");
+        return;
+      }
+
+      // Scout name (locked to this device after first save)
+      const finalScoutName = (scoutLocked ? scoutName : (scoutMode === "manual" ? scoutManual : scoutName)).trim();
+      if (!finalScoutName) {
+        setSaveMsg("בחר/הקלד שם סקאוטר לפני שמירה.");
         return;
       }
 
@@ -582,11 +629,11 @@ export default function ScoutingPage() {
         data: {
           ...values,
           match_id: matchId,
+          scout_name: finalScoutName,
         },
         notes: values.notes ?? null,
       };
 
-      // Step 4.6: upsert idempotently (no duplicates if retried)
       const { error } = await supabase
         .from("scout_entries")
         .upsert([row], { onConflict: "entry_uuid", ignoreDuplicates: true });
@@ -598,6 +645,15 @@ export default function ScoutingPage() {
           try {
             await enqueueScoutEntry(row);
             const n = await getQueuedScoutEntryCount();
+
+            // lock scout name on first save (even offline)
+            if (!scoutLocked) {
+              localStorage.setItem("g3_scout_name", finalScoutName);
+              localStorage.setItem("g3_scout_name_locked", "1");
+              setScoutName(finalScoutName);
+              setScoutLocked(true);
+            }
+
             setOfflineQueuedCount(n);
             setSaveMsg(`Saved offline ✅ (queued: ${n})`);
           } catch (e) {
@@ -611,21 +667,24 @@ export default function ScoutingPage() {
         return;
       }
 
+      // lock scout name on first successful save
+      if (!scoutLocked) {
+        localStorage.setItem("g3_scout_name", finalScoutName);
+        localStorage.setItem("g3_scout_name_locked", "1");
+        setScoutName(finalScoutName);
+        setScoutLocked(true);
+      }
+
       setSaveMsg(`Saved ✅ (${selectedMatchLabel || "match"})`);
       setValues((prev) => ({
-        team_number: prev.team_number, // keep team selection
+        team_number: prev.team_number,
         notes: "",
       }));
-
-      // If we had queued items and we just successfully saved online,
-      // give sync a chance to run soon.
-      void syncQueuedNow();
     } finally {
       setSaving(false);
     }
   };
 
-  // Shared input styles (UI-only)
   const controlStyle: React.CSSProperties = {
     width: "100%",
     boxSizing: "border-box",
@@ -641,7 +700,6 @@ export default function ScoutingPage() {
     <div style={{ padding: isNarrow ? 10 : 16, maxWidth: 1020 }}>
       <h1 style={{ marginBottom: 6 }}>Scouting</h1>
 
-      {/* Soft offline info banner */}
       {offlineInfo ? (
         <div
           style={{
@@ -835,6 +893,113 @@ export default function ScoutingPage() {
                   placeholder={matchId ? "Type team number…" : "Select match first"}
                   disabled={!matchId}
                 />
+              )}
+            </div>
+
+            {/* Scout name */}
+            <div style={{ width: "100%", maxWidth: isNarrow ? "100%" : 280 }}>
+              <div style={{ fontWeight: 900, marginBottom: 6 }}>Scout Name</div>
+
+              {scoutLocked ? (
+                <div
+                  style={{
+                    ...controlStyle,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: 10,
+                    background: "#fafafa",
+                    border: "1px solid rgba(0,0,0,0.12)",
+                    fontWeight: 900,
+                  }}
+                  title="Locked to this device"
+                >
+                  <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{scoutName || "—"}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const ok = window.confirm(
+                        "Change scout name on this device?\n\nThis should be used only if a different scout is using the same phone."
+                      );
+                      if (!ok) return;
+                      localStorage.removeItem("g3_scout_name_locked");
+                      setScoutLocked(false);
+                      setScoutMode("pick");
+                      setScoutManual("");
+                    }}
+                    style={{
+                      padding: "6px 10px",
+                      borderRadius: 12,
+                      border: "1px solid #ddd",
+                      background: "#fff",
+                      fontWeight: 900,
+                      cursor: "pointer",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    Change
+                  </button>
+                </div>
+              ) : (
+                <div style={{ display: "grid", gap: 8 }}>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    <button
+                      type="button"
+                      onClick={() => setScoutMode("pick")}
+                      style={{
+                        padding: "6px 10px",
+                        borderRadius: 12,
+                        border: "1px solid #ddd",
+                        background: scoutMode === "pick" ? "rgba(0,0,0,0.06)" : "#fff",
+                        fontWeight: 900,
+                        cursor: "pointer",
+                      }}
+                    >
+                      Pick
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setScoutMode("manual")}
+                      style={{
+                        padding: "6px 10px",
+                        borderRadius: 12,
+                        border: "1px solid #ddd",
+                        background: scoutMode === "manual" ? "rgba(0,0,0,0.06)" : "#fff",
+                        fontWeight: 900,
+                        cursor: "pointer",
+                      }}
+                    >
+                      Type
+                    </button>
+                  </div>
+
+                  {scoutMode === "pick" ? (
+                    <select
+                      value={scoutName}
+                      onChange={(e) => setScoutName(e.target.value)}
+                      style={controlStyle}
+                      disabled={!eventId}
+                    >
+                      <option value="">{eventId ? "Select your name…" : "Select event first"}</option>
+                      {scouts.map((s) => (
+                        <option key={s.id ?? s.display_name} value={s.display_name}>
+                          {s.display_name}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      value={scoutManual}
+                      onChange={(e) => setScoutManual(e.target.value)}
+                      style={controlStyle}
+                      placeholder="Type your name…"
+                      disabled={!eventId}
+                    />
+                  )}
+
+                  {scoutsLoading ? <div style={{ opacity: 0.8, fontWeight: 800 }}>Loading scouts…</div> : null}
+                  {scoutsError ? <div style={{ opacity: 0.85, fontWeight: 800 }}>{scoutsError}</div> : null}
+                </div>
               )}
             </div>
 
