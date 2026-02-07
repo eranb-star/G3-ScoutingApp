@@ -146,3 +146,16 @@ a {
     justify-content: flex-end;
   }
 }
+/* Mobile safe-area (iOS notch) */
+:root {
+  --safe-bottom: env(safe-area-inset-bottom);
+}
+
+body {
+  padding-bottom: var(--safe-bottom);
+}
+
+/* Make taps feel better on mobile */
+button, input, select {
+  touch-action: manipulation;
+}

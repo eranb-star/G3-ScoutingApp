@@ -10,8 +10,6 @@ import {
   getCachedMatches,
   cacheMatchTeams,
   getCachedMatchTeams,
-  cacheScouts,
-  getCachedScouts,
   listQueuedScoutEntries,
   removeQueuedScoutEntry,
 } from "../lib/offlineDb";
@@ -30,17 +28,17 @@ type MatchRow = {
   blue_teams?: number[] | null;
 };
 
+type MatchTeamRow = {
+  match_id: string;
+  team_number: number;
+  alliance?: string | null; // "red"/"blue" if view includes it
+};
+
 type ScoutRow = {
   id?: string;
   event_id?: string | null;
   display_name: string;
   active?: boolean;
-};
-
-type MatchTeamRow = {
-  match_id: string;
-  team_number: number;
-  alliance?: string | null; // "red"/"blue" if view includes it
 };
 
 function niceMatchLabel(m: MatchRow) {
@@ -95,10 +93,25 @@ function offlineLikelyFromErrorMessage(msg: string) {
 export default function ScoutingPage() {
   const isNarrow = useIsNarrow(600);
 
+  // Online indicator (pure UI)
+  const [isOnline, setIsOnline] = useState<boolean>(() =>
+    typeof navigator !== "undefined" ? navigator.onLine !== false : true
+  );
+  useEffect(() => {
+    const onOnline = () => setIsOnline(true);
+    const onOffline = () => setIsOnline(false);
+    window.addEventListener("online", onOnline);
+    window.addEventListener("offline", onOffline);
+    return () => {
+      window.removeEventListener("online", onOnline);
+      window.removeEventListener("offline", onOffline);
+    };
+  }, []);
+
   // =====================
   // Event + Template
   // =====================
-  const [eventId, setEventId] = useState<string>("");
+  const [eventId, setEventId] = useState<string>(() => (localStorage.getItem("g3_event_id") ?? "").trim());
   const [template, setTemplate] = useState<any>(null);
   const [templateLoading, setTemplateLoading] = useState(false);
   const [templateError, setTemplateError] = useState<string>("");
@@ -165,14 +178,22 @@ export default function ScoutingPage() {
     };
   }, []);
 
+  // אם הסינק הוריד את התור ל-0 — ננקה הודעת "Saved offline" שלא תישאר תקועה
+  useEffect(() => {
+    if (offlineQueuedCount === 0) {
+      setSaveMsg((prev) => {
+        if (!prev) return prev;
+        return /saved offline/i.test(prev) ? "" : prev;
+      });
+    }
+  }, [offlineQueuedCount]);
+
   const setValue = (id: string, value: any) => {
     setValues((prev) => ({ ...prev, [id]: value }));
   };
 
   // =====================
-  // Step 4.6: Background sync queued scout entries when back online
-  // - Uses UPSERT with ignoreDuplicates so we DON'T need UPDATE RLS permission
-  // - Removes from queue only when server accepted (or duplicate ignored)
+  // Background sync queued scout entries when back online
   // =====================
   const syncQueuedNow = async () => {
     if (syncInflight.current) return syncInflight.current;
@@ -192,8 +213,7 @@ export default function ScoutingPage() {
         return;
       }
 
-      // oldest-first (stable)
-      queued.sort((a: any, b: any) => String(a.created_at).localeCompare(String(b.created_at)));
+      queued.sort((a, b) => String(a.created_at).localeCompare(String(b.created_at)));
 
       let sent = 0;
 
@@ -207,16 +227,10 @@ export default function ScoutingPage() {
 
           if (error) {
             const msg = error.message ?? String(error);
-
-            if (offlineLikelyFromErrorMessage(msg)) {
-              break;
-            }
-
-            // Non-network error: keep it queued (do not drop data)
-            continue;
+            if (offlineLikelyFromErrorMessage(msg)) break; // network -> stop
+            continue; // keep queued on other errors
           }
 
-          // Success OR duplicate ignored => safe to remove from queue
           await removeQueuedScoutEntry(entry.entry_uuid);
           sent += 1;
         } catch {
@@ -227,9 +241,8 @@ export default function ScoutingPage() {
       try {
         const n = await getQueuedScoutEntryCount();
         setOfflineQueuedCount(n);
-
         if (sent > 0) {
-          setOfflineInfo((prev) => (prev ? prev : `Synced ${sent} offline entries ✅`));
+          setOfflineInfo(`Synced ${sent} offline entries ✅`);
         }
       } catch {
         // ignore
@@ -281,15 +294,44 @@ export default function ScoutingPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [offlineQueuedCount]);
 
-  // If sync emptied the queue, clear stale "Saved offline..." message
+  // =====================
+  // Load Scouts when event changes (ONLINE -> load, OFFLINE -> keep last list; manual still possible)
+  // =====================
   useEffect(() => {
-    if (offlineQueuedCount === 0) {
-      setSaveMsg((prev) => {
-        if (!prev) return prev;
-        return /saved offline/i.test(prev) ? "" : prev;
-      });
-    }
-  }, [offlineQueuedCount]);
+    const loadScouts = async () => {
+      const cleanEventId = (eventId ?? "").trim();
+      setScouts([]);
+      setScoutsError("");
+      if (!cleanEventId) return;
+
+      setScoutsLoading(true);
+      try {
+        // NOTE: adjust table name if yours differs. (This matches what you already used when it started working.)
+        const { data, error } = await supabase
+          .from("event_scouts")
+          .select("id,event_id,display_name,active")
+          .eq("event_id", cleanEventId)
+          .order("display_name", { ascending: true });
+
+        if (error) {
+          const msg = error.message ?? String(error);
+          if (offlineLikelyFromErrorMessage(msg)) {
+            setScoutsError("Offline: scouts list not available (you can Type your name).");
+            return;
+          }
+          setScoutsError(msg);
+          return;
+        }
+
+        const rows = ((data as any[]) ?? []).filter((r) => r && r.display_name) as ScoutRow[];
+        setScouts(rows);
+      } finally {
+        setScoutsLoading(false);
+      }
+    };
+
+    loadScouts();
+  }, [eventId]);
 
   // =====================
   // Load Template when event changes (ONLINE -> cache, OFFLINE -> cached fallback)
@@ -362,61 +404,6 @@ export default function ScoutingPage() {
   }, [eventId]);
 
   // =====================
-  // Load Scouts when event changes (ONLINE -> cache, OFFLINE -> cached fallback)
-  // =====================
-  useEffect(() => {
-    const loadScouts = async () => {
-      const cleanEventId = (eventId ?? "").trim();
-
-      setScouts([]);
-      setScoutsError("");
-
-      if (!cleanEventId) return;
-
-      setScoutsLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from("scouts")
-          .select("id,event_id,display_name,active")
-          .eq("event_id", cleanEventId)
-          .eq("active", true)
-          .order("display_name", { ascending: true });
-
-        if (error) {
-          const msg = (error as any).message ?? String(error);
-
-          if (offlineLikelyFromErrorMessage(msg)) {
-            const cached = await getCachedScouts(cleanEventId);
-            if (cached?.scouts?.length) {
-              setScouts(cached.scouts as ScoutRow[]);
-              setOfflineInfo((prev) => (prev ? prev : "Offline: loaded cached scouts ✅"));
-              return;
-            }
-            setScoutsError("Offline: no cached scouts for this event. You can type your name manually.");
-            return;
-          }
-
-          setScoutsError(msg);
-          return;
-        }
-
-        const rows = ((data as any[]) ?? []) as ScoutRow[];
-        setScouts(rows);
-
-        try {
-          await cacheScouts(cleanEventId, rows);
-        } catch {
-          // ignore
-        }
-      } finally {
-        setScoutsLoading(false);
-      }
-    };
-
-    loadScouts();
-  }, [eventId]);
-
-  // =====================
   // Load Matches when event changes (ONLINE -> cache, OFFLINE -> cached fallback)
   // =====================
   useEffect(() => {
@@ -479,7 +466,9 @@ export default function ScoutingPage() {
           for (const m of rows) {
             const red = Array.isArray(m.red_teams) ? m.red_teams : [];
             const blue = Array.isArray(m.blue_teams) ? m.blue_teams : [];
-            const combined = [...red, ...blue].map((x) => Number(x)).filter((n) => Number.isFinite(n) && n > 0);
+            const combined = [...red, ...blue]
+              .map((x) => Number(x))
+              .filter((n) => Number.isFinite(n) && n > 0);
             const uniq = Array.from(new Set(combined));
             if (uniq.length > 0) {
               await cacheMatchTeams(m.id, uniq);
@@ -496,7 +485,6 @@ export default function ScoutingPage() {
     loadMatches();
   }, [eventId]);
 
-  // Helpful derived info
   const selectedMatchLabel = useMemo(() => {
     const m = matches.find((x) => x.id === matchId);
     return m ? niceMatchLabel(m) : "";
@@ -578,12 +566,10 @@ export default function ScoutingPage() {
       setSaveMsg("");
 
       const cleanEventId = (eventId ?? "").trim();
-
       if (!cleanEventId) {
         setSaveMsg("בחר Event קודם.");
         return;
       }
-
       if (!matchId) {
         setSaveMsg("בחר Match קודם.");
         return;
@@ -601,7 +587,7 @@ export default function ScoutingPage() {
       }
 
       // Scout name (locked to this device after first save)
-      const finalScoutName = (scoutLocked ? scoutName : (scoutMode === "manual" ? scoutManual : scoutName)).trim();
+      const finalScoutName = (scoutLocked ? scoutName : scoutMode === "manual" ? scoutManual : scoutName).trim();
       if (!finalScoutName) {
         setSaveMsg("בחר/הקלד שם סקאוטר לפני שמירה.");
         return;
@@ -634,9 +620,7 @@ export default function ScoutingPage() {
         notes: values.notes ?? null,
       };
 
-      const { error } = await supabase
-        .from("scout_entries")
-        .upsert([row], { onConflict: "entry_uuid", ignoreDuplicates: true });
+      const { error } = await supabase.from("scout_entries").upsert([row], { onConflict: "entry_uuid", ignoreDuplicates: true });
 
       if (error) {
         const msg = error.message ?? String(error);
@@ -693,13 +677,36 @@ export default function ScoutingPage() {
     border: "1px solid #ccc",
   };
 
-  // =====================
-  // UI
-  // =====================
+  // ===== Step 3 (Mobile UX): sticky bottom bar on narrow screens
+  const showBottomBar = isNarrow && eventId && template;
+
+  const bottomBarStyle: React.CSSProperties = {
+    position: "fixed",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 999,
+    background: "rgba(255,255,255,0.98)",
+    borderTop: "1px solid rgba(0,0,0,0.10)",
+    padding: "10px 12px",
+    boxShadow: "0 -8px 22px rgba(0,0,0,0.08)",
+  };
+
+  const pillStyle: React.CSSProperties = {
+    padding: "6px 10px",
+    borderRadius: 999,
+    border: "1px solid rgba(0,0,0,0.12)",
+    fontWeight: 900,
+    fontSize: 12,
+    whiteSpace: "nowrap",
+    background: "#fafafa",
+  };
+
   return (
-    <div style={{ padding: isNarrow ? 10 : 16, maxWidth: 1020 }}>
+    <div style={{ padding: isNarrow ? 10 : 16, maxWidth: 1020, paddingBottom: showBottomBar ? 92 : undefined }}>
       <h1 style={{ marginBottom: 6 }}>Scouting</h1>
 
+      {/* Soft offline info banner (keep — but on mobile we also show status in bottom bar) */}
       {offlineInfo ? (
         <div
           style={{
@@ -725,7 +732,7 @@ export default function ScoutingPage() {
             onChange={(e) => {
               const v = e.target.value;
               setEventId(v);
-              localStorage.setItem("g3_event_id", v); // ✅ for countdown + admin convenience
+              localStorage.setItem("g3_event_id", v);
             }}
             style={controlStyle}
           >
@@ -835,8 +842,7 @@ export default function ScoutingPage() {
 
               {!matchTeamsLoading && !matchTeamsError && matchTeams.length > 0 && !hasMatchTeams ? (
                 <div style={{ marginTop: 6, padding: 10, borderRadius: 12, background: "#fff4cc", fontWeight: 800 }}>
-                  Loaded {matchTeams.length} teams for this match (expected 6). You can still scout, but verify schedule
-                  data.
+                  Loaded {matchTeams.length} teams for this match (expected 6). You can still scout, but verify schedule data.
                 </div>
               ) : null}
             </div>
@@ -974,12 +980,7 @@ export default function ScoutingPage() {
                   </div>
 
                   {scoutMode === "pick" ? (
-                    <select
-                      value={scoutName}
-                      onChange={(e) => setScoutName(e.target.value)}
-                      style={controlStyle}
-                      disabled={!eventId}
-                    >
+                    <select value={scoutName} onChange={(e) => setScoutName(e.target.value)} style={controlStyle} disabled={!eventId}>
                       <option value="">{eventId ? "Select your name…" : "Select event first"}</option>
                       {scouts.map((s) => (
                         <option key={s.id ?? s.display_name} value={s.display_name}>
@@ -1017,42 +1018,92 @@ export default function ScoutingPage() {
               />
             </div>
 
-            {/* Save */}
-            <div style={{ alignSelf: isNarrow ? "stretch" : "flex-end" }}>
-              <button
-                type="button"
-                onClick={handleSave}
-                disabled={saving}
-                style={{
-                  padding: "12px 18px",
-                  borderRadius: 12,
-                  border: "1px solid #ccc",
-                  fontWeight: 950,
-                  cursor: "pointer",
-                  width: isNarrow ? "100%" : "auto",
-                }}
-              >
-                {saving ? "Saving..." : "Save"}
-              </button>
-            </div>
-
-            {saveMsg && (
-              <div style={{ alignSelf: isNarrow ? "stretch" : "flex-end", fontWeight: 900, opacity: 0.9 }}>
-                {saveMsg}
+            {/* Save button (desktop/tablet). On mobile it lives in the bottom bar */}
+            {!isNarrow ? (
+              <div style={{ alignSelf: "flex-end" }}>
+                <button
+                  type="button"
+                  onClick={handleSave}
+                  disabled={saving}
+                  style={{
+                    padding: "12px 18px",
+                    borderRadius: 12,
+                    border: "1px solid #ccc",
+                    fontWeight: 950,
+                    cursor: "pointer",
+                  }}
+                >
+                  {saving ? "Saving..." : "Save"}
+                </button>
               </div>
-            )}
+            ) : null}
 
-            {offlineQueuedCount > 0 && (
-              <div style={{ alignSelf: isNarrow ? "stretch" : "flex-end", fontWeight: 900, opacity: 0.7 }}>
-                Offline queued: {offlineQueuedCount}
-              </div>
-            )}
+            {!isNarrow && saveMsg ? (
+              <div style={{ alignSelf: "flex-end", fontWeight: 900, opacity: 0.9 }}>{saveMsg}</div>
+            ) : null}
+
+            {!isNarrow && offlineQueuedCount > 0 ? (
+              <div style={{ alignSelf: "flex-end", fontWeight: 900, opacity: 0.7 }}>Offline queued: {offlineQueuedCount}</div>
+            ) : null}
           </div>
 
           {/* Full dynamic form */}
           <TemplateForm template={template} values={values} setValue={setValue} />
         </>
       )}
+
+      {/* Sticky bottom bar (mobile) */}
+      {showBottomBar ? (
+        <div style={bottomBarStyle}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <span
+                style={{
+                  ...pillStyle,
+                  background: isOnline ? "rgba(0,180,90,0.14)" : "rgba(255,0,0,0.10)",
+                  border: isOnline ? "1px solid rgba(0,180,90,0.25)" : "1px solid rgba(255,0,0,0.20)",
+                }}
+              >
+                {isOnline ? "ONLINE" : "OFFLINE"}
+              </span>
+
+              <span style={pillStyle}>Queued: {offlineQueuedCount}</span>
+            </div>
+
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div
+                style={{
+                  fontWeight: 900,
+                  fontSize: 12,
+                  opacity: 0.85,
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+                title={saveMsg || offlineInfo || ""}
+              >
+                {saveMsg || offlineInfo || ""}
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={saving}
+              style={{
+                padding: "12px 16px",
+                borderRadius: 14,
+                border: "1px solid rgba(0,0,0,0.18)",
+                background: "#fff",
+                fontWeight: 1000,
+                cursor: "pointer",
+              }}
+            >
+              {saving ? "Saving…" : "Save"}
+            </button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
