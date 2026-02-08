@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from "react";
+import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, NavLink, Route, Routes, Navigate, useLocation } from "react-router-dom";
 
@@ -59,6 +59,28 @@ function withTimeout<T>(p: PromiseLike<T>, ms = 5000): Promise<T> {
 }
 
 // ----------------------
+// Online status
+// ----------------------
+function useOnlineStatus() {
+  const [online, setOnline] = useState(() => (typeof navigator !== "undefined" ? navigator.onLine !== false : true));
+
+  useEffect(() => {
+    const onOnline = () => setOnline(true);
+    const onOffline = () => setOnline(false);
+
+    window.addEventListener("online", onOnline);
+    window.addEventListener("offline", onOffline);
+
+    return () => {
+      window.removeEventListener("online", onOnline);
+      window.removeEventListener("offline", onOffline);
+    };
+  }, []);
+
+  return online;
+}
+
+// ----------------------
 // Admin context
 // ----------------------
 type AdminState = {
@@ -76,11 +98,13 @@ function useAdmin() {
   return v;
 }
 
-// ✅ use RPC is_admin() instead of querying app_admins
+// ✅ STEP 1 CHANGE: use RPC is_admin() instead of querying app_admins
 async function checkIsAdmin(): Promise<boolean> {
   try {
     const q = supabase.rpc("is_admin") as unknown as PromiseLike<{ data: boolean | null; error: any }>;
     const { data, error } = await withTimeout(q, 4000);
+
+    // If RLS blocks or any error: treat as NOT admin (never freeze the UI).
     if (error) return false;
     return Boolean(data);
   } catch {
@@ -93,6 +117,7 @@ function AdminProvider({ children }: { children: React.ReactNode }) {
   const [email, setEmail] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
 
+  // prevent overlapping refresh calls (avoids flicker + "checking" loops)
   const inflight = useRef<Promise<void> | null>(null);
 
   const refresh = async () => {
@@ -110,12 +135,16 @@ function AdminProvider({ children }: { children: React.ReactNode }) {
         }
 
         setEmail(session.user.email ?? "");
+
+        // ✅ STEP 1 CHANGE: no userId needed; rpc uses auth.uid()
         const ok = await checkIsAdmin();
         setIsAdmin(ok);
       } catch {
+        // Never block UI
         setEmail("");
         setIsAdmin(false);
       } finally {
+        // IMPORTANT: only flips to true; never back to false
         setBootstrapped(true);
       }
     })().finally(() => {
@@ -189,7 +218,7 @@ function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
       }
 
       await refresh();
-      onClose();
+      onClose(); // close immediately for better UX
     } finally {
       setLoading(false);
     }
@@ -201,12 +230,13 @@ function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
     setSyncResult(null);
 
     try {
+      // "local" works even when offline / flaky network
       const { error } = await supabase.auth.signOut({ scope: "local" });
       if (error) {
         setMsg("Logout failed: " + error.message);
         return;
       }
-      await refresh();
+      await refresh(); // force UI update immediately
       onClose();
     } finally {
       setLoading(false);
@@ -328,6 +358,7 @@ function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
           )}
         </div>
 
+        {/* Login / Logout */}
         <div style={{ marginTop: 12, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "end" }}>
           {!authEmail ? (
             <>
@@ -387,6 +418,7 @@ function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
           )}
         </div>
 
+        {/* Admin-only tools */}
         <div style={{ marginTop: 14, borderTop: "1px solid #eee", paddingTop: 14 }}>
           <div style={{ fontWeight: 1000, marginBottom: 8 }}>Admin tools</div>
 
@@ -462,29 +494,17 @@ function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
 function TopNav() {
   const location = useLocation();
   const { bootstrapped, email, isAdmin, refresh } = useAdmin();
+  const online = useOnlineStatus();
   const [adminOpen, setAdminOpen] = useState(false);
 
-  // Online / Offline indicator (updates live)
-  const [isOnline, setIsOnline] = useState<boolean>(() =>
-    typeof navigator === "undefined" ? true : navigator.onLine
-  );
-  useEffect(() => {
-    const goOnline = () => setIsOnline(true);
-    const goOffline = () => setIsOnline(false);
-    window.addEventListener("online", goOnline);
-    window.addEventListener("offline", goOffline);
-    return () => {
-      window.removeEventListener("online", goOnline);
-      window.removeEventListener("offline", goOffline);
-    };
-  }, []);
-
+  // Israel time ticker
   const [now, setNow] = useState<Date>(() => new Date());
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(t);
   }, []);
 
+  // Next match countdown
   const [nextMatch, setNextMatch] = useState<NextMatch | null>(null);
   const [countdownMs, setCountdownMs] = useState<number>(0);
 
@@ -544,7 +564,7 @@ function TopNav() {
     try {
       await supabase.auth.signOut({ scope: "local" });
     } finally {
-      await refresh();
+      await refresh(); // force immediate UI update
       setAdminOpen(false);
     }
   };
@@ -588,17 +608,18 @@ function TopNav() {
         </div>
 
         <div className="topnav-auth">
+          {/* ✅ ONLY CHANGE: green ONLINE, gray OFFLINE */}
           <div
             className="topnav-pill"
             style={{
-              opacity: 0.85,
+              background: online ? "rgba(0,180,90,0.14)" : "rgba(0,0,0,0.06)",
+              border: online ? "1px solid rgba(0,180,90,0.25)" : "1px solid rgba(0,0,0,0.10)",
               fontWeight: 900,
-              background: isOnline ? "rgba(0,180,90,0.14)" : "rgba(255,0,0,0.10)",
-              border: isOnline ? "1px solid rgba(0,180,90,0.25)" : "1px solid rgba(255,0,0,0.20)",
+              opacity: 0.95,
             }}
-            title={isOnline ? "Online" : "Offline"}
+            title={online ? "Online" : "Offline"}
           >
-            {isOnline ? "Online" : "Offline"}
+            {online ? "ONLINE" : "OFFLINE"}
           </div>
 
           {!bootstrapped ? (
