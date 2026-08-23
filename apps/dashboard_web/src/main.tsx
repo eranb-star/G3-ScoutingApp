@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import ReactDOM from "react-dom/client";
-import { BrowserRouter, NavLink, Route, Routes, Navigate, useLocation } from "react-router-dom";
+import { BrowserRouter, NavLink, Route, Routes, Navigate, useLocation, useNavigate } from "react-router-dom";
 
 import ScoutingPage from "./pages/ScoutingPage";
 import AnalysisPage from "./pages/AnalysisPage";
@@ -8,9 +8,26 @@ import AlliancePage from "./pages/AlliancePage";
 import PicklistPage from "./pages/PicklistPage";
 import ComparePage from "./pages/ComparePage";
 import SavedAlliancesPage from "./pages/SavedAlliancesPage";
+import {
+  CheckInPage,
+  CompetitionPage,
+  HomePage,
+  MessagesPage,
+  MorePage,
+  SchedulePage,
+} from "./pages/TeamHubPages";
 
 import "./index.css";
+import "./teamHub.css";
 import { supabase } from "./supabase";
+import { MemberAuthProvider, useMemberAuth } from "./lib/memberAuth";
+import { ChangePasswordPage, LoginPage } from "./pages/AuthPages";
+import MembersAdminPage from "./pages/MembersAdminPage";
+import AdminDashboardPage from "./pages/AdminDashboardPage";
+import AttendanceReportsPage from "./pages/AttendanceReportsPage";
+import { LocalizationProvider, useLocalization } from "./lib/localization";
+import { ProfilePage, ProjectsPage, SettingsPage, ToolsPage } from "./pages/OperationsPages";
+import SecurityAdminPage from "./pages/SecurityAdminPage";
 
 // ----------------------
 // Small helpers
@@ -493,6 +510,7 @@ function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
 // ----------------------
 function TopNav() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { bootstrapped, email, isAdmin, refresh } = useAdmin();
   const online = useOnlineStatus();
   const [adminOpen, setAdminOpen] = useState(false);
@@ -586,24 +604,25 @@ function TopNav() {
         <div className="topnav-left">
           <img className="topnav-logo" src="/logoG3.png" alt="Logo" />
           <div className="topnav-links">
-            <NavLink to="/scouting" style={linkStyle}>
-              Scouting
+            <NavLink to="/home" style={linkStyle}>
+              Home
             </NavLink>
 
-            <NavLink to="/analysis" style={linkStyle}>
-              Analysis
+            <NavLink to="/schedule" style={linkStyle}>
+              Schedule
             </NavLink>
 
-            {isAdmin ? (
-              <>
-                <NavLink to="/analysis/alliance" style={linkStyle}>
-                  Alliance
-                </NavLink>
-                <NavLink to="/analysis/picklist" style={linkStyle}>
-                  Picklist
-                </NavLink>
-              </>
-            ) : null}
+            <NavLink to="/check-in" style={linkStyle}>
+              Check in
+            </NavLink>
+
+            <NavLink to="/messages" style={linkStyle}>
+              Messages
+            </NavLink>
+
+            <NavLink to="/competition" style={linkStyle}>
+              Competition
+            </NavLink>
           </div>
         </div>
 
@@ -641,10 +660,12 @@ function TopNav() {
               </div>
 
               {isAdmin ? (
-                <button className="topnav-btn" type="button" onClick={() => setAdminOpen(true)} title="Admin tools">
-                  Tools
+                <button className="topnav-btn" type="button" onClick={() => navigate("/admin")} title="Administration">
+                  Admin
                 </button>
               ) : null}
+
+              <NotificationBell />
 
               <button className="topnav-btn" type="button" onClick={navLogout} title="Logout">
                 Logout
@@ -679,18 +700,94 @@ function TopNav() {
   );
 }
 
+function NotificationBell() {
+  const { profile } = useMemberAuth();
+  const navigate = useNavigate();
+  const [unread, setUnread] = useState(0);
+  useEffect(() => {
+    if (!profile) return;
+    const load = async () => {
+      const [{ data: announcements }, { data: reads }] = await Promise.all([
+        supabase.from("announcements").select("id"),
+        supabase.from("announcement_reads").select("announcement_id").eq("member_id", profile.id),
+      ]);
+      const read = new Set((reads ?? []).map((item) => item.announcement_id));
+      setUnread((announcements ?? []).filter((item) => !read.has(item.id)).length);
+    };
+    void load();
+    const channel = supabase.channel("notification-bell").on("postgres_changes", { event: "*", schema: "public", table: "announcements" }, load).subscribe();
+    window.addEventListener("g3-announcements-changed", load);
+    return () => { void supabase.removeChannel(channel); window.removeEventListener("g3-announcements-changed", load); };
+  }, [profile?.id]);
+  return <button className="notification-bell" type="button" onClick={() => navigate("/messages")} aria-label={`${unread} unread announcements`}><span aria-hidden="true">●</span>{unread > 0 ? <b>{unread > 99 ? "99+" : unread}</b> : null}</button>;
+}
+
+function MobileNav() {
+  const { t } = useLocalization();
+  const linkClass = ({ isActive }: { isActive: boolean }) => `mobile-nav-link${isActive ? " is-active" : ""}`;
+  return (
+    <nav className="mobile-nav" aria-label="Primary navigation">
+      <NavLink to="/home" className={linkClass}><span aria-hidden="true">⌂</span><small>{t("home")}</small></NavLink>
+      <NavLink to="/schedule" className={linkClass}><span aria-hidden="true">□</span><small>{t("schedule")}</small></NavLink>
+      <NavLink to="/check-in" className={linkClass}><span className="mobile-check-mark" aria-hidden="true">●</span><small>{t("checkIn")}</small></NavLink>
+      <NavLink to="/messages" className={linkClass}><span aria-hidden="true">◇</span><small>{t("messages")}</small></NavLink>
+      <NavLink to="/more" className={linkClass}><span aria-hidden="true">•••</span><small>{t("more")}</small></NavLink>
+    </nav>
+  );
+}
+
 function AdminGate({ children }: { children: JSX.Element }) {
   const { bootstrapped, isAdmin } = useAdmin();
   if (!bootstrapped) return <Navigate to="/scouting" replace />;
   return isAdmin ? children : <Navigate to="/scouting" replace />;
 }
 
+function MemberGate({ children }: { children: JSX.Element }) {
+  const { loading, session, profile, profileError } = useMemberAuth();
+  const location = useLocation();
+  if (loading) return <div className="app-loading">Loading G3 Team Hub…</div>;
+  if (!session) return <Navigate to="/login" state={{ from: location.pathname }} replace />;
+  if (!profile) {
+    return (
+      <div className="auth-page auth-single">
+        <section className="auth-panel auth-form-panel">
+          <h1>Account unavailable</h1><p>{profileError || "This account is not an active G3 member."}</p>
+          <button className="hub-button" onClick={() => supabase.auth.signOut({ scope: "local" })}>Sign out</button>
+        </section>
+      </div>
+    );
+  }
+  if (!profile.active) return <Navigate to="/login" replace />;
+  if (profile.must_change_password && location.pathname !== "/change-password") return <Navigate to="/change-password" replace />;
+  return children;
+}
+
 function AppShell() {
+  const { isAdmin } = useAdmin();
+  const location = useLocation();
+  const isAuthScreen = location.pathname === "/login" || location.pathname === "/change-password";
   return (
     <>
-      <TopNav />
+      {!isAuthScreen ? <TopNav /> : null}
       <Routes>
-        <Route path="/" element={<Navigate to="/scouting" replace />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/change-password" element={<ChangePasswordPage />} />
+        <Route path="/" element={<Navigate to="/home" replace />} />
+        <Route path="/home" element={<MemberGate><HomePage isAdmin={isAdmin} /></MemberGate>} />
+        <Route path="/schedule" element={<MemberGate><SchedulePage /></MemberGate>} />
+        <Route path="/check-in" element={<MemberGate><CheckInPage /></MemberGate>} />
+        <Route path="/messages" element={<MemberGate><MessagesPage /></MemberGate>} />
+        <Route path="/more" element={<MemberGate><MorePage isAdmin={isAdmin} /></MemberGate>} />
+        <Route path="/competition" element={<MemberGate><CompetitionPage isAdmin={isAdmin} /></MemberGate>} />
+        <Route path="/admin/members" element={<AdminGate><MembersAdminPage /></AdminGate>} />
+        <Route path="/admin" element={<AdminGate><AdminDashboardPage /></AdminGate>} />
+        <Route path="/admin/reports" element={<AdminGate><AttendanceReportsPage /></AdminGate>} />
+        <Route path="/admin/security" element={<AdminGate><SecurityAdminPage /></AdminGate>} />
+        <Route path="/attendance" element={<MemberGate><AttendanceReportsPage /></MemberGate>} />
+        <Route path="/profile" element={<MemberGate><ProfilePage /></MemberGate>} />
+        <Route path="/projects" element={<MemberGate><ProjectsPage /></MemberGate>} />
+        <Route path="/tools" element={<MemberGate><ToolsPage /></MemberGate>} />
+        <Route path="/settings" element={<MemberGate><SettingsPage /></MemberGate>} />
         <Route path="/scouting" element={<ScoutingPage />} />
 
         <Route path="/analysis" element={<AnalysisPage />} />
@@ -728,6 +825,7 @@ function AppShell() {
           }
         />
       </Routes>
+      {!isAuthScreen ? <MobileNav /> : null}
     </>
   );
 }
@@ -736,7 +834,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <BrowserRouter>
       <AdminProvider>
-        <AppShell />
+        <LocalizationProvider><MemberAuthProvider><AppShell /></MemberAuthProvider></LocalizationProvider>
       </AdminProvider>
     </BrowserRouter>
   </React.StrictMode>

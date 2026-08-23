@@ -1,32 +1,28 @@
-cat >> .gitignore << 'EOF'
-
-# macOS
+# Operating system and editors
 .DS_Store
+.vscode/
 
-# TypeScript build info
-**/tsconfig.tsbuildinfo
+# Local environment and credentials
+**/.env
+!**/.env.example
+**/local.properties
+**/keystore.properties
+**/*.jks
+**/*.keystore
 
-# Node
-**/node_modules
+# JavaScript tooling
+**/node_modules/
+**/dist/
+**/www/
+**/*.tsbuildinfo
+.pnpm-store/
 
-# Vite / build outputs (if you ever generate them)
-**/dist
-**/www
-
-EOF
-apps/dashboard_web/tsconfig.tsbuildinfo
-.DS_Store
-apps/dashboard_web/tsconfig.tsbuildinfo
-.DS_Store
-# macOS
-.DS_Store
-
-# TypeScript build cache
-**/tsconfig.tsbuildinfo
-
-# Node
-**/node_modules
-
-# Vite / build outputs
-**/dist
-**/www
+# Android / Gradle generated output
+**/.gradle/
+.gradle-user/
+.gradle-verify/
+.gradle-jdk21/
+.android-user/
+.android/
+analytics.settings
+**/build/

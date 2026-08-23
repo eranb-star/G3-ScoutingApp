@@ -19,3 +19,9 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Capacitor discovers native plugins through annotations and reflection.
+-keep @com.getcapacitor.annotation.CapacitorPlugin class * { *; }
+-keep class com.g3.scouting.G3PushPlugin { *; }
+-keep class com.g3.scouting.WifiInfoPlugin { *; }
+-keep class com.g3.scouting.G3MessagingService { *; }
