@@ -48,12 +48,13 @@ Deno.serve(async (request) => {
       const { data: workshop } = await admin.from("workshop_locations").select("latitude,longitude,radius_m").eq("active", true).single();
       if (!workshop) return response({ error: "Workshop location has not been configured" }, 503);
       distance = Math.round(distanceMetres(body.latitude!, body.longitude!, workshop.latitude, workshop.longitude));
-      if (distance > workshop.radius_m) return response({ error: `You are outside the workshop check-in area (${distance} m away).`, distanceMetres: distance }, 403);
+      if (distance > workshop.radius_m) return response({ error: `Check-in is available only within the Shvilim High School perimeter. You are approximately ${distance} metres from the workshop; move within ${workshop.radius_m} metres and try again.`, code: "OUTSIDE_WORKSHOP_RADIUS", distanceMetres: distance, allowedRadiusMetres: workshop.radius_m }, 403);
       accuracy = Math.round(body.accuracy!);
     }
 
     if (body.action === "open_workshop") {
-      const { data: existing } = await admin.from("team_meetings").select("id,title").eq("status", "open").limit(1).maybeSingle();
+      const nowIso = new Date().toISOString();
+      const { data: existing } = await admin.from("team_meetings").select("id,title,starts_at,ends_at,status,meeting_type").eq("status", "open").lte("starts_at", nowIso).gte("ends_at", nowIso).order("opened_at", { ascending: false }).limit(1).maybeSingle();
       if (existing) return response({ meeting: existing, alreadyOpen: true });
       const now = new Date();
       const israelDate = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Jerusalem", year: "numeric", month: "2-digit", day: "2-digit" }).format(now);

@@ -186,6 +186,7 @@ export function CheckInPage() {
   const [working, setWorking] = useState(false);
   const [message, setMessage] = useState("");
   const [locationConfigured, setLocationConfigured] = useState<boolean | null>(null);
+  const [nextMeeting, setNextMeeting] = useState<TeamMeeting | null>(null);
 
   async function loadAttendance(meeting: TeamMeeting | null) {
     if (!meeting || !profile) { setAttendance(null); return; }
@@ -194,8 +195,16 @@ export function CheckInPage() {
   }
 
   useEffect(() => {
-    supabase.from("team_meetings").select("id,title,starts_at,ends_at,status,meeting_type").eq("status", "open").order("opened_at", { ascending: false }).limit(1)
-      .then(({ data }) => { const meeting = (data?.[0] ?? null) as TeamMeeting | null; setActiveMeeting(meeting); void loadAttendance(meeting); });
+    const now = new Date().toISOString();
+    Promise.all([
+      supabase.from("team_meetings").select("id,title,starts_at,ends_at,status,meeting_type").eq("status", "open").lte("starts_at", now).gte("ends_at", now).order("opened_at", { ascending: false }).limit(1),
+      supabase.from("team_meetings").select("id,title,starts_at,ends_at,status,meeting_type").eq("status", "scheduled").gt("starts_at", now).order("starts_at").limit(1),
+    ]).then(([openResult, nextResult]) => {
+      const meeting = (openResult.data?.[0] ?? null) as TeamMeeting | null;
+      setActiveMeeting(meeting);
+      setNextMeeting((nextResult.data?.[0] ?? null) as TeamMeeting | null);
+      void loadAttendance(meeting);
+    });
     if (profile?.role === "admin") supabase.from("workshop_locations").select("id").eq("active", true).maybeSingle().then(({ data }) => setLocationConfigured(Boolean(data)));
   }, [profile?.id]);
 
@@ -204,7 +213,14 @@ export function CheckInPage() {
     setWorking(true); setMessage("Requesting one precise location reading…");
     const submit = async (verification: "location" | "wifi", details: Record<string, unknown>) => {
       const { data, error } = await supabase.functions.invoke("attendance", { body: { action, meetingId: activeMeeting?.id, verification, ...details } });
-      if (error || data?.error) setMessage(data?.error || error?.message || "Attendance request failed.");
+      if (error || data?.error) {
+        const functionContext = (error as { context?: Response } | null)?.context;
+        let reason = data?.error as string | undefined;
+        if (!reason && functionContext) {
+          try { reason = (await functionContext.clone().json())?.error; } catch { /* friendly fallback below */ }
+        }
+        setMessage(reason || pick("Check-in could not be completed. Confirm that you are at Shvilim High School and try again.","לא ניתן להשלים את דיווח הנוכחות. ודאו שאתם נמצאים בשטח תיכון שבילים ונסו שוב."));
+      }
       else if (action === "open_workshop") {
         const opened = data.meeting as TeamMeeting;
         setActiveMeeting(opened);
@@ -234,10 +250,11 @@ export function CheckInPage() {
         <div className="hub-location-ring" aria-hidden="true"><span /></div>
         <div>
           <div className="hub-status-label">{activeMeeting ? pick("MEETING OPEN","המפגש פתוח") : pick("NO ACTIVE MEETING","אין מפגש פעיל")}</div>
-          <h2>{activeMeeting ? activeMeeting.title : pick("Check-in will open during a scheduled workshop meeting","הדיווח ייפתח במהלך מפגש סדנה מתוכנן")}</h2>
+          <h2>{activeMeeting ? activeMeeting.title : pick("Workshop check-in is currently offline","דיווח הנוכחות לסדנה אינו פעיל כרגע")}</h2>
+          {!activeMeeting && nextMeeting ? <p className="next-meeting-note"><strong>{pick("Next scheduled meeting:","המפגש המתוכנן הבא:")}</strong> {nextMeeting.title} · {israelDateTime.format(new Date(nextMeeting.starts_at))}. {pick("If you are at school for unscheduled work, you may open an ad-hoc session below.","אם אתם בבית הספר לעבודה שלא תוכננה מראש, ניתן לפתוח מפגש מיוחד למטה.")}</p> : null}
           <p>{pick("The app requests one location reading, verifies that you are at the workshop, and discards the raw coordinates.","האפליקציה מבקשת קריאת מיקום אחת, מאמתת שאתם בסדנה ומוחקת את הקואורדינטות הגולמיות.")}</p>
           {attendance ? <div className="attendance-current"><strong>{attendance.checked_out_at ? "Attendance complete" : "Currently checked in"}</strong><span>Arrived {israelDateTime.format(new Date(attendance.checked_in_at))}{attendance.checked_out_at ? ` · Left ${israelDateTime.format(new Date(attendance.checked_out_at))}` : ""}</span></div> : null}
-          <button type="button" className="hub-button" disabled={working || Boolean(attendance?.checked_out_at)} onClick={() => verifyAndRecord(activeMeeting ? attendance ? "check_out" : "check_in" : "open_workshop")}>{working ? pick("Verifying location…","מאמת מיקום…") : attendance ? pick("Verify location and check out","אימות מיקום ודיווח יציאה") : activeMeeting ? pick("Verify location and check in","אימות מיקום ודיווח כניסה") : pick("I'm at the workshop — open session","אני בסדנה — פתיחת מפגש")}</button>
+          <button type="button" className="hub-button" disabled={working || Boolean(attendance?.checked_out_at)} onClick={() => verifyAndRecord(activeMeeting ? attendance ? "check_out" : "check_in" : "open_workshop")}>{working ? pick("Verifying location…","מאמת מיקום…") : attendance ? pick("Verify location and check out","אימות מיקום ודיווח יציאה") : activeMeeting ? pick("Verify location and check in","אימות מיקום ודיווח כניסה") : pick("I'm at Shvilim — open an ad-hoc session","אני בשבילים — פתיחת מפגש מיוחד")}</button>
           {message ? <div className="auth-message">{message}</div> : null}
           {profile?.role === "admin" && locationConfigured === false ? <div className="auth-message auth-error">Administrator setup required: workshop coordinates are not configured yet.</div> : null}
         </div>
@@ -294,6 +311,18 @@ export function MessagesPage() {
     setMessage(pushError ? pick("Announcement published. Push delivery could not be completed.","ההודעה פורסמה, אך שליחת ההתראה לא הושלמה.") : pick(`Announcement published. ${delivered} push notification${delivered === 1 ? "" : "s"} delivered.`,`ההודעה פורסמה. נשלחו ${delivered} התראות.`));
     setTitle(""); setBody(""); setPriority("normal"); setAudience("all"); setAudienceSubteam(""); setMeetingId(""); setShowCompose(false); await loadMessages(); window.dispatchEvent(new Event("g3-announcements-changed"));
   }
+  async function archiveAnnouncement(id: string) {
+    if (!window.confirm(pick("Archive this announcement? Team members will no longer see it.","להעביר את ההודעה לארכיון? חברי הקבוצה לא יראו אותה יותר."))) return;
+    const { error } = await supabase.from("announcements").update({ archived: true }).eq("id", id);
+    setMessage(error?.message ?? pick("Announcement archived.","ההודעה הועברה לארכיון."));
+    if (!error) { await loadMessages(); window.dispatchEvent(new Event("g3-announcements-changed")); }
+  }
+  async function deleteAnnouncement(id: string) {
+    if (!window.confirm(pick("Permanently delete this announcement? This cannot be undone.","למחוק את ההודעה לצמיתות? לא ניתן לבטל פעולה זו."))) return;
+    const { error } = await supabase.from("announcements").delete().eq("id", id);
+    setMessage(error?.message ?? pick("Announcement deleted.","ההודעה נמחקה."));
+    if (!error) { await loadMessages(); window.dispatchEvent(new Event("g3-announcements-changed")); }
+  }
   return (
     <div className="hub-page">
       <header className="hub-page-header">
@@ -302,7 +331,7 @@ export function MessagesPage() {
       </header>
       {showCompose ? <form className="hub-card announcement-compose" onSubmit={publish}><label>{pick("Title","כותרת")}<input required value={title} onChange={(e) => setTitle(e.target.value)} /></label><label>{pick("Message","תוכן ההודעה")}<textarea required rows={5} value={body} onChange={(e) => setBody(e.target.value)} /></label><div className="announcement-options"><label>{pick("Audience","קהל יעד")}<select value={audience} onChange={(e) => setAudience(e.target.value)}><option value="all">{pick("Entire team","כל הקבוצה")}</option><option value="members">{pick("Members","חברי קבוצה")}</option><option value="mentors">{pick("Mentors","מנטורים")}</option><option value="admins">{pick("Administrators","מנהלים")}</option><option value="subteam">{pick("Specific subteam","תת־צוות מסוים")}</option></select></label>{audience === "subteam" ? <label>{pick("Subteam","תת־צוות")}<input required value={audienceSubteam} onChange={(e) => setAudienceSubteam(e.target.value)} placeholder={pick("Software","תוכנה")} /></label> : null}<label>{pick("Related meeting","מפגש קשור")}<select value={meetingId} onChange={(e) => setMeetingId(e.target.value)}><option value="">{pick("None","ללא")}</option>{messageMeetings.map((meeting) => <option value={meeting.id} key={meeting.id}>{meeting.title} · {israelDateTime.format(new Date(meeting.starts_at))}</option>)}</select></label><label>{pick("Priority","עדיפות")}<select value={priority} onChange={(e) => setPriority(e.target.value)}><option value="normal">{pick("Normal","רגילה")}</option><option value="important">{pick("Important","חשובה")}</option><option value="urgent">{pick("Urgent","דחופה")}</option></select></label></div><button className="hub-button">{pick("Publish announcement","פרסום הודעה")}</button></form> : null}
       {message ? <div className="auth-message">{message}</div> : null}
-      <div className="announcement-list">{announcements.length === 0 ? <div className="hub-card"><EmptyState title={pick("No announcements yet","אין עדיין הודעות")} body={pick("New team and event announcements will appear here.","הודעות קבוצה ואירועים חדשות יופיעו כאן.")} /></div> : announcements.map((announcement) => <article className={`hub-card announcement-card priority-${announcement.priority}${readIds.has(announcement.id) ? " is-read" : ""}`} key={announcement.id} onClick={() => markRead(announcement.id)}><div className="announcement-meta"><span>{announcement.priority}</span><time>{israelDateTime.format(new Date(announcement.published_at))}</time>{!readIds.has(announcement.id) ? <i>{pick("NEW","חדש")}</i> : null}</div><h2>{announcement.title}</h2><p>{announcement.body}</p>{announcement.meeting_id ? <button className="announcement-link" onClick={(event) => { event.stopPropagation(); navigate("/schedule"); }}>{pick("View related meeting →","צפייה במפגש הקשור ←")}</button> : null}</article>)}</div>
+      <div className="announcement-list">{announcements.length === 0 ? <div className="hub-card"><EmptyState title={pick("No announcements yet","אין עדיין הודעות")} body={pick("New team and event announcements will appear here.","הודעות קבוצה ואירועים חדשות יופיעו כאן.")} /></div> : announcements.map((announcement) => <article className={`hub-card announcement-card priority-${announcement.priority}${readIds.has(announcement.id) ? " is-read" : ""}`} key={announcement.id} onClick={() => markRead(announcement.id)}><div className="announcement-meta"><span>{announcement.priority}</span><time>{israelDateTime.format(new Date(announcement.published_at))}</time>{!readIds.has(announcement.id) ? <i>{pick("NEW","חדש")}</i> : null}</div><h2>{announcement.title}</h2><p>{announcement.body}</p><div className="announcement-actions">{announcement.meeting_id ? <button className="announcement-link" onClick={(event) => { event.stopPropagation(); navigate("/schedule"); }}>{pick("View related meeting →","צפייה במפגש הקשור ←")}</button> : null}{profile?.role === "admin" ? <><button onClick={(event) => { event.stopPropagation(); void archiveAnnouncement(announcement.id); }}>{pick("Archive","ארכיון")}</button><button className="danger-link" onClick={(event) => { event.stopPropagation(); void deleteAnnouncement(announcement.id); }}>{pick("Delete","מחיקה")}</button></> : null}</div></article>)}</div>
     </div>
   );
 }
