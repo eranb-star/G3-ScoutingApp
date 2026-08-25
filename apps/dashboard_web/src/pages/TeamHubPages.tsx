@@ -268,7 +268,7 @@ export function MessagesPage() {
   const { pick } = useLocalization();
   const navigate = useNavigate();
   const { profile } = useMemberAuth();
-  const [announcements, setAnnouncements] = useState<Array<{id:string;title:string;body:string;priority:string;published_at:string;meeting_id:string|null}>>([]);
+  const [announcements, setAnnouncements] = useState<Array<{id:string;title:string;body:string;priority:string;published_at:string;meeting_id:string|null;archived:boolean}>>([]);
   const [readIds, setReadIds] = useState<Set<string>>(new Set());
   const [showCompose, setShowCompose] = useState(false);
   const [title, setTitle] = useState("");
@@ -279,11 +279,14 @@ export function MessagesPage() {
   const [meetingId, setMeetingId] = useState("");
   const [messageMeetings, setMessageMeetings] = useState<TeamMeeting[]>([]);
   const [message, setMessage] = useState("");
+  const [showArchived, setShowArchived] = useState(false);
 
   async function loadMessages() {
     if (!profile) return;
+    let announcementsQuery = supabase.from("announcements").select("id,title,body,priority,published_at,meeting_id,archived").order("published_at", { ascending: false });
+    announcementsQuery = announcementsQuery.eq("archived", profile.role === "admin" ? showArchived : false);
     const [{ data }, { data: receipts }] = await Promise.all([
-      supabase.from("announcements").select("id,title,body,priority,published_at,meeting_id").order("published_at", { ascending: false }),
+      announcementsQuery,
       supabase.from("announcement_reads").select("announcement_id").eq("member_id", profile.id),
     ]);
     setAnnouncements((data ?? []) as typeof announcements);
@@ -292,7 +295,7 @@ export function MessagesPage() {
   useEffect(() => {
     void loadMessages();
     supabase.from("team_meetings").select("id,title,starts_at,ends_at,status,meeting_type").gte("ends_at", new Date().toISOString()).order("starts_at").limit(20).then(({data}) => setMessageMeetings((data ?? []) as TeamMeeting[]));
-  }, [profile?.id]);
+  }, [profile?.id, showArchived]);
 
   async function markRead(id: string) {
     if (!profile || readIds.has(id)) return;
@@ -327,11 +330,11 @@ export function MessagesPage() {
     <div className="hub-page">
       <header className="hub-page-header">
         <div><div className="hub-eyebrow">{pick("Communication","תקשורת")}</div><h1>{pick("Announcements","הודעות")}</h1><p>{pick("Team updates, important notices and event information.","עדכוני קבוצה, הודעות חשובות ומידע על אירועים.")}</p></div>
-        {profile?.role === "admin" ? <button className="hub-button" onClick={() => setShowCompose((value) => !value)}>{pick("New announcement","הודעה חדשה")}</button> : null}
+        {profile?.role === "admin" ? <div className="message-header-actions"><button className="hub-button secondary" onClick={() => setShowArchived((value) => !value)}>{showArchived?pick("Current announcements","הודעות פעילות"):pick("Archive","ארכיון")}</button><button className="hub-button" onClick={() => setShowCompose((value) => !value)}>{pick("New announcement","הודעה חדשה")}</button></div> : null}
       </header>
       {showCompose ? <form className="hub-card announcement-compose" onSubmit={publish}><label>{pick("Title","כותרת")}<input required value={title} onChange={(e) => setTitle(e.target.value)} /></label><label>{pick("Message","תוכן ההודעה")}<textarea required rows={5} value={body} onChange={(e) => setBody(e.target.value)} /></label><div className="announcement-options"><label>{pick("Audience","קהל יעד")}<select value={audience} onChange={(e) => setAudience(e.target.value)}><option value="all">{pick("Entire team","כל הקבוצה")}</option><option value="members">{pick("Members","חברי קבוצה")}</option><option value="mentors">{pick("Mentors","מנטורים")}</option><option value="admins">{pick("Administrators","מנהלים")}</option><option value="subteam">{pick("Specific subteam","תת־צוות מסוים")}</option></select></label>{audience === "subteam" ? <label>{pick("Subteam","תת־צוות")}<input required value={audienceSubteam} onChange={(e) => setAudienceSubteam(e.target.value)} placeholder={pick("Software","תוכנה")} /></label> : null}<label>{pick("Related meeting","מפגש קשור")}<select value={meetingId} onChange={(e) => setMeetingId(e.target.value)}><option value="">{pick("None","ללא")}</option>{messageMeetings.map((meeting) => <option value={meeting.id} key={meeting.id}>{meeting.title} · {israelDateTime.format(new Date(meeting.starts_at))}</option>)}</select></label><label>{pick("Priority","עדיפות")}<select value={priority} onChange={(e) => setPriority(e.target.value)}><option value="normal">{pick("Normal","רגילה")}</option><option value="important">{pick("Important","חשובה")}</option><option value="urgent">{pick("Urgent","דחופה")}</option></select></label></div><button className="hub-button">{pick("Publish announcement","פרסום הודעה")}</button></form> : null}
       {message ? <div className="auth-message">{message}</div> : null}
-      <div className="announcement-list">{announcements.length === 0 ? <div className="hub-card"><EmptyState title={pick("No announcements yet","אין עדיין הודעות")} body={pick("New team and event announcements will appear here.","הודעות קבוצה ואירועים חדשות יופיעו כאן.")} /></div> : announcements.map((announcement) => <article className={`hub-card announcement-card priority-${announcement.priority}${readIds.has(announcement.id) ? " is-read" : ""}`} key={announcement.id} onClick={() => markRead(announcement.id)}><div className="announcement-meta"><span>{announcement.priority}</span><time>{israelDateTime.format(new Date(announcement.published_at))}</time>{!readIds.has(announcement.id) ? <i>{pick("NEW","חדש")}</i> : null}</div><h2>{announcement.title}</h2><p>{announcement.body}</p><div className="announcement-actions">{announcement.meeting_id ? <button className="announcement-link" onClick={(event) => { event.stopPropagation(); navigate("/schedule"); }}>{pick("View related meeting →","צפייה במפגש הקשור ←")}</button> : null}{profile?.role === "admin" ? <><button onClick={(event) => { event.stopPropagation(); void archiveAnnouncement(announcement.id); }}>{pick("Archive","ארכיון")}</button><button className="danger-link" onClick={(event) => { event.stopPropagation(); void deleteAnnouncement(announcement.id); }}>{pick("Delete","מחיקה")}</button></> : null}</div></article>)}</div>
+      <div className="announcement-list">{announcements.length === 0 ? <div className="hub-card"><EmptyState title={showArchived?pick("Archive is empty","הארכיון ריק"):pick("No announcements yet","אין עדיין הודעות")} body={showArchived?pick("Archived announcements will appear here.","הודעות שהועברו לארכיון יופיעו כאן."):pick("New team and event announcements will appear here.","הודעות קבוצה ואירועים חדשות יופיעו כאן.")} /></div> : announcements.map((announcement) => <article className={`hub-card announcement-card priority-${announcement.priority}${readIds.has(announcement.id) ? " is-read" : ""}`} key={announcement.id} onClick={() => markRead(announcement.id)}><div className="announcement-meta"><span>{announcement.priority}</span><time>{israelDateTime.format(new Date(announcement.published_at))}</time>{!announcement.archived&&!readIds.has(announcement.id) ? <i>{pick("NEW","חדש")}</i> : null}</div><h2>{announcement.title}</h2><p>{announcement.body}</p><div className="announcement-actions">{announcement.meeting_id ? <button className="announcement-link" onClick={(event) => { event.stopPropagation(); navigate("/schedule"); }}>{pick("View related meeting →","צפייה במפגש הקשור ←")}</button> : null}{profile?.role === "admin" ? <>{!announcement.archived?<button onClick={(event) => { event.stopPropagation(); void archiveAnnouncement(announcement.id); }}>{pick("Archive","ארכיון")}</button>:null}<button className="danger-link" onClick={(event) => { event.stopPropagation(); void deleteAnnouncement(announcement.id); }}>{pick("Delete","מחיקה")}</button></> : null}</div></article>)}</div>
     </div>
   );
 }

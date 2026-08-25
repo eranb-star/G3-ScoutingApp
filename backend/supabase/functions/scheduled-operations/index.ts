@@ -9,6 +9,7 @@ Deno.serve(async request => {
     if(!cronSecret || request.headers.get("x-cron-secret")!==cronSecret) return json({error:"Unauthorized"},401);
     const url=Deno.env.get("SUPABASE_URL")!; const serviceKey=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const db=createClient(url,serviceKey,{auth:{persistSession:false,autoRefreshToken:false}});
+    await db.rpc("close_stale_workshop_sessions");
     const now=new Date(); const in45=new Date(now.getTime()+45*60000); const in75=new Date(now.getTime()+75*60000);
     const {data:meetings}=await db.from("team_meetings").select("id,title,starts_at").eq("status","scheduled").gte("starts_at",in45.toISOString()).lt("starts_at",in75.toISOString());
     const created:string[]=[];
