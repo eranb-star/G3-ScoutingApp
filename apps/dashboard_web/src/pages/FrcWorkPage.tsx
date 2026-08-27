@@ -16,6 +16,15 @@ const frcAreas = [
   { key: "pit", en: "Drive & pit", he: "נהיגה ופיט", mark: "PIT", detailEn: "Readiness, repairs and match turnaround", detailHe: "מוכנות, תיקונים והיערכות למשחק" },
 ];
 
+const operationalAreas = [
+  { key: "readiness", en: "Robot readiness", he: "מוכנות הרובוט", detailEn: "Cross-team inspection and readiness checks", detailHe: "בדיקות מוכנות ובקרה חוצות־צוותים" },
+  { key: "purchasing", en: "Parts & purchasing", he: "חלקים ורכש", detailEn: "Requests, orders and missing parts", detailHe: "בקשות, הזמנות וחלקים חסרים" },
+  { key: "decisions", en: "Decision log", he: "יומן החלטות", detailEn: "Record technical decisions and rationale", detailHe: "תיעוד החלטות טכניות והסיבות להן" },
+  { key: "training", en: "Training matrix", he: "מטריצת הכשרה", detailEn: "Skills and safety qualification", detailHe: "מיומנויות והסמכות בטיחות" },
+  { key: "packing", en: "Pit & packing", he: "פיט ואריזה", detailEn: "Competition packing and pit readiness", detailHe: "אריזה לתחרות ומוכנות הפיט" },
+  { key: "assignments", en: "Assignments", he: "שיבוצים", detailEn: "Cross-team event and workshop roles", detailHe: "תפקידי אירוע וסדנה חוצי־צוותים" },
+];
+
 export default function FrcWorkPage() {
   const { pick } = useLocalization();
   const { profile } = useMemberAuth();
@@ -67,11 +76,16 @@ export default function FrcWorkPage() {
       <button className="hub-card work-utility-card" onClick={() => navigate("/tools")}><span className="frc-area-mark">TOOL</span><span><strong>{pick("Tools & equipment", "כלים וציוד")}</strong><small>{pick("Inventory, checkout, training and maintenance", "מלאי, השאלה, הכשרה ותחזוקה")}</small></span><b>→</b></button>
     </section>
 
+    <section className="work-operations-section">
+      <header className="work-section-heading"><div><div className="hub-eyebrow">{pick("Team-wide systems", "מערכות כלל־קבוצתיות")}</div><h2>{pick("FRC operations", "תפעול FRC")}</h2><p>{pick("Projects are deliverables owned by a subteam. These boards coordinate recurring work that crosses the whole team.", "פרויקטים הם תוצרים באחריות תת־צוות. הלוחות האלה מתאמים עבודה חוזרת שחוצה את כל הקבוצה.")}</p></div></header>
+      <div className="work-operations-grid">{operationalAreas.map(area=><button className="hub-card work-operation-card" key={area.key} onClick={()=>navigate(`/frc-operations?area=${area.key}`)}><span>G3</span><span><strong>{pick(area.en,area.he)}</strong><small>{pick(area.detailEn,area.detailHe)}</small></span><b>→</b></button>)}</div>
+    </section>
+
     <section className="hub-card work-priority-card">
       <header><div><div className="hub-eyebrow">{pick("Priority board", "לוח עדיפויות")}</div><h2>{pick("What needs attention", "מה דורש טיפול")}</h2></div><button className="announcement-link" onClick={() => navigate("/projects")}>{pick("View all", "הצגת הכול")} →</button></header>
       {openTasks.length === 0 ? <p>{pick("No open tasks yet. Create the first FRC project and assign the work.", "אין עדיין משימות פתוחות. צרו פרויקט FRC ראשון והקצו את העבודה.")}</p> : openTasks.slice(0, 5).map((task) => {
         const project = projects.find((item) => item.id === task.project_id);
-        return <button className="work-task-row" key={task.id} onClick={() => navigate("/projects")}><span className={`work-task-status status-${task.status}`} /><span><strong>{task.title}</strong><small>{project?.name ?? pick("G3 project", "פרויקט G3")}{task.due_at ? ` · ${new Date(task.due_at).toLocaleDateString()}` : ""}</small></span><b>{task.status.replace("_", " ")}</b></button>;
+        return <button className="work-task-row" key={task.id} onClick={() => navigate(`/projects?project=${task.project_id}&task=${task.id}`)}><span className={`work-task-status status-${task.status}`} /><span><strong>{task.title}</strong><small>{project?.name ?? pick("G3 project", "פרויקט G3")}{task.due_at ? ` · ${new Date(task.due_at).toLocaleDateString()}` : ""}</small></span><b>{task.status.replace("_", " ")}</b></button>;
       })}
     </section>
   </main>;

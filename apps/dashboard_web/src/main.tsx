@@ -629,12 +629,13 @@ function TopNav() {
         </div>
 
         <div className="topnav-auth">
-          {/* ✅ ONLY CHANGE: green ONLINE, gray OFFLINE */}
+          {/* Connection state stays legible on the G3 pink navigation. */}
           <div
             className="topnav-pill"
             style={{
-              background: online ? "rgba(0,180,90,0.14)" : "rgba(0,0,0,0.06)",
-              border: online ? "1px solid rgba(0,180,90,0.25)" : "1px solid rgba(0,0,0,0.10)",
+              background: online ? "rgba(255,255,255,0.20)" : "rgba(0,0,0,0.10)",
+              border: online ? "1px solid rgba(255,255,255,0.48)" : "1px solid rgba(0,0,0,0.10)",
+              color: "#fff",
               fontWeight: 900,
               opacity: 0.95,
             }}
@@ -652,8 +653,9 @@ function TopNav() {
               <div
                 className="topnav-pill"
                 style={{
-                  background: isAdmin ? "rgba(0,180,90,0.14)" : "rgba(0,0,0,0.06)",
-                  border: isAdmin ? "1px solid rgba(0,180,90,0.25)" : "1px solid rgba(0,0,0,0.10)",
+                  background: isAdmin ? "rgba(255,255,255,0.20)" : "rgba(0,0,0,0.06)",
+                  color: "#fff",
+                  border: isAdmin ? "1px solid rgba(255,255,255,0.48)" : "1px solid rgba(0,0,0,0.10)",
                   fontWeight: 1000,
                 }}
                 title={email}

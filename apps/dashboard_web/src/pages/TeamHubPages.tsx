@@ -19,6 +19,15 @@ type TeamMeeting = {
 const israelDateTime = new Intl.DateTimeFormat("en-IL", {
   timeZone: "Asia/Jerusalem", weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit",
 });
+const israelCalendarDay = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Jerusalem", year: "numeric", month: "2-digit", day: "2-digit" });
+
+function isMeetingWindowAvailable(meeting: Pick<TeamMeeting,"starts_at"|"ends_at">, now = new Date()) {
+  const starts = new Date(meeting.starts_at);
+  const ends = new Date(meeting.ends_at);
+  return israelCalendarDay.format(starts) === israelCalendarDay.format(now)
+    && now.getTime() >= starts.getTime() - 60 * 60 * 1000
+    && now.getTime() <= ends.getTime();
+}
 
 type ActionCardProps = {
   eyebrow: string;
@@ -214,12 +223,13 @@ export function CheckInPage() {
   }
 
   useEffect(() => {
-    const now = new Date().toISOString();
+    const currentTime = new Date();
+    const now = currentTime.toISOString();
     Promise.all([
-      supabase.from("team_meetings").select("id,title,starts_at,ends_at,status,meeting_type").eq("status", "open").lte("starts_at", now).gte("ends_at", now).order("opened_at", { ascending: false }).limit(1),
-      supabase.from("team_meetings").select("id,title,starts_at,ends_at,status,meeting_type").eq("status", "scheduled").gt("starts_at", now).order("starts_at").limit(1),
+      supabase.from("team_meetings").select("id,title,starts_at,ends_at,status,meeting_type").eq("status", "open").order("opened_at", { ascending: false }),
+      supabase.from("team_meetings").select("id,title,starts_at,ends_at,status,meeting_type").in("status", ["scheduled","open"]).gt("starts_at", now).order("starts_at").limit(1),
     ]).then(([openResult, nextResult]) => {
-      const meeting = (openResult.data?.[0] ?? null) as TeamMeeting | null;
+      const meeting = ((openResult.data ?? []) as TeamMeeting[]).find(item => isMeetingWindowAvailable(item, currentTime)) ?? null;
       setActiveMeeting(meeting);
       setNextMeeting((nextResult.data?.[0] ?? null) as TeamMeeting | null);
       void loadAttendance(meeting);
