@@ -362,11 +362,8 @@ export function MorePage({ isAdmin }: { isAdmin: boolean }) {
   const navigate = useNavigate();
   const { t, pick } = useLocalization();
   const rows = [
-    [t("schedule"), pick("Meetings, workdays, competitions and deadlines", "מפגשים, ימי עבודה, תחרויות ומועדי יעד"), "/schedule"],
     [t("attendance"), "Personal history and verified workshop hours", "/attendance"],
     [t("profile"), "Team directory, roles and subteams", "/profile"],
-    [t("projects"), "Tasks, owners and deadlines", "/projects"],
-    [t("tools"), "Inventory, checkout and maintenance", "/tools"],
     [t("settings"), "Language, notifications, privacy and account", "/settings"],
     [pick("Competition", "תחרות"), pick("Scouting, analysis, match readiness and alliance tools", "סקאוטינג, ניתוח, מוכנות למשחק וכלי בריתות"), "/competition"],
   ];

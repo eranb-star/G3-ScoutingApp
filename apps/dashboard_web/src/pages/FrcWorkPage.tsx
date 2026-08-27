@@ -27,7 +27,7 @@ export default function FrcWorkPage() {
   useEffect(() => {
     Promise.all([
       supabase.from("team_projects").select("id,name,status,subteam,due_at").neq("status", "archived").order("updated_at", { ascending: false }).limit(12),
-      supabase.from("project_tasks").select("id,project_id,title,status,due_at").eq("archived", false).order("due_at", { ascending: true, nullsFirst: false }).limit(40),
+      supabase.from("project_tasks").select("id,project_id,title,status,due_at").eq("archived", false).order("due_at", { ascending: true, nullsFirst: false }).limit(80),
     ]).then(([projectResult, taskResult]) => {
       setProjects((projectResult.data ?? []) as Project[]);
       setTasks((taskResult.data ?? []) as Task[]);
@@ -35,14 +35,15 @@ export default function FrcWorkPage() {
     });
   }, []);
 
-  const openTasks = useMemo(() => tasks.filter((task) => task.status !== "done"), [tasks]);
+  const activeProjectIds = useMemo(() => new Set(projects.map((project) => project.id)), [projects]);
+  const openTasks = useMemo(() => tasks.filter((task) => activeProjectIds.has(task.project_id) && task.status !== "done"), [tasks, activeProjectIds]);
   const blockers = useMemo(() => projects.filter((project) => project.status === "blocked").length + tasks.filter((task) => task.status === "blocked").length, [projects, tasks]);
   const myArea = (profile?.subteam ?? "").toLowerCase();
 
   return <main className="hub-page work-page">
     <header className="work-command-header">
       <div><div className="hub-eyebrow">FRC 6740 · {pick("Build operations", "תפעול עונת הבנייה")}</div><h1>{pick("Build the robot", "בונים את הרובוט")}</h1><p>{pick("One connected workspace for every G3 subsystem and subteam.", "מרחב עבודה מחובר לכל מערכת ותת־צוות של G3.")}</p></div>
-      <button className="hub-button" onClick={() => navigate("/projects")}>{pick("Open projects", "פתיחת פרויקטים")}</button>
+      <button className="hub-button" onClick={() => navigate("/projects")}>{pick("All projects", "כל הפרויקטים")}</button>
     </header>
 
     <section className="work-status-rail" aria-label={pick("Build status", "מצב הבנייה")}>
@@ -56,11 +57,15 @@ export default function FrcWorkPage() {
       {frcAreas.map((area) => {
         const selected = myArea.includes(area.key) || (area.key === "electrical" && myArea.includes("electronic"));
         const areaProjects = projects.filter((project) => (project.subteam ?? "").toLowerCase().includes(area.key));
-        return <button className={`frc-area-card${selected ? " is-mine" : ""}`} key={area.key} onClick={() => navigate("/projects")}>
+        return <button className={`frc-area-card${selected ? " is-mine" : ""}`} key={area.key} onClick={() => navigate(`/projects?subteam=${area.key}`)}>
           <span className="frc-area-mark">{area.mark}</span><span className="frc-area-copy"><strong>{pick(area.en, area.he)}</strong><small>{pick(area.detailEn, area.detailHe)}</small></span><span className="frc-area-count">{areaProjects.length}</span>
         </button>;
       })}
     </div>
+
+    <section className="work-utilities" aria-label={pick("Workshop operations", "תפעול הסדנה")}>
+      <button className="hub-card work-utility-card" onClick={() => navigate("/tools")}><span className="frc-area-mark">TOOL</span><span><strong>{pick("Tools & equipment", "כלים וציוד")}</strong><small>{pick("Inventory, checkout, training and maintenance", "מלאי, השאלה, הכשרה ותחזוקה")}</small></span><b>→</b></button>
+    </section>
 
     <section className="hub-card work-priority-card">
       <header><div><div className="hub-eyebrow">{pick("Priority board", "לוח עדיפויות")}</div><h2>{pick("What needs attention", "מה דורש טיפול")}</h2></div><button className="announcement-link" onClick={() => navigate("/projects")}>{pick("View all", "הצגת הכול")} →</button></header>

@@ -30,7 +30,7 @@ export function LoginPage() {
     <main className="auth-page">
       <section className="auth-panel auth-brand-panel">
         <img src="/logoG3.png" alt="G3" />
-        <div><div className="hub-eyebrow">Glue Gun &amp; Glitter</div><h1>{pick("Welcome to the G3 Team Hub","ברוכים הבאים למרכז הקבוצה G3")}</h1><p>{pick("One secure account for meetings, attendance, communication and competition.","חשבון מאובטח אחד לפגישות, נוכחות, תקשורת ותחרויות.")}</p></div>
+        <div><div className="hub-eyebrow">Glue Gun &amp; Glitter · FRC 6740</div><h1>{pick("Welcome to G3 6740 Team Hub","ברוכים הבאים למרכז הקבוצה G3 6740")}</h1><p>{pick("One secure account for meetings, attendance, communication, build work and competition.","חשבון מאובטח אחד לפגישות, נוכחות, תקשורת, עבודת בנייה ותחרויות.")}</p></div>
       </section>
       <section className="auth-panel auth-form-panel">
         <div className="hub-eyebrow">{pick("Team access","כניסה לקבוצה")}</div>

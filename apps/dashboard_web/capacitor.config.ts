@@ -14,7 +14,7 @@ type CapacitorConfig = {
 
 const config: CapacitorConfig = {
   appId: "com.g3.scouting",
-  appName: "G3 Scouting",
+  appName: "G3 6740 Team Hub",
   webDir: "dist",
   bundledWebRuntime: false,
 };

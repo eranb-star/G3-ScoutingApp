@@ -25,7 +25,8 @@ import MembersAdminPage from "./pages/MembersAdminPage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
 import AttendanceReportsPage from "./pages/AttendanceReportsPage";
 import { LocalizationProvider, useLocalization } from "./lib/localization";
-import { ProfilePage, ProjectsPage, SettingsPage, ToolsPage } from "./pages/OperationsPages";
+import { ProfilePage, SettingsPage, ToolsPage } from "./pages/OperationsPages";
+import ProjectsPage from "./pages/ProjectsPage";
 import UpdatesPage from "./pages/UpdatesPage";
 import FrcWorkPage from "./pages/FrcWorkPage";
 import SecurityAdminPage from "./pages/SecurityAdminPage";
@@ -704,17 +705,20 @@ function NotificationBell() {
   useEffect(() => {
     if (!profile) return;
     const load = async () => {
-      const [{ data: announcements }, { data: reads }] = await Promise.all([
+      const channelSeenAt = localStorage.getItem("g3-channel-seen-at") ?? new Date(0).toISOString();
+      const [{ data: announcements }, { data: reads }, { count: channelCount }] = await Promise.all([
         supabase.from("announcements").select("id"),
         supabase.from("announcement_reads").select("announcement_id").eq("member_id", profile.id),
+        supabase.from("channel_messages").select("id", { count: "exact", head: true }).gt("created_at", channelSeenAt).neq("author_id", profile.id),
       ]);
       const read = new Set((reads ?? []).map((item) => item.announcement_id));
-      setUnread((announcements ?? []).filter((item) => !read.has(item.id)).length);
+      setUnread((announcements ?? []).filter((item) => !read.has(item.id)).length + (channelCount ?? 0));
     };
     void load();
-    const channel = supabase.channel("notification-bell").on("postgres_changes", { event: "*", schema: "public", table: "announcements" }, load).subscribe();
+    const channel = supabase.channel("notification-bell").on("postgres_changes", { event: "*", schema: "public", table: "announcements" }, load).on("postgres_changes", { event: "INSERT", schema: "public", table: "channel_messages" }, load).subscribe();
     window.addEventListener("g3-announcements-changed", load);
-    return () => { void supabase.removeChannel(channel); window.removeEventListener("g3-announcements-changed", load); };
+    window.addEventListener("g3-channels-seen", load);
+    return () => { void supabase.removeChannel(channel); window.removeEventListener("g3-announcements-changed", load); window.removeEventListener("g3-channels-seen", load); };
   }, [profile?.id]);
   return <button className="notification-bell" type="button" onClick={() => navigate("/updates?view=inbox")} aria-label={`${unread} unread updates`}><span aria-hidden="true">●</span>{unread > 0 ? <b>{unread > 99 ? "99+" : unread}</b> : null}</button>;
 }
@@ -752,7 +756,7 @@ function AdminGate({ children }: { children: JSX.Element }) {
 function MemberGate({ children }: { children: JSX.Element }) {
   const { loading, session, profile, profileError } = useMemberAuth();
   const location = useLocation();
-  if (loading) return <div className="app-loading">Loading G3 Team Hub…</div>;
+  if (loading) return <div className="app-loading">Loading G3 6740 Team Hub…</div>;
   if (!session) return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   if (!profile) {
     return (

@@ -20,7 +20,7 @@ public class G3MessagingService extends FirebaseMessagingService {
         PendingIntent pending = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         NotificationManager manager = getSystemService(NotificationManager.class);
         if (Build.VERSION.SDK_INT >= 26) manager.createNotificationChannel(new NotificationChannel(CHANNEL_ID, "G3 announcements", NotificationManager.IMPORTANCE_HIGH));
-        NotificationCompat.Builder notification = new NotificationCompat.Builder(this, CHANNEL_ID).setSmallIcon(R.mipmap.ic_launcher).setContentTitle(title == null ? "G3 Team Hub" : title).setContentText(body == null ? "New team announcement" : body).setAutoCancel(true).setContentIntent(pending).setPriority(NotificationCompat.PRIORITY_HIGH);
+        NotificationCompat.Builder notification = new NotificationCompat.Builder(this, CHANNEL_ID).setSmallIcon(R.mipmap.ic_launcher).setContentTitle(title == null ? "G3 6740 Team Hub" : title).setContentText(body == null ? "New team update" : body).setAutoCancel(true).setContentIntent(pending).setPriority(NotificationCompat.PRIORITY_HIGH);
         manager.notify((int) System.currentTimeMillis(), notification.build());
     }
 }

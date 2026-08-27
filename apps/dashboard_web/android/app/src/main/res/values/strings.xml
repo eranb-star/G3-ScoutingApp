@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">G3 Scouting</string>
-    <string name="title_activity_main">G3 Scouting</string>
+    <string name="app_name">G3 6740 Team Hub</string>
+    <string name="title_activity_main">G3 6740 Team Hub</string>
     <string name="package_name">com.g3.scouting</string>
     <string name="custom_url_scheme">com.g3.scouting</string>
 </resources>
