@@ -19,6 +19,21 @@ Deno.serve(async (request) => {
   if (request.method === "OPTIONS") return new Response("ok", { headers: cors });
   try {
     const body = request.method === "POST" ? await request.json().catch(() => ({})) : {};
+    const query = typeof body.query === "string" ? body.query.trim().slice(0, 180) : "";
+    if (query) {
+      const searchResponse = await fetch(`https://www.chiefdelphi.com/search.json?q=${encodeURIComponent(query)}`, { headers: { "User-Agent": "G3-Team-Hub/1.0 (+https://github.com/eranb-star/G3-ScoutingApp)", Accept: "application/json" } });
+      if (!searchResponse.ok) throw new Error(`Chief Delphi search returned ${searchResponse.status}`);
+      const payload = await searchResponse.json();
+      const topics = new Map((payload.topics ?? []).map((topic: Record<string, unknown>) => [topic.id, topic]));
+      const items = (payload.posts ?? []).slice(0, 30).map((post: Record<string, unknown>) => {
+        const topic = topics.get(post.topic_id) as Record<string, unknown> | undefined;
+        const slug = String(topic?.slug ?? "topic");
+        const topicId = Number(post.topic_id);
+        const postNumber = Number(post.post_number ?? 1);
+        return { id: String(post.id), title: String(topic?.title ?? "Chief Delphi discussion"), excerpt: decode(String(post.blurb ?? "")).slice(0, 320), url: `https://www.chiefdelphi.com/t/${slug}/${topicId}/${postNumber}`, publishedAt: String(post.created_at ?? ""), category: "Search" };
+      });
+      return new Response(JSON.stringify({ items, source: "Chief Delphi search", query }), { headers: { ...cors, "Content-Type": "application/json", "Cache-Control": "public, max-age=120" } });
+    }
     const selected = feeds[typeof body.feed === "string" ? body.feed : "all"] ?? feeds.all;
     const response = await fetch(selected.url, { headers: { "User-Agent": "G3-Team-Hub/1.0 (+https://github.com/eranb-star/G3-ScoutingApp)", Accept: "application/rss+xml, application/xml" } });
     if (!response.ok) throw new Error(`Chief Delphi returned ${response.status}`);

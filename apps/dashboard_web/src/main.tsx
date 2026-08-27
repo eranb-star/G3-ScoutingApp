@@ -11,7 +11,6 @@ import SavedAlliancesPage from "./pages/SavedAlliancesPage";
 import {
   CheckInPage,
   CompetitionPage,
-  HomePage,
   MorePage,
   SchedulePage,
 } from "./pages/TeamHubPages";
@@ -25,11 +24,16 @@ import MembersAdminPage from "./pages/MembersAdminPage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
 import AttendanceReportsPage from "./pages/AttendanceReportsPage";
 import { LocalizationProvider, useLocalization } from "./lib/localization";
-import { ProfilePage, SettingsPage, ToolsPage } from "./pages/OperationsPages";
+import { ProfilePage, SettingsPage } from "./pages/OperationsPages";
+import ToolsInventoryPage from "./pages/ToolsInventoryPage";
+import ProductivityHomePage from "./pages/ProductivityHomePage";
+import FrcOperationsPage from "./pages/FrcOperationsPage";
 import ProjectsPage from "./pages/ProjectsPage";
 import UpdatesPage from "./pages/UpdatesPage";
 import FrcWorkPage from "./pages/FrcWorkPage";
 import SecurityAdminPage from "./pages/SecurityAdminPage";
+import ContextBackBar from "./components/ContextBackBar";
+import { getUnreadUpdateCounts } from "./lib/unreadUpdates";
 
 // ----------------------
 // Small helpers
@@ -705,14 +709,8 @@ function NotificationBell() {
   useEffect(() => {
     if (!profile) return;
     const load = async () => {
-      const channelSeenAt = localStorage.getItem("g3-channel-seen-at") ?? new Date(0).toISOString();
-      const [{ data: announcements }, { data: reads }, { count: channelCount }] = await Promise.all([
-        supabase.from("announcements").select("id"),
-        supabase.from("announcement_reads").select("announcement_id").eq("member_id", profile.id),
-        supabase.from("channel_messages").select("id", { count: "exact", head: true }).gt("created_at", channelSeenAt).neq("author_id", profile.id),
-      ]);
-      const read = new Set((reads ?? []).map((item) => item.announcement_id));
-      setUnread((announcements ?? []).filter((item) => !read.has(item.id)).length + (channelCount ?? 0));
+      const counts=await getUnreadUpdateCounts(profile.id);
+      setUnread(counts.announcements+counts.channels);
     };
     void load();
     const channel = supabase.channel("notification-bell").on("postgres_changes", { event: "*", schema: "public", table: "announcements" }, load).on("postgres_changes", { event: "INSERT", schema: "public", table: "channel_messages" }, load).subscribe();
@@ -780,11 +778,12 @@ function AppShell() {
   return (
     <>
       {!isAuthScreen ? <TopNav /> : null}
+      {!isAuthScreen ? <ContextBackBar /> : null}
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/change-password" element={<ChangePasswordPage />} />
         <Route path="/" element={<Navigate to="/home" replace />} />
-        <Route path="/home" element={<MemberGate><HomePage isAdmin={isAdmin} /></MemberGate>} />
+        <Route path="/home" element={<MemberGate><ProductivityHomePage isAdmin={isAdmin} /></MemberGate>} />
         <Route path="/schedule" element={<MemberGate><SchedulePage /></MemberGate>} />
         <Route path="/check-in" element={<MemberGate><CheckInPage /></MemberGate>} />
         <Route path="/work" element={<MemberGate><FrcWorkPage /></MemberGate>} />
@@ -799,7 +798,8 @@ function AppShell() {
         <Route path="/attendance" element={<MemberGate><AttendanceReportsPage /></MemberGate>} />
         <Route path="/profile" element={<MemberGate><ProfilePage /></MemberGate>} />
         <Route path="/projects" element={<MemberGate><ProjectsPage /></MemberGate>} />
-        <Route path="/tools" element={<MemberGate><ToolsPage /></MemberGate>} />
+        <Route path="/tools" element={<MemberGate><ToolsInventoryPage /></MemberGate>} />
+        <Route path="/frc-operations" element={<MemberGate><FrcOperationsPage /></MemberGate>} />
         <Route path="/settings" element={<MemberGate><SettingsPage /></MemberGate>} />
         <Route path="/scouting" element={<ScoutingPage />} />
 

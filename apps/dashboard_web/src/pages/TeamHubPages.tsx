@@ -365,7 +365,6 @@ export function MorePage({ isAdmin }: { isAdmin: boolean }) {
     [t("attendance"), "Personal history and verified workshop hours", "/attendance"],
     [t("profile"), "Team directory, roles and subteams", "/profile"],
     [t("settings"), "Language, notifications, privacy and account", "/settings"],
-    [pick("Competition", "תחרות"), pick("Scouting, analysis, match readiness and alliance tools", "סקאוטינג, ניתוח, מוכנות למשחק וכלי בריתות"), "/competition"],
   ];
 
   return (

@@ -4,6 +4,7 @@ import { useLocalization } from "../lib/localization";
 import { useMemberAuth } from "../lib/memberAuth";
 import { supabase } from "../supabase";
 import { useAdminStatus } from "../lib/useAdminStatus";
+import { getUnreadUpdateCounts } from "../lib/unreadUpdates";
 
 type View = "inbox" | "announcements" | "channels" | "knowledge";
 type Announcement = { id: string; title: string; body: string; priority: string; published_at: string; archived: boolean };
@@ -39,6 +40,8 @@ export default function UpdatesPage() {
   const [channelsAvailable, setChannelsAvailable] = useState(true);
   const [knowledgeLoading, setKnowledgeLoading] = useState(false);
   const [feed, setFeed] = useState("all");
+  const [knowledgeQuery,setKnowledgeQuery]=useState("");
+  const [submittedKnowledgeQuery,setSubmittedKnowledgeQuery]=useState("");
 
   function changeView(next: View) { setView(next); setParams({ view: next }, { replace: true }); }
 
@@ -60,9 +63,8 @@ export default function UpdatesPage() {
       setSelectedChannel((current) => current || (linkedChannel && nextChannels.some((item) => item.id === linkedChannel) ? linkedChannel : nextChannels[0]?.id) || "");
     }
     setSavedUrls(new Set((savedResult.data ?? []).map((row) => row.source_url as string)));
-    const channelSeenAt = localStorage.getItem("g3-channel-seen-at") ?? new Date(0).toISOString();
-    const { count } = await supabase.from("channel_messages").select("id", { count: "exact", head: true }).gt("created_at", channelSeenAt).neq("author_id", profile.id);
-    setUnseenChannelCount(count ?? 0);
+    const counts=await getUnreadUpdateCounts(profile.id);
+    setUnseenChannelCount(counts.channels);
   }
 
   useEffect(() => { void loadCore(); }, [profile?.id, isAdmin, showArchived]);
@@ -75,21 +77,19 @@ export default function UpdatesPage() {
   }, [selectedChannel, channelsAvailable]);
 
   useEffect(() => {
-    if (view !== "channels") return;
-    localStorage.setItem("g3-channel-seen-at", new Date().toISOString());
-    setUnseenChannelCount(0);
-    window.dispatchEvent(new Event("g3-channels-seen"));
-  }, [view, selectedChannel]);
+    if (view !== "channels" || !profile || !selectedChannel) return;
+    void (async()=>{await supabase.from("channel_read_state").upsert({member_id:profile.id,channel_id:selectedChannel,last_read_at:new Date().toISOString()});const counts=await getUnreadUpdateCounts(profile.id);setUnseenChannelCount(counts.channels);window.dispatchEvent(new Event("g3-channels-seen"));})();
+  }, [view, selectedChannel, profile?.id]);
 
   useEffect(() => {
     if (view !== "knowledge" || knowledge.length) return;
     setKnowledgeLoading(true);
-    supabase.functions.invoke("chief-delphi-feed", { body: { feed } }).then(({ data, error }) => {
+    supabase.functions.invoke("chief-delphi-feed", { body: { feed,query:submittedKnowledgeQuery } }).then(({ data, error }) => {
       if (error) setStatus(pick("Chief Delphi could not be reached right now.", "לא ניתן להגיע כרגע ל-Chief Delphi."));
       setKnowledge((data?.items ?? []) as KnowledgeItem[]);
       setKnowledgeLoading(false);
     });
-  }, [view, feed]);
+  }, [view, feed, submittedKnowledgeQuery]);
 
   const unreadAnnouncements = useMemo(() => announcements.filter((item) => !reads.has(item.id)), [announcements, reads]);
 
@@ -156,7 +156,7 @@ export default function UpdatesPage() {
 
     {view === "channels" ? <section className="channels-layout">{!channelsAvailable ? <EmptyUpdates title={pick("Channels need activation", "יש להפעיל את הערוצים")} body={pick("Apply the included Supabase collaboration migration to enable private G3 conversations.", "יש להחיל את עדכון Supabase המצורף כדי להפעיל שיחות פרטיות של G3.")} /> : <><aside className="channel-rail"><div className="channel-rail-title">{pick("G3 channels", "ערוצי G3")}</div>{channels.map((channel) => <button className={selectedChannel === channel.id ? "is-active" : ""} key={channel.id} onClick={() => setSelectedChannel(channel.id)}><span>#</span><span><strong>{language === "he" && channel.name_he ? channel.name_he : channel.name}</strong><small>{channel.description}</small></span></button>)}</aside><div className="channel-thread"><header><span>#</span><div><h2>{language === "he" && channels.find((item) => item.id === selectedChannel)?.name_he || channels.find((item) => item.id === selectedChannel)?.name}</h2><p>{channels.find((item) => item.id === selectedChannel)?.description}</p></div></header><div className="channel-message-list">{channelMessages.length === 0 ? <EmptyUpdates title={pick("Start the conversation", "התחילו את השיחה")} body={pick("Share an FRC question, decision or progress update with this channel.", "שתפו שאלת FRC, החלטה או עדכון התקדמות בערוץ זה.")} /> : channelMessages.map((message) => <article className={`channel-message${message.author_id === profile?.id ? " is-own" : ""}`} key={message.id}><span className="member-avatar">{(message.team_members?.display_name ?? "G3").slice(0,2).toUpperCase()}</span><div><header><strong>{message.team_members?.display_name ?? "G3 member"}</strong><small>{message.team_members?.subteam ?? pick("Team 6740", "קבוצה 6740")} · {dateTime.format(new Date(message.created_at))}</small></header><p>{message.body}</p></div></article>)}</div><form className="channel-composer" onSubmit={sendMessage}><textarea aria-label={pick("Message", "הודעה")} rows={2} value={draft} onChange={(event) => setDraft(event.target.value)} placeholder={pick("Share with the team…", "שיתוף עם הקבוצה…")} /><button className="hub-button" disabled={!draft.trim()}>{pick("Send", "שליחה")}</button></form></div></>}</section> : null}
 
-    {view === "knowledge" ? <section className="knowledge-section"><header className="knowledge-toolbar"><div><h2>{pick("FRC knowledge radar", "רדאר הידע של FRC")}</h2><p>{pick("Curated Chief Delphi discussions—saved and connected back to G3 work.", "דיונים נבחרים מ-Chief Delphi, שמורים ומחוברים לעבודה של G3.")}</p></div><select value={feed} onChange={(event) => { setFeed(event.target.value); setKnowledge([]); }}><option value="all">{pick("All FRC", "כל FRC")}</option><option value="technical">{pick("Technical", "טכני")}</option><option value="software">{pick("Software", "תוכנה")}</option><option value="strategy">{pick("Strategy", "אסטרטגיה")}</option></select></header>{knowledgeLoading ? <div className="knowledge-loading">{pick("Scanning Chief Delphi…", "סורק את Chief Delphi…")}</div> : knowledge.length === 0 ? <EmptyUpdates title={pick("Knowledge feed unavailable", "פיד הידע אינו זמין")} body={pick("Deploy the included Chief Delphi Edge Function to activate the live feed.", "יש לפרוס את פונקציית ה-Edge המצורפת כדי להפעיל את הפיד החי.")} /> : <div className="knowledge-grid">{knowledge.map((item) => <article className="knowledge-card" key={item.id}><header><span>{item.category}</span><time>{item.publishedAt ? new Date(item.publishedAt).toLocaleDateString() : ""}</time></header><h2>{item.title}</h2><p>{item.excerpt}</p><footer><button className={savedUrls.has(item.url) ? "is-saved" : ""} onClick={() => void saveKnowledge(item)}>{savedUrls.has(item.url) ? pick("Saved ✓", "נשמר ✓") : pick("Save to G3", "שמירה ב-G3")}</button><button onClick={() => window.open(item.url, "_blank", "noopener,noreferrer")}>{pick("Open on Chief Delphi", "פתיחה ב-Chief Delphi")} ↗</button></footer></article>)}</div>}</section> : null}
+    {view === "knowledge" ? <section className="knowledge-section"><header className="knowledge-toolbar"><div><h2>{pick("FRC knowledge search", "חיפוש ידע FRC")}</h2><p>{pick("Search Chief Delphi directly or browse the latest discussions.", "חיפוש ישיר ב-Chief Delphi או עיון בדיונים האחרונים.")}</p></div><select value={feed} onChange={(event) => { setFeed(event.target.value); setSubmittedKnowledgeQuery(""); setKnowledge([]); }}><option value="all">{pick("All FRC", "כל FRC")}</option><option value="technical">{pick("Technical", "טכני")}</option><option value="software">{pick("Software", "תוכנה")}</option><option value="strategy">{pick("Strategy", "אסטרטגיה")}</option></select></header><form className="knowledge-search" onSubmit={event=>{event.preventDefault();setKnowledge([]);setSubmittedKnowledgeQuery(knowledgeQuery.trim());}}><input type="search" value={knowledgeQuery} onChange={event=>setKnowledgeQuery(event.target.value)} placeholder={pick("Search a keyword, problem or full question…","חיפוש מילת מפתח, בעיה או שאלה מלאה…")} aria-label={pick("Search Chief Delphi","חיפוש ב-Chief Delphi")}/><button className="hub-button">{pick("Search","חיפוש")}</button>{submittedKnowledgeQuery?<button type="button" onClick={()=>{setKnowledgeQuery("");setSubmittedKnowledgeQuery("");setKnowledge([]);}}>{pick("Clear","ניקוי")}</button>:null}</form>{knowledgeLoading ? <div className="knowledge-loading">{pick("Searching Chief Delphi…", "מחפש ב-Chief Delphi…")}</div> : knowledge.length === 0 ? <EmptyUpdates title={pick("No knowledge results", "לא נמצאו תוצאות")} body={pick("Try a different phrase or browse a category.", "נסו ניסוח אחר או עיינו בקטגוריה.")} /> : <div className="knowledge-grid">{knowledge.map((item) => <article className="knowledge-card" key={item.id}><header><span>{item.category}</span><time>{item.publishedAt ? new Date(item.publishedAt).toLocaleDateString() : ""}</time></header><h2>{item.title}</h2><p>{item.excerpt}</p><footer><button className={savedUrls.has(item.url) ? "is-saved" : ""} onClick={() => void saveKnowledge(item)}>{savedUrls.has(item.url) ? pick("Saved ✓", "נשמר ✓") : pick("Save to G3", "שמירה ב-G3")}</button><button onClick={() => window.open(item.url, "_blank", "noopener,noreferrer")}>{pick("Open on Chief Delphi", "פתיחה ב-Chief Delphi")} ↗</button></footer></article>)}</div>}</section> : null}
   </main>;
 }
 
