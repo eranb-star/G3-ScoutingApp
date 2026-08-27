@@ -55,6 +55,24 @@ function EmptyState({ title, body }: { title: string; body: string }) {
 export function HomePage({ isAdmin }: { isAdmin: boolean }) {
   const navigate = useNavigate();
   const { pick } = useLocalization();
+  const { profile } = useMemberAuth();
+  const [activeMeeting, setActiveMeeting] = useState<TeamMeeting | null>(null);
+  const [nextMeeting, setNextMeeting] = useState<TeamMeeting | null>(null);
+  const [openTasks, setOpenTasks] = useState(0);
+  const competitionSeason = new Date().getMonth() <= 4;
+
+  useEffect(() => {
+    const now = new Date().toISOString();
+    Promise.all([
+      supabase.from("team_meetings").select("id,title,starts_at,ends_at,status,meeting_type").eq("status", "open").lte("starts_at", now).gte("ends_at", now).order("starts_at").limit(1),
+      supabase.from("team_meetings").select("id,title,starts_at,ends_at,status,meeting_type").eq("status", "scheduled").gt("starts_at", now).order("starts_at").limit(1),
+      supabase.from("project_tasks").select("id", { count: "exact", head: true }).neq("status", "done").eq("archived", false),
+    ]).then(([openResult, nextResult, taskResult]) => {
+      setActiveMeeting((openResult.data?.[0] ?? null) as TeamMeeting | null);
+      setNextMeeting((nextResult.data?.[0] ?? null) as TeamMeeting | null);
+      setOpenTasks(taskResult.count ?? 0);
+    });
+  }, [profile?.id]);
 
   return (
     <div className="hub-page">
@@ -70,9 +88,10 @@ export function HomePage({ isAdmin }: { isAdmin: boolean }) {
       <section className="hub-now" aria-label="Current team status">
         <div className="hub-live-dot" aria-hidden="true" />
         <div>
-          <strong>{pick("No workshop meeting is open","אין כרגע מפגש פתוח בסדנה")}</strong>
-          <span>{pick("When a meeting opens, location check-in will appear here.","כאשר מפגש ייפתח, אפשרות דיווח הנוכחות תופיע כאן.")}</span>
+          <strong>{activeMeeting ? pick(`${activeMeeting.title} is open`, `${activeMeeting.title} פתוח`) : pick("Workshop check-in is offline", "דיווח הנוכחות לסדנה אינו פעיל")}</strong>
+          <span>{activeMeeting ? pick("Use the center button to check in or out.", "השתמשו בכפתור המרכזי לדיווח כניסה או יציאה.") : nextMeeting ? `${pick("Next:", "הבא:")} ${nextMeeting.title} · ${israelDateTime.format(new Date(nextMeeting.starts_at))}` : pick("Open the schedule for upcoming team activity.", "פתחו את לוח הזמנים לפעילות הקבוצה הקרובה.")}</span>
         </div>
+        {activeMeeting ? <button className="hub-button hub-now-action" onClick={() => navigate("/check-in")}>{pick("Check in", "כניסה")}</button> : null}
         {isAdmin ? <span className="hub-role-chip">ADMIN</span> : null}
       </section>
 
@@ -86,17 +105,17 @@ export function HomePage({ isAdmin }: { isAdmin: boolean }) {
           tone="plain"
         />
         <ActionCard
-          eyebrow={pick("Workshop","סדנה")}
-          title={pick("Attendance","נוכחות")}
-          body={pick("Check in with a one-time location verification when a meeting is open.","דיווח כניסה באמצעות אימות מיקום חד־פעמי כאשר מפגש פתוח.")}
-          action={pick("Open check-in","פתיחת דיווח נוכחות")}
-          onClick={() => navigate("/check-in")}
+          eyebrow={pick("FRC build operations","תפעול בניית FRC")}
+          title={pick("Work","עבודה")}
+          body={pick(`${openTasks} open tasks across robot subsystems and team projects.`, `${openTasks} משימות פתוחות במערכות הרובוט ובפרויקטי הקבוצה.`)}
+          action={pick("Open workspace","פתיחת מרחב העבודה")}
+          onClick={() => navigate("/work")}
           tone="pink"
         />
         <ActionCard
-          eyebrow="FRC operations"
+          eyebrow={competitionSeason ? pick("FRC competition season", "עונת תחרויות FRC") : pick("FRC competition archive", "ארכיון תחרויות FRC")}
           title={pick("Competition","תחרות")}
-          body={pick("Continue to match scouting, analysis, picklists and alliance tools.","מעבר לסקאוטינג, ניתוח, רשימות בחירה וכלי בריתות.")}
+          body={competitionSeason ? pick("Scouting, match readiness, strategy and alliance tools are ready.", "סקאוטינג, מוכנות למשחק, אסטרטגיה וכלי בריתות מוכנים.") : pick("Scouting, analysis and previous event knowledge remain available here.", "סקאוטינג, ניתוח וידע מאירועים קודמים זמינים כאן.")}
           action={pick("Enter competition mode","כניסה למצב תחרות")}
           onClick={() => navigate("/competition")}
           tone="dark"
@@ -226,7 +245,7 @@ export function CheckInPage() {
         setActiveMeeting(opened);
         setMessage(data.alreadyOpen ? "A workshop session is already open." : "Workshop opened. You can now check in.");
         await loadAttendance(opened);
-      } else { setMessage(action === "check_in" ? "Checked in successfully." : "Checked out successfully."); await loadAttendance(activeMeeting); }
+      } else { setMessage(action === "check_in" ? "Checked in successfully." : "Checked out successfully."); await loadAttendance(activeMeeting); window.dispatchEvent(new Event("g3-attendance-changed")); }
       setWorking(false);
     };
     const tryWifiFallback = async () => {
@@ -341,13 +360,15 @@ export function MessagesPage() {
 
 export function MorePage({ isAdmin }: { isAdmin: boolean }) {
   const navigate = useNavigate();
-  const { t } = useLocalization();
+  const { t, pick } = useLocalization();
   const rows = [
+    [t("schedule"), pick("Meetings, workdays, competitions and deadlines", "מפגשים, ימי עבודה, תחרויות ומועדי יעד"), "/schedule"],
     [t("attendance"), "Personal history and verified workshop hours", "/attendance"],
     [t("profile"), "Team directory, roles and subteams", "/profile"],
     [t("projects"), "Tasks, owners and deadlines", "/projects"],
     [t("tools"), "Inventory, checkout and maintenance", "/tools"],
     [t("settings"), "Language, notifications, privacy and account", "/settings"],
+    [pick("Competition", "תחרות"), pick("Scouting, analysis, match readiness and alliance tools", "סקאוטינג, ניתוח, מוכנות למשחק וכלי בריתות"), "/competition"],
   ];
 
   return (

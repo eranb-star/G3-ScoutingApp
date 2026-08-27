@@ -4,13 +4,13 @@ export type AppLanguage = "en" | "he";
 
 const copy = {
   en: {
-    home: "Home", schedule: "Schedule", checkIn: "Check in", messages: "Messages", more: "More",
+    home: "Home", schedule: "Schedule", checkIn: "Check in", checkOut: "Check out", messages: "Messages", updates: "Updates", work: "Work", more: "More",
     attendance: "Attendance", members: "Members", projects: "Projects", tools: "Tools", files: "Files",
     language: "Language", settings: "Settings", administration: "Administration", profile: "My profile",
     teamHub: "Team Hub", moreTitle: "People, projects and account settings.", english: "English", hebrew: "Hebrew",
   },
   he: {
-    home: "בית", schedule: "לוח זמנים", checkIn: "כניסה", messages: "הודעות", more: "עוד",
+    home: "בית", schedule: "לוח זמנים", checkIn: "כניסה", checkOut: "יציאה", messages: "הודעות", updates: "עדכונים", work: "עבודה", more: "עוד",
     attendance: "נוכחות", members: "חברי הקבוצה", projects: "פרויקטים", tools: "כלים", files: "קבצים",
     language: "שפה", settings: "הגדרות", administration: "ניהול", profile: "הפרופיל שלי",
     teamHub: "מרכז הקבוצה", moreTitle: "אנשים, פרויקטים והגדרות חשבון.", english: "אנגלית", hebrew: "עברית",

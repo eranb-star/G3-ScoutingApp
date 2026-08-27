@@ -3,6 +3,7 @@ package com.g3.scouting;
 import com.getcapacitor.BridgeActivity;
 import android.content.Intent;
 import android.os.Bundle;
+import org.json.JSONObject;
 
 public class MainActivity extends BridgeActivity {
     @Override
@@ -21,7 +22,9 @@ public class MainActivity extends BridgeActivity {
     }
 
     private void openNotificationDestination(Intent intent) {
-        if (intent == null || !"/messages".equals(intent.getStringExtra("g3_path"))) return;
-        bridge.getWebView().post(() -> bridge.getWebView().evaluateJavascript("window.location.assign('/messages')", null));
+        if (intent == null) return;
+        String path = intent.getStringExtra("g3_path");
+        if (path == null || !path.startsWith("/") || path.startsWith("//")) return;
+        bridge.getWebView().post(() -> bridge.getWebView().evaluateJavascript("window.location.assign(" + JSONObject.quote(path) + ")", null));
     }
 }

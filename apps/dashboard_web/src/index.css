@@ -217,6 +217,12 @@ a {
     box-shadow: 0 7px 16px rgba(225,0,150,.28);
     font-size: 10px;
   }
+
+  .mobile-nav-link.is-checked-in .mobile-check-mark {
+    background: #211620;
+    box-shadow: 0 0 0 4px rgba(225,0,150,.2), 0 7px 16px rgba(33,22,32,.24);
+    font-size: 14px;
+  }
 }
 
 /* Larger screens: allow nav to feel like a single header bar */

@@ -12,7 +12,6 @@ import {
   CheckInPage,
   CompetitionPage,
   HomePage,
-  MessagesPage,
   MorePage,
   SchedulePage,
 } from "./pages/TeamHubPages";
@@ -27,6 +26,8 @@ import AdminDashboardPage from "./pages/AdminDashboardPage";
 import AttendanceReportsPage from "./pages/AttendanceReportsPage";
 import { LocalizationProvider, useLocalization } from "./lib/localization";
 import { ProfilePage, ProjectsPage, SettingsPage, ToolsPage } from "./pages/OperationsPages";
+import UpdatesPage from "./pages/UpdatesPage";
+import FrcWorkPage from "./pages/FrcWorkPage";
 import SecurityAdminPage from "./pages/SecurityAdminPage";
 
 // ----------------------
@@ -608,20 +609,16 @@ function TopNav() {
               Home
             </NavLink>
 
-            <NavLink to="/schedule" style={linkStyle}>
-              Schedule
+            <NavLink to="/work" style={linkStyle}>
+              Work
             </NavLink>
 
             <NavLink to="/check-in" style={linkStyle}>
               Check in
             </NavLink>
 
-            <NavLink to="/messages" style={linkStyle}>
-              Messages
-            </NavLink>
-
-            <NavLink to="/competition" style={linkStyle}>
-              Competition
+            <NavLink to="/updates" style={linkStyle}>
+              Updates
             </NavLink>
           </div>
         </div>
@@ -719,18 +716,28 @@ function NotificationBell() {
     window.addEventListener("g3-announcements-changed", load);
     return () => { void supabase.removeChannel(channel); window.removeEventListener("g3-announcements-changed", load); };
   }, [profile?.id]);
-  return <button className="notification-bell" type="button" onClick={() => navigate("/messages")} aria-label={`${unread} unread announcements`}><span aria-hidden="true">●</span>{unread > 0 ? <b>{unread > 99 ? "99+" : unread}</b> : null}</button>;
+  return <button className="notification-bell" type="button" onClick={() => navigate("/updates?view=inbox")} aria-label={`${unread} unread updates`}><span aria-hidden="true">●</span>{unread > 0 ? <b>{unread > 99 ? "99+" : unread}</b> : null}</button>;
 }
 
 function MobileNav() {
   const { t } = useLocalization();
+  const { profile } = useMemberAuth();
+  const [checkedIn, setCheckedIn] = useState(false);
+  useEffect(() => {
+    if (!profile) return;
+    const load = () => supabase.from("attendance_records").select("id").eq("member_id", profile.id).is("checked_out_at", null).limit(1).then(({ data }) => setCheckedIn(Boolean(data?.length)));
+    void load();
+    const attendanceChannel = supabase.channel(`mobile-attendance-${profile.id}`).on("postgres_changes", { event: "*", schema: "public", table: "attendance_records", filter: `member_id=eq.${profile.id}` }, load).subscribe();
+    window.addEventListener("g3-attendance-changed", load);
+    return () => { void supabase.removeChannel(attendanceChannel); window.removeEventListener("g3-attendance-changed", load); };
+  }, [profile?.id]);
   const linkClass = ({ isActive }: { isActive: boolean }) => `mobile-nav-link${isActive ? " is-active" : ""}`;
   return (
     <nav className="mobile-nav" aria-label="Primary navigation">
       <NavLink to="/home" className={linkClass}><span aria-hidden="true">⌂</span><small>{t("home")}</small></NavLink>
-      <NavLink to="/schedule" className={linkClass}><span aria-hidden="true">□</span><small>{t("schedule")}</small></NavLink>
-      <NavLink to="/check-in" className={linkClass}><span className="mobile-check-mark" aria-hidden="true">●</span><small>{t("checkIn")}</small></NavLink>
-      <NavLink to="/messages" className={linkClass}><span aria-hidden="true">◇</span><small>{t("messages")}</small></NavLink>
+      <NavLink to="/work" className={linkClass}><span aria-hidden="true">▦</span><small>{t("work")}</small></NavLink>
+      <NavLink to="/check-in" className={({ isActive }) => `${linkClass({ isActive })}${checkedIn ? " is-checked-in" : ""}`}><span className="mobile-check-mark" aria-hidden="true">{checkedIn ? "✓" : "●"}</span><small>{checkedIn ? t("checkOut") : t("checkIn")}</small></NavLink>
+      <NavLink to="/updates" className={linkClass}><span aria-hidden="true">◆</span><small>{t("updates")}</small></NavLink>
       <NavLink to="/more" className={linkClass}><span aria-hidden="true">•••</span><small>{t("more")}</small></NavLink>
     </nav>
   );
@@ -776,7 +783,9 @@ function AppShell() {
         <Route path="/home" element={<MemberGate><HomePage isAdmin={isAdmin} /></MemberGate>} />
         <Route path="/schedule" element={<MemberGate><SchedulePage /></MemberGate>} />
         <Route path="/check-in" element={<MemberGate><CheckInPage /></MemberGate>} />
-        <Route path="/messages" element={<MemberGate><MessagesPage /></MemberGate>} />
+        <Route path="/work" element={<MemberGate><FrcWorkPage /></MemberGate>} />
+        <Route path="/updates" element={<MemberGate><UpdatesPage /></MemberGate>} />
+        <Route path="/messages" element={<Navigate to="/updates?view=announcements" replace />} />
         <Route path="/more" element={<MemberGate><MorePage isAdmin={isAdmin} /></MemberGate>} />
         <Route path="/competition" element={<MemberGate><CompetitionPage isAdmin={isAdmin} /></MemberGate>} />
         <Route path="/admin/members" element={<AdminGate><MembersAdminPage /></AdminGate>} />

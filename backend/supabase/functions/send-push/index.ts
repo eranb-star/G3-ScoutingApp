@@ -108,27 +108,32 @@ Deno.serve(async (req) => {
 
     const { data: tokenRows, error: tokenError } = await admin
       .from("push_tokens")
-      .select("token")
+      .select("token,member_id")
       .eq("active", true)
       .in("member_id", memberIds);
     if (tokenError) throw tokenError;
     if (!tokenRows?.length) return json({ delivered: 0, failed: 0, recipients: memberIds.length });
 
+    const { data: preferenceRows } = await admin.from("notification_preferences").select("member_id,announcements,private_previews").in("member_id", memberIds);
+    const preferences = new Map((preferenceRows ?? []).map((row) => [row.member_id, row]));
+    const eligibleTokens = tokenRows.filter((row) => preferences.get(row.member_id)?.announcements !== false);
+    if (!eligibleTokens.length) return json({ delivered: 0, failed: 0, recipients: memberIds.length });
     const rawCredential = Deno.env.get("FIREBASE_SERVICE_ACCOUNT");
     if (!rawCredential) throw new Error("Firebase service credential is not configured");
     const account = JSON.parse(rawCredential) as FirebaseServiceAccount;
     const accessToken = await firebaseAccessToken(account);
     const endpoint = `https://fcm.googleapis.com/v1/projects/${account.project_id}/messages:send`;
-    const results = await Promise.all(tokenRows.map(async ({ token }) => {
+    const results = await Promise.all(eligibleTokens.map(async ({ token, member_id }) => {
+      const hidePreview = preferences.get(member_id)?.private_previews === true;
       const response = await fetch(endpoint, {
         method: "POST",
         headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
         body: JSON.stringify({ message: {
           token,
-          notification: { title: announcement.title, body: announcement.body },
+          notification: { title: hidePreview ? "New G3 Team Hub update" : announcement.title, body: hidePreview ? "Open the app to view it." : announcement.body },
           android: { priority: announcement.priority === "urgent" ? "HIGH" : "NORMAL" },
           data: {
-            path: "/messages",
+            path: "/updates?view=announcements",
             announcementId: announcement.id,
             meetingId: announcement.meeting_id ?? "",
             priority: announcement.priority,
