@@ -6,6 +6,7 @@ const cors = {
 };
 const jsonHeaders = { ...cors, "Content-Type": "application/json" };
 const MODEL = Deno.env.get("GEMINI_MODEL") || "gemini-3.7-flash";
+const FALLBACK_MODEL = "gemini-3.5-flash-lite";
 const DAILY_LIMIT = 20;
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
 
@@ -67,7 +68,7 @@ Deno.serve(async (request) => {
       attachmentName = typeof image.name === "string" ? image.name.slice(0, 160) : "image";
       if (!mimeType || !data || estimatedBase64Bytes(data) > MAX_IMAGE_BYTES) return response({ error: "Use a JPG, PNG, or WebP image smaller than 4 MB." }, 400);
       if (!body.privacyConfirmed || !attachmentKind) return response({ error: "Confirm that the image contains no people or personal student information." }, 400);
-      imagePart = { inline_data: { mime_type: mimeType, data } };
+      imagePart = { type: "image", mime_type: mimeType, data };
     }
 
     let conversationId = requestedConversation;
@@ -82,50 +83,57 @@ Deno.serve(async (request) => {
     }
 
     const { data: historyRows } = await admin.from("ai_messages").select("role,content").eq("conversation_id", conversationId).order("created_at", { ascending: false }).limit(10);
-    const history = (historyRows ?? []).reverse().map((row) => ({ role: row.role === "assistant" ? "model" : "user", parts: [{ text: row.content }] }));
+    const history = (historyRows ?? []).reverse().map((row) => `${row.role === "assistant" ? "G3 Assist" : "Team member"}: ${row.content}`).join("\n\n");
     const prompt = message || (language === "he" ? "נתח את התמונה הזו בהקשר של FRC." : "Analyze this image in an FRC context.");
-    const userParts: Record<string, unknown>[] = [{ text: prompt }];
-    if (imagePart) userParts.push(imagePart);
+    const contextualPrompt = `${systemInstruction}\n\nConversation so far:\n${history || "(none)"}\n\nCurrent team-member request:\n${prompt}`;
+    const interactionInput: Record<string, unknown>[] = [];
+    if (imagePart) interactionInput.push(imagePart);
+    interactionInput.push({ type: "text", text: contextualPrompt });
 
-    const requestBody = JSON.stringify({
-      system_instruction: { parts: [{ text: systemInstruction }] },
-      contents: [...history, { role: "user", parts: userParts }],
-      generationConfig: { maxOutputTokens: 1800 },
-    });
-    const models = [...new Set([MODEL, "gemini-2.5-flash"])];
     let payload: any = null;
     let usedModel = MODEL;
     let lastStatus = 503;
     let providerMessage = "Gemini is temporarily unavailable.";
-    for (const model of models) {
-      const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(geminiKey)}`, {
-        method: "POST", headers: { "Content-Type": "application/json" }, body: requestBody,
+    for (const model of [...new Set([MODEL, FALLBACK_MODEL])]) {
+      const geminiResponse = await fetch("https://generativelanguage.googleapis.com/v1beta2/interactions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-goog-api-key": geminiKey },
+        body: JSON.stringify({ model, input: interactionInput, store: false }),
       });
-      payload = await geminiResponse.json().catch(() => ({}));
-      if (geminiResponse.ok) { usedModel = model; break; }
+      const candidatePayload: any = await geminiResponse.json().catch(() => ({}));
+      if (geminiResponse.ok) {
+        payload = candidatePayload;
+        usedModel = model;
+        break;
+      }
       lastStatus = geminiResponse.status;
-      providerMessage = payload?.error?.message || providerMessage;
-      console.error("Gemini request failed", { status: lastStatus, model, message: providerMessage });
-      const capacityFailure = lastStatus === 429 || lastStatus === 503 || /high demand|overload|capacity|unavailable/i.test(providerMessage);
+      providerMessage = candidatePayload?.error?.message || providerMessage;
+      console.error("Gemini Interactions request failed", { status: lastStatus, model, message: providerMessage });
+      const capacityFailure = lastStatus === 429 || lastStatus === 503 || /high demand|overload|capacity|temporarily unavailable/i.test(providerMessage);
       if (!capacityFailure) break;
-      payload = null;
     }
-    if (!payload?.candidates) {
-      const capacityFailure = lastStatus === 429 || lastStatus === 503 || /high demand|overload|capacity|unavailable/i.test(providerMessage);
-      return response({ error: capacityFailure ? "G3 Assist is experiencing high demand across both AI models. Please try again in a few minutes." : providerMessage, code: capacityFailure ? "PROVIDER_CAPACITY" : "PROVIDER_ERROR" }, capacityFailure ? 503 : 502);
+    if (!payload) {
+      const capacityFailure = lastStatus === 429 || lastStatus === 503 || /high demand|overload|capacity|temporarily unavailable/i.test(providerMessage);
+      return response({ error: capacityFailure ? "G3 Assist is temporarily at capacity. Please try again shortly." : providerMessage, code: capacityFailure ? "PROVIDER_CAPACITY" : "PROVIDER_ERROR" }, capacityFailure ? 503 : 502);
     }
-    const answer = (payload?.candidates?.[0]?.content?.parts ?? []).map((part: { text?: string }) => part.text || "").join("\n").trim();
+    const answer = (payload?.steps ?? [])
+      .filter((step: { type?: string }) => step.type === "model_output")
+      .flatMap((step: { content?: { type?: string; text?: string }[] }) => step.content ?? [])
+      .filter((content: { type?: string }) => content.type === "text")
+      .map((content: { text?: string }) => content.text || "")
+      .join("\n")
+      .trim();
     if (!answer) return response({ error: "Gemini did not return an answer. Try rephrasing the question." }, 502);
-    const usage = payload?.usageMetadata ?? {};
+    const usage = payload?.usage ?? {};
 
     const { error: saveError } = await admin.from("ai_messages").insert([
-      { conversation_id: conversationId, member_id: memberId, role: "user", content: prompt, attachment_name: attachmentName, attachment_kind: imagePart ? attachmentKind : null, input_tokens: Number(usage.promptTokenCount ?? 0), model: usedModel },
-      { conversation_id: conversationId, member_id: memberId, role: "assistant", content: answer, output_tokens: Number(usage.candidatesTokenCount ?? 0), model: usedModel },
+      { conversation_id: conversationId, member_id: memberId, role: "user", content: prompt, attachment_name: attachmentName, attachment_kind: imagePart ? attachmentKind : null, input_tokens: Number(usage.prompt_tokens ?? 0), model: usedModel },
+      { conversation_id: conversationId, member_id: memberId, role: "assistant", content: answer, output_tokens: Number(usage.completion_tokens ?? 0), model: usedModel },
     ]);
     if (saveError) throw saveError;
     await admin.from("ai_conversations").update({ updated_at: new Date().toISOString() }).eq("id", conversationId);
 
-    return response({ conversationId, answer, usage: { inputTokens: Number(usage.promptTokenCount ?? 0), outputTokens: Number(usage.candidatesTokenCount ?? 0), remainingToday: Math.max(0, DAILY_LIMIT - (count ?? 0) - 1) } });
+    return response({ conversationId, answer, usage: { inputTokens: Number(usage.prompt_tokens ?? 0), outputTokens: Number(usage.completion_tokens ?? 0), remainingToday: Math.max(0, DAILY_LIMIT - (count ?? 0) - 1) } });
   } catch (error) {
     console.error("frc-assistant", error);
     return response({ error: "G3 Assist could not complete the request. Please try again." }, 500);
