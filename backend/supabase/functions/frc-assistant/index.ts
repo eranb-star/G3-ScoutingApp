@@ -87,29 +87,40 @@ Deno.serve(async (request) => {
     const userParts: Record<string, unknown>[] = [{ text: prompt }];
     if (imagePart) userParts.push(imagePart);
 
-    const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${encodeURIComponent(geminiKey)}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        system_instruction: { parts: [{ text: systemInstruction }] },
-        contents: [...history, { role: "user", parts: userParts }],
-        generationConfig: { maxOutputTokens: 1800 },
-      }),
+    const requestBody = JSON.stringify({
+      system_instruction: { parts: [{ text: systemInstruction }] },
+      contents: [...history, { role: "user", parts: userParts }],
+      generationConfig: { maxOutputTokens: 1800 },
     });
-    const payload = await geminiResponse.json().catch(() => ({}));
-    if (!geminiResponse.ok) {
-      const providerMessage = payload?.error?.message || "Gemini is temporarily unavailable.";
-      console.error("Gemini request failed", { status: geminiResponse.status, model: MODEL, message: providerMessage });
-      const quota = geminiResponse.status === 429;
-      return response({ error: quota ? "The shared Gemini free allowance is temporarily exhausted. Please try again later." : providerMessage, code: quota ? "PROVIDER_QUOTA" : "PROVIDER_ERROR" }, quota ? 429 : 502);
+    const models = [...new Set([MODEL, "gemini-2.5-flash"])];
+    let payload: any = null;
+    let usedModel = MODEL;
+    let lastStatus = 503;
+    let providerMessage = "Gemini is temporarily unavailable.";
+    for (const model of models) {
+      const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(geminiKey)}`, {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: requestBody,
+      });
+      payload = await geminiResponse.json().catch(() => ({}));
+      if (geminiResponse.ok) { usedModel = model; break; }
+      lastStatus = geminiResponse.status;
+      providerMessage = payload?.error?.message || providerMessage;
+      console.error("Gemini request failed", { status: lastStatus, model, message: providerMessage });
+      const capacityFailure = lastStatus === 429 || lastStatus === 503 || /high demand|overload|capacity|unavailable/i.test(providerMessage);
+      if (!capacityFailure) break;
+      payload = null;
+    }
+    if (!payload?.candidates) {
+      const capacityFailure = lastStatus === 429 || lastStatus === 503 || /high demand|overload|capacity|unavailable/i.test(providerMessage);
+      return response({ error: capacityFailure ? "G3 Assist is experiencing high demand across both AI models. Please try again in a few minutes." : providerMessage, code: capacityFailure ? "PROVIDER_CAPACITY" : "PROVIDER_ERROR" }, capacityFailure ? 503 : 502);
     }
     const answer = (payload?.candidates?.[0]?.content?.parts ?? []).map((part: { text?: string }) => part.text || "").join("\n").trim();
     if (!answer) return response({ error: "Gemini did not return an answer. Try rephrasing the question." }, 502);
     const usage = payload?.usageMetadata ?? {};
 
     const { error: saveError } = await admin.from("ai_messages").insert([
-      { conversation_id: conversationId, member_id: memberId, role: "user", content: prompt, attachment_name: attachmentName, attachment_kind: imagePart ? attachmentKind : null, input_tokens: Number(usage.promptTokenCount ?? 0), model: MODEL },
-      { conversation_id: conversationId, member_id: memberId, role: "assistant", content: answer, output_tokens: Number(usage.candidatesTokenCount ?? 0), model: MODEL },
+      { conversation_id: conversationId, member_id: memberId, role: "user", content: prompt, attachment_name: attachmentName, attachment_kind: imagePart ? attachmentKind : null, input_tokens: Number(usage.promptTokenCount ?? 0), model: usedModel },
+      { conversation_id: conversationId, member_id: memberId, role: "assistant", content: answer, output_tokens: Number(usage.candidatesTokenCount ?? 0), model: usedModel },
     ]);
     if (saveError) throw saveError;
     await admin.from("ai_conversations").update({ updated_at: new Date().toISOString() }).eq("id", conversationId);
