@@ -62,7 +62,11 @@ export default function FrcAssistantPage() {
     setMessages((current)=>[...current,optimistic]); setQuestion("");
     const pendingImage=image; setImage(null); setPrivacyConfirmed(false);
     const { data, error } = await supabase.functions.invoke("frc-assistant", { body: { conversationId, message:clean, language, attachmentKind:pendingImage ? attachmentKind : null, privacyConfirmed:pendingImage ? true : false, image:pendingImage ? { name:pendingImage.name,mimeType:pendingImage.mimeType,data:pendingImage.data } : null } });
-    if (error || data?.error) { setMessages((current)=>current.filter((item)=>item.id!==optimistic.id)); setQuestion(clean); setImage(pendingImage); setPrivacyConfirmed(Boolean(pendingImage)); setStatus(data?.error || error?.message || pick("G3 Assist is unavailable.","G3 Assist אינו זמין כרגע.")); setBusy(false); return; }
+    let functionError = data?.error || "";
+    if (error && "context" in error) {
+      try { const details=await (error as {context:Response}).context.clone().json(); functionError=details?.error || functionError; } catch { /* Fall back to the SDK message below. */ }
+    }
+    if (error || data?.error) { setMessages((current)=>current.filter((item)=>item.id!==optimistic.id)); setQuestion(clean); setImage(pendingImage); setPrivacyConfirmed(Boolean(pendingImage)); setStatus(functionError || error?.message || pick("G3 Assist is unavailable.","G3 Assist אינו זמין כרגע.")); setBusy(false); return; }
     setConversationId(data.conversationId); setRemaining(data.usage?.remainingToday ?? null);
     setMessages((current)=>[...current,{id:`answer-${Date.now()}`,role:"assistant",content:data.answer}]); setBusy(false);
   }

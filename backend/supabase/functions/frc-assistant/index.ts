@@ -93,12 +93,13 @@ Deno.serve(async (request) => {
       body: JSON.stringify({
         system_instruction: { parts: [{ text: systemInstruction }] },
         contents: [...history, { role: "user", parts: userParts }],
-        generationConfig: { temperature: 0.25, maxOutputTokens: 1800 },
+        generationConfig: { maxOutputTokens: 1800 },
       }),
     });
     const payload = await geminiResponse.json().catch(() => ({}));
     if (!geminiResponse.ok) {
       const providerMessage = payload?.error?.message || "Gemini is temporarily unavailable.";
+      console.error("Gemini request failed", { status: geminiResponse.status, model: MODEL, message: providerMessage });
       const quota = geminiResponse.status === 429;
       return response({ error: quota ? "The shared Gemini free allowance is temporarily exhausted. Please try again later." : providerMessage, code: quota ? "PROVIDER_QUOTA" : "PROVIDER_ERROR" }, quota ? 429 : 502);
     }
