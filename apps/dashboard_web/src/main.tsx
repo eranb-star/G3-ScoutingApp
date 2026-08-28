@@ -32,6 +32,7 @@ import ProjectsPage from "./pages/ProjectsPage";
 import UpdatesPage from "./pages/UpdatesPage";
 import FrcWorkPage from "./pages/FrcWorkPage";
 import SecurityAdminPage from "./pages/SecurityAdminPage";
+import FrcAssistantPage from "./pages/FrcAssistantPage";
 import ContextBackBar from "./components/ContextBackBar";
 import { getUnreadUpdateCounts } from "./lib/unreadUpdates";
 
@@ -803,6 +804,7 @@ function AppShell() {
         <Route path="/tools" element={<MemberGate><ToolsInventoryPage /></MemberGate>} />
         <Route path="/frc-operations" element={<MemberGate><FrcOperationsPage /></MemberGate>} />
         <Route path="/settings" element={<MemberGate><SettingsPage /></MemberGate>} />
+        <Route path="/assistant" element={<MemberGate><FrcAssistantPage /></MemberGate>} />
         <Route path="/scouting" element={<ScoutingPage />} />
 
         <Route path="/analysis" element={<AnalysisPage />} />
@@ -840,6 +842,7 @@ function AppShell() {
           }
         />
       </Routes>
+      {!isAuthScreen && location.pathname !== "/assistant" ? <NavLink className="assistant-fab" to="/assistant" aria-label="Open G3 Assist"><span className="assistant-avatar"><img src="/logoG3.png" alt="" /></span><b>✦</b></NavLink> : null}
       {!isAuthScreen ? <MobileNav /> : null}
     </>
   );
