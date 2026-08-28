@@ -5,8 +5,8 @@ const cors = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 const jsonHeaders = { ...cors, "Content-Type": "application/json" };
-const MODEL = Deno.env.get("GEMINI_MODEL") || "gemini-3.7-flash";
-const FALLBACK_MODEL = "gemini-3.5-flash-lite";
+const MODEL = Deno.env.get("GEMINI_MODEL") || "gemini-3.6-flash";
+const FALLBACK_MODEL = "gemini-3.1-flash-lite";
 const DAILY_LIMIT = 20;
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
 
@@ -85,7 +85,7 @@ Deno.serve(async (request) => {
     const { data: historyRows } = await admin.from("ai_messages").select("role,content").eq("conversation_id", conversationId).order("created_at", { ascending: false }).limit(10);
     const history = (historyRows ?? []).reverse().map((row) => `${row.role === "assistant" ? "G3 Assist" : "Team member"}: ${row.content}`).join("\n\n");
     const prompt = message || (language === "he" ? "נתח את התמונה הזו בהקשר של FRC." : "Analyze this image in an FRC context.");
-    const contextualPrompt = `${systemInstruction}\n\nConversation so far:\n${history || "(none)"}\n\nCurrent team-member request:\n${prompt}`;
+    const contextualPrompt = `Conversation so far:\n${history || "(none)"}\n\nCurrent team-member request:\n${prompt}`;
     const interactionInput: Record<string, unknown>[] = [];
     if (imagePart) interactionInput.push(imagePart);
     interactionInput.push({ type: "text", text: contextualPrompt });
@@ -95,10 +95,10 @@ Deno.serve(async (request) => {
     let lastStatus = 503;
     let providerMessage = "Gemini is temporarily unavailable.";
     for (const model of [...new Set([MODEL, FALLBACK_MODEL])]) {
-      const geminiResponse = await fetch("https://generativelanguage.googleapis.com/v1beta2/interactions", {
+      const geminiResponse = await fetch("https://generativelanguage.googleapis.com/v1beta/interactions", {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-goog-api-key": geminiKey },
-        body: JSON.stringify({ model, input: interactionInput, store: false }),
+        body: JSON.stringify({ model, input: interactionInput, system_instruction: systemInstruction, store: false }),
       });
       const candidatePayload: any = await geminiResponse.json().catch(() => ({}));
       if (geminiResponse.ok) {
@@ -107,13 +107,13 @@ Deno.serve(async (request) => {
         break;
       }
       lastStatus = geminiResponse.status;
-      providerMessage = candidatePayload?.error?.message || providerMessage;
+      providerMessage = candidatePayload?.error?.message || candidatePayload?.message || (typeof candidatePayload?.error === "string" ? candidatePayload.error : providerMessage);
       console.error("Gemini Interactions request failed", { status: lastStatus, model, message: providerMessage });
-      const capacityFailure = lastStatus === 429 || lastStatus === 503 || /high demand|overload|capacity|temporarily unavailable/i.test(providerMessage);
+      const capacityFailure = lastStatus === 429 || lastStatus === 503 || /high demand|overload|capacity/i.test(providerMessage);
       if (!capacityFailure) break;
     }
     if (!payload) {
-      const capacityFailure = lastStatus === 429 || lastStatus === 503 || /high demand|overload|capacity|temporarily unavailable/i.test(providerMessage);
+      const capacityFailure = lastStatus === 429 || lastStatus === 503 || /high demand|overload|capacity/i.test(providerMessage);
       return response({ error: capacityFailure ? "G3 Assist is temporarily at capacity. Please try again shortly." : providerMessage, code: capacityFailure ? "PROVIDER_CAPACITY" : "PROVIDER_ERROR" }, capacityFailure ? 503 : 502);
     }
     const answer = (payload?.steps ?? [])
@@ -127,13 +127,13 @@ Deno.serve(async (request) => {
     const usage = payload?.usage ?? {};
 
     const { error: saveError } = await admin.from("ai_messages").insert([
-      { conversation_id: conversationId, member_id: memberId, role: "user", content: prompt, attachment_name: attachmentName, attachment_kind: imagePart ? attachmentKind : null, input_tokens: Number(usage.prompt_tokens ?? 0), model: usedModel },
-      { conversation_id: conversationId, member_id: memberId, role: "assistant", content: answer, output_tokens: Number(usage.completion_tokens ?? 0), model: usedModel },
+      { conversation_id: conversationId, member_id: memberId, role: "user", content: prompt, attachment_name: attachmentName, attachment_kind: imagePart ? attachmentKind : null, input_tokens: Number(usage.total_input_tokens ?? 0), output_tokens: 0, model: usedModel },
+      { conversation_id: conversationId, member_id: memberId, role: "assistant", content: answer, input_tokens: 0, output_tokens: Number(usage.total_output_tokens ?? 0), model: usedModel },
     ]);
     if (saveError) throw saveError;
     await admin.from("ai_conversations").update({ updated_at: new Date().toISOString() }).eq("id", conversationId);
 
-    return response({ conversationId, answer, usage: { inputTokens: Number(usage.prompt_tokens ?? 0), outputTokens: Number(usage.completion_tokens ?? 0), remainingToday: Math.max(0, DAILY_LIMIT - (count ?? 0) - 1) } });
+    return response({ conversationId, answer, usage: { inputTokens: Number(usage.total_input_tokens ?? 0), outputTokens: Number(usage.total_output_tokens ?? 0), remainingToday: Math.max(0, DAILY_LIMIT - (count ?? 0) - 1) } });
   } catch (error) {
     console.error("frc-assistant", error);
     return response({ error: "G3 Assist could not complete the request. Please try again." }, 500);
