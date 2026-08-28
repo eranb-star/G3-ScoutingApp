@@ -25,8 +25,10 @@ export default function FrcAssistantPage() {
   const [status, setStatus] = useState("");
   const [remaining, setRemaining] = useState<number | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
+  const questionRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }); }, [messages, busy]);
+  useEffect(() => { questionRef.current?.focus(); }, []);
 
   async function loadConversation(id: string) {
     const { data, error } = await supabase.from("ai_messages").select("id,role,content,attachment_name").eq("conversation_id", id).order("created_at");
@@ -40,8 +42,6 @@ export default function FrcAssistantPage() {
     if (data?.id) await loadConversation(data.id);
   }
   useEffect(() => { void loadLatest(); }, [profile?.id]);
-
-  function newConversation() { setConversationId(null); setMessages([]); setQuestion(""); setImage(null); setPrivacyConfirmed(false); setStatus(""); }
 
   function chooseImage(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]; event.target.value = "";
@@ -69,9 +69,8 @@ export default function FrcAssistantPage() {
 
   return <main className="assistant-page">
     <header className="assistant-header">
-      <div className="assistant-avatar assistant-avatar-large" aria-hidden="true"><img src="/logoG3.png" alt="" /></div>
+      <div className="assistant-avatar assistant-avatar-large" aria-hidden="true"><img src="/g3-assistant.png" alt="" /></div>
       <div><div className="hub-eyebrow">G3 6740 · FRC</div><h1>G3 Assist</h1><p>{pick("Workshop-ready help for robot, code, electrical and strategy questions.","עזרה מוכנה לסדנה בשאלות רובוט, תוכנה, אלקטרוניקה ואסטרטגיה.")}</p></div>
-      <button type="button" onClick={newConversation}>{pick("New question","שאלה חדשה")}</button>
     </header>
 
     <section className="assistant-safety" aria-label={pick("AI safety notice","הודעת בטיחות לבינה מלאכותית")}><b>{pick("Verify before you build.","בדקו לפני שבונים.")}</b><span>{pick("AI can be wrong. Confirm rules in the current FIRST manual and perform physical work with appropriate mentor supervision.","בינה מלאכותית עלולה לטעות. יש לאמת חוקים במדריך FIRST העדכני ולבצע עבודה פיזית בהשגחת מנטור מתאימה.")}</span></section>
@@ -84,9 +83,8 @@ export default function FrcAssistantPage() {
     <form className="assistant-composer" onSubmit={send}>
       {image ? <div className="assistant-attachment"><img src={image.preview} alt={pick("Selected attachment preview","תצוגה מקדימה של הקובץ")} /><div><b>{image.name}</b><select value={attachmentKind} onChange={(e)=>setAttachmentKind(e.target.value as "screenshot"|"robot_photo")}><option value="screenshot">{pick("Code/log screenshot","צילום מסך של קוד או לוג")}</option><option value="robot_photo">{pick("Robot/component photo","תמונת רובוט או רכיב")}</option></select><label><input type="checkbox" checked={privacyConfirmed} onChange={(e)=>setPrivacyConfirmed(e.target.checked)} />{pick("I confirm there are no people, faces, names or personal student data in this image.","אני מאשר/ת שאין בתמונה אנשים, פנים, שמות או מידע אישי על תלמידים.")}</label></div><button type="button" onClick={()=>{setImage(null);setPrivacyConfirmed(false);}} aria-label={pick("Remove image","הסרת תמונה")}>×</button></div> : null}
       {status ? <div className="assistant-error" role="alert">{status}</div> : null}
-      <div className="assistant-compose-row"><label className="assistant-upload" title={pick("Attach image","צירוף תמונה")}><input type="file" accept="image/jpeg,image/png,image/webp" onChange={chooseImage} /><span aria-hidden="true">＋</span></label><textarea rows={2} value={question} onChange={(e)=>setQuestion(e.target.value)} placeholder={pick("Describe the problem, error or idea…","תארו את הבעיה, השגיאה או הרעיון…")} aria-label={pick("Message G3 Assist","שליחת הודעה ל-G3 Assist")} /><button className="assistant-send" type="submit" disabled={busy||(!question.trim()&&!image)}>{pick("Send","שליחה")} <span aria-hidden="true">↑</span></button></div>
+      <div className="assistant-compose-row"><label className="assistant-upload" title={pick("Attach image","צירוף תמונה")}><input type="file" accept="image/jpeg,image/png,image/webp" onChange={chooseImage} /><span aria-hidden="true">＋</span></label><textarea ref={questionRef} rows={2} value={question} onChange={(e)=>setQuestion(e.target.value)} placeholder={pick("Ask G3 Assist about the robot, code, electrical or strategy…","שאלו את G3 Assist על הרובוט, תוכנה, אלקטרוניקה או אסטרטגיה…")} aria-label={pick("Message G3 Assist","שליחת הודעה ל-G3 Assist")} /><button className="assistant-send" type="submit" disabled={busy||(!question.trim()&&!image)}>{pick("Send","שליחה")} <span aria-hidden="true">↑</span></button></div>
       <footer><span>{pick("Do not upload faces, attendance or personal student data.","אין להעלות פנים, נוכחות או מידע אישי על תלמידים.")}</span>{remaining!==null ? <b>{pick(`${remaining} questions remaining today`,`${remaining} שאלות נותרו היום`)}</b> : null}</footer>
     </form>
   </main>;
 }
-

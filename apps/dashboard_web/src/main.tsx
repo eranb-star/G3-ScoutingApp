@@ -842,7 +842,7 @@ function AppShell() {
           }
         />
       </Routes>
-      {!isAuthScreen && location.pathname !== "/assistant" ? <NavLink className="assistant-fab" to="/assistant" aria-label="Open G3 Assist"><span className="assistant-avatar"><img src="/logoG3.png" alt="" /></span><b>✦</b></NavLink> : null}
+      {!isAuthScreen && location.pathname !== "/assistant" ? <NavLink className="assistant-fab" to="/assistant" aria-label="Open G3 Assist"><img src="/g3-assistant.png" alt="" /></NavLink> : null}
       {!isAuthScreen ? <MobileNav /> : null}
     </>
   );
