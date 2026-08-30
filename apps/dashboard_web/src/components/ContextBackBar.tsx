@@ -6,7 +6,7 @@ export default function ContextBackBar() {
   const navigate = useNavigate();
   const { pick } = useLocalization();
   const inCompetition = location.pathname === "/scouting" || location.pathname.startsWith("/analysis");
-  const inWork = location.pathname === "/projects" || location.pathname === "/tools" || location.pathname === "/frc-operations" || location.pathname === "/robot-issues";
+  const inWork = location.pathname === "/projects" || location.pathname === "/tools" || location.pathname === "/frc-operations" || location.pathname === "/robot-issues" || location.pathname === "/robot-reliability";
   const parentByRoute:Record<string,{path:string;en:string;he:string}>={
     "/schedule":{path:"/home",en:"Home",he:"בית"},
     "/attendance":{path:"/more",en:"More",he:"עוד"},

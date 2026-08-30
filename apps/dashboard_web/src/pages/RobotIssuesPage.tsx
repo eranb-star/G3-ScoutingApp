@@ -34,6 +34,7 @@ export default function RobotIssuesPage(){
     setMembers((peopleResult.data??[]) as Person[]); setLoading(false);
   }
   useEffect(()=>{void load();},[showArchived]);
+  useEffect(()=>{if(params.get("new")!=="1")return;setReporting(true);try{const raw=sessionStorage.getItem("g3-reliability-issue-draft");if(!raw)return;const draft=JSON.parse(raw) as {title?:string;description?:string;subsystem?:string};setTitle(draft.title??"");setDescription(draft.description??"");if(draft.subsystem&&subsystems.includes(draft.subsystem))setSubsystem(draft.subsystem);sessionStorage.removeItem("g3-reliability-issue-draft");}catch{/* Ignore malformed local drafts. */}},[params]);
   useEffect(()=>{if(!selected){setUpdates([]);setAttachments([]);return;} setResolution(selected.resolution??""); void Promise.all([
     supabase.from("robot_issue_updates").select("*").eq("issue_id",selected.id).order("created_at"),
     supabase.from("robot_issue_attachments").select("*").eq("issue_id",selected.id).order("created_at")

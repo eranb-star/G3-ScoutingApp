@@ -34,6 +34,7 @@ import FrcWorkPage from "./pages/FrcWorkPage";
 import SecurityAdminPage from "./pages/SecurityAdminPage";
 import FrcAssistantPage from "./pages/FrcAssistantPage";
 import RobotIssuesPage from "./pages/RobotIssuesPage";
+import RobotReliabilityPage from "./pages/RobotReliabilityPage";
 import ContextBackBar from "./components/ContextBackBar";
 import { getUnreadUpdateCounts } from "./lib/unreadUpdates";
 
@@ -808,6 +809,7 @@ function AppShell() {
         <Route path="/tools" element={<MemberGate><ToolsInventoryPage /></MemberGate>} />
         <Route path="/frc-operations" element={<MemberGate><FrcOperationsPage /></MemberGate>} />
         <Route path="/robot-issues" element={<MemberGate><RobotIssuesPage /></MemberGate>} />
+        <Route path="/robot-reliability" element={<MemberGate><RobotReliabilityPage /></MemberGate>} />
         <Route path="/settings" element={<MemberGate><SettingsPage /></MemberGate>} />
         <Route path="/assistant" element={<MemberGate><FrcAssistantPage /></MemberGate>} />
         <Route path="/scouting" element={<ScoutingPage />} />
