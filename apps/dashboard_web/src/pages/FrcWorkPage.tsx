@@ -17,7 +17,6 @@ const frcAreas = [
 ];
 
 const operationalAreas = [
-  { key: "readiness", en: "Robot readiness", he: "מוכנות הרובוט", detailEn: "Cross-team inspection and readiness checks", detailHe: "בדיקות מוכנות ובקרה חוצות־צוותים" },
   { key: "purchasing", en: "Parts & purchasing", he: "חלקים ורכש", detailEn: "Requests, orders and missing parts", detailHe: "בקשות, הזמנות וחלקים חסרים" },
   { key: "decisions", en: "Decision log", he: "יומן החלטות", detailEn: "Record technical decisions and rationale", detailHe: "תיעוד החלטות טכניות והסיבות להן" },
   { key: "training", en: "Training matrix", he: "מטריצת הכשרה", detailEn: "Skills and safety qualification", detailHe: "מיומנויות והסמכות בטיחות" },
@@ -48,11 +47,12 @@ export default function FrcWorkPage() {
   const openTasks = useMemo(() => tasks.filter((task) => activeProjectIds.has(task.project_id) && task.status !== "done"), [tasks, activeProjectIds]);
   const blockers = useMemo(() => projects.filter((project) => project.status === "blocked").length + tasks.filter((task) => task.status === "blocked").length, [projects, tasks]);
   const myArea = (profile?.subteam ?? "").toLowerCase();
+  const myWorkspace = frcAreas.find((area) => myArea.includes(area.key) || (area.key === "electrical" && myArea.includes("electronic")))?.key;
 
   return <main className="hub-page work-page">
     <header className="work-command-header">
       <div><div className="hub-eyebrow">FRC 6740 · {pick("Build operations", "תפעול עונת הבנייה")}</div><h1>{pick("Build the robot", "בונים את הרובוט")}</h1><p>{pick("One connected workspace for every G3 subsystem and subteam.", "מרחב עבודה מחובר לכל מערכת ותת־צוות של G3.")}</p></div>
-      <button className="hub-button" onClick={() => navigate("/projects")}>{pick("All projects", "כל הפרויקטים")}</button>
+      <div className="work-header-actions">{myWorkspace?<button className="hub-button" onClick={() => navigate(`/projects?subteam=${myWorkspace}`)}>{pick("My workspace", "מרחב העבודה שלי")}</button>:null}<button className="hub-button secondary" onClick={() => navigate("/projects")}>{pick("Project portfolio", "תיק הפרויקטים")}</button></div>
     </header>
 
     <section className="work-status-rail" aria-label={pick("Build status", "מצב הבנייה")}>
@@ -73,11 +73,12 @@ export default function FrcWorkPage() {
     </div>
 
     <section className="work-utilities" aria-label={pick("Workshop operations", "תפעול הסדנה")}>
+      <button className="hub-card work-utility-card readiness-card" onClick={() => navigate("/frc-operations?area=readiness")}><span className="frc-area-mark">READY</span><span><strong>{pick("Robot readiness", "מוכנות הרובוט")}</strong><small>{pick("One cross-team checklist for inspection, blockers and match readiness", "רשימת בדיקה חוצת־צוותים לביקורת, חסמים ומוכנות למשחק")}</small></span><b>→</b></button>
       <button className="hub-card work-utility-card" onClick={() => navigate("/tools")}><span className="frc-area-mark">TOOL</span><span><strong>{pick("Tools & equipment", "כלים וציוד")}</strong><small>{pick("Inventory, checkout, training and maintenance", "מלאי, השאלה, הכשרה ותחזוקה")}</small></span><b>→</b></button>
     </section>
 
     <section className="work-operations-section">
-      <header className="work-section-heading"><div><div className="hub-eyebrow">{pick("Team-wide systems", "מערכות כלל־קבוצתיות")}</div><h2>{pick("FRC operations", "תפעול FRC")}</h2><p>{pick("Projects are deliverables owned by a subteam. These boards coordinate recurring work that crosses the whole team.", "פרויקטים הם תוצרים באחריות תת־צוות. הלוחות האלה מתאמים עבודה חוזרת שחוצה את כל הקבוצה.")}</p></div></header>
+      <header className="work-section-heading"><div><div className="hub-eyebrow">{pick("Cross-team coordination", "תיאום חוצה־צוותים")}</div><h2>{pick("Shared operating boards", "לוחות תפעול משותפים")}</h2><p>{pick("Use a workspace project for a deliverable. Use these boards only for recurring coordination shared by several subteams.", "השתמשו בפרויקט במרחב עבודה עבור תוצר. השתמשו בלוחות אלה רק לתיאום חוזר המשותף למספר תתי־צוותים.")}</p></div></header>
       <div className="work-operations-grid">{operationalAreas.map(area=><button className="hub-card work-operation-card" key={area.key} onClick={()=>navigate(`/frc-operations?area=${area.key}`)}><span>G3</span><span><strong>{pick(area.en,area.he)}</strong><small>{pick(area.detailEn,area.detailHe)}</small></span><b>→</b></button>)}</div>
     </section>
 
