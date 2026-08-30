@@ -133,7 +133,7 @@ Deno.serve(async (req) => {
           notification: { title: hidePreview ? "New G3 Team Hub update" : announcement.title, body: hidePreview ? "Open the app to view it." : announcement.body },
           android: { priority: announcement.priority === "urgent" ? "HIGH" : "NORMAL" },
           data: {
-            path: "/updates?view=announcements",
+            path: `/updates?view=announcements&announcement=${announcement.id}`,
             announcementId: announcement.id,
             meetingId: announcement.meeting_id ?? "",
             priority: announcement.priority,
