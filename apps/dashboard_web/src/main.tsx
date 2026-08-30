@@ -780,6 +780,8 @@ function AppShell() {
   const { isAdmin } = useAdmin();
   const location = useLocation();
   const isAuthScreen = location.pathname === "/login" || location.pathname === "/change-password";
+  const activeIssue=location.pathname==="/robot-issues"?new URLSearchParams(location.search).get("issue"):null;
+  const assistantPath=activeIssue?`/assistant?issue=${activeIssue}`:"/assistant";
   return (
     <>
       {!isAuthScreen ? <TopNav /> : null}
@@ -845,7 +847,7 @@ function AppShell() {
           }
         />
       </Routes>
-      {!isAuthScreen && location.pathname !== "/assistant" ? <NavLink className="assistant-fab" to="/assistant" aria-label="Open G3 Assist"><img src="/g3-assistant.png" alt="" /></NavLink> : null}
+      {!isAuthScreen && location.pathname !== "/assistant" ? <NavLink className="assistant-fab" to={assistantPath} aria-label="Open G3 Assist"><img src="/g3-assistant.png" alt="" /></NavLink> : null}
       {!isAuthScreen ? <MobileNav /> : null}
     </>
   );

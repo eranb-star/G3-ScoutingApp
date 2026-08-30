@@ -14,6 +14,8 @@ const systemInstruction = `You are G3 Assist, the technical assistant for FIRST 
 Focus only on FRC: robot design, mechanisms, CAD, fabrication, electrical systems, pneumatics, WPILib, control systems, vision, scouting, strategy, inspection, safety, project execution, and FIRST rules.
 Give practical, testable troubleshooting steps. State assumptions. Never invent rule numbers, specifications, wiring requirements, or source links. When an official FIRST rule may decide the answer, tell the user to verify the current official game manual.
 Treat Chief Delphi as useful community experience, not an official authority. Clearly separate known facts, likely causes, and suggested tests.
+When web search is useful, prioritize primary FRC sources: firstinspires.org and official FIRST documentation, docs.wpilib.org, revrobotics.com documentation, and CTRE/Phoenix documentation. Use Chief Delphi only as community experience. Cite every web-derived technical claim with the source URL supplied by the search tool. Never invent a citation.
+When G3 internal knowledge or a previous resolved robot issue is provided, label it as internal team experience and do not treat it as an official rule or specification.
 Do not request, infer, expose, or analyze student identity, attendance, contact details, health, location history, private messages, or faces. If supplied content contains personal student data, stop and ask for a sanitized version.
 For electrical or mechanical work, include an appropriate safety warning (power isolation, stored energy, eye protection, supervision) when relevant.
 Respond in the language used by the user. Keep answers concise enough for workshop use, but include steps and code when useful.`;
@@ -52,6 +54,7 @@ Deno.serve(async (request) => {
     const message = typeof body.message === "string" ? body.message.trim().slice(0, 6000) : "";
     const language = body.language === "he" ? "he" : "en";
     const requestedConversation = typeof body.conversationId === "string" ? body.conversationId : null;
+    const contextIssueId = typeof body.contextIssueId === "string" ? body.contextIssueId : null;
     const attachmentKind = body.attachmentKind === "robot_photo" ? "robot_photo" : body.attachmentKind === "screenshot" ? "screenshot" : null;
     const image = body.image && typeof body.image === "object" ? body.image : null;
     if (!message && !image) return response({ error: "Write a question or attach an image." }, 400);
@@ -82,10 +85,18 @@ Deno.serve(async (request) => {
       conversationId = created.id;
     }
 
-    const { data: historyRows } = await admin.from("ai_messages").select("role,content").eq("conversation_id", conversationId).order("created_at", { ascending: false }).limit(10);
+    const [{ data: historyRows },{data:knowledgeRows},{data:resolvedIssues},{data:contextIssue}]=await Promise.all([
+      admin.from("ai_messages").select("role,content").eq("conversation_id", conversationId).order("created_at", { ascending: false }).limit(10),
+      admin.from("frc_knowledge_articles").select("title,summary,content,subsystem,source_type,source_url,verified").eq("archived",false).order("verified",{ascending:false}).order("updated_at",{ascending:false}).limit(8),
+      admin.from("robot_issues").select("issue_number,title,description,subsystem,resolution").eq("status","resolved").eq("archived",false).not("resolution","is",null).order("updated_at",{ascending:false}).limit(6),
+      contextIssueId?admin.from("robot_issues").select("issue_number,title,description,subsystem,severity,status,resolution").eq("id",contextIssueId).maybeSingle():Promise.resolve({data:null})
+    ]);
     const history = (historyRows ?? []).reverse().map((row) => `${row.role === "assistant" ? "G3 Assist" : "Team member"}: ${row.content}`).join("\n\n");
     const prompt = message || (language === "he" ? "נתח את התמונה הזו בהקשר של FRC." : "Analyze this image in an FRC context.");
-    const contextualPrompt = `Conversation so far:\n${history || "(none)"}\n\nCurrent team-member request:\n${prompt}`;
+    const internalKnowledge=(knowledgeRows??[]).map((row,index)=>`K${index+1}. [${row.subsystem}] ${row.title}${row.verified?" (mentor/admin verified)":""}: ${row.summary||row.content.slice(0,700)}${row.source_url?` Source: ${row.source_url}`:""}`).join("\n");
+    const issueHistory=(resolvedIssues??[]).map(row=>`G3-${row.issue_number} [${row.subsystem}] ${row.title}: ${row.description}\nResolution: ${row.resolution}`).join("\n\n");
+    const activeIssue=contextIssue?`ACTIVE ROBOT ISSUE G3-${contextIssue.issue_number} [${contextIssue.subsystem}/${contextIssue.severity}/${contextIssue.status}]\n${contextIssue.title}\n${contextIssue.description}\nCurrent resolution: ${contextIssue.resolution||"none"}`:"(none)";
+    const contextualPrompt = `Conversation so far:\n${history || "(none)"}\n\nActive issue context:\n${activeIssue}\n\nG3 internal knowledge candidates (use only if relevant):\n${internalKnowledge||"(none)"}\n\nRecent resolved G3 issues (use only if relevant):\n${issueHistory||"(none)"}\n\nCurrent team-member request:\n${prompt}`;
     const interactionInput: Record<string, unknown>[] = [];
     if (imagePart) interactionInput.push(imagePart);
     interactionInput.push({ type: "text", text: contextualPrompt });
@@ -98,7 +109,7 @@ Deno.serve(async (request) => {
       const geminiResponse = await fetch("https://generativelanguage.googleapis.com/v1beta/interactions", {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-goog-api-key": geminiKey },
-        body: JSON.stringify({ model, input: interactionInput, system_instruction: systemInstruction, store: false }),
+        body: JSON.stringify({ model, input: interactionInput, system_instruction: systemInstruction, tools:[{type:"google_search",search_types:["web_search"]}], store: false }),
       });
       const candidatePayload: any = await geminiResponse.json().catch(() => ({}));
       if (geminiResponse.ok) {
@@ -116,24 +127,26 @@ Deno.serve(async (request) => {
       const capacityFailure = lastStatus === 429 || lastStatus === 503 || /high demand|overload|capacity/i.test(providerMessage);
       return response({ error: capacityFailure ? "G3 Assist is temporarily at capacity. Please try again shortly." : providerMessage, code: capacityFailure ? "PROVIDER_CAPACITY" : "PROVIDER_ERROR" }, capacityFailure ? 503 : 502);
     }
-    const answer = (payload?.steps ?? [])
+    const outputBlocks=(payload?.steps ?? []).filter((step:{type?:string})=>step.type==="model_output").flatMap((step:{content?:any[]})=>step.content??[]);
+    const answer = outputBlocks
       .filter((step: { type?: string }) => step.type === "model_output")
       .flatMap((step: { content?: { type?: string; text?: string }[] }) => step.content ?? [])
       .filter((content: { type?: string }) => content.type === "text")
       .map((content: { text?: string }) => content.text || "")
       .join("\n")
       .trim();
+    const citations=Array.from(new Map(outputBlocks.flatMap((content:any)=>content.annotations??[]).filter((item:any)=>item.type==="url_citation"&&item.url).map((item:any)=>[item.url,{url:item.url,title:item.title||new URL(item.url).hostname}])).values()).slice(0,12);
     if (!answer) return response({ error: "Gemini did not return an answer. Try rephrasing the question." }, 502);
     const usage = payload?.usage ?? {};
 
     const { error: saveError } = await admin.from("ai_messages").insert([
-      { conversation_id: conversationId, member_id: memberId, role: "user", content: prompt, attachment_name: attachmentName, attachment_kind: imagePart ? attachmentKind : null, input_tokens: Number(usage.total_input_tokens ?? 0), output_tokens: 0, model: usedModel },
-      { conversation_id: conversationId, member_id: memberId, role: "assistant", content: answer, input_tokens: 0, output_tokens: Number(usage.total_output_tokens ?? 0), model: usedModel },
+      { conversation_id: conversationId, member_id: memberId, role: "user", content: prompt, attachment_name: attachmentName, attachment_kind: imagePart ? attachmentKind : null, context_issue_id:contextIssueId, input_tokens: Number(usage.total_input_tokens ?? 0), output_tokens: 0, model: usedModel },
+      { conversation_id: conversationId, member_id: memberId, role: "assistant", content: answer, citations, context_issue_id:contextIssueId, input_tokens: 0, output_tokens: Number(usage.total_output_tokens ?? 0), model: usedModel },
     ]);
     if (saveError) throw saveError;
     await admin.from("ai_conversations").update({ updated_at: new Date().toISOString() }).eq("id", conversationId);
 
-    return response({ conversationId, answer, usage: { inputTokens: Number(usage.total_input_tokens ?? 0), outputTokens: Number(usage.total_output_tokens ?? 0), remainingToday: Math.max(0, DAILY_LIMIT - (count ?? 0) - 1) } });
+    return response({ conversationId, answer, citations, grounded:Boolean(citations.length), usage: { inputTokens: Number(usage.total_input_tokens ?? 0), outputTokens: Number(usage.total_output_tokens ?? 0), remainingToday: Math.max(0, DAILY_LIMIT - (count ?? 0) - 1) } });
   } catch (error) {
     console.error("frc-assistant", error);
     return response({ error: "G3 Assist could not complete the request. Please try again." }, 500);
