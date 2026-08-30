@@ -74,6 +74,7 @@ export default function FrcWorkPage() {
 
     <section className="work-utilities" aria-label={pick("Workshop operations", "תפעול הסדנה")}>
       <button className="hub-card work-utility-card readiness-card" onClick={() => navigate("/frc-operations?area=readiness")}><span className="frc-area-mark">READY</span><span><strong>{pick("Robot readiness", "מוכנות הרובוט")}</strong><small>{pick("One cross-team checklist for inspection, blockers and match readiness", "רשימת בדיקה חוצת־צוותים לביקורת, חסמים ומוכנות למשחק")}</small></span><b>→</b></button>
+      <button className="hub-card work-utility-card issue-tracker-card" onClick={() => navigate("/robot-issues")}><span className="frc-area-mark">FIX</span><span><strong>{pick("Robot issues", "תקלות רובוט")}</strong><small>{pick("Report symptoms, assign repairs and verify every fix", "דיווח תסמינים, הקצאת תיקונים ואימות כל פתרון")}</small></span><b>→</b></button>
       <button className="hub-card work-utility-card" onClick={() => navigate("/tools")}><span className="frc-area-mark">TOOL</span><span><strong>{pick("Tools & equipment", "כלים וציוד")}</strong><small>{pick("Inventory, checkout, training and maintenance", "מלאי, השאלה, הכשרה ותחזוקה")}</small></span><b>→</b></button>
     </section>
 
