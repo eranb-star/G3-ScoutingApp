@@ -19,7 +19,7 @@ Deno.serve(async (request) => {
     const url=Deno.env.get("SUPABASE_URL")!;const anon=Deno.env.get("SUPABASE_ANON_KEY")!;const service=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const callerClient=createClient(url,anon,{global:{headers:{Authorization:auth}}});const {data:{user}}=await callerClient.auth.getUser();if(!user)throw new Error("Invalid session");
     const admin=createClient(url,service);const {messageId}=await request.json();
-    const {data:message}=await admin.from("channel_messages").select("id,body,author_id,channel_id,team_channels(name,kind,subteam),team_members(display_name)").eq("id",messageId).single();
+    const {data:message}=await admin.from("channel_messages").select("id,body,author_id,channel_id,team_channels(name,kind,subteam),team_members!channel_messages_author_id_fkey(display_name)").eq("id",messageId).single();
     if(!message||message.author_id!==user.id)throw new Error("Message not found");
     const channel=message.team_channels as unknown as {name:string;kind:string;subteam:string|null};const author=message.team_members as unknown as {display_name:string};
     const [{data:allMembers},{data:mentionRows}]=await Promise.all([admin.from("team_members").select("id,role,subteam").eq("active",true).neq("id",user.id),admin.from("channel_message_mentions").select("member_id").eq("message_id",message.id)]);

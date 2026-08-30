@@ -94,7 +94,7 @@ export default function UpdatesPage() {
   },[params]);
   useEffect(() => {
     if (!selectedChannel || !channelsAvailable) { setChannelMessages([]); return; }
-    const load = () => supabase.from("channel_messages").select("id,channel_id,body,created_at,author_id,team_members(display_name,subteam)").eq("channel_id", selectedChannel).order("created_at").limit(100).then(({ data }) => setChannelMessages((data ?? []) as unknown as ChannelMessage[]));
+    const load = () => supabase.from("channel_messages").select("id,channel_id,body,created_at,author_id,team_members!channel_messages_author_id_fkey(display_name,subteam)").eq("channel_id", selectedChannel).order("created_at").limit(100).then(({ data }) => setChannelMessages((data ?? []) as unknown as ChannelMessage[]));
     void load();
     const realtime = supabase.channel(`g3-channel-${selectedChannel}`).on("postgres_changes", { event: "INSERT", schema: "public", table: "channel_messages", filter: `channel_id=eq.${selectedChannel}` }, load).subscribe();
     return () => { void supabase.removeChannel(realtime); };
