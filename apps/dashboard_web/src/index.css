@@ -242,11 +242,28 @@ a {
   --safe-bottom: env(safe-area-inset-bottom);
 }
 
-body {
-  padding-bottom: var(--safe-bottom);
-}
+body { padding-bottom: var(--safe-bottom); }
 
 /* Make taps feel better on mobile */
 button, input, select {
   touch-action: manipulation;
+}
+
+button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 3px solid rgba(225,0,150,.28);
+  outline-offset: 2px;
+}
+img, svg, video, canvas { max-width: 100%; }
+
+@media (max-width: 780px) {
+  body { padding-bottom: calc(82px + env(safe-area-inset-bottom)); }
+  .mobile-nav { width: auto; max-width: none; inset-inline: 0; }
+  .topnav-logo { width: 68px; height: 42px; }
+  .topnav-auth { flex-wrap: nowrap; }
+  .topnav-btn { min-height: 38px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }

@@ -45,7 +45,7 @@ export default function FrcWorkPage() {
 
   const activeProjectIds = useMemo(() => new Set(projects.map((project) => project.id)), [projects]);
   const openTasks = useMemo(() => tasks.filter((task) => activeProjectIds.has(task.project_id) && task.status !== "done"), [tasks, activeProjectIds]);
-  const blockers = useMemo(() => projects.filter((project) => project.status === "blocked").length + tasks.filter((task) => task.status === "blocked").length, [projects, tasks]);
+  const blockers = useMemo(() => projects.filter((project) => project.status === "blocked").length + openTasks.filter((task) => task.status === "blocked").length, [projects, openTasks]);
   const myArea = (profile?.subteam ?? "").toLowerCase();
   const myWorkspace = frcAreas.find((area) => myArea.includes(area.key) || (area.key === "electrical" && myArea.includes("electronic")))?.key;
 

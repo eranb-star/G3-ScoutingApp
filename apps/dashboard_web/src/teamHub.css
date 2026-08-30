@@ -587,3 +587,36 @@
   .work-operations-grid { grid-template-columns:1fr; }
   .home-competition-card { align-items:flex-start; flex-direction:column; }
 }
+
+/* Phase 1 mobile and accessibility foundation */
+.hub-page > *, .hub-card, .hub-page-header > *, .updates-page > *, .channels-layout > *, .channel-thread, .channel-message > div { min-width:0; }
+.hub-page input,.hub-page textarea,.hub-page select { max-width:100%; }
+.hub-page button,.hub-page a { overflow-wrap:anywhere; }
+.auth-message { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+.auth-message>button { flex:0 0 auto; width:34px; height:34px; border:0; border-radius:9px; color:var(--g3-ink); background:rgba(255,255,255,.72); font-size:1.2rem; cursor:pointer; }
+.update-announcement.is-focused { border-color:rgba(225,0,150,.7); box-shadow:0 0 0 3px rgba(225,0,150,.12),var(--g3-shadow); }
+[dir="rtl"] .context-back-bar>button { direction:rtl; }
+[dir="rtl"] .context-back-bar>button:first-letter { transform:scaleX(-1); }
+
+@media(max-width:780px){
+  .hub-page{width:100%;padding:16px 12px calc(108px + env(safe-area-inset-bottom));overflow-x:clip;}
+  .hub-card,.project-card,.announcement-card,.update-announcement{max-width:100%;}
+  .hub-page-header{gap:12px;margin-bottom:14px;}
+  .hub-page-header h1{font-size:clamp(1.75rem,9vw,2.45rem);}
+  .context-back-bar{top:58px;width:100%;max-width:100%;padding:7px 10px;overflow:hidden;}
+  .context-back-bar>button{flex:0 0 auto;align-self:flex-start;min-height:44px;}
+  .context-back-bar nav{max-width:100%;padding-bottom:3px;scrollbar-width:none;}
+  .context-back-bar nav a{min-height:40px;display:grid;place-items:center;}
+  .workspace-picker,.operations-area-tabs,.project-filter-rail,.updates-tabs,.channel-rail{overscroll-behavior-inline:contain;-webkit-overflow-scrolling:touch;}
+  .report-table{overflow-x:hidden;}
+  .report-row{grid-template-columns:minmax(0,1fr) 58px 58px;font-size:.82rem;}
+  .tool-summary{grid-template-columns:1fr;}
+  .schedule-row{grid-template-columns:52px minmax(0,1fr);gap:10px;}
+  .schedule-date{width:52px;height:52px;}
+  .schedule-actions{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));}
+  .schedule-actions button{min-height:44px;}
+  .announcement-actions,.row-admin-actions,.project-admin-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;}
+  .announcement-actions button,.row-admin-actions button,.project-admin-actions button{min-height:44px;}
+  .inventory-actions{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));}
+  .inventory-actions button{min-height:44px;}
+}

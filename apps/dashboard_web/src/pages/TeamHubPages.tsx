@@ -372,9 +372,9 @@ export function MorePage({ isAdmin }: { isAdmin: boolean }) {
   const navigate = useNavigate();
   const { t, pick } = useLocalization();
   const rows = [
-    [t("attendance"), "Personal history and verified workshop hours", "/attendance"],
-    [t("profile"), "Team directory, roles and subteams", "/profile"],
-    [t("settings"), "Language, notifications, privacy and account", "/settings"],
+    [t("attendance"), pick("Personal history and verified workshop hours","היסטוריה אישית ושעות סדנה מאומתות"), "/attendance"],
+    [t("profile"), pick("Team directory, roles and subteams","ספר חברי הקבוצה, תפקידים ותתי־צוותים"), "/profile"],
+    [t("settings"), pick("Language, notifications, privacy and account","שפה, התראות, פרטיות וחשבון"), "/settings"],
   ];
 
   return (
@@ -390,7 +390,7 @@ export function MorePage({ isAdmin }: { isAdmin: boolean }) {
         ))}
         {isAdmin ? (
           <button type="button" className="hub-list-row hub-admin-row" onClick={() => navigate("/admin/members")}>
-            <span><strong>Administration</strong><small>Attendance dashboard, reports and team controls</small></span><span className="hub-role-chip">ADMIN</span>
+            <span><strong>{t("administration")}</strong><small>{pick("Attendance dashboard, reports and team controls","לוח נוכחות, דוחות ובקרות קבוצה")}</small></span><span className="hub-role-chip">ADMIN</span>
           </button>
         ) : null}
       </div>
@@ -400,16 +400,17 @@ export function MorePage({ isAdmin }: { isAdmin: boolean }) {
 
 export function CompetitionPage({ isAdmin }: { isAdmin: boolean }) {
   const navigate = useNavigate();
+  const { pick } = useLocalization();
   return (
     <div className="hub-page">
       <section className="hub-competition-hero">
-        <div><div className="hub-eyebrow">FRC competition operations</div><h1>Competition</h1><p>The proven scouting workflow remains intact inside the new Team Hub.</p></div>
+        <div><div className="hub-eyebrow">{pick("FRC competition operations","תפעול תחרות FRC")}</div><h1>{pick("Competition","תחרות")}</h1><p>{pick("The proven scouting workflow remains intact inside the Team Hub.","תהליך הסקאוטינג המוכח נשמר במלואו בתוך מרכז הקבוצה.")}</p></div>
         <img src="/logoG3.png" alt="Glue Gun and Glitter G3" />
       </section>
       <div className="hub-card-grid">
-        <ActionCard eyebrow="Match data" title="Scouting" body="Offline-first scouting forms, match selection and automatic synchronization." action="Start scouting" onClick={() => navigate("/scouting")} tone="pink" />
-        <ActionCard eyebrow="Strategy" title="Analysis" body="Team rankings, defense impact, reliability and detailed breakdowns." action="Open analysis" onClick={() => navigate("/analysis")} />
-        {isAdmin ? <ActionCard eyebrow="Admin strategy" title="Picklist & alliances" body="Decision center, comparisons, saved alliances and TBA tools." action="Open picklist" onClick={() => navigate("/analysis/picklist")} tone="dark" /> : null}
+        <ActionCard eyebrow={pick("Match data","נתוני משחק")} title={pick("Scouting","סקאוטינג")} body={pick("Offline-first scouting forms, match selection and automatic synchronization.","טפסי סקאוטינג אופליין, בחירת משחקים וסנכרון אוטומטי.")} action={pick("Start scouting","התחלת סקאוטינג")} onClick={() => navigate("/scouting")} tone="pink" />
+        <ActionCard eyebrow={pick("Strategy","אסטרטגיה")} title={pick("Analysis","ניתוח")} body={pick("Team rankings, defense impact, reliability and detailed breakdowns.","דירוגי קבוצות, השפעת הגנה, אמינות וניתוחים מפורטים.")} action={pick("Open analysis","פתיחת ניתוח")} onClick={() => navigate("/analysis")} />
+        {isAdmin ? <ActionCard eyebrow={pick("Admin strategy","אסטרטגיית מנהלים")} title={pick("Picklist & alliances","רשימת בחירה ובריתות")} body={pick("Decision center, comparisons, saved alliances and TBA tools.","מרכז החלטות, השוואות, בריתות שמורות וכלי TBA.")} action={pick("Open picklist","פתיחת רשימת בחירה")} onClick={() => navigate("/analysis/picklist")} tone="dark" /> : null}
       </div>
     </div>
   );

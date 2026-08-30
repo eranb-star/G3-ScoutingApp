@@ -7,7 +7,7 @@ import { useAdminStatus } from "../lib/useAdminStatus";
 import { getUnreadUpdateCounts } from "../lib/unreadUpdates";
 
 type View = "inbox" | "announcements" | "channels" | "knowledge";
-type Announcement = { id: string; title: string; body: string; priority: string; published_at: string; archived: boolean };
+type Announcement = { id: string; title: string; body: string; priority: string; published_at: string; archived: boolean; audience?:string|null; audience_subteam?:string|null };
 type Channel = { id: string; name: string; name_he: string | null; description: string | null; kind: string; subteam: string | null };
 type ChannelMessage = { id: string; channel_id: string; body: string; created_at: string; author_id: string; team_members?: { display_name?: string; subteam?: string | null } | null };
 type KnowledgeItem = { id: string; title: string; excerpt: string; url: string; publishedAt: string; category: string };
@@ -45,15 +45,32 @@ export default function UpdatesPage() {
 
   function changeView(next: View) { setView(next); setParams({ view: next }, { replace: true }); }
 
+  function canSeeAnnouncement(item:Announcement){
+    const target=String(item.audience??"all").toLowerCase();
+    const role=String(profile?.role??"member").toLowerCase();
+    if(target==="all")return true;
+    if(target==="admins")return role==="admin";
+    if(target==="mentors")return role==="mentor"||role==="admin";
+    if(target==="members")return role==="member"||role==="student";
+    if(target==="subteam")return Boolean(profile?.subteam)&&String(item.audience_subteam??"").toLowerCase()===String(profile?.subteam).toLowerCase();
+    return false;
+  }
+
+  function openAnnouncement(id:string){
+    void markAnnouncementRead(id);
+    setView("announcements");
+    setParams({view:"announcements",announcement:id},{replace:true});
+  }
+
   async function loadCore() {
     if (!profile) return;
     const [announcementResult, readResult, channelResult, savedResult] = await Promise.all([
-      supabase.from("announcements").select("id,title,body,priority,published_at,archived").eq("archived", isAdmin ? showArchived : false).order("published_at", { ascending: false }),
+      supabase.from("announcements").select("id,title,body,priority,published_at,archived,audience,audience_subteam").eq("archived", isAdmin ? showArchived : false).order("published_at", { ascending: false }),
       supabase.from("announcement_reads").select("announcement_id").eq("member_id", profile.id),
       supabase.from("team_channels").select("id,name,name_he,description,kind,subteam").order("sort_order"),
       supabase.from("frc_saved_resources").select("source_url").eq("saved_by", profile.id),
     ]);
-    setAnnouncements((announcementResult.data ?? []) as Announcement[]);
+    setAnnouncements(((announcementResult.data ?? []) as Announcement[]).filter(canSeeAnnouncement));
     setReads(new Set((readResult.data ?? []).map((row) => row.announcement_id as string)));
     if (channelResult.error) setChannelsAvailable(false);
     else {
@@ -68,6 +85,12 @@ export default function UpdatesPage() {
   }
 
   useEffect(() => { void loadCore(); }, [profile?.id, isAdmin, showArchived]);
+  useEffect(()=>{
+    const next=params.get("view") as View|null;
+    if(next&&["inbox","announcements","channels","knowledge"].includes(next))setView(next);
+    const announcementId=params.get("announcement");
+    if(announcementId)requestAnimationFrame(()=>document.getElementById(`announcement-${announcementId}`)?.scrollIntoView({behavior:"smooth",block:"center"}));
+  },[params]);
   useEffect(() => {
     if (!selectedChannel || !channelsAvailable) { setChannelMessages([]); return; }
     const load = () => supabase.from("channel_messages").select("id,channel_id,body,created_at,author_id,team_members(display_name,subteam)").eq("channel_id", selectedChannel).order("created_at").limit(100).then(({ data }) => setChannelMessages((data ?? []) as unknown as ChannelMessage[]));
@@ -150,7 +173,7 @@ export default function UpdatesPage() {
     <nav className="updates-tabs" aria-label={pick("Update sections", "אזורי עדכונים")}>{tabs.map(([id,en,he,count]) => <button key={id} className={view === id ? "is-active" : ""} onClick={() => changeView(id)}><span>{pick(en,he)}</span>{count ? <b>{count}</b> : null}</button>)}</nav>
     {status ? <div className="auth-message" role="status">{status}<button aria-label={pick("Dismiss", "סגירה")} onClick={() => setStatus("")}>×</button></div> : null}
 
-    {view === "inbox" ? <section className="updates-stream"><div className="stream-heading"><div><h2>{pick("Needs your attention", "דורש את תשומת ליבך")}</h2><p>{pick("Official announcements and new channel activity collect here.", "הודעות רשמיות ופעילות חדשה בערוצים מופיעות כאן.")}</p></div>{unreadAnnouncements.length+unseenChannelCount ? <span>{unreadAnnouncements.length+unseenChannelCount} {pick("new", "חדשים")}</span> : null}</div>{unseenChannelCount?<button className="update-inbox-row channel-activity-row" onClick={()=>changeView("channels")}><span className="update-source">#</span><span><strong>{pick("New channel activity", "פעילות חדשה בערוצים")}</strong><small>{pick(`${unseenChannelCount} new team message${unseenChannelCount===1?"":"s"}`, `${unseenChannelCount} הודעות צוות חדשות`)}</small></span><i>{pick("Open", "פתיחה")}</i></button>:null}{unreadAnnouncements.length === 0&&unseenChannelCount===0 ? <EmptyUpdates title={pick("You're up to date", "הכול מעודכן")} body={pick("New team activity will appear here.", "פעילות חדשה של הקבוצה תופיע כאן.")} /> : unreadAnnouncements.map((item) => <button className={`update-inbox-row priority-${item.priority}`} key={item.id} onClick={() => { void markAnnouncementRead(item.id); changeView("announcements"); }}><span className="update-source">{item.priority === "urgent" ? "!" : "G3"}</span><span><strong>{item.title}</strong><small>{item.body}</small><time>{dateTime.format(new Date(item.published_at))}</time></span><i>{pick("New", "חדש")}</i></button>)}</section> : null}
+    {view === "inbox" ? <section className="updates-stream"><div className="stream-heading"><div><h2>{pick("Needs your attention", "דורש את תשומת ליבך")}</h2><p>{pick("Official announcements and new channel activity collect here.", "הודעות רשמיות ופעילות חדשה בערוצים מופיעות כאן.")}</p></div>{unreadAnnouncements.length+unseenChannelCount ? <span>{unreadAnnouncements.length+unseenChannelCount} {pick("new", "חדשים")}</span> : null}</div>{unseenChannelCount?<button className="update-inbox-row channel-activity-row" onClick={()=>changeView("channels")}><span className="update-source">#</span><span><strong>{pick("New channel activity", "פעילות חדשה בערוצים")}</strong><small>{pick(`${unseenChannelCount} new team message${unseenChannelCount===1?"":"s"}`, `${unseenChannelCount} הודעות צוות חדשות`)}</small></span><i>{pick("Open", "פתיחה")}</i></button>:null}{unreadAnnouncements.length === 0&&unseenChannelCount===0 ? <EmptyUpdates title={pick("You're up to date", "הכול מעודכן")} body={pick("New team activity will appear here.", "פעילות חדשה של הקבוצה תופיע כאן.")} /> : unreadAnnouncements.map((item) => <button className={`update-inbox-row priority-${item.priority}`} key={item.id} onClick={() => openAnnouncement(item.id)}><span className="update-source">{item.priority === "urgent" ? "!" : "G3"}</span><span><strong>{item.title}</strong><small>{item.body}</small><time>{dateTime.format(new Date(item.published_at))}</time></span><i>{pick("New", "חדש")}</i></button>)}</section> : null}
 
     {view === "announcements" ? <section>{compose ? <form className="hub-card update-compose" onSubmit={publishAnnouncement}><header><div><div className="hub-eyebrow">{pick("Official communication", "תקשורת רשמית")}</div><h2>{pick("Publish announcement", "פרסום הודעה")}</h2></div><button type="button" className="icon-close" onClick={() => setCompose(false)}>×</button></header><label>{pick("Title", "כותרת")}<input required value={announcementTitle} onChange={(event) => setAnnouncementTitle(event.target.value)} /></label><label>{pick("Message", "תוכן ההודעה")}<textarea required rows={5} value={announcementBody} onChange={(event) => setAnnouncementBody(event.target.value)} /></label><div className="update-compose-options"><label>{pick("Audience", "קהל יעד")}<select value={audience} onChange={(event) => setAudience(event.target.value)}><option value="all">{pick("Entire team", "כל הקבוצה")}</option><option value="members">{pick("Students", "תלמידים")}</option><option value="mentors">{pick("Mentors", "מנטורים")}</option><option value="admins">{pick("Administrators", "מנהלים")}</option></select></label><label>{pick("Priority", "עדיפות")}<select value={announcementPriority} onChange={(event) => setAnnouncementPriority(event.target.value)}><option value="normal">{pick("Normal", "רגילה")}</option><option value="important">{pick("Important", "חשובה")}</option><option value="urgent">{pick("Urgent", "דחופה")}</option></select></label></div><button className="hub-button">{pick("Publish and notify", "פרסום ושליחת התראה")}</button></form> : null}<div className="announcement-list">{announcements.map((item) => <article className={`hub-card update-announcement${reads.has(item.id) ? " is-read" : ""} priority-${item.priority}`} key={item.id} onClick={() => void markAnnouncementRead(item.id)}><header><span>{item.priority}</span><time>{dateTime.format(new Date(item.published_at))}</time>{!item.archived&&!reads.has(item.id) ? <b>{pick("NEW", "חדש")}</b> : null}</header><h2>{item.title}</h2><p>{item.body}</p>{isAdmin?<footer className="announcement-actions">{!item.archived?<button onClick={(event)=>{event.stopPropagation();void archiveAnnouncement(item.id);}}>{pick("Archive","ארכיון")}</button>:null}<button className="danger-link" onClick={(event)=>{event.stopPropagation();void deleteAnnouncement(item.id);}}>{pick("Delete","מחיקה")}</button></footer>:null}</article>)}</div></section> : null}
 

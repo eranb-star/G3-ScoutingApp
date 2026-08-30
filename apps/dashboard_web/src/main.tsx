@@ -518,6 +518,7 @@ function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
 function TopNav() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { t, pick } = useLocalization();
   const { bootstrapped, email, isAdmin, refresh } = useAdmin();
   const online = useOnlineStatus();
   const [adminOpen, setAdminOpen] = useState(false);
@@ -612,19 +613,19 @@ function TopNav() {
           <img className="topnav-logo" src="/logoG3.png" alt="Logo" />
           <div className="topnav-links">
             <NavLink to="/home" style={linkStyle}>
-              Home
+              {t("home")}
             </NavLink>
 
             <NavLink to="/work" style={linkStyle}>
-              Work
+              {t("work")}
             </NavLink>
 
             <NavLink to="/check-in" style={linkStyle}>
-              Check in
+              {t("checkIn")}
             </NavLink>
 
             <NavLink to="/updates" style={linkStyle}>
-              Updates
+              {t("updates")}
             </NavLink>
           </div>
         </div>
@@ -642,7 +643,7 @@ function TopNav() {
             }}
             title={online ? "Online" : "Offline"}
           >
-            {online ? "ONLINE" : "OFFLINE"}
+            {online ? pick("ONLINE","מחובר") : pick("OFFLINE","לא מחובר")}
           </div>
 
           {!bootstrapped ? (
@@ -666,19 +667,19 @@ function TopNav() {
 
               {isAdmin ? (
                 <button className="topnav-btn" type="button" onClick={() => navigate("/admin")} title="Administration">
-                  Admin
+                  {t("administration")}
                 </button>
               ) : null}
 
               <NotificationBell />
 
               <button className="topnav-btn" type="button" onClick={navLogout} title="Logout">
-                Logout
+                {pick("Logout","יציאה")}
               </button>
             </>
           ) : (
             <button className="topnav-btn" type="button" onClick={() => setAdminOpen(true)} title="Admin login">
-              Login
+              {pick("Login","כניסה")}
             </button>
           )}
         </div>
@@ -692,10 +693,10 @@ function TopNav() {
         <div className="topnav-pill" title="Next QM countdown (based on selected event in scouting)">
           {nextMatch?.scheduled_time ? (
             <>
-              Next QM {nextMatch.match_number ?? "?"} · {msToClock(countdownMs)}
+              {pick("Next QM","משחק הבא")} {nextMatch.match_number ?? "?"} · {msToClock(countdownMs)}
             </>
           ) : (
-            <>No next match</>
+            <>{pick("No next match","אין משחק קרוב")}</>
           )}
         </div>
 
