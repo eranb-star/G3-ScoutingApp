@@ -1,6 +1,7 @@
 # Operating system and editors
 .DS_Store
 .vscode/
+**/.idea/
 
 # Local environment and credentials
 **/.env
@@ -26,3 +27,4 @@
 .android/
 analytics.settings
 **/build/
+**/app/release/
