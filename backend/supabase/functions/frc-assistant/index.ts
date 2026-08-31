@@ -118,7 +118,7 @@ Deno.serve(async (request) => {
     let providerMessage = "Gemini is temporarily unavailable.";
     for (const model of [...new Set([MODEL, ...FALLBACK_MODELS])]) {
       for (let attempt = 0; attempt < 2; attempt += 1) {
-        const requestBody: Record<string, unknown> = { model, input: interactionInput, system_instruction: systemInstruction, store: false };
+        const requestBody: Record<string, unknown> = { model, input: interactionInput, system_instruction: systemInstruction, generation_config: { max_output_tokens: 3000 }, store: false };
         if (!imagePart) requestBody.tools = [{type:"google_search",search_types:["web_search"]}];
         const geminiResponse = await fetch("https://generativelanguage.googleapis.com/v1beta/interactions", {
           method: "POST",
@@ -139,24 +139,24 @@ Deno.serve(async (request) => {
       const capacityFailure = isTransientProviderFailure(lastStatus, providerMessage);
       return response({ error: capacityFailure ? "G3 Assist is temporarily at capacity. Please try again shortly." : providerMessage, code: capacityFailure ? "PROVIDER_CAPACITY" : "PROVIDER_ERROR" }, capacityFailure ? 503 : 502);
     }
-    const outputBlocks=(payload?.steps ?? []).filter((step:{type?:string})=>step.type==="model_output").flatMap((step:{content?:any[]})=>step.content??[]);
-    const answer = outputBlocks
-      .filter((step: { type?: string }) => step.type === "model_output")
-      .flatMap((step: { content?: { type?: string; text?: string }[] }) => step.content ?? [])
+    const modelSteps=(payload?.steps ?? []).filter((step:{type?:string})=>step.type==="model_output");
+    const outputBlocks=modelSteps.flatMap((step:{content?:any[]})=>step.content??[]);
+    const answer = (typeof payload?.output_text === "string" ? payload.output_text : outputBlocks
       .filter((content: { type?: string }) => content.type === "text")
       .map((content: { text?: string }) => content.text || "")
-      .join("\n")
+      .join("\n"))
       .trim();
-    const citations=Array.from(new Map(outputBlocks.flatMap((content:any)=>content.annotations??[]).filter((item:any)=>item.type==="url_citation"&&item.url).map((item:any)=>[item.url,{url:item.url,title:item.title||new URL(item.url).hostname}])).values()).slice(0,12);
+    const citations=Array.from(new Map(outputBlocks.flatMap((content:any)=>content.annotations??[]).filter((item:any)=>item.type==="url_citation"&&item.url).map((item:any)=>[item.url,{url:item.url,title:item.title||String(item.url).replace(/^https?:\/\//,"").split("/")[0]}])).values()).slice(0,12);
     if (!answer) return response({ error: "Gemini did not return an answer. Try rephrasing the question." }, 502);
     const usage = payload?.usage ?? {};
 
+    const storedAnswer = answer.slice(0, 19500);
     const { error: saveError } = await admin.from("ai_messages").insert([
       { conversation_id: conversationId, member_id: memberId, role: "user", content: prompt, attachment_name: attachmentName, attachment_kind: imagePart ? attachmentKind : null, context_issue_id:contextIssueId, input_tokens: Number(usage.total_input_tokens ?? 0), output_tokens: 0, model: usedModel },
-      { conversation_id: conversationId, member_id: memberId, role: "assistant", content: answer, citations, context_issue_id:contextIssueId, input_tokens: 0, output_tokens: Number(usage.total_output_tokens ?? 0), model: usedModel },
+      { conversation_id: conversationId, member_id: memberId, role: "assistant", content: storedAnswer, citations, context_issue_id:contextIssueId, input_tokens: 0, output_tokens: Number(usage.total_output_tokens ?? 0), model: usedModel },
     ]);
-    if (saveError) throw saveError;
-    await admin.from("ai_conversations").update({ updated_at: new Date().toISOString() }).eq("id", conversationId);
+    if (saveError) console.error("G3 Assist history save failed", { code: saveError.code, message: saveError.message });
+    else await admin.from("ai_conversations").update({ updated_at: new Date().toISOString() }).eq("id", conversationId);
 
     return response({ conversationId, answer, citations, grounded:Boolean(citations.length), usage: { inputTokens: Number(usage.total_input_tokens ?? 0), outputTokens: Number(usage.total_output_tokens ?? 0), remainingToday: Math.max(0, DAILY_LIMIT - (count ?? 0) - 1) } });
   } catch (error) {
