@@ -38,6 +38,8 @@ import CompetitionOperationsPage from "./pages/CompetitionOperationsPage";
 import CompetitionAssignmentBanner from "./components/CompetitionAssignmentBanner";
 import TeamGrowthPage from "./pages/TeamGrowthPage";
 import SeasonPlanningPage from "./pages/SeasonPlanningPage";
+import SkillsAcademyGuide from "./components/SkillsAcademyGuide";
+import ContributionInsightsPage from "./pages/ContributionInsightsPage";
 import ContextBackBar from "./components/ContextBackBar";
 import { getUnreadUpdateCounts } from "./lib/unreadUpdates";
 
@@ -783,6 +785,7 @@ function MemberGate({ children }: { children: JSX.Element }) {
 function AppShell() {
   const { isAdmin } = useAdmin();
   const location = useLocation();
+  useEffect(()=>{window.scrollTo({top:0,left:0,behavior:"auto"});},[location.pathname,location.search]);
   const isAuthScreen = location.pathname === "/login" || location.pathname === "/change-password";
   const activeIssue=location.pathname==="/robot-issues"?new URLSearchParams(location.search).get("issue"):null;
   const assistantPath=activeIssue?`/assistant?issue=${activeIssue}`:"/assistant";
@@ -802,11 +805,12 @@ function AppShell() {
         <Route path="/messages" element={<Navigate to="/updates?view=announcements" replace />} />
         <Route path="/more" element={<MemberGate><MorePage isAdmin={isAdmin} /></MemberGate>} />
         <Route path="/competition" element={<MemberGate><><CompetitionAssignmentBanner/><CompetitionOperationsPage isAdmin={isAdmin} /></></MemberGate>} />
-        <Route path="/growth" element={<MemberGate><TeamGrowthPage /></MemberGate>} />
+        <Route path="/growth" element={<MemberGate><><SkillsAcademyGuide/><TeamGrowthPage /></></MemberGate>} />
         <Route path="/season-planning" element={<MemberGate><SeasonPlanningPage /></MemberGate>} />
         <Route path="/admin/members" element={<AdminGate><MembersAdminPage /></AdminGate>} />
         <Route path="/admin" element={<AdminGate><AdminDashboardPage /></AdminGate>} />
         <Route path="/admin/reports" element={<AdminGate><AttendanceReportsPage /></AdminGate>} />
+        <Route path="/admin/contributions" element={<AdminGate><ContributionInsightsPage /></AdminGate>} />
         <Route path="/admin/security" element={<AdminGate><SecurityAdminPage /></AdminGate>} />
         <Route path="/attendance" element={<MemberGate><AttendanceReportsPage /></MemberGate>} />
         <Route path="/profile" element={<MemberGate><ProfilePage /></MemberGate>} />

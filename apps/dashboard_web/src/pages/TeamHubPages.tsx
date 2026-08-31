@@ -389,9 +389,9 @@ export function MorePage({ isAdmin }: { isAdmin: boolean }) {
           </button>
         ))}
         {isAdmin ? (
-          <button type="button" className="hub-list-row hub-admin-row" onClick={() => navigate("/admin/members")}>
+          <><button type="button" className="hub-list-row hub-admin-row" onClick={() => navigate("/admin/members")}>
             <span><strong>{t("administration")}</strong><small>{pick("Attendance dashboard, reports and team controls","לוח נוכחות, דוחות ובקרות קבוצה")}</small></span><span className="hub-role-chip">ADMIN</span>
-          </button>
+          </button><button type="button" className="hub-list-row hub-admin-row" onClick={() => navigate("/admin/contributions")}><span><strong>{pick("Contribution intelligence","ניתוח תרומה")}</strong><small>{pick("Attendance, completed work, qualifications and robot contribution","נוכחות, עבודה שהושלמה, הסמכות ותרומה לרובוט")}</small></span><span aria-hidden="true">→</span></button></>
         ) : null}
       </div>
     </div>

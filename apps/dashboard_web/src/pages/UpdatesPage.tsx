@@ -45,7 +45,7 @@ export default function UpdatesPage() {
   const [knowledgeQuery,setKnowledgeQuery]=useState("");
   const [submittedKnowledgeQuery,setSubmittedKnowledgeQuery]=useState("");
 
-  function changeView(next: View) { setView(next); setParams({ view: next }, { replace: true }); }
+  function changeView(next: View) { setView(next); setParams({ view: next }, { replace: true }); window.scrollTo({top:0,left:0,behavior:"auto"}); }
 
   function canSeeAnnouncement(item:Announcement){
     const target=String(item.audience??"all").toLowerCase();

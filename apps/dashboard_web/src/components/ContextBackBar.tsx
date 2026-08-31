@@ -15,6 +15,7 @@ export default function ContextBackBar() {
     "/settings":{path:"/more",en:"More",he:"עוד"},
     "/admin/members":{path:"/admin",en:"Administration",he:"ניהול"},
     "/admin/reports":{path:"/admin",en:"Administration",he:"ניהול"},
+    "/admin/contributions":{path:"/admin",en:"Administration",he:"ניהול"},
     "/admin/security":{path:"/admin",en:"Administration",he:"ניהול"},
   };
   const context=(fromCompetition&&location.pathname==="/robot-reliability")?{path:"/competition",en:"Competition",he:"תחרות"}:inCompetition?{path:"/competition",en:"Competition",he:"תחרות"}:inWork?{path:"/work",en:"Work",he:"עבודה"}:parentByRoute[location.pathname];
