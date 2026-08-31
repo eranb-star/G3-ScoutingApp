@@ -40,6 +40,8 @@ import TeamGrowthPage from "./pages/TeamGrowthPage";
 import SeasonPlanningPage from "./pages/SeasonPlanningPage";
 import SkillsAcademyGuide from "./components/SkillsAcademyGuide";
 import ContributionInsightsPage from "./pages/ContributionInsightsPage";
+import UnifiedCalendarPage from "./pages/UnifiedCalendarPage";
+import TrainingCenterPage from "./pages/TrainingCenterPage";
 import ContextBackBar from "./components/ContextBackBar";
 import { getUnreadUpdateCounts } from "./lib/unreadUpdates";
 
@@ -798,14 +800,14 @@ function AppShell() {
         <Route path="/change-password" element={<ChangePasswordPage />} />
         <Route path="/" element={<Navigate to="/home" replace />} />
         <Route path="/home" element={<MemberGate><ProductivityHomePage isAdmin={isAdmin} /></MemberGate>} />
-        <Route path="/schedule" element={<MemberGate><SchedulePage /></MemberGate>} />
+        <Route path="/schedule" element={<MemberGate><UnifiedCalendarPage /></MemberGate>} />
         <Route path="/check-in" element={<MemberGate><CheckInPage /></MemberGate>} />
         <Route path="/work" element={<MemberGate><FrcWorkPage /></MemberGate>} />
         <Route path="/updates" element={<MemberGate><UpdatesPage /></MemberGate>} />
         <Route path="/messages" element={<Navigate to="/updates?view=announcements" replace />} />
         <Route path="/more" element={<MemberGate><MorePage isAdmin={isAdmin} /></MemberGate>} />
         <Route path="/competition" element={<MemberGate><><CompetitionAssignmentBanner/><CompetitionOperationsPage isAdmin={isAdmin} /></></MemberGate>} />
-        <Route path="/growth" element={<MemberGate><><SkillsAcademyGuide/><TeamGrowthPage /></></MemberGate>} />
+        <Route path="/growth" element={<MemberGate><TrainingCenterPage /></MemberGate>} />
         <Route path="/season-planning" element={<MemberGate><SeasonPlanningPage /></MemberGate>} />
         <Route path="/admin/members" element={<AdminGate><MembersAdminPage /></AdminGate>} />
         <Route path="/admin" element={<AdminGate><AdminDashboardPage /></AdminGate>} />

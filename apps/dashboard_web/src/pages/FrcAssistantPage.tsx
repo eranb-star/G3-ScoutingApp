@@ -16,6 +16,8 @@ const suggestions = [
   ["Help diagnose a robot problem", "עזרו לי לאבחן תקלה ברובוט"],
   ["Review a WPILib error", "בדקו שגיאת WPILib"],
   ["Plan a safe mechanism test", "תכננו בדיקה בטוחה למנגנון"],
+  ["Analyze a robot or wiring photo", "נתחו תמונת רובוט או חיווט"],
+  ["Read a code or Driver Station screenshot", "קראו צילום מסך של קוד או Driver Station"],
 ] as const;
 
 export default function FrcAssistantPage() {
