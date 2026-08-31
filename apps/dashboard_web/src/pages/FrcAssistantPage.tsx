@@ -7,7 +7,7 @@ import { supabase } from "../supabase";
 type Citation={url:string;title:string};
 type ChatMessage = { id: string; role: "user" | "assistant"; content: string; attachment_name?: string | null; created_at?: string; citations?:Citation[] };
 type IssueContext={id:string;issue_number:number;title:string;subsystem:string;severity:string;status:string};
-type ConversationSummary = { id: string; title: string; updated_at: string; created_at: string };
+type ConversationSummary = { id: string; title: string; updated_at: string; created_at: string; message_count: number };
 type PendingImage = { name: string; mimeType: string; data: string; preview: string };
 
 const ACTIVE_CONVERSATION_KEY = "g3-assistant-active-conversation";
@@ -30,7 +30,11 @@ export default function FrcAssistantPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [historySearch, setHistorySearch] = useState("");
+  const [historyMode, setHistoryMode] = useState<"active" | "archived">("active");
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [conversationLoading, setConversationLoading] = useState(false);
+  const [editingConversationId, setEditingConversationId] = useState<string | null>(null);
+  const [conversationTitle, setConversationTitle] = useState("");
   const [hasEarlier, setHasEarlier] = useState(false);
   const [loadingEarlier, setLoadingEarlier] = useState(false);
   const [question, setQuestion] = useState("");
@@ -48,28 +52,38 @@ export default function FrcAssistantPage() {
     const term = historySearch.trim().toLocaleLowerCase();
     return term ? conversations.filter((item) => item.title.toLocaleLowerCase().includes(term)) : conversations;
   }, [conversations, historySearch]);
+  const activeConversation = useMemo(() => conversations.find((item) => item.id === conversationId) ?? null, [conversations, conversationId]);
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }); }, [messages.length, busy]);
   useEffect(() => { if (!historyOpen) questionRef.current?.focus(); }, [historyOpen]);
 
-  async function refreshHistory() {
+  async function refreshHistory(mode: "active" | "archived" = historyMode) {
     if (!profile) return;
     setHistoryLoading(true);
-    const { data, error } = await supabase.from("ai_conversations").select("id,title,updated_at,created_at").eq("member_id", profile.id).eq("archived", false).order("updated_at", { ascending: false }).limit(60);
+    const { data, error } = await supabase.from("ai_conversations").select("id,title,updated_at,created_at,ai_messages(count)").eq("member_id", profile.id).eq("archived", mode === "archived").order("updated_at", { ascending: false }).limit(60);
     if (error) setStatus(error.message);
-    else setConversations((data ?? []) as ConversationSummary[]);
+    else setConversations((data??[]).map((item:any)=>({id:item.id,title:item.title,updated_at:item.updated_at,created_at:item.created_at,message_count:Number(item.ai_messages?.[0]?.count??0)})).filter(item=>item.message_count>0));
     setHistoryLoading(false);
   }
 
-  async function loadConversation(id: string, closeHistory = true) {
+  async function loadConversation(id: string, shouldCloseHistory = true) {
+    setConversationLoading(true);
+    setStatus("");
     const { data, error, count } = await supabase.from("ai_messages").select("id,role,content,attachment_name,created_at,citations", { count: "exact" }).eq("conversation_id", id).order("created_at", { ascending: false }).limit(MESSAGE_PAGE_SIZE);
-    if (error) { setStatus(error.message); return; }
+    if (error) { setStatus(error.message); setConversationLoading(false); return; }
+    if (!data?.length) {
+      setStatus(pick("This conversation has no saved messages and cannot be reopened.", "לשיחה זו אין הודעות שמורות ולא ניתן לפתוח אותה מחדש."));
+      setConversationLoading(false);
+      await refreshHistory();
+      return;
+    }
     setConversationId(id);
     setMessages(((data ?? []) as ChatMessage[]).reverse());
     setHasEarlier((count ?? 0) > (data?.length ?? 0));
     sessionStorage.setItem(ACTIVE_CONVERSATION_KEY, id);
     setStatus("");
-    if (closeHistory) setHistoryOpen(false);
+    if (shouldCloseHistory) closeHistory();
+    setConversationLoading(false);
   }
 
   async function loadEarlier() {
@@ -87,12 +101,50 @@ export default function FrcAssistantPage() {
 
   function startNewConversation() {
     sessionStorage.removeItem(ACTIVE_CONVERSATION_KEY);
-    setConversationId(null); setMessages([]); setQuestion(""); setImage(null); setPrivacyConfirmed(false); setRemaining(null); setStatus(""); setHistoryOpen(false);
+    setConversationId(null); setMessages([]); setQuestion(""); setImage(null); setPrivacyConfirmed(false); setRemaining(null); setStatus(""); setHistoryOpen(false); setHistoryMode("active"); void refreshHistory("active");
     window.setTimeout(() => questionRef.current?.focus(), 0);
+  }
+
+  function closeHistory() {
+    setHistoryOpen(false);
+    if (historyMode === "archived") {
+      setHistoryMode("active");
+      void refreshHistory("active");
+    }
   }
 
   async function archiveConversation(id: string) {
     const { error } = await supabase.from("ai_conversations").update({ archived: true }).eq("id", id);
+    if (error) { setStatus(error.message); return; }
+    if (conversationId === id) startNewConversation();
+    await refreshHistory();
+  }
+
+  async function restoreConversation(id: string) {
+    const { error } = await supabase.from("ai_conversations").update({ archived: false, updated_at: new Date().toISOString() }).eq("id", id);
+    if (error) { setStatus(error.message); return; }
+    await refreshHistory();
+  }
+
+  function beginRenameConversation(conversation: ConversationSummary) {
+    setEditingConversationId(conversation.id);
+    setConversationTitle(conversation.title);
+  }
+
+  async function renameConversation(event: FormEvent, id: string) {
+    event.preventDefault();
+    const title = conversationTitle.trim();
+    if (!title) return;
+    const { error } = await supabase.from("ai_conversations").update({ title, updated_at: new Date().toISOString() }).eq("id", id);
+    if (error) { setStatus(error.message); return; }
+    setEditingConversationId(null);
+    setConversationTitle("");
+    await refreshHistory();
+  }
+
+  async function deleteConversation(id: string, title: string) {
+    if (!window.confirm(pick(`Permanently delete “${title}” and all its messages? This cannot be undone.`, `למחוק לצמיתות את „${title}” ואת כל ההודעות? לא ניתן לבטל פעולה זו.`))) return;
+    const { error } = await supabase.from("ai_conversations").delete().eq("id", id);
     if (error) { setStatus(error.message); return; }
     if (conversationId === id) startNewConversation();
     await refreshHistory();
@@ -104,6 +156,7 @@ export default function FrcAssistantPage() {
     const activeId = sessionStorage.getItem(ACTIVE_CONVERSATION_KEY);
     if (activeId) void loadConversation(activeId, false);
   }, [profile?.id]);
+  useEffect(() => { if (historyOpen) void refreshHistory(historyMode); }, [historyMode]);
   useEffect(()=>{const issueId=params.get("issue");if(!issueId){setIssueContext(null);return;}void supabase.from("robot_issues").select("id,issue_number,title,subsystem,severity,status").eq("id",issueId).maybeSingle().then(({data})=>setIssueContext(data as IssueContext|null));},[params]);
 
   function chooseImage(event: ChangeEvent<HTMLInputElement>) {
@@ -145,8 +198,9 @@ export default function FrcAssistantPage() {
     </header>
     <section className="assistant-safety" aria-label={pick("AI safety notice", "הודעת בטיחות לבינה מלאכותית")}><b>{pick("Verify before you build.", "בדקו לפני שבונים.")}</b><span>{pick("AI can be wrong. Confirm rules in the current FIRST manual and perform physical work with appropriate mentor supervision.", "בינה מלאכותית עלולה לטעות. יש לאמת חוקים במדריך FIRST העדכני ולבצע עבודה פיזית בהשגחת מנטור מתאימה.")}</span></section>
     {issueContext?<section className="assistant-context-card"><span>G3-{issueContext.issue_number}</span><div><strong>{pick("Working from robot issue context","עבודה מתוך הקשר של תקלה ברובוט")}</strong><small>{issueContext.title} · {issueContext.subsystem} · {issueContext.severity}</small></div><button onClick={()=>navigate(`/robot-issues?issue=${issueContext.id}`)}>{pick("Open issue","פתיחת תקלה")}</button></section>:null}
+    {conversationId && activeConversation ? <section className="assistant-active-conversation" aria-label={pick("Active conversation", "שיחה פעילה")}><span>{pick("Continuing conversation", "ממשיכים שיחה")}</span><strong>{activeConversation.title}</strong><small>{pick(`${activeConversation.message_count} saved messages · Your next message continues this conversation`, `${activeConversation.message_count} הודעות שמורות · ההודעה הבאה תמשיך את השיחה`)}</small></section> : null}
     <section className="assistant-chat" aria-live="polite">
-      {messages.length === 0 ? <div className="assistant-welcome"><span className="assistant-spark">✦</span><h2>{pick("What are you working on?", "על מה אתם עובדים?")}</h2><p>{pick("Start a new FRC question or reopen a previous conversation when you need it.", "התחילו שאלה חדשה על FRC או פתחו שיחה קודמת בעת הצורך.")}</p><div>{suggestions.map(([en, he]) => <button key={en} type="button" onClick={() => setQuestion(pick(en, he))}>{pick(en, he)} <span>→</span></button>)}</div>{conversations.length > 0 ? <button className="assistant-recent" type="button" onClick={() => setHistoryOpen(true)}><span aria-hidden="true">◷</span><span><b>{pick("Recent conversations", "שיחות אחרונות")}</b><small>{pick(`${conversations.length} saved conversations`, `${conversations.length} שיחות שמורות`)}</small></span><strong aria-hidden="true">›</strong></button> : null}</div> : <>{hasEarlier ? <button className="assistant-load-earlier" type="button" onClick={() => void loadEarlier()} disabled={loadingEarlier}>{loadingEarlier ? pick("Loading…", "טוען…") : pick("Load earlier messages", "טעינת הודעות קודמות")}</button> : null}{messages.map((message) => <article key={message.id} className={`assistant-message is-${message.role}`}><div className="assistant-message-label">{message.role === "assistant" ? "G3 Assist" : pick("You", "אתם")}</div>{message.attachment_name ? <small>▧ {message.attachment_name}</small> : null}<div>{message.content}</div>{message.role==="assistant"?<>{message.citations?.length?<div className="assistant-citations"><b>{pick("Sources","מקורות")}</b>{message.citations.map(source=><a href={source.url} target="_blank" rel="noreferrer" key={source.url}>{source.title} ↗</a>)}</div>:null}<footer className="assistant-answer-actions"><button onClick={()=>void saveKnowledge(message)}>{pick("Save knowledge","שמירת ידע")}</button><button onClick={()=>void createIssue(message)}>{pick("Create issue","יצירת תקלה")}</button><button onClick={()=>createTaskDraft(message)}>{pick("Create task","יצירת משימה")}</button></footer></>:null}</article>)}</>}
+      {conversationLoading ? <div className="assistant-conversation-loading" role="status"><span aria-hidden="true">✦</span><b>{pick("Opening conversation…", "פותח את השיחה…")}</b><small>{pick("Loading its saved messages", "טוען את ההודעות השמורות")}</small></div> : messages.length === 0 ? <div className="assistant-welcome"><span className="assistant-spark">✦</span><h2>{pick("What are you working on?", "על מה אתם עובדים?")}</h2><p>{pick("Start a new FRC question or reopen a previous conversation when you need it.", "התחילו שאלה חדשה על FRC או פתחו שיחה קודמת בעת הצורך.")}</p><div>{suggestions.map(([en, he]) => <button key={en} type="button" onClick={() => setQuestion(pick(en, he))}>{pick(en, he)} <span>→</span></button>)}</div>{conversations.length > 0 ? <button className="assistant-recent" type="button" onClick={() => setHistoryOpen(true)}><span aria-hidden="true">◷</span><span><b>{pick("Recent conversations", "שיחות אחרונות")}</b><small>{pick(`${conversations.length} saved conversations`, `${conversations.length} שיחות שמורות`)}</small></span><strong aria-hidden="true">›</strong></button> : null}</div> : <>{hasEarlier ? <button className="assistant-load-earlier" type="button" onClick={() => void loadEarlier()} disabled={loadingEarlier}>{loadingEarlier ? pick("Loading…", "טוען…") : pick("Load earlier messages", "טעינת הודעות קודמות")}</button> : null}{messages.map((message) => <article key={message.id} className={`assistant-message is-${message.role}`}><div className="assistant-message-label">{message.role === "assistant" ? "G3 Assist" : pick("You", "אתם")}</div>{message.attachment_name ? <small>▧ {message.attachment_name}</small> : null}<div>{message.content}</div>{message.role==="assistant"?<>{message.citations?.length?<div className="assistant-citations"><b>{pick("Sources","מקורות")}</b>{message.citations.map(source=><a href={source.url} target="_blank" rel="noreferrer" key={source.url}>{source.title} ↗</a>)}</div>:null}<footer className="assistant-answer-actions"><button onClick={()=>void saveKnowledge(message)}>{pick("Save knowledge","שמירת ידע")}</button><button onClick={()=>void createIssue(message)}>{pick("Create issue","יצירת תקלה")}</button><button onClick={()=>createTaskDraft(message)}>{pick("Create task","יצירת משימה")}</button></footer></>:null}</article>)}</>}
       {busy ? <div className="assistant-thinking"><span></span><span></span><span></span>{pick("Working through it…", "בודק את הנושא…")}</div> : null}<div ref={endRef} />
     </section>
     <form className="assistant-composer" onSubmit={send}>
@@ -155,6 +209,19 @@ export default function FrcAssistantPage() {
       <div className="assistant-compose-row"><textarea ref={questionRef} rows={3} value={question} onChange={(e) => setQuestion(e.target.value)} placeholder={pick("Ask G3 Assist about the robot, code, electrical or strategy…", "שאלו את G3 Assist על הרובוט, תוכנה, אלקטרוניקה או אסטרטגיה…")} aria-label={pick("Message G3 Assist", "שליחת הודעה ל-G3 Assist")} /><div className="assistant-compose-actions"><label className="assistant-upload" title={pick("Attach image", "צירוף תמונה")}><input type="file" accept="image/jpeg,image/png,image/webp" onChange={chooseImage} /><span aria-hidden="true">＋</span></label><button className="assistant-send" type="submit" disabled={busy || (!question.trim() && !image)}>{pick("Send", "שליחה")} <span aria-hidden="true">↑</span></button></div></div>
       <footer><span>{pick("Do not upload faces, attendance or personal student data.", "אין להעלות פנים, נוכחות או מידע אישי על תלמידים.")}</span>{remaining !== null ? <b>{pick(`${remaining} questions remaining today`, `${remaining} שאלות נותרו היום`)}</b> : null}</footer>
     </form>
-    {historyOpen ? <div className="assistant-history-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setHistoryOpen(false); }}><section className="assistant-history" role="dialog" aria-modal="true" aria-labelledby="assistant-history-title"><header><div><div className="hub-eyebrow">G3 Assist</div><h2 id="assistant-history-title">{pick("Conversation history", "היסטוריית שיחות")}</h2></div><button type="button" onClick={() => setHistoryOpen(false)} aria-label={pick("Close history", "סגירת היסטוריה")}>×</button></header><button className="assistant-new-chat" type="button" onClick={startNewConversation}><span>＋</span>{pick("Start a new conversation", "התחלת שיחה חדשה")}</button><label className="assistant-history-search"><span aria-hidden="true">⌕</span><input value={historySearch} onChange={(event) => setHistorySearch(event.target.value)} placeholder={pick("Search conversations", "חיפוש בשיחות")} aria-label={pick("Search conversations", "חיפוש בשיחות")} /></label><div className="assistant-history-list">{historyLoading ? <p>{pick("Loading conversations…", "טוען שיחות…")}</p> : filteredConversations.length === 0 ? <p>{pick("No saved conversations yet.", "אין עדיין שיחות שמורות.")}</p> : filteredConversations.map((conversation) => <article className={conversation.id === conversationId ? "is-active" : ""} key={conversation.id}><button type="button" onClick={() => void loadConversation(conversation.id)}><span aria-hidden="true">✦</span><span><b>{conversation.title}</b><small>{new Intl.DateTimeFormat(language === "he" ? "he-IL" : "en-IL", { dateStyle: "medium" }).format(new Date(conversation.updated_at))}</small></span><strong aria-hidden="true">›</strong></button><button className="assistant-archive-chat" type="button" onClick={() => void archiveConversation(conversation.id)} aria-label={pick(`Archive ${conversation.title}`, `העברת ${conversation.title} לארכיון`)}>⌄</button></article>)}</div></section></div> : null}
+    {historyOpen ? <div className="assistant-history-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) closeHistory(); }}>
+      <section className="assistant-history" role="dialog" aria-modal="true" aria-labelledby="assistant-history-title">
+        <header><div><div className="hub-eyebrow">G3 Assist</div><h2 id="assistant-history-title">{pick("Conversation history", "היסטוריית שיחות")}</h2></div><button type="button" onClick={closeHistory} aria-label={pick("Close history", "סגירת היסטוריה")}>×</button></header>
+        <button className="assistant-new-chat" type="button" onClick={startNewConversation}><span>＋</span>{pick("Start a new conversation", "התחלת שיחה חדשה")}</button>
+        <div className="assistant-history-mode" role="group" aria-label={pick("Conversation status", "מצב השיחות")}><button className={historyMode === "active" ? "is-active" : ""} type="button" onClick={() => setHistoryMode("active")}>{pick("Active", "פעילות")}</button><button className={historyMode === "archived" ? "is-active" : ""} type="button" onClick={() => setHistoryMode("archived")}>{pick("Archived", "בארכיון")}</button></div>
+        <label className="assistant-history-search"><span aria-hidden="true">⌕</span><input value={historySearch} onChange={(event) => setHistorySearch(event.target.value)} placeholder={pick("Search conversations", "חיפוש בשיחות")} aria-label={pick("Search conversations", "חיפוש בשיחות")} /></label>
+        <div className="assistant-history-list">{historyLoading ? <p>{pick("Loading conversations…", "טוען שיחות…")}</p> : filteredConversations.length === 0 ? <p>{pick("No saved conversations yet.", "אין עדיין שיחות שמורות.")}</p> : filteredConversations.map((conversation) => <article className={conversation.id === conversationId ? "is-active" : ""} key={conversation.id}>
+          {editingConversationId === conversation.id ? <form className="assistant-conversation-rename" onSubmit={(event) => void renameConversation(event, conversation.id)}><label>{pick("Conversation name", "שם השיחה")}<input autoFocus required maxLength={120} value={conversationTitle} onChange={(event) => setConversationTitle(event.target.value)} /></label><div><button type="button" onClick={() => setEditingConversationId(null)}>{pick("Cancel", "ביטול")}</button><button className="primary" type="submit">{pick("Save", "שמירה")}</button></div></form> : <>
+            <button type="button" disabled={conversationLoading} onClick={() => void loadConversation(conversation.id)}><span aria-hidden="true">✦</span><span><b>{conversation.title}</b><small>{new Intl.DateTimeFormat(language === "he" ? "he-IL" : "en-IL", { dateStyle: "medium" }).format(new Date(conversation.updated_at))} · {pick(`${conversation.message_count} messages`, `${conversation.message_count} הודעות`)}</small></span><strong aria-hidden="true">›</strong></button>
+            <div className="assistant-conversation-actions"><button type="button" onClick={() => beginRenameConversation(conversation)} aria-label={pick(`Rename ${conversation.title}`, `שינוי שם ${conversation.title}`)}>✎</button>{historyMode === "active" ? <button type="button" onClick={() => void archiveConversation(conversation.id)} aria-label={pick(`Archive ${conversation.title}`, `העברת ${conversation.title} לארכיון`)}>⌄</button> : <button type="button" onClick={() => void restoreConversation(conversation.id)} aria-label={pick(`Restore ${conversation.title}`, `שחזור ${conversation.title}`)}>↥</button>}<button className="danger" type="button" onClick={() => void deleteConversation(conversation.id, conversation.title)} aria-label={pick(`Delete ${conversation.title}`, `מחיקת ${conversation.title}`)}>×</button></div>
+          </>}
+        </article>)}</div>
+      </section>
+    </div> : null}
   </main>;
 }
