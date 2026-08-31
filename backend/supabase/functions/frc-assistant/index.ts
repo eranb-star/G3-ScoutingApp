@@ -6,7 +6,7 @@ const cors = {
 };
 const jsonHeaders = { ...cors, "Content-Type": "application/json" };
 const MODEL = Deno.env.get("GEMINI_MODEL") || "gemini-3.6-flash";
-const FALLBACK_MODEL = "gemini-3.1-flash-lite";
+const FALLBACK_MODELS = ["gemini-3.5-flash-lite", "gemini-3.1-flash-lite"];
 const DAILY_LIMIT = 20;
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
 
@@ -30,6 +30,14 @@ function response(body: unknown, status = 200) {
 function estimatedBase64Bytes(value: string) {
   const clean = value.replace(/\s/g, "");
   return Math.floor(clean.length * 0.75);
+}
+
+function isTransientProviderFailure(status: number, message: string) {
+  return status === 408 || status === 429 || status >= 500 || /high demand|overload|capacity|temporar/i.test(message);
+}
+
+function retryDelay(attempt: number) {
+  return 700 * 2 ** attempt + Math.floor(Math.random() * 350);
 }
 
 Deno.serve(async (request) => {
@@ -108,26 +116,27 @@ Deno.serve(async (request) => {
     let usedModel = MODEL;
     let lastStatus = 503;
     let providerMessage = "Gemini is temporarily unavailable.";
-    for (const model of [...new Set([MODEL, FALLBACK_MODEL])]) {
-      const geminiResponse = await fetch("https://generativelanguage.googleapis.com/v1beta/interactions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-goog-api-key": geminiKey },
-        body: JSON.stringify({ model, input: interactionInput, system_instruction: systemInstruction, tools:[{type:"google_search",search_types:["web_search"]}], store: false }),
-      });
-      const candidatePayload: any = await geminiResponse.json().catch(() => ({}));
-      if (geminiResponse.ok) {
-        payload = candidatePayload;
-        usedModel = model;
-        break;
+    for (const model of [...new Set([MODEL, ...FALLBACK_MODELS])]) {
+      for (let attempt = 0; attempt < 2; attempt += 1) {
+        const requestBody: Record<string, unknown> = { model, input: interactionInput, system_instruction: systemInstruction, store: false };
+        if (!imagePart) requestBody.tools = [{type:"google_search",search_types:["web_search"]}];
+        const geminiResponse = await fetch("https://generativelanguage.googleapis.com/v1beta/interactions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-goog-api-key": geminiKey },
+          body: JSON.stringify(requestBody),
+        });
+        const candidatePayload: any = await geminiResponse.json().catch(() => ({}));
+        if (geminiResponse.ok) { payload = candidatePayload; usedModel = model; break; }
+        lastStatus = geminiResponse.status;
+        providerMessage = candidatePayload?.error?.message || candidatePayload?.message || (typeof candidatePayload?.error === "string" ? candidatePayload.error : providerMessage);
+        console.error("Gemini Interactions request failed", { status: lastStatus, model, attempt, message: providerMessage });
+        if (!isTransientProviderFailure(lastStatus, providerMessage)) break;
+        if (attempt === 0) await new Promise(resolve => setTimeout(resolve, retryDelay(attempt)));
       }
-      lastStatus = geminiResponse.status;
-      providerMessage = candidatePayload?.error?.message || candidatePayload?.message || (typeof candidatePayload?.error === "string" ? candidatePayload.error : providerMessage);
-      console.error("Gemini Interactions request failed", { status: lastStatus, model, message: providerMessage });
-      const capacityFailure = lastStatus === 429 || lastStatus === 503 || /high demand|overload|capacity/i.test(providerMessage);
-      if (!capacityFailure) break;
+      if (payload || !isTransientProviderFailure(lastStatus, providerMessage)) break;
     }
     if (!payload) {
-      const capacityFailure = lastStatus === 429 || lastStatus === 503 || /high demand|overload|capacity/i.test(providerMessage);
+      const capacityFailure = isTransientProviderFailure(lastStatus, providerMessage);
       return response({ error: capacityFailure ? "G3 Assist is temporarily at capacity. Please try again shortly." : providerMessage, code: capacityFailure ? "PROVIDER_CAPACITY" : "PROVIDER_ERROR" }, capacityFailure ? 503 : 502);
     }
     const outputBlocks=(payload?.steps ?? []).filter((step:{type?:string})=>step.type==="model_output").flatMap((step:{content?:any[]})=>step.content??[]);

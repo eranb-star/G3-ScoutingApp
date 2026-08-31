@@ -372,6 +372,7 @@ export function MorePage({ isAdmin }: { isAdmin: boolean }) {
   const navigate = useNavigate();
   const { t, pick } = useLocalization();
   const rows = [
+    [pick("Team schedule","לוח הקבוצה"), pick("Full calendar for meetings, events, training and deadlines","לוח מלא למפגשים, אירועים, הכשרות ומועדים"), "/schedule"],
     [t("attendance"), pick("Personal history and verified workshop hours","היסטוריה אישית ושעות סדנה מאומתות"), "/attendance"],
     [t("profile"), pick("Team directory, roles and subteams","ספר חברי הקבוצה, תפקידים ותתי־צוותים"), "/profile"],
     [t("settings"), pick("Language, notifications, privacy and account","שפה, התראות, פרטיות וחשבון"), "/settings"],

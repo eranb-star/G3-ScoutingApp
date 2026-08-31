@@ -19,7 +19,6 @@ const frcAreas = [
 const operationalAreas = [
   { key: "purchasing", en: "Parts & purchasing", he: "חלקים ורכש", detailEn: "Requests, orders and missing parts", detailHe: "בקשות, הזמנות וחלקים חסרים" },
   { key: "decisions", en: "Decision log", he: "יומן החלטות", detailEn: "Record technical decisions and rationale", detailHe: "תיעוד החלטות טכניות והסיבות להן" },
-  { key: "training", en: "Training matrix", he: "מטריצת הכשרה", detailEn: "Skills and safety qualification", detailHe: "מיומנויות והסמכות בטיחות" },
   { key: "packing", en: "Pit & packing", he: "פיט ואריזה", detailEn: "Competition packing and pit readiness", detailHe: "אריזה לתחרות ומוכנות הפיט" },
   { key: "assignments", en: "Assignments", he: "שיבוצים", detailEn: "Cross-team event and workshop roles", detailHe: "תפקידי אירוע וסדנה חוצי־צוותים" },
 ];
