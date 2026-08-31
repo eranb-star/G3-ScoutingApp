@@ -35,6 +35,9 @@ import FrcAssistantPage from "./pages/FrcAssistantPage";
 import RobotIssuesPage from "./pages/RobotIssuesPage";
 import RobotReliabilityPage from "./pages/RobotReliabilityPage";
 import CompetitionOperationsPage from "./pages/CompetitionOperationsPage";
+import CompetitionAssignmentBanner from "./components/CompetitionAssignmentBanner";
+import TeamGrowthPage from "./pages/TeamGrowthPage";
+import SeasonPlanningPage from "./pages/SeasonPlanningPage";
 import ContextBackBar from "./components/ContextBackBar";
 import { getUnreadUpdateCounts } from "./lib/unreadUpdates";
 
@@ -798,7 +801,9 @@ function AppShell() {
         <Route path="/updates" element={<MemberGate><UpdatesPage /></MemberGate>} />
         <Route path="/messages" element={<Navigate to="/updates?view=announcements" replace />} />
         <Route path="/more" element={<MemberGate><MorePage isAdmin={isAdmin} /></MemberGate>} />
-        <Route path="/competition" element={<MemberGate><CompetitionOperationsPage isAdmin={isAdmin} /></MemberGate>} />
+        <Route path="/competition" element={<MemberGate><><CompetitionAssignmentBanner/><CompetitionOperationsPage isAdmin={isAdmin} /></></MemberGate>} />
+        <Route path="/growth" element={<MemberGate><TeamGrowthPage /></MemberGate>} />
+        <Route path="/season-planning" element={<MemberGate><SeasonPlanningPage /></MemberGate>} />
         <Route path="/admin/members" element={<AdminGate><MembersAdminPage /></AdminGate>} />
         <Route path="/admin" element={<AdminGate><AdminDashboardPage /></AdminGate>} />
         <Route path="/admin/reports" element={<AdminGate><AttendanceReportsPage /></AdminGate>} />
