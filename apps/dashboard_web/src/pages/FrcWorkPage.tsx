@@ -2,95 +2,75 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLocalization } from "../lib/localization";
 import { useMemberAuth } from "../lib/memberAuth";
+import { useAdminStatus } from "../lib/useAdminStatus";
 import { supabase } from "../supabase";
 
-type Project = { id: string; name: string; status: string; subteam: string | null; due_at: string | null };
-type Task = { id: string; project_id: string; title: string; status: string; due_at: string | null };
+type Project={id:string;name:string;status:string;subteam:string|null;due_at:string|null};
+type Task={id:string;project_id:string;title:string;status:string;due_at:string|null;assignee_id:string|null};
+type Course={id:string;title:string};
+type Module={id:string;course_id:string};
+type Enrollment={id:string;course_id:string;status:string;due_at:string|null};
+type Evidence={enrollment_id:string;module_id:string;status:string};
+type Issue={id:string;severity:string;status:string};
+type Component={id:string;name:string;status:string;service_interval_days:number|null;last_serviced_at:string|null};
 
-const frcAreas = [
-  { key: "mechanical", en: "Mechanical", he: "מכניקה", mark: "MECH", detailEn: "CAD, fabrication, BOM and design reviews", detailHe: "תיב״ם, ייצור, רשימת חומרים וסקרי תכן" },
-  { key: "electrical", en: "Electrical", he: "אלקטרוניקה", mark: "ELEC", detailEn: "Wiring, CAN devices, batteries and inspection", detailHe: "חיווט, התקני CAN, סוללות ובדיקות" },
-  { key: "software", en: "Software", he: "תוכנה", mark: "CODE", detailEn: "Robot code, releases, calibration and tests", detailHe: "קוד רובוט, גרסאות, כיול ובדיקות" },
-  { key: "strategy", en: "Strategy & scouting", he: "אסטרטגיה וסקאוטינג", mark: "DATA", detailEn: "Match data, game analysis and alliance planning", detailHe: "נתוני משחקים, ניתוח ותכנון בריתות" },
-  { key: "business", en: "Business & outreach", he: "קהילה ועסקים", mark: "TEAM", detailEn: "Sponsors, awards, media and outreach", detailHe: "ספונסרים, פרסים, מדיה וקהילה" },
-  { key: "pit", en: "Drive & pit", he: "נהיגה ופיט", mark: "PIT", detailEn: "Readiness, repairs and match turnaround", detailHe: "מוכנות, תיקונים והיערכות למשחק" },
-];
+const frcAreas=[
+  {key:"mechanical",en:"Mechanical",he:"מכניקה",mark:"MECH"},{key:"electrical",en:"Electrical",he:"אלקטרוניקה",mark:"ELEC"},
+  {key:"software",en:"Software",he:"תוכנה",mark:"CODE"},{key:"strategy",en:"Strategy & scouting",he:"אסטרטגיה וסקאוטינג",mark:"DATA"},
+  {key:"business",en:"Business & outreach",he:"קהילה ועסקים",mark:"TEAM"},{key:"pit",en:"Drive & pit",he:"נהיגה ופיט",mark:"PIT"},
+] as const;
+const operationalAreas=[
+  {key:"purchasing",en:"Parts & purchasing",he:"חלקים ורכש",detailEn:"Requests, orders and missing parts",detailHe:"בקשות, הזמנות וחלקים חסרים"},
+  {key:"decisions",en:"Decision log",he:"יומן החלטות",detailEn:"Technical decisions and rationale",detailHe:"החלטות טכניות והסיבות להן"},
+  {key:"packing",en:"Pit & packing",he:"פיט ואריזה",detailEn:"Competition packing and readiness",detailHe:"אריזה לתחרות ומוכנות"},
+  {key:"assignments",en:"Assignments",he:"שיבוצים",detailEn:"Event and workshop roles",detailHe:"תפקידי אירוע וסדנה"},
+] as const;
+function areaMatches(subteam:string|null|undefined,key:string){const value=(subteam??"").toLowerCase();return value.includes(key)||(key==="electrical"&&value.includes("electronic"));}
 
-const operationalAreas = [
-  { key: "purchasing", en: "Parts & purchasing", he: "חלקים ורכש", detailEn: "Requests, orders and missing parts", detailHe: "בקשות, הזמנות וחלקים חסרים" },
-  { key: "decisions", en: "Decision log", he: "יומן החלטות", detailEn: "Record technical decisions and rationale", detailHe: "תיעוד החלטות טכניות והסיבות להן" },
-  { key: "packing", en: "Pit & packing", he: "פיט ואריזה", detailEn: "Competition packing and pit readiness", detailHe: "אריזה לתחרות ומוכנות הפיט" },
-  { key: "assignments", en: "Assignments", he: "שיבוצים", detailEn: "Cross-team event and workshop roles", detailHe: "תפקידי אירוע וסדנה חוצי־צוותים" },
-];
+export default function FrcWorkPage(){
+  const {pick}=useLocalization(),{profile}=useMemberAuth(),isAdmin=useAdminStatus(),navigate=useNavigate();
+  const [projects,setProjects]=useState<Project[]>([]),[tasks,setTasks]=useState<Task[]>([]),[courses,setCourses]=useState<Course[]>([]),[modules,setModules]=useState<Module[]>([]),[enrollments,setEnrollments]=useState<Enrollment[]>([]),[evidence,setEvidence]=useState<Evidence[]>([]),[issues,setIssues]=useState<Issue[]>([]),[components,setComponents]=useState<Component[]>([]);
+  const [loading,setLoading]=useState(true),[showAllWork,setShowAllWork]=useState(false),[showWorkspaces,setShowWorkspaces]=useState(false),[showOperations,setShowOperations]=useState(false);
+  useEffect(()=>{if(!profile)return;Promise.all([
+    supabase.from("team_projects").select("id,name,status,subteam,due_at").neq("status","archived").order("updated_at",{ascending:false}).limit(100),
+    supabase.from("project_tasks").select("id,project_id,title,status,due_at,assignee_id").eq("archived",false).order("due_at",{ascending:true,nullsFirst:false}).limit(250),
+    supabase.from("training_courses").select("id,title").eq("active",true).order("created_at"),supabase.from("training_modules").select("id,course_id").order("sort_order"),
+    supabase.from("training_enrollments").select("id,course_id,status,due_at").eq("member_id",profile.id),supabase.from("training_evidence").select("enrollment_id,module_id,status").eq("member_id",profile.id),
+    supabase.from("robot_issues").select("id,severity,status").eq("archived",false).neq("status","resolved"),supabase.from("robot_components").select("id,name,status,service_interval_days,last_serviced_at").neq("status","retired"),
+  ]).then(([p,t,c,m,n,e,i,r])=>{setProjects((p.data??[]) as Project[]);setTasks((t.data??[]) as Task[]);setCourses((c.data??[]) as Course[]);setModules((m.data??[]) as Module[]);setEnrollments((n.data??[]) as Enrollment[]);setEvidence((e.data??[]) as Evidence[]);setIssues((i.data??[]) as Issue[]);setComponents((r.data??[]) as Component[]);setLoading(false);});},[profile?.id]);
 
-export default function FrcWorkPage() {
-  const { pick } = useLocalization();
-  const { profile } = useMemberAuth();
-  const navigate = useNavigate();
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(true);
+  const activeProjectIds=useMemo(()=>new Set(projects.map(project=>project.id)),[projects]);
+  const myTasks=useMemo(()=>tasks.filter(task=>task.assignee_id===profile?.id&&activeProjectIds.has(task.project_id)&&task.status!=="done").sort((a,b)=>{if(a.status==="blocked"&&b.status!=="blocked")return -1;if(b.status==="blocked"&&a.status!=="blocked")return 1;return(a.due_at?new Date(a.due_at).getTime():Number.MAX_SAFE_INTEGER)-(b.due_at?new Date(b.due_at).getTime():Number.MAX_SAFE_INTEGER);}),[tasks,profile?.id,activeProjectIds]);
+  const myArea=frcAreas.find(area=>areaMatches(profile?.subteam,area.key));
+  const myProjects=useMemo(()=>myArea?projects.filter(project=>areaMatches(project.subteam,myArea.key)):[],[projects,myArea]);
+  const myProjectIds=useMemo(()=>new Set(myProjects.map(project=>project.id)),[myProjects]);
+  const myWorkspaceTasks=tasks.filter(task=>myProjectIds.has(task.project_id)&&task.status!=="done");
+  const assignedCourseIds=new Set(enrollments.map(item=>item.course_id)),assignedModules=modules.filter(item=>assignedCourseIds.has(item.course_id));
+  const approvedModules=new Set(evidence.filter(item=>item.status==="approved").map(item=>item.module_id));
+  const nextCourse=enrollments.map(item=>({enrollment:item,course:courses.find(course=>course.id===item.course_id)})).filter(item=>item.course&&item.enrollment.status!=="completed").sort((a,b)=>(a.enrollment.due_at?new Date(a.enrollment.due_at).getTime():Number.MAX_SAFE_INTEGER)-(b.enrollment.due_at?new Date(b.enrollment.due_at).getTime():Number.MAX_SAFE_INTEGER))[0]?.course;
+  const skillPercent=assignedModules.length?Math.round(assignedModules.filter(item=>approvedModules.has(item.id)).length/assignedModules.length*100):0,underway=enrollments.filter(item=>item.status!=="completed");
+  const criticalIssues=issues.filter(issue=>["critical","high"].includes(issue.severity)).length;
+  const serviceAlerts=components.filter(component=>component.status==="failed"||(component.status==="installed"&&component.service_interval_days&&component.last_serviced_at&&Date.now()-new Date(component.last_serviced_at).getTime()>component.service_interval_days*864e5)).length;
+  const workspaceBlockers=myWorkspaceTasks.filter(task=>task.status==="blocked").length+myProjects.filter(project=>project.status==="blocked").length,visibleTasks=showAllWork?myTasks:myTasks.slice(0,3);
 
-  useEffect(() => {
-    Promise.all([
-      supabase.from("team_projects").select("id,name,status,subteam,due_at").neq("status", "archived").order("updated_at", { ascending: false }).limit(12),
-      supabase.from("project_tasks").select("id,project_id,title,status,due_at").eq("archived", false).order("due_at", { ascending: true, nullsFirst: false }).limit(80),
-    ]).then(([projectResult, taskResult]) => {
-      setProjects((projectResult.data ?? []) as Project[]);
-      setTasks((taskResult.data ?? []) as Task[]);
-      setLoading(false);
-    });
-  }, []);
+  return <main className="hub-page work-page work-command-center">
+    <header className="work-command-header work-command-header-compact"><div><div className="hub-eyebrow">G3 6740 · {pick("Build operations","תפעול הבנייה")}</div><h1>{pick("Work","עבודה")}</h1><p>{pick("Your next action, your team and the systems that keep the robot moving.","הפעולה הבאה, הצוות שלכם והמערכות שמקדמות את הרובוט.")}</p></div>{myArea?<button className="hub-button" onClick={()=>navigate(`/projects?subteam=${myArea.key}`)}>{pick("Open my workspace","פתיחת המרחב שלי")} →</button>:null}</header>
 
-  const activeProjectIds = useMemo(() => new Set(projects.map((project) => project.id)), [projects]);
-  const openTasks = useMemo(() => tasks.filter((task) => activeProjectIds.has(task.project_id) && task.status !== "done"), [tasks, activeProjectIds]);
-  const blockers = useMemo(() => projects.filter((project) => project.status === "blocked").length + openTasks.filter((task) => task.status === "blocked").length, [projects, openTasks]);
-  const myArea = (profile?.subteam ?? "").toLowerCase();
-  const myWorkspace = frcAreas.find((area) => myArea.includes(area.key) || (area.key === "electrical" && myArea.includes("electronic")))?.key;
-
-  return <main className="hub-page work-page">
-    <header className="work-command-header">
-      <div><div className="hub-eyebrow">FRC 6740 · {pick("Build operations", "תפעול עונת הבנייה")}</div><h1>{pick("Build the robot", "בונים את הרובוט")}</h1><p>{pick("One connected workspace for every G3 subsystem and subteam.", "מרחב עבודה מחובר לכל מערכת ותת־צוות של G3.")}</p></div>
-      <div className="work-header-actions">{myWorkspace?<button className="hub-button" onClick={() => navigate(`/projects?subteam=${myWorkspace}`)}>{pick("My workspace", "מרחב העבודה שלי")}</button>:null}<button className="hub-button secondary" onClick={() => navigate("/projects")}>{pick("Project portfolio", "תיק הפרויקטים")}</button></div>
-    </header>
-
-    <section className="work-status-rail" aria-label={pick("Build status", "מצב הבנייה")}>
-      <article><strong>{loading ? "—" : projects.length}</strong><span>{pick("Active projects", "פרויקטים פעילים")}</span></article>
-      <article><strong>{loading ? "—" : openTasks.length}</strong><span>{pick("Open tasks", "משימות פתוחות")}</span></article>
-      <article className={blockers ? "has-blocker" : ""}><strong>{loading ? "—" : blockers}</strong><span>{pick("Blockers", "חסמים")}</span></article>
+    <section className="hub-card work-my-work" aria-labelledby="my-work-title"><header><div><div className="hub-eyebrow">{pick("Personal command","מרכז אישי")}</div><h2 id="my-work-title">{pick("My work","העבודה שלי")}</h2></div><span className={myTasks.some(task=>task.status==="blocked")?"is-alert":""}>{loading?"—":myTasks.length}</span></header>
+      {loading?<div className="work-skeleton"/>:visibleTasks.length?visibleTasks.map((task,index)=>{const project=projects.find(item=>item.id===task.project_id);return <button className={`work-personal-task${index===0?" is-next":""}`} key={task.id} onClick={()=>navigate(`/projects?project=${task.project_id}&task=${task.id}`)}><span className={`work-task-status status-${task.status}`}/><span><small>{index===0?pick("Next action","הפעולה הבאה"):project?.name??pick("G3 project","פרויקט G3")}</small><strong>{task.title}</strong><em>{project?.name}{task.due_at?` · ${new Date(task.due_at).toLocaleDateString()}`:""}</em></span><b>→</b></button>}):<div className="work-empty-action"><span>✓</span><div><strong>{pick("You are clear for now","אין כרגע משימות פתוחות")}</strong><small>{pick("Open your workspace to find useful team work.","פתחו את מרחב הצוות כדי למצוא עבודה מועילה.")}</small></div>{myArea?<button onClick={()=>navigate(`/projects?subteam=${myArea.key}`)}>{pick("Find work","מציאת עבודה")}</button>:null}</div>}
+      {myTasks.length>3?<button className="work-disclosure-link" onClick={()=>setShowAllWork(value=>!value)}>{showAllWork?pick("Show only priorities","הצגת עדיפויות בלבד"):pick(`View all ${myTasks.length} tasks`,`הצגת כל ${myTasks.length} המשימות`)} <span>{showAllWork?"↑":"↓"}</span></button>:null}
     </section>
 
-    <section className="work-section-heading"><div><div className="hub-eyebrow">{pick("FRC departments", "תחומי FRC")}</div><h2>{pick("Subteam workspaces", "מרחבי תתי־צוותים")}</h2></div><small>{pick("Your subteam is highlighted", "תת־הצוות שלך מודגש")}</small></section>
-    <div className="frc-area-grid">
-      {frcAreas.map((area) => {
-        const selected = myArea.includes(area.key) || (area.key === "electrical" && myArea.includes("electronic"));
-        const areaProjects = projects.filter((project) => (project.subteam ?? "").toLowerCase().includes(area.key));
-        return <button className={`frc-area-card${selected ? " is-mine" : ""}`} key={area.key} onClick={() => navigate(`/projects?subteam=${area.key}`)}>
-          <span className="frc-area-mark">{area.mark}</span><span className="frc-area-copy"><strong>{pick(area.en, area.he)}</strong><small>{pick(area.detailEn, area.detailHe)}</small></span><span className="frc-area-count">{areaProjects.length}</span>
-        </button>;
-      })}
-    </div>
+    <section className={`work-focus-grid${myArea?"":" has-single-card"}`}>{myArea?<button className="work-workspace-card" onClick={()=>navigate(`/projects?subteam=${myArea.key}`)}><span className="frc-area-mark">{myArea.mark}</span><span><small>{pick("My subteam","תת־הצוות שלי")}</small><strong>{pick(myArea.en,myArea.he)}</strong><em>{myProjects.length} {pick("active projects","פרויקטים פעילים")} · {myWorkspaceTasks.length} {pick("open tasks","משימות פתוחות")}</em>{workspaceBlockers?<b>{workspaceBlockers} {pick("blockers need attention","חסמים דורשים טיפול")}</b>:null}</span><i>→</i></button>:null}
+      <button className="work-growth-card" onClick={()=>navigate("/growth")}><span className="work-growth-orbit" style={{background:`conic-gradient(#fff ${skillPercent*3.6}deg,rgba(255,255,255,.2) 0)`}}><b>{skillPercent}%</b></span><span><small>{pick("My growth","ההתפתחות שלי")}</small><strong>{pick("Skills Academy","אקדמיית מיומנויות")}</strong><em>{nextCourse?`${pick("Next","הבא")}: ${nextCourse.title}`:pick("No course currently assigned","אין קורס מוקצה כרגע")}</em><b>{underway.length} {pick("courses in progress","קורסים בתהליך")}</b></span><i>→</i></button></section>
 
-    <section className="work-utilities" aria-label={pick("Workshop operations", "תפעול הסדנה")}>
-      <button className="hub-card work-utility-card readiness-card" onClick={() => navigate("/robot-reliability")}><span className="frc-area-mark">TEST</span><span><strong>{pick("Reliability center", "מרכז אמינות")}</strong><small>{pick("Test plans, readiness checks and evidence before the robot enters the field", "תוכניות בדיקה, בדיקות מוכנות וראיות לפני שהרובוט עולה למגרש")}</small></span><b>→</b></button>
-      <button className="hub-card work-utility-card" onClick={() => navigate("/robot-maintenance")}><span className="frc-area-mark">LIFE</span><span><strong>{pick("Robot maintenance", "תחזוקת הרובוט")}</strong><small>{pick("Component lifecycle, service alerts and battery health", "מחזור חיי רכיבים, התראות שירות ובריאות סוללות")}</small></span><b>→</b></button>
-      <button className="hub-card work-utility-card issue-tracker-card" onClick={() => navigate("/robot-issues")}><span className="frc-area-mark">FIX</span><span><strong>{pick("Robot issues", "תקלות רובוט")}</strong><small>{pick("Report symptoms, assign repairs and verify every fix", "דיווח תסמינים, הקצאת תיקונים ואימות כל פתרון")}</small></span><b>→</b></button>
-      <button className="hub-card work-utility-card" onClick={() => navigate("/tools")}><span className="frc-area-mark">TOOL</span><span><strong>{pick("Tools & equipment", "כלים וציוד")}</strong><small>{pick("Inventory, checkout, training and maintenance", "מלאי, השאלה, הכשרה ותחזוקה")}</small></span><b>→</b></button>
-      <button className="hub-card work-utility-card" onClick={() => navigate("/growth")}><span className="frc-area-mark">LEARN</span><span><strong>{pick("Skills academy", "אקדמיית מיומנויות")}</strong><small>{pick("FRC learning paths, evidence and mentor validation", "מסלולי למידה ב־FRC, ראיות ואימות חונכים")}</small></span><b>→</b></button>
-      <button className="hub-card work-utility-card" onClick={() => navigate("/season-planning")}><span className="frc-area-mark">PLAN</span><span><strong>{pick("Season roadmap", "מפת העונה")}</strong><small>{pick("Milestones, dependencies and engineering decisions", "אבני דרך, תלויות והחלטות הנדסיות")}</small></span><b>→</b></button>
-    </section>
+    <section className="work-robot-health"><button className={`work-health-card${criticalIssues||serviceAlerts?" has-alert":""}`} onClick={()=>navigate("/robot-reliability")}><span className="work-health-signal"/><span><small>{pick("Robot operations","תפעול הרובוט")}</small><strong>{pick("Robot Health","בריאות הרובוט")}</strong><em>{issues.length} {pick("open issues","תקלות פתוחות")} · {serviceAlerts} {pick("service alerts","התראות שירות")}</em></span><b>{criticalIssues?pick("ATTENTION","דורש טיפול"):pick("OPEN","פתיחה")} →</b></button>
+      <div className="work-quick-tools"><button onClick={()=>navigate("/robot-issues")}><span>FIX</span><strong>{pick("Issues","תקלות")}</strong></button><button onClick={()=>navigate("/robot-maintenance")}><span>LIFE</span><strong>{pick("Maintenance","תחזוקה")}</strong></button><button onClick={()=>navigate("/tools")}><span>TOOL</span><strong>{pick("Tools & inventory","כלים ומלאי")}</strong></button></div></section>
 
-    <section className="work-operations-section">
-      <header className="work-section-heading"><div><div className="hub-eyebrow">{pick("Cross-team coordination", "תיאום חוצה־צוותים")}</div><h2>{pick("Shared operating boards", "לוחות תפעול משותפים")}</h2><p>{pick("Use a workspace project for a deliverable. Use these boards only for recurring coordination shared by several subteams.", "השתמשו בפרויקט במרחב עבודה עבור תוצר. השתמשו בלוחות אלה רק לתיאום חוזר המשותף למספר תתי־צוותים.")}</p></div></header>
-      <div className="work-operations-grid">{operationalAreas.map(area=><button className="hub-card work-operation-card" key={area.key} onClick={()=>navigate(`/frc-operations?area=${area.key}`)}><span>G3</span><span><strong>{pick(area.en,area.he)}</strong><small>{pick(area.detailEn,area.detailHe)}</small></span><b>→</b></button>)}</div>
-    </section>
+    <section className="work-collapsible-group"><button className="work-group-toggle" aria-expanded={showWorkspaces} onClick={()=>setShowWorkspaces(value=>!value)}><span><small>{pick("FRC departments","תחומי FRC")}</small><strong>{pick("Browse other workspaces","עיון במרחבי עבודה נוספים")}</strong></span><b>{frcAreas.length-(myArea?1:0)} {showWorkspaces?"↑":"↓"}</b></button>
+      {showWorkspaces?<div className="work-compact-list">{frcAreas.filter(area=>area.key!==myArea?.key).map(area=>{const count=projects.filter(project=>areaMatches(project.subteam,area.key)).length;return <button key={area.key} onClick={()=>navigate(`/projects?subteam=${area.key}`)}><span>{area.mark}</span><span><strong>{pick(area.en,area.he)}</strong><small>{count} {pick("active projects","פרויקטים פעילים")}</small></span><b>→</b></button>})}<button className="work-all-projects" onClick={()=>navigate("/projects")}><span>ALL</span><span><strong>{pick("All team projects","כל פרויקטי הקבוצה")}</strong><small>{isAdmin?pick("Portfolio and archive management","ניהול תיק פרויקטים וארכיון"):pick("Team-wide project overview","סקירת פרויקטים קבוצתית")}</small></span><b>→</b></button></div>:null}</section>
 
-    <section className="hub-card work-priority-card">
-      <header><div><div className="hub-eyebrow">{pick("Priority board", "לוח עדיפויות")}</div><h2>{pick("What needs attention", "מה דורש טיפול")}</h2></div><button className="announcement-link" onClick={() => navigate("/projects")}>{pick("View all", "הצגת הכול")} →</button></header>
-      {openTasks.length === 0 ? <p>{pick("No open tasks yet. Create the first FRC project and assign the work.", "אין עדיין משימות פתוחות. צרו פרויקט FRC ראשון והקצו את העבודה.")}</p> : openTasks.slice(0, 5).map((task) => {
-        const project = projects.find((item) => item.id === task.project_id);
-        return <button className="work-task-row" key={task.id} onClick={() => navigate(`/projects?project=${task.project_id}&task=${task.id}`)}><span className={`work-task-status status-${task.status}`} /><span><strong>{task.title}</strong><small>{project?.name ?? pick("G3 project", "פרויקט G3")}{task.due_at ? ` · ${new Date(task.due_at).toLocaleDateString()}` : ""}</small></span><b>{task.status.replace("_", " ")}</b></button>;
-      })}
-    </section>
+    <section className="work-collapsible-group"><button className="work-group-toggle" aria-expanded={showOperations} onClick={()=>setShowOperations(value=>!value)}><span><small>{pick("Cross-team coordination","תיאום חוצה־צוותים")}</small><strong>{pick("Team operations","תפעול הקבוצה")}</strong></span><b>{showOperations?"↑":"↓"}</b></button>
+      {showOperations?<div className="work-compact-list">{operationalAreas.map(area=><button key={area.key} onClick={()=>navigate(`/frc-operations?area=${area.key}`)}><span>G3</span><span><strong>{pick(area.en,area.he)}</strong><small>{pick(area.detailEn,area.detailHe)}</small></span><b>→</b></button>)}<button onClick={()=>navigate("/season-planning")}><span>PLAN</span><span><strong>{pick("Season roadmap","מפת העונה")}</strong><small>{pick("Milestones, dependencies and engineering decisions","אבני דרך, תלויות והחלטות הנדסיות")}</small></span><b>→</b></button></div>:null}</section>
   </main>;
 }
