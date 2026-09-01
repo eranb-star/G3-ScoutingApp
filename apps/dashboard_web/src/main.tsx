@@ -681,6 +681,10 @@ function TopNav() {
                 </button>
               ) : null}
 
+              <button className="topnav-btn topnav-calendar-btn" type="button" onClick={() => navigate("/schedule")} title={pick("Team schedule","לוח הקבוצה")} aria-label={pick("Open team schedule","פתיחת לוח הקבוצה")}>
+                <span aria-hidden="true">▦</span><span>{pick("Calendar","לוח")}</span>
+              </button>
+
               <NotificationBell />
 
               <button className="topnav-btn" type="button" onClick={navLogout} title="Logout">

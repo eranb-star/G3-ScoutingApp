@@ -650,6 +650,22 @@
 .tool-summary strong { color:var(--g3-ink); font-size:1.7rem; }
 .tool-summary span { color:var(--g3-muted); font-size:.76rem; font-weight:800; text-transform:uppercase; }
 
+/* Cross-app hierarchy and contrast pass. */
+.topnav-calendar-btn { display:inline-flex; align-items:center; gap:6px; }
+.topnav-calendar-btn>span:first-child { font-size:1rem; line-height:1; }
+.productivity-home>.home-my-work { margin-top:12px; }
+.hub-page>.hub-page-header { color:#fff; }
+.hub-page>.hub-page-header h1 { color:#fff; }
+.hub-page>.hub-page-header p { color:rgba(255,255,255,.9); }
+.hub-page>.hub-page-header .hub-eyebrow { color:#fff0fa; }
+.hub-page>.hub-page-header .hub-button.secondary,.hub-page>.hub-page-header .report-actions button { color:var(--g3-ink); background:#fff; }
+.reliability-score { box-sizing:border-box; padding:18px; text-align:center; }
+.reliability-score span { display:block; width:100%; max-width:96px; color:#fff; line-height:1.15; overflow-wrap:normal; word-break:normal; }
+.reliability-intelligence>.reliability-section-head { color:#fff; }
+.reliability-intelligence>.reliability-section-head h2 { color:#fff; }
+.reliability-intelligence>.reliability-section-head .hub-eyebrow { color:#fff0fa; }
+.reliability-intelligence>.reliability-section-head>div>p { color:rgba(255,255,255,.92); }
+
 @media (max-width:780px) {
   .work-command-center { padding-inline:12px; }
   .work-command-header-compact { gap:14px; padding:19px 17px; }
@@ -664,6 +680,13 @@
   .work-quick-tools button { display:grid; align-content:center; gap:3px; padding:8px 4px; text-align:center; }
   .work-quick-tools strong { font-size:.7rem; }
   .work-compact-list>button { padding-inline:12px; }
+  .hub-list-card .hub-list-row { align-items:center; flex-direction:row; gap:12px; min-height:68px; padding:12px 14px; }
+  .hub-list-card .hub-list-row>span:first-child { min-width:0; }
+  .hub-list-card .hub-list-row>span:last-child { flex:0 0 auto; margin-inline-start:auto; }
+  .hub-list-card .hub-list-row small { line-height:1.3; }
+  .reliability-score { flex-basis:108px; min-width:108px; padding:12px; }
+  .reliability-score span { max-width:80px; font-size:.58rem; }
+  .topnav-calendar-btn>span:last-child { display:none; }
 }
 .tool-create-grid { display:grid; grid-template-columns:1.2fr .65fr 1fr auto auto; align-items:end; gap:11px; margin-bottom:13px; padding:18px; }
 .tool-create-grid label { display:grid; gap:6px; color:var(--g3-ink); font-size:.78rem; font-weight:800; }
