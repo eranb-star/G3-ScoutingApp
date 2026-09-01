@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "verify:phase-1-2": "node scripts/verify-phase-1-2.mjs",
+    "verify:live-schema": "node scripts/verify-live-schema.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

@@ -4,6 +4,7 @@ import { useLocalization } from "../lib/localization";
 import { useMemberAuth } from "../lib/memberAuth";
 import { useAdminStatus } from "../lib/useAdminStatus";
 import { supabase } from "../supabase";
+import HomeActionInbox from "../components/HomeActionInbox";
 
 type Project={id:string;name:string;status:string;subteam:string|null;due_at:string|null};
 type Task={id:string;project_id:string;title:string;status:string;due_at:string|null;assignee_id:string|null};
@@ -30,36 +31,31 @@ function areaMatches(subteam:string|null|undefined,key:string){const value=(subt
 export default function FrcWorkPage(){
   const {pick}=useLocalization(),{profile}=useMemberAuth(),isAdmin=useAdminStatus(),navigate=useNavigate();
   const [projects,setProjects]=useState<Project[]>([]),[tasks,setTasks]=useState<Task[]>([]),[courses,setCourses]=useState<Course[]>([]),[modules,setModules]=useState<Module[]>([]),[enrollments,setEnrollments]=useState<Enrollment[]>([]),[evidence,setEvidence]=useState<Evidence[]>([]),[issues,setIssues]=useState<Issue[]>([]),[components,setComponents]=useState<Component[]>([]);
-  const [loading,setLoading]=useState(true),[showAllWork,setShowAllWork]=useState(false),[showWorkspaces,setShowWorkspaces]=useState(false),[showOperations,setShowOperations]=useState(false);
+  const [showWorkspaces,setShowWorkspaces]=useState(false),[showOperations,setShowOperations]=useState(false);
   useEffect(()=>{if(!profile)return;Promise.all([
     supabase.from("team_projects").select("id,name,status,subteam,due_at").neq("status","archived").order("updated_at",{ascending:false}).limit(100),
     supabase.from("project_tasks").select("id,project_id,title,status,due_at,assignee_id").eq("archived",false).order("due_at",{ascending:true,nullsFirst:false}).limit(250),
     supabase.from("training_courses").select("id,title").eq("active",true).order("created_at"),supabase.from("training_modules").select("id,course_id").order("sort_order"),
     supabase.from("training_enrollments").select("id,course_id,status,due_at").eq("member_id",profile.id),supabase.from("training_evidence").select("enrollment_id,module_id,status").eq("member_id",profile.id),
     supabase.from("robot_issues").select("id,severity,status").eq("archived",false).neq("status","resolved"),supabase.from("robot_components").select("id,name,status,service_interval_days,last_serviced_at").neq("status","retired"),
-  ]).then(([p,t,c,m,n,e,i,r])=>{setProjects((p.data??[]) as Project[]);setTasks((t.data??[]) as Task[]);setCourses((c.data??[]) as Course[]);setModules((m.data??[]) as Module[]);setEnrollments((n.data??[]) as Enrollment[]);setEvidence((e.data??[]) as Evidence[]);setIssues((i.data??[]) as Issue[]);setComponents((r.data??[]) as Component[]);setLoading(false);});},[profile?.id]);
+  ]).then(([p,t,c,m,n,e,i,r])=>{setProjects((p.data??[]) as Project[]);setTasks((t.data??[]) as Task[]);setCourses((c.data??[]) as Course[]);setModules((m.data??[]) as Module[]);setEnrollments((n.data??[]) as Enrollment[]);setEvidence((e.data??[]) as Evidence[]);setIssues((i.data??[]) as Issue[]);setComponents((r.data??[]) as Component[]);});},[profile?.id]);
 
-  const activeProjectIds=useMemo(()=>new Set(projects.map(project=>project.id)),[projects]);
-  const myTasks=useMemo(()=>tasks.filter(task=>task.assignee_id===profile?.id&&activeProjectIds.has(task.project_id)&&task.status!=="done").sort((a,b)=>{if(a.status==="blocked"&&b.status!=="blocked")return -1;if(b.status==="blocked"&&a.status!=="blocked")return 1;return(a.due_at?new Date(a.due_at).getTime():Number.MAX_SAFE_INTEGER)-(b.due_at?new Date(b.due_at).getTime():Number.MAX_SAFE_INTEGER);}),[tasks,profile?.id,activeProjectIds]);
   const myArea=frcAreas.find(area=>areaMatches(profile?.subteam,area.key));
   const myProjects=useMemo(()=>myArea?projects.filter(project=>areaMatches(project.subteam,myArea.key)):[],[projects,myArea]);
   const myProjectIds=useMemo(()=>new Set(myProjects.map(project=>project.id)),[myProjects]);
   const myWorkspaceTasks=tasks.filter(task=>myProjectIds.has(task.project_id)&&task.status!=="done");
   const assignedCourseIds=new Set(enrollments.map(item=>item.course_id)),assignedModules=modules.filter(item=>assignedCourseIds.has(item.course_id));
   const approvedModules=new Set(evidence.filter(item=>item.status==="approved").map(item=>item.module_id));
-  const nextCourse=enrollments.map(item=>({enrollment:item,course:courses.find(course=>course.id===item.course_id)})).filter(item=>item.course&&item.enrollment.status!=="completed").sort((a,b)=>(a.enrollment.due_at?new Date(a.enrollment.due_at).getTime():Number.MAX_SAFE_INTEGER)-(b.enrollment.due_at?new Date(b.enrollment.due_at).getTime():Number.MAX_SAFE_INTEGER))[0]?.course;
-  const skillPercent=assignedModules.length?Math.round(assignedModules.filter(item=>approvedModules.has(item.id)).length/assignedModules.length*100):0,underway=enrollments.filter(item=>item.status!=="completed");
+  const nextCourse=enrollments.map(item=>({enrollment:item,course:courses.find(course=>course.id===item.course_id)})).filter(item=>item.course&&item.enrollment.status!=="qualified").sort((a,b)=>(a.enrollment.due_at?new Date(a.enrollment.due_at).getTime():Number.MAX_SAFE_INTEGER)-(b.enrollment.due_at?new Date(b.enrollment.due_at).getTime():Number.MAX_SAFE_INTEGER))[0]?.course;
+  const skillPercent=assignedModules.length?Math.round(assignedModules.filter(item=>approvedModules.has(item.id)).length/assignedModules.length*100):0,underway=enrollments.filter(item=>item.status!=="qualified");
   const criticalIssues=issues.filter(issue=>["critical","high"].includes(issue.severity)).length;
   const serviceAlerts=components.filter(component=>component.status==="failed"||(component.status==="installed"&&component.service_interval_days&&component.last_serviced_at&&Date.now()-new Date(component.last_serviced_at).getTime()>component.service_interval_days*864e5)).length;
-  const workspaceBlockers=myWorkspaceTasks.filter(task=>task.status==="blocked").length+myProjects.filter(project=>project.status==="blocked").length,visibleTasks=showAllWork?myTasks:myTasks.slice(0,3);
+  const workspaceBlockers=myWorkspaceTasks.filter(task=>task.status==="blocked").length+myProjects.filter(project=>project.status==="blocked").length;
 
   return <main className="hub-page work-page work-command-center">
     <header className="work-command-header work-command-header-compact"><div><div className="hub-eyebrow">G3 6740 · {pick("Build operations","תפעול הבנייה")}</div><h1>{pick("Work","עבודה")}</h1><p>{pick("Your next action, your team and the systems that keep the robot moving.","הפעולה הבאה, הצוות שלכם והמערכות שמקדמות את הרובוט.")}</p></div>{myArea?<button className="hub-button" onClick={()=>navigate(`/projects?subteam=${myArea.key}`)}>{pick("Open my workspace","פתיחת המרחב שלי")} →</button>:null}</header>
 
-    <section className="hub-card work-my-work" aria-labelledby="my-work-title"><header><div><div className="hub-eyebrow">{pick("Personal command","מרכז אישי")}</div><h2 id="my-work-title">{pick("My work","העבודה שלי")}</h2></div><span className={myTasks.some(task=>task.status==="blocked")?"is-alert":""}>{loading?"—":myTasks.length}</span></header>
-      {loading?<div className="work-skeleton"/>:visibleTasks.length?visibleTasks.map((task,index)=>{const project=projects.find(item=>item.id===task.project_id);return <button className={`work-personal-task${index===0?" is-next":""}`} key={task.id} onClick={()=>navigate(`/projects?project=${task.project_id}&task=${task.id}`)}><span className={`work-task-status status-${task.status}`}/><span><small>{index===0?pick("Next action","הפעולה הבאה"):project?.name??pick("G3 project","פרויקט G3")}</small><strong>{task.title}</strong><em>{project?.name}{task.due_at?` · ${new Date(task.due_at).toLocaleDateString()}`:""}</em></span><b>→</b></button>}):<div className="work-empty-action"><span>✓</span><div><strong>{pick("You are clear for now","אין כרגע משימות פתוחות")}</strong><small>{pick("Open your workspace to find useful team work.","פתחו את מרחב הצוות כדי למצוא עבודה מועילה.")}</small></div>{myArea?<button onClick={()=>navigate(`/projects?subteam=${myArea.key}`)}>{pick("Find work","מציאת עבודה")}</button>:null}</div>}
-      {myTasks.length>3?<button className="work-disclosure-link" onClick={()=>setShowAllWork(value=>!value)}>{showAllWork?pick("Show only priorities","הצגת עדיפויות בלבד"):pick(`View all ${myTasks.length} tasks`,`הצגת כל ${myTasks.length} המשימות`)} <span>{showAllWork?"↑":"↓"}</span></button>:null}
-    </section>
+    <HomeActionInbox mode="work" />
 
     <section className={`work-focus-grid${myArea?"":" has-single-card"}`}>{myArea?<button className="work-workspace-card" onClick={()=>navigate(`/projects?subteam=${myArea.key}`)}><span className="frc-area-mark">{myArea.mark}</span><span><small>{pick("My subteam","תת־הצוות שלי")}</small><strong>{pick(myArea.en,myArea.he)}</strong><em>{myProjects.length} {pick("active projects","פרויקטים פעילים")} · {myWorkspaceTasks.length} {pick("open tasks","משימות פתוחות")}</em>{workspaceBlockers?<b>{workspaceBlockers} {pick("blockers need attention","חסמים דורשים טיפול")}</b>:null}</span><i>→</i></button>:null}
       <button className="work-growth-card" onClick={()=>navigate("/growth")}><span className="work-growth-orbit" style={{background:`conic-gradient(#fff ${skillPercent*3.6}deg,rgba(255,255,255,.2) 0)`}}><b>{skillPercent}%</b></span><span><small>{pick("My growth","ההתפתחות שלי")}</small><strong>{pick("Skills Academy","אקדמיית מיומנויות")}</strong><em>{nextCourse?`${pick("Next","הבא")}: ${nextCourse.title}`:pick("No course currently assigned","אין קורס מוקצה כרגע")}</em><b>{underway.length} {pick("courses in progress","קורסים בתהליך")}</b></span><i>→</i></button></section>
