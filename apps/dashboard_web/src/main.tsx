@@ -45,6 +45,9 @@ import UnifiedCalendarPage from "./pages/UnifiedCalendarPage";
 import TrainingCenterPage from "./pages/TrainingCenterPage";
 import ContextBackBar from "./components/ContextBackBar";
 import { getUnreadUpdateCounts } from "./lib/unreadUpdates";
+import { Capacitor } from "@capacitor/core";
+import WebPortalShell, { WebCheckInNotice } from "./components/WebPortalShell";
+import CompetitionDisplayPage from "./pages/CompetitionDisplayPage";
 
 // ----------------------
 // Small helpers
@@ -765,8 +768,8 @@ function MobileNav() {
 
 function AdminGate({ children }: { children: JSX.Element }) {
   const { bootstrapped, isAdmin } = useAdmin();
-  if (!bootstrapped) return <Navigate to="/scouting" replace />;
-  return isAdmin ? children : <Navigate to="/scouting" replace />;
+  if (!bootstrapped) return <div className="app-loading">Checking administrator access…</div>;
+  return isAdmin ? children : <Navigate to="/home" replace />;
 }
 
 function MemberGate({ children }: { children: JSX.Element }) {
@@ -790,28 +793,33 @@ function MemberGate({ children }: { children: JSX.Element }) {
 }
 
 function AppShell() {
+  const nativeApp = Capacitor.isNativePlatform();
   const { isAdmin } = useAdmin();
   const location = useLocation();
   useEffect(()=>{window.scrollTo({top:0,left:0,behavior:"auto"});},[location.pathname,location.search]);
   const isAuthScreen = location.pathname === "/login" || location.pathname === "/change-password";
+  const isPrimaryDestination=["/home","/work","/schedule","/updates","/growth","/competition","/more","/admin"].includes(location.pathname);
   const activeIssue=location.pathname==="/robot-issues"?new URLSearchParams(location.search).get("issue"):null;
   const assistantPath=activeIssue?`/assistant?issue=${activeIssue}`:"/assistant";
+  const isDisplayScreen=location.pathname==="/competition/display";
+  const Shell = !nativeApp && !isAuthScreen && !isDisplayScreen ? WebPortalShell : React.Fragment;
   return (
-    <>
-      {!isAuthScreen ? <TopNav /> : null}
-      {!isAuthScreen ? <ContextBackBar /> : null}
+    <Shell>
+      {!isAuthScreen && nativeApp ? <TopNav /> : null}
+      {!isAuthScreen && (nativeApp || !isPrimaryDestination) ? <ContextBackBar /> : null}
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/change-password" element={<ChangePasswordPage />} />
         <Route path="/" element={<Navigate to="/home" replace />} />
-        <Route path="/home" element={<MemberGate><ProductivityHomePage isAdmin={isAdmin} /></MemberGate>} />
+        <Route path="/home" element={<MemberGate><ProductivityHomePage isAdmin={isAdmin} allowCheckIn={nativeApp} /></MemberGate>} />
         <Route path="/schedule" element={<MemberGate><UnifiedCalendarPage /></MemberGate>} />
-        <Route path="/check-in" element={<MemberGate><CheckInPage /></MemberGate>} />
+        <Route path="/check-in" element={<MemberGate>{nativeApp ? <CheckInPage /> : <WebCheckInNotice />}</MemberGate>} />
         <Route path="/work" element={<MemberGate><FrcWorkPage /></MemberGate>} />
         <Route path="/updates" element={<MemberGate><UpdatesPage /></MemberGate>} />
         <Route path="/messages" element={<Navigate to="/updates?view=announcements" replace />} />
         <Route path="/more" element={<MemberGate><MorePage isAdmin={isAdmin} /></MemberGate>} />
         <Route path="/competition" element={<MemberGate><><CompetitionAssignmentBanner/><CompetitionOperationsPage isAdmin={isAdmin} /></></MemberGate>} />
+        <Route path="/competition/display" element={<MemberGate><CompetitionDisplayPage /></MemberGate>} />
         <Route path="/growth" element={<MemberGate><TrainingCenterPage /></MemberGate>} />
         <Route path="/season-planning" element={<MemberGate><SeasonPlanningPage /></MemberGate>} />
         <Route path="/admin/members" element={<AdminGate><MembersAdminPage /></AdminGate>} />
@@ -829,9 +837,9 @@ function AppShell() {
         <Route path="/robot-maintenance" element={<MemberGate><RobotMaintenancePage /></MemberGate>} />
         <Route path="/settings" element={<MemberGate><SettingsPage /></MemberGate>} />
         <Route path="/assistant" element={<MemberGate><FrcAssistantPage /></MemberGate>} />
-        <Route path="/scouting" element={<ScoutingPage />} />
+        <Route path="/scouting" element={<MemberGate><ScoutingPage /></MemberGate>} />
 
-        <Route path="/analysis" element={<AnalysisPage />} />
+        <Route path="/analysis" element={<MemberGate><AnalysisPage /></MemberGate>} />
 
         <Route
           path="/analysis/alliance"
@@ -865,10 +873,11 @@ function AppShell() {
             </AdminGate>
           }
         />
+        <Route path="*" element={<Navigate to="/home" replace />} />
       </Routes>
-      {!isAuthScreen && location.pathname !== "/assistant" ? <NavLink className="assistant-fab" to={assistantPath} aria-label="Open G3 Assist"><img src="/g3-assistant.png" alt="" /></NavLink> : null}
-      {!isAuthScreen ? <MobileNav /> : null}
-    </>
+      {!isAuthScreen && !isDisplayScreen && location.pathname !== "/assistant" ? <NavLink className="assistant-fab" to={assistantPath} aria-label="Open G3 Assist"><img src="/g3-assistant.png" alt="" /></NavLink> : null}
+      {!isAuthScreen && nativeApp ? <MobileNav /> : null}
+    </Shell>
   );
 }
 
