@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabase";
 import { useLocalization } from "../lib/localization";
 
@@ -14,7 +13,6 @@ function elapsed(from: string, to?: string | null) {
 
 export default function AdminDashboardPage() {
   const { pick } = useLocalization();
-  const navigate = useNavigate();
   const [meeting, setMeeting] = useState<OpenMeeting | null>(null);
   const [attendance, setAttendance] = useState<AttendanceRow[]>([]);
   const [members, setMembers] = useState<Record<string, MemberName>>({});
@@ -70,7 +68,7 @@ export default function AdminDashboardPage() {
   const present = attendance.filter((row) => !row.checked_out_at);
   return (
     <div className="hub-page">
-      <header className="hub-page-header"><div><div className="hub-eyebrow">{pick("Administration · Live","ניהול · בזמן אמת")}</div><h1>{pick("Workshop dashboard","לוח בקרת הסדנה")}</h1><p>{pick("Open the workshop at any time and see who is currently present.","פתיחת הסדנה בכל עת וצפייה במי שנמצא כרגע.")}</p></div><div className="report-actions"><button onClick={() => navigate("/admin/security")}>{pick("Security","אבטחה")}</button><button onClick={() => navigate("/admin/reports")}>{pick("Reports","דוחות")}</button><button className="hub-button" onClick={() => navigate("/admin/members")}>{pick("Manage members","ניהול חברים")}</button></div></header>
+      <header className="hub-page-header"><div><div className="hub-eyebrow">{pick("Administration · Live","ניהול · בזמן אמת")}</div><h1>{pick("Workshop dashboard","לוח בקרת הסדנה")}</h1><p>{pick("Run today’s workshop: open attendance, monitor who is present and correct active records without leaving this dashboard.","ניהול הסדנה של היום: פתיחת נוכחות, מעקב אחר הנוכחים ותיקון רשומות פעילות בלי לצאת מלוח הבקרה.")}</p></div><div className={`workshop-live-chip${meeting?" is-live":""}`}><span aria-hidden="true"/>{meeting?pick("Live session","מפגש פעיל"):pick("Ready to open","מוכן לפתיחה")}</div></header>
       <section className={`hub-card admin-live-banner${meeting ? " is-open" : ""}`}>
         <div><div className="hub-status-label">{meeting ? pick("WORKSHOP OPEN","הסדנה פתוחה") : pick("WORKSHOP CLOSED","הסדנה סגורה")}</div><h2>{meeting?.title ?? pick("No attendance session is open","אין מפגש נוכחות פתוח")}</h2><p>{meeting ? pick(`${present.length} members currently checked in`,`${present.length} חברים נמצאים כעת`) : pick("Open an ad-hoc session for members working outside regular meeting hours.","פתיחת מפגש מיוחד לחברים שעובדים מחוץ לשעות הקבועות.")}</p></div>
         {meeting ? <button className="admin-danger-button" onClick={closeNow}>{pick("Close workshop","סגירת הסדנה")}</button> : <div className="admin-open-controls"><input value={title} onChange={(e) => setTitle(e.target.value)} /><button className="hub-button" onClick={openNow}>{pick("Open workshop now","פתיחת הסדנה עכשיו")}</button></div>}

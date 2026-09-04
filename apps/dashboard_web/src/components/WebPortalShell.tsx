@@ -8,7 +8,6 @@ import "./webPortal.css";
 const links = [
   ["/home", "Overview", "סקירה"],
   ["/work", "Work", "עבודה"],
-  ["/schedule", "Team schedule", "לוח הקבוצה"],
   ["/updates", "Updates", "עדכונים"],
   ["/growth", "Skills Academy", "אקדמיית מיומנויות"],
   ["/competition", "Competition", "תחרות"],
@@ -29,7 +28,7 @@ export default function WebPortalShell({children}:{children:ReactNode}) {
   return <div className="web-portal">
     <a className="web-skip" href="#web-content">{pick("Skip to content","דילוג לתוכן")}</a>
     <aside className={`web-sidebar${expanded?" is-expanded":""}`}>
-      <NavLink to="/home" className="web-brand"><img src="/logoG3.png" alt="G3"/><span><strong>G3 6740</strong><small>TEAM HUB</small></span></NavLink>
+      <NavLink to="/home" className="web-brand"><img src="/g3-assistant.png" alt="G3 glue-gun team mark"/><span><strong>G3 6740</strong><small>TEAM HUB</small></span></NavLink>
       <button className="web-menu-toggle" aria-expanded={expanded} aria-controls="web-navigation" onClick={()=>setExpanded(!expanded)}><span aria-hidden="true">{expanded?"×":"☰"}</span> {pick("Full navigation","ניווט מלא")}</button>
       <nav id="web-navigation" aria-label={pick("Team navigation","ניווט הקבוצה")}>
         {links.map(([path,en,he])=><div key={path}>{item(path,en,he)}</div>)}
@@ -40,7 +39,7 @@ export default function WebPortalShell({children}:{children:ReactNode}) {
       <NavLink className="web-profile" to="/profile"><span>{profile.display_name}</span><small>{profile.subteam||pick("Team member","חבר/ת קבוצה")}</small></NavLink>
     </aside>
     <div className="web-workspace">
-      <header className="web-topbar"><Link className="web-team-signature" to="/home" aria-label={pick("Glue Gun and Glitter home","דף הבית של Glue Gun and Glitter")}><img src="/logoG3.png" alt=""/><span><strong>Glue Gun &amp; Glitter</strong><small>FRC 6740 · ONE TEAM</small></span></Link><nav aria-label={pick("Quick tools","כלים מהירים")}><NavLink to="/schedule" aria-label={pick("Open calendar","פתיחת יומן")}><b aria-hidden="true">▦</b><span>{pick("Calendar","יומן")}</span></NavLink><NavLink to="/updates?view=inbox" aria-label={pick("Open notifications","פתיחת התראות")}><b aria-hidden="true">●</b><span>{pick("Notifications","התראות")}</span></NavLink><NavLink to="/settings" aria-label={pick("Open settings","פתיחת הגדרות")}><b aria-hidden="true">⚙</b><span>{pick("Settings","הגדרות")}</span></NavLink></nav></header>
+      <header className="web-topbar"><Link className="web-team-signature" to="/home" aria-label={pick("Glue Gun and Glitter home","דף הבית של Glue Gun and Glitter")}><img src="/g3-assistant.png" alt=""/><span><strong>Glue Gun &amp; Glitter</strong><small>FRC 6740 · ONE TEAM</small></span></Link><nav aria-label={pick("Quick tools","כלים מהירים")}><NavLink to="/schedule" aria-label={pick("Open calendar","פתיחת יומן")}><b aria-hidden="true">▦</b><span>{pick("Calendar","יומן")}</span></NavLink><NavLink to="/updates?view=inbox" aria-label={pick("Open notifications","פתיחת התראות")}><b aria-hidden="true">●</b><span>{pick("Notifications","התראות")}</span></NavLink><NavLink to="/settings" aria-label={pick("Open settings","פתיחת הגדרות")}><b aria-hidden="true">⚙</b><span>{pick("Settings","הגדרות")}</span></NavLink></nav></header>
       <div id="web-content" tabIndex={-1}>{children}</div>
     </div>
   </div>;

@@ -6,7 +6,7 @@ const cors = {
 };
 const jsonHeaders = { ...cors, "Content-Type": "application/json" };
 const MODEL = Deno.env.get("GEMINI_MODEL") || "gemini-3.6-flash";
-const FALLBACK_MODELS = ["gemini-3.5-flash-lite", "gemini-3.1-flash-lite"];
+const FALLBACK_MODELS = ["gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-3.1-flash-lite"];
 const DAILY_LIMIT = 20;
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
 
@@ -34,6 +34,9 @@ function estimatedBase64Bytes(value: string) {
 
 function isTransientProviderFailure(status: number, message: string) {
   return status === 408 || status === 429 || status >= 500 || /high demand|overload|capacity|temporar/i.test(message);
+}
+function isQuotaFailure(message: string) {
+  return /quota|billing|resource[_ ]exhausted/i.test(message);
 }
 
 function retryDelay(attempt: number) {
@@ -131,13 +134,15 @@ Deno.serve(async (request) => {
         providerMessage = candidatePayload?.error?.message || candidatePayload?.message || (typeof candidatePayload?.error === "string" ? candidatePayload.error : providerMessage);
         console.error("Gemini Interactions request failed", { status: lastStatus, model, attempt, message: providerMessage });
         if (!isTransientProviderFailure(lastStatus, providerMessage)) break;
+        if (isQuotaFailure(providerMessage)) break;
         if (attempt === 0) await new Promise(resolve => setTimeout(resolve, retryDelay(attempt)));
       }
       if (payload || !isTransientProviderFailure(lastStatus, providerMessage)) break;
     }
     if (!payload) {
+      const quotaFailure = isQuotaFailure(providerMessage);
       const capacityFailure = isTransientProviderFailure(lastStatus, providerMessage);
-      return response({ error: capacityFailure ? "G3 Assist is temporarily at capacity. Please try again shortly." : providerMessage, code: capacityFailure ? "PROVIDER_CAPACITY" : "PROVIDER_ERROR" }, capacityFailure ? 503 : 502);
+      return response({ error: quotaFailure ? "G3 Assist has reached its current AI usage limit. Please try again after the quota resets." : capacityFailure ? "G3 Assist is temporarily at capacity. Please try again shortly." : providerMessage, code: quotaFailure ? "PROVIDER_QUOTA" : capacityFailure ? "PROVIDER_CAPACITY" : "PROVIDER_ERROR" }, quotaFailure ? 429 : capacityFailure ? 503 : 502);
     }
     const modelSteps=(payload?.steps ?? []).filter((step:{type?:string})=>step.type==="model_output");
     const outputBlocks=modelSteps.flatMap((step:{content?:any[]})=>step.content??[]);
