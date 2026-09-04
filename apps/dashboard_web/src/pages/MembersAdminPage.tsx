@@ -74,7 +74,7 @@ export default function MembersAdminPage() {
   }
 
   return (
-    <div className="hub-page">
+    <div className="hub-page web-admin-page web-admin-members">
       <header className="hub-page-header"><div><div className="hub-eyebrow">{pick("Administration","ניהול")}</div><h1>{pick("Team members","חברי הקבוצה")}</h1><p>{pick("Create accounts, assign roles and control access.","יצירת חשבונות, הקצאת תפקידים וניהול הרשאות.")}</p></div></header>
       <div className="admin-members-layout">
         <section className="hub-card admin-member-form">
