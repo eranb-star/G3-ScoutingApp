@@ -7,10 +7,10 @@ import { frcTeams } from "../lib/frcTeams";
 const teamOptions = frcTeams.map(team=>team.name);
 type CredentialHandoff={memberId:string;name:string;email:string;password:string;kind:"created"|"reset"};
 
-function TeamSelector({value,onChange,pick}:{value:string[];onChange:(value:string[])=>void;pick:(en:string,he:string)=>string}) {
+function TeamSelector({value,onChange,pick,leadership=false}:{value:string[];onChange:(value:string[])=>void;pick:(en:string,he:string)=>string;leadership?:boolean}) {
   const allSelected=teamOptions.every(team=>value.includes(team));
   const toggle=(team:string)=>onChange(value.includes(team)?value.filter(item=>item!==team):[...value,team]);
-  return <fieldset className="member-team-selector"><legend>{pick("FRC teams","צוותי FRC")}</legend><button type="button" className={allSelected?"is-selected":""} onClick={()=>onChange(allSelected?[]:[...teamOptions])}>{allSelected?"✓ ":""}{pick("All teams","כל הצוותים")}</button><div>{frcTeams.map(team=><label className={value.includes(team.name)?"is-selected":""} key={team.key}><input type="checkbox" checked={value.includes(team.name)} onChange={()=>toggle(team.name)}/><span>{pick(team.name,team.nameHe)}</span></label>)}</div><small>{pick("Select one or several teams. The first selection is used as the primary team in legacy views.","בחרו צוות אחד או כמה צוותים. הבחירה הראשונה תשמש כצוות הראשי בתצוגות הישנות.")}</small></fieldset>;
+  return <fieldset className={`member-team-selector${leadership?" leadership-selector":""}`}><legend>{leadership?pick("Departments this person leads","מחלקות שאדם זה מוביל"):pick("FRC teams","צוותי FRC")}</legend><button type="button" className={allSelected?"is-selected":""} onClick={()=>onChange(allSelected?[]:[...teamOptions])}>{allSelected?"✓ ":""}{pick("All teams","כל הצוותים")}</button><div>{frcTeams.map(team=><label className={value.includes(team.name)?"is-selected":""} key={team.key}><input type="checkbox" checked={value.includes(team.name)} onChange={()=>toggle(team.name)}/><span>{pick(team.name,team.nameHe)}</span></label>)}</div><small>{leadership?pick("Leadership permissions apply only inside these departments.","הרשאות ההובלה יחולו רק במחלקות אלה."):pick("Select every team this member belongs to.","בחרו את כל הצוותים שאליהם משתייך/ת חבר/ת הקבוצה.")}</small></fieldset>;
 }
 
 function temporaryPassword() {
@@ -27,17 +27,20 @@ export default function MembersAdminPage() {
   const [name, setName] = useState("");
   const [role, setRole] = useState<TeamRole>("member");
   const [subteams, setSubteams] = useState<string[]>([]);
+  const [leaderSubteams,setLeaderSubteams]=useState<string[]>([]);
   const [password, setPassword] = useState(temporaryPassword);
   const [editingMember,setEditingMember]=useState<MemberProfile|null>(null);
   const [editingName,setEditingName]=useState("");
   const [editingSubteams,setEditingSubteams]=useState<string[]>([]);
+  const [editingRole,setEditingRole]=useState<TeamRole>("member");
+  const [editingLeaderSubteams,setEditingLeaderSubteams]=useState<string[]>([]);
   const [handoffs,setHandoffs]=useState<CredentialHandoff[]>([]);
   const [activeHandoff,setActiveHandoff]=useState<CredentialHandoff|null>(null);
   const [copyStatus,setCopyStatus]=useState("");
 
   async function loadMembers() {
     setLoading(true);
-    const { data, error } = await supabase.from("team_members").select("id,email,display_name,role,subteam,subteams,active,must_change_password").order("display_name");
+    const { data, error } = await supabase.from("team_members").select("id,email,display_name,role,subteam,subteams,leader_subteams,active,must_change_password").order("display_name");
     if(error)setMessage(error.message);
     setMembers((data ?? []) as MemberProfile[]);
     setLoading(false);
@@ -60,10 +63,10 @@ export default function MembersAdminPage() {
     event.preventDefault();
     try {
       const createdName=name.trim(),createdEmail=email.trim().toLowerCase(),createdPassword=password;
-      const result=await invoke({ action: "create", email:createdEmail, displayName:createdName, role, subteams, temporaryPassword:createdPassword });
+      const result=await invoke({ action: "create", email:createdEmail, displayName:createdName, role, subteams, leaderSubteams:role==="team_leader"?leaderSubteams:[], temporaryPassword:createdPassword });
       rememberHandoff({memberId:String(result.userId??createdEmail),name:createdName,email:createdEmail,password:createdPassword,kind:"created"});
       setMessage(pick(`Account created successfully for ${createdName}.`,`החשבון של ${createdName} נוצר בהצלחה.`));
-      setEmail(""); setName(""); setSubteams([]); setRole("member"); setPassword(temporaryPassword());
+      setEmail(""); setName(""); setSubteams([]); setLeaderSubteams([]); setRole("member"); setPassword(temporaryPassword());
       await loadMembers();
     } catch (error) { setMessage(error instanceof Error ? error.message : "Could not create member"); }
   }
@@ -86,8 +89,8 @@ export default function MembersAdminPage() {
     } catch (error) { setMessage(error instanceof Error ? error.message : "Update failed"); }
   }
 
-  function editMember(member: MemberProfile) {setEditingMember(member);setEditingName(member.display_name);setEditingSubteams(member.subteams?.length?member.subteams:member.subteam?[member.subteam]:[]);}
-  async function saveMember(event:FormEvent){event.preventDefault();if(!editingMember||!editingName.trim())return;try{await invoke({action:"update_profile",userId:editingMember.id,displayName:editingName,subteams:editingSubteams});setEditingMember(null);await loadMembers();}catch(error){setMessage(error instanceof Error?error.message:"Update failed");}}
+  function editMember(member: MemberProfile) {setEditingMember(member);setEditingName(member.display_name);setEditingRole(member.role);setEditingSubteams(member.subteams?.length?member.subteams:member.subteam?[member.subteam]:[]);setEditingLeaderSubteams(member.leader_subteams??[]);}
+  async function saveMember(event:FormEvent){event.preventDefault();if(!editingMember||!editingName.trim())return;try{await invoke({action:"update_profile",userId:editingMember.id,displayName:editingName,role:editingRole,subteams:editingSubteams,leaderSubteams:editingRole==="team_leader"?editingLeaderSubteams:[]});setEditingMember(null);await loadMembers();}catch(error){setMessage(error instanceof Error?error.message:"Update failed");}}
 
   return (
     <div className="hub-page web-admin-page web-admin-members">
@@ -98,8 +101,9 @@ export default function MembersAdminPage() {
           <form className="auth-form" onSubmit={createMember}>
             <label>{pick("Full name","שם מלא")}<input required value={name} onChange={(e) => setName(e.target.value)} /></label>
             <label>{pick("Email","דוא״ל")}<input required type="email" value={email} onChange={(e) => setEmail(e.target.value)} /></label>
-            <label>{pick("Role","תפקיד")}<select value={role} onChange={(e) => setRole(e.target.value as TeamRole)}><option value="member">{pick("Member","חבר/ת קבוצה")}</option><option value="mentor">{pick("Mentor","מנטור/ית")}</option><option value="admin">{pick("Administrator","מנהל/ת")}</option></select></label>
+            <label>{pick("Role","תפקיד")}<select value={role} onChange={(e) => setRole(e.target.value as TeamRole)}><option value="member">{pick("Student / Member","תלמיד/ה / חבר/ת קבוצה")}</option><option value="team_leader">{pick("Team leader","מוביל/ת צוות")}</option><option value="mentor">{pick("Mentor","מנטור/ית")}</option><option value="admin">{pick("Administrator","מנהל/ת")}</option></select></label>
             <TeamSelector value={subteams} onChange={setSubteams} pick={pick}/>
+            {role==="team_leader"?<TeamSelector value={leaderSubteams} onChange={setLeaderSubteams} pick={pick} leadership/>:null}
             <label>{pick("Temporary password","סיסמה זמנית")}<div className="auth-inline"><input readOnly value={password} /><button type="button" onClick={() => setPassword(temporaryPassword())}>{pick("Generate","יצירה")}</button></div></label>
             <button className="hub-button">{pick("Create account","יצירת חשבון")}</button>
           </form>
@@ -118,7 +122,7 @@ export default function MembersAdminPage() {
           ))}
         </section>
       </div>
-      {editingMember?<div className="member-edit-backdrop" role="presentation"><form className="hub-card member-edit-dialog" onSubmit={saveMember} role="dialog" aria-modal="true" aria-labelledby="edit-member-title"><header><div><div className="hub-eyebrow">{pick("Member assignment","שיוך חבר/ה")}</div><h2 id="edit-member-title">{pick("Edit member","עריכת חבר/ת קבוצה")}</h2></div><button type="button" onClick={()=>setEditingMember(null)} aria-label={pick("Close","סגירה")}>×</button></header><label>{pick("Full name","שם מלא")}<input required value={editingName} onChange={event=>setEditingName(event.target.value)}/></label><TeamSelector value={editingSubteams} onChange={setEditingSubteams} pick={pick}/><footer><button type="button" onClick={()=>setEditingMember(null)}>{pick("Cancel","ביטול")}</button><button className="hub-button">{pick("Save changes","שמירת שינויים")}</button></footer></form></div>:null}
+      {editingMember?<div className="member-edit-backdrop" role="presentation"><form className="hub-card member-edit-dialog" onSubmit={saveMember} role="dialog" aria-modal="true" aria-labelledby="edit-member-title"><header><div><div className="hub-eyebrow">{pick("Member assignment","שיוך חבר/ה")}</div><h2 id="edit-member-title">{pick("Edit member","עריכת חבר/ת קבוצה")}</h2></div><button type="button" onClick={()=>setEditingMember(null)} aria-label={pick("Close","סגירה")}>×</button></header><label>{pick("Full name","שם מלא")}<input required value={editingName} onChange={event=>setEditingName(event.target.value)}/></label><label>{pick("Role","תפקיד")}<select value={editingRole} onChange={event=>setEditingRole(event.target.value as TeamRole)}><option value="member">{pick("Student / Member","תלמיד/ה / חבר/ת קבוצה")}</option><option value="team_leader">{pick("Team leader","מוביל/ת צוות")}</option><option value="mentor">{pick("Mentor","מנטור/ית")}</option><option value="admin">{pick("Administrator","מנהל/ת")}</option></select></label><TeamSelector value={editingSubteams} onChange={setEditingSubteams} pick={pick}/>{editingRole==="team_leader"?<TeamSelector value={editingLeaderSubteams} onChange={setEditingLeaderSubteams} pick={pick} leadership/>:null}<footer><button type="button" onClick={()=>setEditingMember(null)}>{pick("Cancel","ביטול")}</button><button className="hub-button">{pick("Save changes","שמירת שינויים")}</button></footer></form></div>:null}
       {activeHandoff?<div className="credential-dialog-backdrop" role="presentation" onClick={()=>setActiveHandoff(null)}><section className="credential-dialog" role="dialog" aria-modal="true" aria-labelledby="credential-dialog-title" onClick={event=>event.stopPropagation()}><header><div><span>{activeHandoff.kind==="created"?pick("Account created","החשבון נוצר"):pick("Password reset","הסיסמה אופסה")}</span><h2 id="credential-dialog-title">{activeHandoff.name}</h2></div><button type="button" onClick={()=>setActiveHandoff(null)} aria-label={pick("Close","סגירה")}>×</button></header><div className="credential-success-mark" aria-hidden="true">✓</div><p>{pick("Give these login details directly to the member. No email was sent.","יש למסור את פרטי הכניסה ישירות לחבר/ת הקבוצה. לא נשלח דוא״ל.")}</p><label>{pick("Email","דוא״ל")}<input readOnly value={activeHandoff.email}/></label><label>{pick("Temporary password","סיסמה זמנית")}<input readOnly value={activeHandoff.password}/></label>{copyStatus?<div className="credential-copy-status" role="status">{copyStatus}</div>:null}<footer><button type="button" onClick={()=>setActiveHandoff(null)}>{pick("Done","סיום")}</button><button type="button" className="hub-button" onClick={()=>void copyCredentials(activeHandoff)}>{pick("Copy login details","העתקת פרטי הכניסה")}</button></footer><small>{pick("For security, this password cannot be recovered after this admin page is closed. Reset it if the member loses it.","מטעמי אבטחה, לא ניתן לשחזר סיסמה זו לאחר סגירת דף הניהול. אם היא אבדה, יש לאפס אותה.")}</small></section></div>:null}
     </div>
   );

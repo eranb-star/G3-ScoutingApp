@@ -48,6 +48,7 @@ import { getUnreadUpdateCounts } from "./lib/unreadUpdates";
 import { Capacitor } from "@capacitor/core";
 import WebPortalShell, { WebCheckInNotice } from "./components/WebPortalShell";
 import CompetitionDisplayPage from "./pages/CompetitionDisplayPage";
+import PermissionsAdminPage from "./pages/PermissionsAdminPage";
 
 // ----------------------
 // Small helpers
@@ -829,6 +830,7 @@ function AppShell() {
         <Route path="/admin/reports" element={<AdminGate><AttendanceReportsPage /></AdminGate>} />
         <Route path="/admin/contributions" element={<AdminGate><ContributionInsightsPage /></AdminGate>} />
         <Route path="/admin/security" element={<AdminGate><SecurityAdminPage /></AdminGate>} />
+        <Route path="/admin/permissions" element={<AdminGate><PermissionsAdminPage /></AdminGate>} />
         <Route path="/attendance" element={<MemberGate><AttendanceReportsPage /></MemberGate>} />
         <Route path="/profile" element={<MemberGate><ProfilePage /></MemberGate>} />
         <Route path="/projects" element={<MemberGate><ProjectsPage /></MemberGate>} />

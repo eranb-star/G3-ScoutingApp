@@ -5,7 +5,7 @@ import { Capacitor, registerPlugin } from "@capacitor/core";
 
 const G3Push = registerPlugin<{ getToken(): Promise<{ token: string }> }>("G3Push");
 
-export type TeamRole = "member" | "mentor" | "admin";
+export type TeamRole = "member" | "team_leader" | "mentor" | "admin";
 
 export type MemberProfile = {
   id: string;
@@ -14,6 +14,7 @@ export type MemberProfile = {
   role: TeamRole;
   subteam: string | null;
   subteams: string[];
+  leader_subteams: string[];
   active: boolean;
   must_change_password: boolean;
   language?: "en" | "he";
@@ -43,7 +44,7 @@ export function MemberAuthProvider({ children }: { children: React.ReactNode }) 
 
     const { data, error } = await supabase
       .from("team_members")
-      .select("id,email,display_name,role,subteam,subteams,active,must_change_password,language")
+      .select("id,email,display_name,role,subteam,subteams,leader_subteams,active,must_change_password,language")
       .eq("id", activeSession.user.id)
       .maybeSingle();
 

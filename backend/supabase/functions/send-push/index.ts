@@ -18,6 +18,20 @@ const json = (body: unknown, status = 200) =>
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 
+const normalizeTeam=(value:unknown)=>{
+  const text=String(value??"").trim().toLowerCase();
+  if(["mechanical","mech"].includes(text))return "mechanical";
+  if(["cad","cad & design","design"].includes(text))return "cad";
+  if(["electrical","electronics","elec"].includes(text))return "electrical";
+  if(["software","code","programming"].includes(text))return "software";
+  if(["strategy","strategy & scouting","scouting"].includes(text))return "strategy";
+  if(["field","field build","field build & infrastructure"].includes(text))return "field";
+  if(["pit","drive & pit","drive team"].includes(text))return "pit";
+  if(["business","business & outreach","outreach"].includes(text))return "business";
+  if(["publicity","publicity & awards","judging","awards"].includes(text))return "publicity";
+  return text;
+};
+
 const base64Url = (value: string | Uint8Array) => {
   const bytes = typeof value === "string" ? new TextEncoder().encode(value) : value;
   let binary = "";
@@ -77,12 +91,17 @@ Deno.serve(async (req) => {
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const admin = createClient(supabaseUrl, serviceKey);
+    let callerRole="";
+    let callerLeaderTeams:string[]=[];
     if (!internalRequest) {
       const callerClient = createClient(supabaseUrl, anonKey, { global: { headers: { Authorization: authorization! } } });
       const { data: { user }, error: userError } = await callerClient.auth.getUser();
       if (userError || !user) return json({ error: "Invalid session" }, 401);
-      const { data: caller } = await admin.from("team_members").select("role,active").eq("id", user.id).single();
-      if (!caller?.active || caller.role !== "admin") return json({ error: "Administrator access required" }, 403);
+      const { data: caller }=await admin.from("team_members").select("role,active,leader_subteams").eq("id",user.id).single();
+      const {data:grant}=caller?await admin.from("role_permissions").select("allowed").eq("role",caller.role).eq("permission_key","create_announcements").maybeSingle():{data:null};
+      if (!caller?.active || (caller.role!=="admin"&&!grant?.allowed)) return json({ error: "Announcement permission required" }, 403);
+      callerRole=caller.role;
+      callerLeaderTeams=caller.leader_subteams??[];
     }
 
     const { announcementId } = await req.json();
@@ -95,15 +114,19 @@ Deno.serve(async (req) => {
       .single();
     if (announcementError || !announcement || announcement.archived) return json({ error: "Announcement not found" }, 404);
     if (announcement.expires_at && new Date(announcement.expires_at) <= new Date()) return json({ error: "Announcement has expired" }, 409);
+    if(!internalRequest&&callerRole==="team_leader"&&(
+      announcement.audience!=="subteam"||
+      !callerLeaderTeams.some(team=>normalizeTeam(team)===normalizeTeam(announcement.audience_subteam))
+    ))return json({error:"Team leaders may notify only departments they lead"},403);
 
-    let membersQuery = admin.from("team_members").select("id").eq("active", true);
-    if (announcement.audience === "members") membersQuery = membersQuery.eq("role", "member");
+    let membersQuery = admin.from("team_members").select("id,subteam,subteams").eq("active", true);
+    if (announcement.audience === "members") membersQuery = membersQuery.in("role", ["member","team_leader"]);
     if (announcement.audience === "mentors") membersQuery = membersQuery.eq("role", "mentor");
     if (announcement.audience === "admins") membersQuery = membersQuery.eq("role", "admin");
-    if (announcement.audience === "subteam") membersQuery = membersQuery.eq("subteam", announcement.audience_subteam);
     const { data: members, error: membersError } = await membersQuery;
     if (membersError) throw membersError;
-    const memberIds = (members ?? []).map((member) => member.id);
+    const target=normalizeTeam(announcement.audience_subteam);
+    const memberIds = (members ?? []).filter(member=>announcement.audience!=="subteam"||[...(member.subteams??[]),member.subteam].some(team=>normalizeTeam(team)===target)).map((member) => member.id);
     if (memberIds.length === 0) return json({ delivered: 0, failed: 0, recipients: 0 });
 
     const { data: tokenRows, error: tokenError } = await admin

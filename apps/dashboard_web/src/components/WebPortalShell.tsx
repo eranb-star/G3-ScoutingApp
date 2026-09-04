@@ -4,6 +4,7 @@ import { useLocalization } from "../lib/localization";
 import { useMemberAuth } from "../lib/memberAuth";
 import { useAdminStatus } from "../lib/useAdminStatus";
 import "./webPortal.css";
+import { memberTeams } from "../lib/accessControl";
 
 const links = [
   ["/home", "Home", "בית"],
@@ -34,9 +35,9 @@ export default function WebPortalShell({children}:{children:ReactNode}) {
         {links.map(([path,en,he])=><div key={path}>{item(path,en,he)}</div>)}
         <div>{item("/updates?view=knowledge","FRC knowledge","ידע FRC")}</div>
         <div>{item("/assistant","G3 Assist","G3 Assist")}</div>
-        {isAdmin?<section className="web-admin-nav"><small>{pick("ADMINISTRATION","ניהול")}</small>{item("/admin","Workshop dashboard","לוח הסדנה")}{item("/admin/reports","Attendance reports","דוחות נוכחות")}{item("/admin/members","Team members","חברי הקבוצה")}{item("/admin/security","Security","אבטחה")}</section>:null}
+        {isAdmin?<section className="web-admin-nav"><small>{pick("ADMINISTRATION","ניהול")}</small>{item("/admin","Workshop dashboard","לוח הסדנה")}{item("/admin/reports","Attendance reports","דוחות נוכחות")}{item("/admin/members","Team members","חברי הקבוצה")}{item("/admin/permissions","Roles & permissions","תפקידים והרשאות")}{item("/admin/security","Security","אבטחה")}</section>:null}
       </nav>
-      <NavLink className="web-profile" to="/profile"><span>{profile.display_name}</span><small>{profile.subteam||pick("Team member","חבר/ת קבוצה")}</small></NavLink>
+      <NavLink className="web-profile" to="/profile"><span>{profile.display_name}</span><small>{memberTeams(profile).join(" · ")||pick("Team member","חבר/ת קבוצה")}</small></NavLink>
     </aside>
     <div className="web-workspace">
       <header className="web-topbar"><Link className="web-team-signature" to="/home" aria-label={pick("Glue Gun and Glitter home","דף הבית של Glue Gun and Glitter")}><img src="/g3-assistant.png" alt=""/><span><strong>Glue Gun &amp; Glitter</strong><small>FRC 6740 · ONE TEAM</small></span></Link><nav aria-label={pick("Quick tools","כלים מהירים")}><NavLink to="/schedule" aria-label={pick("Open calendar","פתיחת יומן")}><b aria-hidden="true">▦</b><span>{pick("Calendar","יומן")}</span></NavLink><NavLink to="/updates?view=inbox" aria-label={pick("Open notifications","פתיחת התראות")}><b aria-hidden="true">●</b><span>{pick("Notifications","התראות")}</span></NavLink><NavLink to="/settings" aria-label={pick("Open settings","פתיחת הגדרות")}><b aria-hidden="true">⚙</b><span>{pick("Settings","הגדרות")}</span></NavLink></nav></header>

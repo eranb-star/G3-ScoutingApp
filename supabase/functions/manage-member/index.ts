@@ -10,9 +10,10 @@ type RequestBody = {
   userId?: string;
   email?: string;
   displayName?: string;
-  role?: "member" | "mentor" | "admin";
+  role?: "member" | "team_leader" | "mentor" | "admin";
   subteam?: string | null;
   subteams?: string[];
+  leaderSubteams?: string[];
   temporaryPassword?: string;
   active?: boolean;
 };
@@ -55,6 +56,7 @@ Deno.serve(async (request) => {
         role: body.role ?? "member",
         subteam: body.subteams?.[0]?.trim() || body.subteam?.trim() || null,
         subteams: (body.subteams??[]).map(item=>item.trim()).filter(Boolean),
+        leader_subteams: body.role==="team_leader"?(body.leaderSubteams??[]).map(item=>item.trim()).filter(Boolean):[],
         must_change_password: true,
         created_by: caller.user.id,
       });
@@ -90,6 +92,7 @@ Deno.serve(async (request) => {
         update.subteams=subteams;
         update.subteam=subteams[0]??null;
       }
+      if (body.leaderSubteams !== undefined) update.leader_subteams=body.role==="team_leader"?body.leaderSubteams.map(item=>item.trim()).filter(Boolean):[];
       const { error } = await admin.from("team_members").update(update).eq("id", body.userId);
       if (error) return json({ error: error.message }, 400);
       return json({ ok: true });

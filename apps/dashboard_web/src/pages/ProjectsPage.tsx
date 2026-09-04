@@ -5,8 +5,9 @@ import { useLocalization } from "../lib/localization";
 import { useMemberAuth } from "../lib/memberAuth";
 import { supabase } from "../supabase";
 import { frcTeams, teamByKey, teamMatches } from "../lib/frcTeams";
+import { useAccessControl } from "../lib/accessControl";
 
-type Project = { id:string; name:string; status:string; due_at:string|null; subteam:string|null };
+type Project = { id:string; name:string; status:string; due_at:string|null; subteam:string|null; owner_id:string|null };
 type Task = { id:string; project_id:string; title:string; status:string; due_at:string|null; archived?:boolean };
 
 const workstreams = frcTeams.map(team=>team.key);
@@ -15,6 +16,7 @@ export default function ProjectsPage() {
   const { pick } = useLocalization();
   const { profile } = useMemberAuth();
   const isAdmin = useAdminStatus();
+  const access=useAccessControl();
   const [params, setParams] = useSearchParams();
   const selected = params.get("subteam") ?? "";
   const [projects, setProjects] = useState<Project[]>([]);
@@ -31,7 +33,7 @@ export default function ProjectsPage() {
 
   async function load() {
     const [projectResult, taskResult] = await Promise.all([
-      supabase.from("team_projects").select("id,name,status,due_at,subteam").order("created_at", { ascending:false }),
+      supabase.from("team_projects").select("id,name,status,due_at,subteam,owner_id").order("created_at", { ascending:false }),
       supabase.from("project_tasks").select("id,project_id,title,status,due_at,archived").order("created_at"),
     ]);
     if (projectResult.error || taskResult.error) setMessage(projectResult.error?.message ?? taskResult.error?.message ?? pick("Projects could not be loaded.", "לא ניתן לטעון את הפרויקטים."));
@@ -75,7 +77,7 @@ export default function ProjectsPage() {
   return <main className="hub-page projects-page">
     <header className="hub-page-header"><div><div className="hub-eyebrow">{pick("Work / Projects", "עבודה / פרויקטים")}</div><h1>{selected ? pick(`${workspaceName(selected)} workspace`, `מרחב ${workspaceName(selected)}`) : pick("Project portfolio", "תיק הפרויקטים")}</h1><p>{selected?pick("Create and run projects inside this FRC workspace.","יצירה וניהול של פרויקטים בתוך מרחב FRC זה."):pick("A team-wide overview. Choose a workspace before creating new work.","סקירה כלל־קבוצתית. יש לבחור מרחב עבודה לפני יצירת עבודה חדשה.")}</p></div>{isAdmin?<button className="hub-button secondary" onClick={()=>setArchived(value=>!value)}>{archived?pick("Active projects","פרויקטים פעילים"):pick("Archive","ארכיון")}</button>:null}</header>
     <section className="workspace-picker" aria-label={pick("Choose a workspace","בחירת מרחב עבודה")}><button className={!selected?"is-active":""} onClick={()=>setParams({})}><span>ALL</span><strong>{pick("Portfolio","תיק פרויקטים")}</strong><small>{projects.filter(project=>project.status!=="archived").length} {pick("active","פעילים")}</small></button>{workstreams.map(item=><button className={selected===item?"is-active":""} key={item} onClick={()=>setParams({subteam:item})}><span>{item.slice(0,4).toUpperCase()}</span><strong>{workspaceName(item)}</strong><small>{workspaceCounts[item]} {pick("projects","פרויקטים")}</small></button>)}</section>
-    {!archived&&selected?<form className="hub-card operations-form project-create-form" onSubmit={createProject}><div className="project-form-heading"><small>{pick("New deliverable in","תוצר חדש בתוך")}</small><strong>{workspaceName(selected)}</strong></div><label><span>{pick("Project name","שם הפרויקט")}</span><input required value={name} onChange={event=>setName(event.target.value)}/></label><input type="hidden" value={subteam}/><label><span>{pick("Target date","תאריך יעד")}</span><input type="date" value={due} onChange={event=>setDue(event.target.value)}/></label><button className="hub-button">{pick("Create project","יצירת פרויקט")}</button></form>:null}
+    {!archived&&selected&&access.can("manage_team_projects",selected)?<form className="hub-card operations-form project-create-form" onSubmit={createProject}><div className="project-form-heading"><small>{pick("New deliverable in","תוצר חדש בתוך")}</small><strong>{workspaceName(selected)}</strong></div><label><span>{pick("Project name","שם הפרויקט")}</span><input required value={name} onChange={event=>setName(event.target.value)}/></label><input type="hidden" value={subteam}/><label><span>{pick("Target date","תאריך יעד")}</span><input type="date" value={due} onChange={event=>setDue(event.target.value)}/></label><button className="hub-button">{pick("Create project","יצירת פרויקט")}</button></form>:null}
     {!archived&&!selected?<div className="workspace-guidance"><span>↖</span><div><strong>{pick("Projects start in a workspace","פרויקטים מתחילים במרחב עבודה")}</strong><p>{pick("Select Mechanical, Electrical, Software or another FRC workspace above to create a project.","בחרו מכניקה, אלקטרוניקה, תוכנה או מרחב FRC אחר למעלה כדי ליצור פרויקט.")}</p></div></div>:null}
     {assistantDraft?<div className="workspace-guidance assistant-task-draft"><span>✦</span><div><strong>{pick("G3 Assist task draft is ready","טיוטת משימה מ-G3 Assist מוכנה")}</strong><p>{pick("Choose the correct workspace and use Add task on the relevant project. The suggested title is already filled in.","בחרו את מרחב העבודה המתאים ולחצו על הוספת משימה בפרויקט הרלוונטי. הכותרת המוצעת כבר מולאה.")}</p></div><button onClick={()=>{sessionStorage.removeItem("g3-project-task-draft");setAssistantDraft(false);setTaskTitle("");}}>×</button></div>:null}
     {message?<div className="auth-message" role="status">{message}</div>:null}

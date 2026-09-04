@@ -4,6 +4,7 @@ import { useMemberAuth } from "../lib/memberAuth";
 import { useLocalization } from "../lib/localization";
 import { useSearchParams } from "react-router-dom";
 import { useAdminStatus } from "../lib/useAdminStatus";
+import { memberTeams } from "../lib/accessControl";
 
 type Project = { id:string; name:string; description:string|null; status:string; due_at:string|null; owner_id:string|null; subteam:string|null };
 type Task = { id:string; project_id:string; title:string; status:string; assignee_id:string|null; due_at:string|null };
@@ -14,9 +15,9 @@ type Maintenance = { id:string; tool_id:string; description:string; status:strin
 export function ProfilePage() {
   const { profile } = useMemberAuth();
   const { pick } = useLocalization();
-  const [members,setMembers]=useState<Array<{id:string;display_name:string;role:string;subteam:string|null}>>([]);
-  useEffect(()=>{supabase.from("team_members").select("id,display_name,role,subteam").eq("active",true).order("display_name").then(({data})=>setMembers(data??[]));},[]);
-  return <div className="hub-page"><header className="hub-page-header"><div><div className="hub-eyebrow">{pick("Team directory","ספר הקבוצה")}</div><h1>{profile?.display_name}</h1><p>{profile?.role} · {profile?.subteam || pick("No subteam assigned","לא שובץ תת־צוות")}</p></div></header><section className="hub-card"><h2>{pick("Active team","חברי קבוצה פעילים")}</h2><div className="member-directory">{members.map(member=><article className="member-row" key={member.id}><div className="member-avatar">{member.display_name[0]}</div><div className="member-identity"><strong>{member.display_name}</strong><small>{member.subteam||pick("General","כללי")} · {member.role}</small></div></article>)}</div></section></div>;
+  const [members,setMembers]=useState<Array<{id:string;display_name:string;role:string;subteam:string|null;subteams:string[]}>>([]);
+  useEffect(()=>{supabase.from("team_members").select("id,display_name,role,subteam,subteams").eq("active",true).order("display_name").then(({data})=>setMembers(data??[]));},[]);
+  return <div className="hub-page"><header className="hub-page-header"><div><div className="hub-eyebrow">{pick("Team directory","ספר הקבוצה")}</div><h1>{profile?.display_name}</h1><p>{profile?.role.replace("_"," ")} · {memberTeams(profile).join(" · ") || pick("No subteam assigned","לא שובץ תת־צוות")}</p></div></header><section className="hub-card"><h2>{pick("Active team","חברי קבוצה פעילים")}</h2><div className="member-directory">{members.map(member=><article className="member-row" key={member.id}><div className="member-avatar">{member.display_name[0]}</div><div className="member-identity"><strong>{member.display_name}</strong><small>{memberTeams(member).join(" · ")||pick("General","כללי")} · {member.role.replace("_"," ")}</small></div></article>)}</div></section></div>;
 }
 
 export function ProjectsPage() {
