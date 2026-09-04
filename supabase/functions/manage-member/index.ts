@@ -12,6 +12,7 @@ type RequestBody = {
   displayName?: string;
   role?: "member" | "mentor" | "admin";
   subteam?: string | null;
+  subteams?: string[];
   temporaryPassword?: string;
   active?: boolean;
 };
@@ -52,7 +53,8 @@ Deno.serve(async (request) => {
         email: body.email.trim().toLowerCase(),
         display_name: body.displayName.trim(),
         role: body.role ?? "member",
-        subteam: body.subteam?.trim() || null,
+        subteam: body.subteams?.[0]?.trim() || body.subteam?.trim() || null,
+        subteams: (body.subteams??[]).map(item=>item.trim()).filter(Boolean),
         must_change_password: true,
         created_by: caller.user.id,
       });
@@ -83,6 +85,11 @@ Deno.serve(async (request) => {
       if (body.displayName) update.display_name = body.displayName.trim();
       if (body.role) update.role = body.role;
       if (body.subteam !== undefined) update.subteam = body.subteam?.trim() || null;
+      if (body.subteams !== undefined) {
+        const subteams=body.subteams.map(item=>item.trim()).filter(Boolean);
+        update.subteams=subteams;
+        update.subteam=subteams[0]??null;
+      }
       const { error } = await admin.from("team_members").update(update).eq("id", body.userId);
       if (error) return json({ error: error.message }, 400);
       return json({ ok: true });
@@ -92,4 +99,3 @@ Deno.serve(async (request) => {
     return json({ error: error instanceof Error ? error.message : "Unexpected error" }, 500);
   }
 });
-

@@ -13,6 +13,7 @@ export type MemberProfile = {
   display_name: string;
   role: TeamRole;
   subteam: string | null;
+  subteams: string[];
   active: boolean;
   must_change_password: boolean;
   language?: "en" | "he";
@@ -42,7 +43,7 @@ export function MemberAuthProvider({ children }: { children: React.ReactNode }) 
 
     const { data, error } = await supabase
       .from("team_members")
-      .select("id,email,display_name,role,subteam,active,must_change_password,language")
+      .select("id,email,display_name,role,subteam,subteams,active,must_change_password,language")
       .eq("id", activeSession.user.id)
       .maybeSingle();
 
