@@ -1,5 +1,5 @@
 import { ReactNode, useState } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import { useLocalization } from "../lib/localization";
 import { useMemberAuth } from "../lib/memberAuth";
 import { useAdminStatus } from "../lib/useAdminStatus";
@@ -21,11 +21,10 @@ export default function WebPortalShell({children}:{children:ReactNode}) {
   const location=useLocation();
   const [expanded,setExpanded]=useState(false);
   if(!profile?.active||profile.must_change_password)return <>{children}</>;
-  const title=links.find(([path])=>location.pathname===path)?.[1]??(location.pathname.startsWith("/admin")?"Administration":location.pathname.startsWith("/robot")?"Robot operations":location.pathname.startsWith("/project")?"Projects":"Team workspace");
   const knowledgeView=location.pathname==="/updates"&&new URLSearchParams(location.search).get("view")==="knowledge";
   const item=(path:string,en:string,he:string)=>{
     const active=path.includes("?")?knowledgeView:location.pathname===path&&!(path==="/updates"&&knowledgeView);
-    return <NavLink to={path} end className={active?"active":""} aria-current={active?"page":false} onClick={()=>setExpanded(false)}>{pick(en,he)}</NavLink>;
+    return <Link to={path} className={active?"active":""} aria-current={active?"page":undefined} onClick={()=>setExpanded(false)}>{pick(en,he)}</Link>;
   };
   return <div className="web-portal">
     <a className="web-skip" href="#web-content">{pick("Skip to content","דילוג לתוכן")}</a>
@@ -41,7 +40,7 @@ export default function WebPortalShell({children}:{children:ReactNode}) {
       <NavLink className="web-profile" to="/profile"><span>{profile.display_name}</span><small>{profile.subteam||pick("Team member","חבר/ת קבוצה")}</small></NavLink>
     </aside>
     <div className="web-workspace">
-      <header className="web-topbar"><span>{pick(title,links.find(([path])=>location.pathname===path)?.[2]??"מרחב הקבוצה")}</span><div><NavLink to="/schedule" aria-label={pick("Open calendar","פתיחת יומן")}><b aria-hidden="true">▦</b>{pick("Calendar","יומן")}</NavLink><NavLink to="/updates?view=inbox" aria-label={pick("Open notifications","פתיחת התראות")}><b aria-hidden="true">●</b>{pick("Notifications","התראות")}</NavLink><NavLink to="/settings" aria-label={pick("Open settings","פתיחת הגדרות")}><b aria-hidden="true">⚙</b>{pick("Settings","הגדרות")}</NavLink></div></header>
+      <header className="web-topbar"><Link className="web-team-signature" to="/home" aria-label={pick("Glue Gun and Glitter home","דף הבית של Glue Gun and Glitter")}><img src="/logoG3.png" alt=""/><span><strong>Glue Gun &amp; Glitter</strong><small>FRC 6740 · ONE TEAM</small></span></Link><nav aria-label={pick("Quick tools","כלים מהירים")}><NavLink to="/schedule" aria-label={pick("Open calendar","פתיחת יומן")}><b aria-hidden="true">▦</b><span>{pick("Calendar","יומן")}</span></NavLink><NavLink to="/updates?view=inbox" aria-label={pick("Open notifications","פתיחת התראות")}><b aria-hidden="true">●</b><span>{pick("Notifications","התראות")}</span></NavLink><NavLink to="/settings" aria-label={pick("Open settings","פתיחת הגדרות")}><b aria-hidden="true">⚙</b><span>{pick("Settings","הגדרות")}</span></NavLink></nav></header>
       <div id="web-content" tabIndex={-1}>{children}</div>
     </div>
   </div>;

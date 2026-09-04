@@ -794,9 +794,11 @@ function MemberGate({ children }: { children: JSX.Element }) {
 
 function AppShell() {
   const nativeApp = Capacitor.isNativePlatform();
+  const [webAssistantOpen,setWebAssistantOpen]=useState(false);
   const { isAdmin } = useAdmin();
   const location = useLocation();
   useEffect(()=>{window.scrollTo({top:0,left:0,behavior:"auto"});},[location.pathname,location.search]);
+  useEffect(()=>{setWebAssistantOpen(false);},[location.pathname]);
   const isAuthScreen = location.pathname === "/login" || location.pathname === "/change-password";
   const isPrimaryDestination=["/home","/work","/schedule","/updates","/growth","/competition","/more","/admin"].includes(location.pathname);
   const activeIssue=location.pathname==="/robot-issues"?new URLSearchParams(location.search).get("issue"):null;
@@ -875,7 +877,8 @@ function AppShell() {
         />
         <Route path="*" element={<Navigate to="/home" replace />} />
       </Routes>
-      {!isAuthScreen && !isDisplayScreen && location.pathname !== "/assistant" ? <NavLink className="assistant-fab" to={assistantPath} aria-label="Open G3 Assist"><img src="/g3-assistant.png" alt="" /></NavLink> : null}
+      {!isAuthScreen && !isDisplayScreen && location.pathname !== "/assistant" ? nativeApp?<NavLink className="assistant-fab" to={assistantPath} aria-label="Open G3 Assist"><img src="/g3-assistant.png" alt="" /></NavLink>:<button className="assistant-fab web-assistant-trigger" type="button" onClick={()=>setWebAssistantOpen(true)} aria-label="Open G3 Assist"><img src="/g3-assistant.png" alt="" /></button> : null}
+      {!nativeApp&&webAssistantOpen?<div className="web-assistant-backdrop" role="presentation" onMouseDown={event=>{if(event.target===event.currentTarget)setWebAssistantOpen(false);}}><section className="web-assistant-dialog" role="dialog" aria-modal="true" aria-label="G3 Assist"><button className="web-assistant-close" type="button" onClick={()=>setWebAssistantOpen(false)} aria-label="Close G3 Assist">×</button><FrcAssistantPage/></section></div>:null}
       {!isAuthScreen && nativeApp ? <MobileNav /> : null}
     </Shell>
   );
