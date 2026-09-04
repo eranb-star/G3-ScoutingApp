@@ -2,13 +2,14 @@ import { FormEvent, useEffect, useState } from "react";
 import { supabase } from "../supabase";
 import type { MemberProfile, TeamRole } from "../lib/memberAuth";
 import { useLocalization } from "../lib/localization";
+import { frcTeams } from "../lib/frcTeams";
 
-const teamOptions = ["Mechanical","Electrical","Software","Strategy & Scouting","Business & Outreach","Drive & Pit"];
+const teamOptions = frcTeams.map(team=>team.name);
 
 function TeamSelector({value,onChange,pick}:{value:string[];onChange:(value:string[])=>void;pick:(en:string,he:string)=>string}) {
   const allSelected=teamOptions.every(team=>value.includes(team));
   const toggle=(team:string)=>onChange(value.includes(team)?value.filter(item=>item!==team):[...value,team]);
-  return <fieldset className="member-team-selector"><legend>{pick("FRC teams","צוותי FRC")}</legend><button type="button" className={allSelected?"is-selected":""} onClick={()=>onChange(allSelected?[]:[...teamOptions])}>{allSelected?"✓ ":""}{pick("All teams","כל הצוותים")}</button><div>{teamOptions.map(team=><label className={value.includes(team)?"is-selected":""} key={team}><input type="checkbox" checked={value.includes(team)} onChange={()=>toggle(team)}/><span>{team}</span></label>)}</div><small>{pick("Select one or several teams. The first selection is used as the primary team in legacy views.","בחרו צוות אחד או כמה צוותים. הבחירה הראשונה תשמש כצוות הראשי בתצוגות הישנות.")}</small></fieldset>;
+  return <fieldset className="member-team-selector"><legend>{pick("FRC teams","צוותי FRC")}</legend><button type="button" className={allSelected?"is-selected":""} onClick={()=>onChange(allSelected?[]:[...teamOptions])}>{allSelected?"✓ ":""}{pick("All teams","כל הצוותים")}</button><div>{frcTeams.map(team=><label className={value.includes(team.name)?"is-selected":""} key={team.key}><input type="checkbox" checked={value.includes(team.name)} onChange={()=>toggle(team.name)}/><span>{pick(team.name,team.nameHe)}</span></label>)}</div><small>{pick("Select one or several teams. The first selection is used as the primary team in legacy views.","בחרו צוות אחד או כמה צוותים. הבחירה הראשונה תשמש כצוות הראשי בתצוגות הישנות.")}</small></fieldset>;
 }
 
 function temporaryPassword() {

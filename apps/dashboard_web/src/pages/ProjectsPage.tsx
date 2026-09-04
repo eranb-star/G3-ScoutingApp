@@ -4,14 +4,12 @@ import { useAdminStatus } from "../lib/useAdminStatus";
 import { useLocalization } from "../lib/localization";
 import { useMemberAuth } from "../lib/memberAuth";
 import { supabase } from "../supabase";
+import { frcTeams, teamByKey, teamMatches } from "../lib/frcTeams";
 
 type Project = { id:string; name:string; status:string; due_at:string|null; subteam:string|null };
 type Task = { id:string; project_id:string; title:string; status:string; due_at:string|null; archived?:boolean };
 
-const workstreams = ["mechanical", "electrical", "software", "strategy", "business", "pit"];
-const workstreamNames:Record<string,[string,string]> = {
-  mechanical:["Mechanical","מכניקה"], electrical:["Electrical","אלקטרוניקה"], software:["Software","תוכנה"], strategy:["Strategy & scouting","אסטרטגיה וסקאוטינג"], business:["Business & outreach","קהילה ועסקים"], pit:["Drive & pit","נהיגה ופיט"],
-};
+const workstreams = frcTeams.map(team=>team.key);
 
 export default function ProjectsPage() {
   const { pick } = useLocalization();
@@ -71,8 +69,8 @@ export default function ProjectsPage() {
   const visible = projects.filter((project) => (archived ? project.status === "archived" : project.status !== "archived") && (!selected || (project.subteam??"").toLowerCase().includes(selected)));
   const selectedProject=params.get("project");
   const selectedTask=params.get("task");
-  const workspaceCounts=useMemo(()=>Object.fromEntries(workstreams.map(item=>[item,projects.filter(project=>project.status!=="archived"&&(project.subteam??"").toLowerCase().includes(item)).length])),[projects]);
-  const workspaceName=(key:string)=>pick(workstreamNames[key]?.[0]??key,workstreamNames[key]?.[1]??key);
+  const workspaceCounts=useMemo(()=>Object.fromEntries(workstreams.map(item=>[item,projects.filter(project=>project.status!=="archived"&&teamMatches(project.subteam,item)).length])),[projects]);
+  const workspaceName=(key:string)=>{const team=teamByKey(key)??frcTeams.find(item=>teamMatches(key,item));return team?pick(team.name,team.nameHe):key;};
 
   return <main className="hub-page projects-page">
     <header className="hub-page-header"><div><div className="hub-eyebrow">{pick("Work / Projects", "עבודה / פרויקטים")}</div><h1>{selected ? pick(`${workspaceName(selected)} workspace`, `מרחב ${workspaceName(selected)}`) : pick("Project portfolio", "תיק הפרויקטים")}</h1><p>{selected?pick("Create and run projects inside this FRC workspace.","יצירה וניהול של פרויקטים בתוך מרחב FRC זה."):pick("A team-wide overview. Choose a workspace before creating new work.","סקירה כלל־קבוצתית. יש לבחור מרחב עבודה לפני יצירת עבודה חדשה.")}</p></div>{isAdmin?<button className="hub-button secondary" onClick={()=>setArchived(value=>!value)}>{archived?pick("Active projects","פרויקטים פעילים"):pick("Archive","ארכיון")}</button>:null}</header>
