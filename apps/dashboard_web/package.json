@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "verify:phase-1-2": "node scripts/verify-phase-1-2.mjs",
     "verify:live-schema": "node scripts/verify-live-schema.mjs",
+    "verify:skills-assessments": "node scripts/verify-skills-assessment-engine.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
