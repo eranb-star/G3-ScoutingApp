@@ -51,6 +51,9 @@ import CompetitionDisplayPage from "./pages/CompetitionDisplayPage";
 import PermissionsAdminPage from "./pages/PermissionsAdminPage";
 import PitScoutingPage from "./pages/PitScoutingPage";
 import ScoutingQualityPage from "./pages/ScoutingQualityPage";
+import CompetitionControlPage from "./pages/CompetitionControlPage";
+import TbaExplorerPage from "./pages/TbaExplorerPage";
+import PitAssignmentsPage from "./pages/PitAssignmentsPage";
 
 // ----------------------
 // Small helpers
@@ -828,6 +831,9 @@ function AppShell() {
         <Route path="/competition/display" element={<MemberGate><CompetitionDisplayPage /></MemberGate>} />
         <Route path="/competition/pit-scouting" element={<MemberGate><PitScoutingPage /></MemberGate>} />
         <Route path="/competition/scouting-quality" element={<MemberGate><ScoutingQualityPage /></MemberGate>} />
+        <Route path="/competition/control" element={<MemberGate><CompetitionControlPage /></MemberGate>} />
+        <Route path="/competition/library" element={<MemberGate><TbaExplorerPage /></MemberGate>} />
+        <Route path="/competition/pit-assignments" element={<MemberGate><PitAssignmentsPage /></MemberGate>} />
         <Route path="/growth" element={<MemberGate><TrainingCenterPage /></MemberGate>} />
         <Route path="/season-planning" element={<MemberGate><SeasonPlanningPage /></MemberGate>} />
         <Route path="/admin/members" element={<AdminGate><MembersAdminPage /></AdminGate>} />

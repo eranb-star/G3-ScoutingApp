@@ -1,0 +1,9 @@
+begin;
+create table if not exists public.pit_scouting_assignments(id uuid primary key default gen_random_uuid(),event_id uuid not null references public.events(id) on delete cascade,team_number integer not null,member_id uuid not null references public.team_members(id) on delete cascade,status text not null default 'assigned' check(status in('assigned','in_progress','completed','cancelled')),assigned_by uuid references public.team_members(id),completed_at timestamptz,created_at timestamptz not null default now(),unique(event_id,team_number));
+alter table public.pit_scouting_assignments enable row level security;
+drop policy if exists pit_assignments_read on public.pit_scouting_assignments;create policy pit_assignments_read on public.pit_scouting_assignments for select to authenticated using(public.current_team_role() is not null);
+drop policy if exists pit_assignments_manage on public.pit_scouting_assignments;create policy pit_assignments_manage on public.pit_scouting_assignments for all to authenticated using(public.current_team_role() in('admin','mentor','team_leader')) with check(public.current_team_role() in('admin','mentor','team_leader'));
+drop policy if exists pit_assignments_complete_own on public.pit_scouting_assignments;create policy pit_assignments_complete_own on public.pit_scouting_assignments for update to authenticated using(member_id=auth.uid()) with check(member_id=auth.uid());
+create or replace function public.can_control_competition(target_event uuid) returns boolean language sql stable security definer set search_path=public as $$select coalesce(public.current_team_role() in('admin','mentor','team_leader'),false) or exists(select 1 from public.competition_assignments where event_id=target_event and member_id=auth.uid() and role='pit_crew' and status in('assigned','confirmed'));$$;
+grant execute on function public.can_control_competition(uuid) to authenticated;
+commit;
