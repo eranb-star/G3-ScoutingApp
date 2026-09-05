@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useLocalization } from "../lib/localization";
 import { useMemberAuth } from "../lib/memberAuth";
 import { supabase } from "../supabase";
+import { notifyActionSource } from "../lib/operationalNotifications";
 
 type Team = { team_number: number; team_name: string | null };
 type Person = { id: string; display_name: string };
@@ -43,8 +44,10 @@ export default function PitAssignmentsPage() {
       setMessage(pick(`Team ${teamNumber} is already assigned to ${name(existing.member_id)}. Remove that assignment before assigning someone else.`, `קבוצה ${teamNumber} כבר משובצת ל${name(existing.member_id)}. יש להסיר את השיבוץ לפני שיבוץ מחדש.`));
       return;
     }
-    const { error } = await supabase.from("pit_scouting_assignments").insert({ event_id: eventId, team_number: teamNumber, member_id: member, status: "assigned", assigned_by: profile?.id });
-    setMessage(error?.message ?? pick("Assignment saved.", "השיבוץ נשמר."));
+    const { data, error } = await supabase.from("pit_scouting_assignments").insert({ event_id: eventId, team_number: teamNumber, member_id: member, status: "assigned", assigned_by: profile?.id }).select("id").single();
+    let deliveryFailed = false;
+    if (!error && data?.id) { const delivery = await notifyActionSource("pit_scouting_assignments", data.id); deliveryFailed = !delivery || typeof delivery.delivered !== "number"; }
+    setMessage(error?.message ?? pick(deliveryFailed ? "Assignment saved and added to My work; push delivery is currently unavailable." : "Assignment saved, added to My work and notification sent.", deliveryFailed ? "השיבוץ נשמר ונוסף לעבודה שלי; התראת הדחיפה אינה זמינה כעת." : "השיבוץ נשמר, נוסף לעבודה שלי ונשלחה התראה."));
     if (!error) { setTeam(""); setMember(""); await load(); }
   }
 

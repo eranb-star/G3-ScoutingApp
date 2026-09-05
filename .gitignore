@@ -23,6 +23,7 @@
 **/.gradle/
 .gradle-user/
 .gradle-verify/
+.gradle-codex/
 .gradle-jdk21/
 .android-user/
 .android/
