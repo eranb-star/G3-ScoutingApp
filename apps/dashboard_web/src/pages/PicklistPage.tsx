@@ -1,16 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../supabase";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { computeAllianceIntel, toNum, pct, num, type TeamRow, type Risk } from "../lib/allianceIntel";
 
-type EventOption = { id: string; label: string };
-
-const EVENT_OPTIONS: EventOption[] = [
-  { id: "f34e67ec-bac9-433e-a97a-1e295aef8f30", label: "ISR District Event #1" },
-  { id: "9fa31339-9f79-4d5b-9272-934b15d098d6", label: "ISR District Event #2" },
-  { id: "948f95ba-2935-4c5d-860b-6c90429a66c3", label: "ISR District Event #3" },
-  { id: "773deb87-bbfe-41d9-9537-7fd201f8998c", label: "ISR District Event #4" },
-];
+type EventOption = { id: string; name: string };
 
 function Badge({ text, bg }: { text: string; bg: string }) {
   return (
@@ -58,8 +51,15 @@ function pickRankValue(r: TeamRow | null) {
 
 export default function PicklistPage() {
   const navigate = useNavigate();
+  const [params] = useSearchParams();
 
-  const [eventId, setEventId] = useState<string>("");
+  const [events, setEvents] = useState<EventOption[]>([]);
+  const [eventId, setEventId] = useState<string>(() => params.get("event_id") ?? localStorage.getItem("g3_event_id") ?? "");
+
+  useEffect(() => {
+    void supabase.from("events").select("id,name").eq("active", true).order("start_date", { ascending: false })
+      .then(({ data }) => setEvents((data ?? []) as EventOption[]));
+  }, []);
 
   const [allEventTeams, setAllEventTeams] = useState<number[]>([]);
   const [statsRows, setStatsRows] = useState<TeamRow[]>([]);
@@ -396,13 +396,13 @@ export default function PicklistPage() {
       <div style={{ marginTop: 14, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
         <select
           value={eventId}
-          onChange={(e) => setEventId(e.target.value)}
+          onChange={(e) => { setEventId(e.target.value); localStorage.setItem("g3_event_id", e.target.value); }}
           style={{ width: 320, padding: 10, borderRadius: 12, border: "1px solid #ccc" }}
         >
           <option value="">Select Event</option>
-          {EVENT_OPTIONS.map((e) => (
+          {events.map((e) => (
             <option key={e.id} value={e.id}>
-              {e.label}
+              {e.name}
             </option>
           ))}
         </select>

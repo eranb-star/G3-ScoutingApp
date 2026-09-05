@@ -1,5 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { supabase } from "../supabase";
+
+type EventOption = { id: string; name: string };
+type ScoutEvidence = { id: string; match_id: string; created_at: string; data: Record<string, any>; notes: string | null; match_label: string };
 
 type TeamPlayoffRow = {
   event_id: string;
@@ -132,7 +136,9 @@ function normalizeAlliance(a: string | null): "red" | "blue" | "unknown" {
 }
 
 export default function AnalysisPage() {
-  const [eventId, setEventId] = useState<string>("");
+  const [params] = useSearchParams();
+  const [events, setEvents] = useState<EventOption[]>([]);
+  const [eventId, setEventId] = useState<string>(() => params.get("event_id") ?? localStorage.getItem("g3_event_id") ?? "");
 
   // TAB
   const [tab, setTab] = useState<"ranking" | "defense">("ranking");
@@ -145,6 +151,13 @@ export default function AnalysisPage() {
   const [query, setQuery] = useState<string>("");
   const [filterMode, setFilterMode] = useState<"all" | "safe" | "auto" | "endgame" | "defense">("all");
   const [selectedTeam, setSelectedTeam] = useState<TeamPlayoffRow | null>(null);
+  const [teamEvidence, setTeamEvidence] = useState<ScoutEvidence[]>([]);
+  const [evidenceLoading, setEvidenceLoading] = useState(false);
+
+  useEffect(() => {
+    void supabase.from("events").select("id,name").eq("active", true).order("start_date", { ascending: false })
+      .then(({ data }) => setEvents((data ?? []) as EventOption[]));
+  }, []);
 
   // Defense
   const [defLeaders, setDefLeaders] = useState<DefenseLeaderRow[]>([]);
@@ -302,6 +315,37 @@ export default function AnalysisPage() {
     }
   };
 
+  const openTeam = async (team: TeamPlayoffRow) => {
+    setSelectedTeam(team);
+    setTeamEvidence([]);
+    setEvidenceLoading(true);
+    const entries = await supabase.from("scout_entries").select("id,match_id,created_at,data,notes")
+      .eq("event_id", eventId).eq("team_number", team.team_number).or("is_duplicate.eq.false,is_duplicate.is.null").order("created_at");
+    if (entries.error) { setEvidenceLoading(false); return; }
+    const matchIds = Array.from(new Set((entries.data ?? []).map((entry: any) => entry.match_id).filter(Boolean)));
+    const matches = matchIds.length ? await supabase.from("matches").select("id,match_type,match_number").in("id", matchIds) : { data: [] as any[] };
+    const labels = new Map((matches.data ?? []).map((match: any) => [match.id, `${String(match.match_type ?? "M").toUpperCase() === "QUAL" ? "QM" : String(match.match_type ?? "M").toUpperCase()}${match.match_number ?? "?"}`]));
+    setTeamEvidence((entries.data ?? []).map((entry: any) => ({ ...entry, match_label: labels.get(entry.match_id) ?? "Match" })) as ScoutEvidence[]);
+    setEvidenceLoading(false);
+  };
+
+  const evidenceValue = (entry: ScoutEvidence, keys: string[]) => {
+    for (const key of keys) if (entry.data?.[key] !== undefined && entry.data?.[key] !== null) return Number(entry.data[key]) || 0;
+    return 0;
+  };
+
+  const evidenceSummary = useMemo(() => {
+    const rows = teamEvidence.map((entry) => {
+      const auto = evidenceValue(entry, ["auto_success_total", "auto_score"]) || ["auto_A", "auto_B", "auto_C"].reduce((sum, key) => sum + evidenceValue(entry, [key]), 0);
+      const teleop = evidenceValue(entry, ["teleop_output_total", "teleop_score"]) || ["teleop_A", "teleop_B", "teleop_C"].reduce((sum, key) => sum + evidenceValue(entry, [key]), 0);
+      return { entry, auto, teleop, cycles: evidenceValue(entry, ["cycles", "cycle_count"]) };
+    });
+    const recent = rows.slice(-3), earlier = rows.slice(0, Math.max(0, rows.length - 3));
+    const average = (items: typeof rows, key: "auto" | "teleop" | "cycles") => items.length ? items.reduce((sum, item) => sum + item[key], 0) / items.length : 0;
+    const trend = earlier.length ? average(recent, "teleop") - average(earlier, "teleop") : 0;
+    return { rows, confidence: rows.length >= 6 ? "High" : rows.length >= 3 ? "Developing" : "Low", trend };
+  }, [teamEvidence]);
+
   const tabBtn = (active: boolean) => ({
     padding: "10px 12px",
     borderRadius: 14,
@@ -326,14 +370,11 @@ export default function AnalysisPage() {
         <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
           <select
             value={eventId}
-            onChange={(e) => setEventId(e.target.value)}
+            onChange={(e) => { setEventId(e.target.value); localStorage.setItem("g3_event_id", e.target.value); }}
             style={{ width: 320, padding: 10, borderRadius: 12, border: "1px solid #ccc" }}
           >
             <option value="">Select Event</option>
-            <option value="f34e67ec-bac9-433e-a97a-1e295aef8f30">ISR District Event #1</option>
-            <option value="9fa31339-9f79-4d5b-9272-934b15d098d6">ISR District Event #2</option>
-            <option value="948f95ba-2935-4c5d-860b-6c90429a66c3">ISR District Event #3</option>
-            <option value="773deb87-bbfe-41d9-9537-7fd201f8998c">ISR District Event #4</option>
+            {events.map((event) => <option value={event.id} key={event.id}>{event.name}</option>)}
           </select>
 
           <button type="button" onClick={() => setTab("ranking")} style={tabBtn(tab === "ranking")}>
@@ -431,7 +472,7 @@ export default function AnalysisPage() {
             </select>
           </div>
 
-          <div style={{ marginTop: 18, display: "grid", gridTemplateColumns: "1.6fr 1fr", gap: 14 }}>
+          <div className="analysis-workspace-grid" style={{ marginTop: 18 }}>
             {/* TABLE */}
             <div style={{ border: "1px solid #eee", borderRadius: 14, overflow: "hidden", background: "#fff" }}>
               <div style={{ padding: 12, borderBottom: "1px solid #eee", fontWeight: 950 }}>Ranked Teams</div>
@@ -452,7 +493,7 @@ export default function AnalysisPage() {
                   {filtered.map((r, idx) => (
                     <tr
                       key={r.team_number}
-                      onClick={() => setSelectedTeam(r)}
+                      onClick={() => void openTeam(r)}
                       style={{
                         cursor: "pointer",
                         background: selectedTeam?.team_number === r.team_number ? "#f3f6ff" : "transparent",
@@ -491,12 +532,24 @@ export default function AnalysisPage() {
 
                   <div>{roleBadges(selectedTeam)}</div>
 
+                  <section className="team-evidence-confidence">
+                    <div><small>DATA CONFIDENCE</small><strong>{evidenceLoading ? "Loading…" : evidenceSummary.confidence}</strong><span>{teamEvidence.length} match report{teamEvidence.length === 1 ? "" : "s"}</span></div>
+                    <div><small>RECENT TELEOP TREND</small><strong className={evidenceSummary.trend > 0 ? "is-up" : evidenceSummary.trend < 0 ? "is-down" : ""}>{evidenceSummary.trend > 0 ? "+" : ""}{num(evidenceSummary.trend, 1)}</strong><span>recent 3 vs earlier</span></div>
+                  </section>
+
                   <div style={{ padding: 10, borderRadius: 12, border: "1px solid #eee" }}>
                     <div style={{ fontWeight: 950, marginBottom: 6 }}>Core</div>
                     <div>Matches scouted: <b>{selectedTeam.matches_scouted}</b></div>
                     <div>Consistency: <b>{num(selectedTeam.consistency_avg, 2)}</b> / 5</div>
                     <div>Overall value: <b>{num(selectedTeam.overall_value_avg, 2)}</b> / 5</div>
                   </div>
+
+                  <section className="team-match-evidence">
+                    <header><div><small>OBSERVED EVIDENCE</small><strong>Match-by-match record</strong></div></header>
+                    {evidenceLoading ? <p>Loading observed matches…</p> : evidenceSummary.rows.length ? evidenceSummary.rows.map(({ entry, auto, teleop, cycles }) => (
+                      <article key={entry.id}><b>{entry.match_label}</b><div><span>AUTO <strong>{auto}</strong></span><span>TELEOP <strong>{teleop}</strong></span><span>CYCLES <strong>{cycles}</strong></span></div>{entry.notes ? <p>{entry.notes}</p> : null}</article>
+                    )) : <p>No individual match evidence is available yet.</p>}
+                  </section>
 
                   <div style={{ padding: 10, borderRadius: 12, border: "1px solid #eee" }}>
                     <div style={{ fontWeight: 950, marginBottom: 6 }}>Auto</div>
@@ -555,7 +608,7 @@ export default function AnalysisPage() {
             </div>
           </div>
 
-          <div style={{ marginTop: 18, display: "grid", gridTemplateColumns: "1.6fr 1fr", gap: 14 }}>
+          <div className="analysis-workspace-grid" style={{ marginTop: 18 }}>
             {/* TABLE */}
             <div style={{ border: "1px solid #eee", borderRadius: 14, overflow: "hidden", background: "#fff" }}>
               <div style={{ padding: 12, borderBottom: "1px solid #eee", fontWeight: 950 }}>Defense Leaders (Teleop GP-A)</div>
