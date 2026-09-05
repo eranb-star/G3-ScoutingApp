@@ -2,6 +2,8 @@ package com.g3.scouting;
 
 import android.Manifest;
 import android.os.Build;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.PermissionState;
 import com.getcapacitor.Plugin;
@@ -33,6 +35,10 @@ public class G3PushPlugin extends Plugin {
     }
 
     private void resolveToken(PluginCall call) {
+        if (Build.VERSION.SDK_INT >= 26) {
+            NotificationManager manager = getContext().getSystemService(NotificationManager.class);
+            manager.createNotificationChannel(new NotificationChannel("g3_announcements", "G3 team alerts", NotificationManager.IMPORTANCE_HIGH));
+        }
         FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
             if (!task.isSuccessful()) { call.reject("Could not obtain notification token"); return; }
             JSObject result = new JSObject(); result.put("token", task.getResult()); call.resolve(result);

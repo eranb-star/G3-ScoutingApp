@@ -90,6 +90,16 @@ export function MemberAuthProvider({ children }: { children: React.ReactNode }) 
     G3Push.getToken().then(({ token }) => supabase.from("push_tokens").upsert({ token, member_id: profile.id, platform: "android", active: true, updated_at: new Date().toISOString() })).catch(() => undefined);
   }, [profile?.id, profile?.active, profile?.must_change_password]);
 
+  useEffect(() => {
+    if (!profile?.active) return;
+    const url = new URL(window.location.href), actionId = url.searchParams.get("g3Action");
+    if (!actionId) return;
+    const now = new Date().toISOString();
+    void supabase.from("team_action_states").upsert({ action_id: actionId, member_id: profile.id, status: "acknowledged", acknowledged_at: now, snoozed_until: null, updated_at: now }, { onConflict: "action_id,member_id" }).then(() => window.dispatchEvent(new Event("g3-actions-changed")));
+    url.searchParams.delete("g3Action");
+    window.history.replaceState(window.history.state, "", `${url.pathname}${url.search}${url.hash}`);
+  }, [profile?.id, profile?.active]);
+
   const value = useMemo(
     () => ({ loading, session, profile, profileError, refreshProfile }),
     [loading, session, profile, profileError]

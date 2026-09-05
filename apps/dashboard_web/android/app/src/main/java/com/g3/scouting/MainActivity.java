@@ -24,7 +24,11 @@ public class MainActivity extends BridgeActivity {
     private void openNotificationDestination(Intent intent) {
         if (intent == null) return;
         String path = intent.getStringExtra("g3_path");
+        if (path == null) path = intent.getStringExtra("path");
         if (path == null || !path.startsWith("/") || path.startsWith("//")) return;
-        bridge.getWebView().post(() -> bridge.getWebView().evaluateJavascript("window.location.assign(" + JSONObject.quote(path) + ")", null));
+        intent.removeExtra("g3_path");
+        intent.removeExtra("path");
+        final String destination = path;
+        bridge.getWebView().post(() -> bridge.getWebView().evaluateJavascript("window.location.assign(" + JSONObject.quote(destination) + ")", null));
     }
 }
