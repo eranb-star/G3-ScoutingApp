@@ -13,6 +13,9 @@ const updates = read("src/pages/UpdatesPage.tsx");
 const unreadUpdates = read("src/lib/unreadUpdates.ts");
 const sendPush = read("../../backend/supabase/functions/send-push/index.ts");
 const rolePermissions = read("../../backend/supabase/roles_permissions_multi_team_20260904.sql");
+const competition = read("src/pages/CompetitionOperationsPage.tsx");
+const offlineDb = read("src/lib/offlineDb.ts");
+const serviceWorker = read("public/sw.js");
 const migration = read("../../backend/supabase/unified_responsibility_engine_20260902.sql");
 const inventoryBoundary = read("../../backend/supabase/inventory_admin_boundary_20260905.sql");
 const competitionBoundary = read("../../backend/supabase/competition_access_boundary_20260905.sql");
@@ -48,6 +51,10 @@ const checks = [
   ["Unread announcement counts respect audience boundaries", unreadUpdates.includes('if(audience==="admins")return role==="admin"') && unreadUpdates.includes('if(audience==="subteam")return subteams.includes')],
   ["Push delivery filters members by announcement audience", sendPush.includes('if (announcement.audience === "members")') && sendPush.includes('announcement.audience!=="subteam"')],
   ["Announcement access is protected in the database", rolePermissions.includes('create policy "members read applicable announcements"') && rolePermissions.includes("public.has_permission('create_announcements'")],
+  ["Competition command pack caches all critical event data", competition.includes("cacheCompetitionSnapshot") && offlineDb.includes("competitionCache")],
+  ["Offline match control is limited to authorized pit operators", competition.includes('canControl=isAdmin||myAssignments.some(x=>x.role==="pit_crew")') && competition.includes("if(online||!canControl")],
+  ["Offline competition changes synchronize on reconnect", competition.includes("flushOfflineChanges") && offlineDb.includes("competitionMutations")],
+  ["Web application shell is available offline", serviceWorker.includes('request.mode==="navigate"') && serviceWorker.includes('caches.match("/index.html")')],
 ];
 
 for (const [name, passed] of checks) {

@@ -39,7 +39,35 @@ type ScoutsCacheRow = {
   cached_at: string; // ISO
 };
 
-type StoreName = "entryQueue" | "templateCache" | "matchesCache" | "matchTeamsCache" | "scoutsCache";
+export type CompetitionSnapshot = {
+  event_id: string;
+  event: any;
+  events: any[];
+  matches: any[];
+  people: any[];
+  assignments: any[];
+  pit: any[];
+  briefings: any[];
+  cached_at: string;
+};
+
+export type CompetitionCommandState = {
+  event_id: string;
+  match_id: string | null;
+  updated_at: string;
+  updated_by: string | null;
+};
+
+export type CompetitionMutation = {
+  id: string;
+  event_id: string;
+  table: "competition_assignments" | "competition_pit_queue";
+  record_id: string;
+  patch: Record<string, unknown>;
+  created_at: string;
+};
+
+type StoreName = "entryQueue" | "templateCache" | "matchesCache" | "matchTeamsCache" | "scoutsCache" | "competitionCache" | "competitionCommand" | "competitionMutations";
 
 const DB_NAME = "g3_scouting_offline_v1";
 
@@ -47,7 +75,7 @@ const DB_NAME = "g3_scouting_offline_v1";
 // If ANY device already created DB at version 2,
 // opening with version 1 will throw VersionError.
 // We bump to 4 to be safe for future store additions.
-const DB_VERSION = 4;
+const DB_VERSION = 6;
 
 function openDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -71,6 +99,15 @@ function openDb(): Promise<IDBDatabase> {
       }
       if (!db.objectStoreNames.contains("scoutsCache")) {
         db.createObjectStore("scoutsCache", { keyPath: "event_id" });
+      }
+      if (!db.objectStoreNames.contains("competitionCache")) {
+        db.createObjectStore("competitionCache", { keyPath: "event_id" });
+      }
+      if (!db.objectStoreNames.contains("competitionCommand")) {
+        db.createObjectStore("competitionCommand", { keyPath: "event_id" });
+      }
+      if (!db.objectStoreNames.contains("competitionMutations")) {
+        db.createObjectStore("competitionMutations", { keyPath: "id" });
       }
     };
 
@@ -215,4 +252,37 @@ export async function cacheScouts(event_id: string, scouts: any[]): Promise<void
 export async function getCachedScouts(event_id: string): Promise<ScoutsCacheRow | null> {
   const row = await withStore<ScoutsCacheRow | undefined>("scoutsCache", "readonly", (store) => store.get(event_id));
   return row ?? null;
+}
+
+export async function cacheCompetitionSnapshot(snapshot: Omit<CompetitionSnapshot, "cached_at">): Promise<CompetitionSnapshot> {
+  const row: CompetitionSnapshot = {...snapshot, cached_at: new Date().toISOString()};
+  await withStore<void>("competitionCache", "readwrite", store => store.put(row));
+  return row;
+}
+
+export async function getCompetitionSnapshot(event_id: string): Promise<CompetitionSnapshot | null> {
+  const row = await withStore<CompetitionSnapshot | undefined>("competitionCache", "readonly", store => store.get(event_id));
+  return row ?? null;
+}
+
+export async function saveCompetitionCommand(state: CompetitionCommandState): Promise<void> {
+  await withStore<void>("competitionCommand", "readwrite", store => store.put(state));
+}
+
+export async function getCompetitionCommand(event_id: string): Promise<CompetitionCommandState | null> {
+  const row = await withStore<CompetitionCommandState | undefined>("competitionCommand", "readonly", store => store.get(event_id));
+  return row ?? null;
+}
+
+export async function enqueueCompetitionMutation(mutation: CompetitionMutation): Promise<void> {
+  await withStore<void>("competitionMutations", "readwrite", store => store.put(mutation));
+}
+
+export async function listCompetitionMutations(): Promise<CompetitionMutation[]> {
+  const rows = await withStore<CompetitionMutation[]>("competitionMutations", "readonly", store => store.getAll());
+  return Array.isArray(rows) ? rows : [];
+}
+
+export async function removeCompetitionMutation(id: string): Promise<void> {
+  await withStore<void>("competitionMutations", "readwrite", store => store.delete(id));
 }
