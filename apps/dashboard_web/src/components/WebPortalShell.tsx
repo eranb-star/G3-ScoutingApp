@@ -35,7 +35,7 @@ export default function WebPortalShell({children}:{children:ReactNode}) {
         {links.map(([path,en,he])=><div key={path}>{item(path,en,he)}</div>)}
         <div>{item("/updates?view=knowledge","FRC knowledge","ידע FRC")}</div>
         <div>{item("/assistant","G3 Assist","G3 Assist")}</div>
-        {isAdmin?<section className="web-admin-nav"><small>{pick("ADMINISTRATION","ניהול")}</small>{item("/admin","Workshop dashboard","לוח הסדנה")}{item("/admin/reports","Attendance reports","דוחות נוכחות")}{item("/admin/members","Team members","חברי הקבוצה")}{item("/admin/permissions","Roles & permissions","תפקידים והרשאות")}{item("/admin/security","Security","אבטחה")}</section>:null}
+        {isAdmin?<section className="web-admin-nav"><small>{pick("ADMINISTRATION","ניהול")}</small>{item("/admin","Workshop dashboard","לוח הסדנה")}{item("/admin/reports","Attendance reports","דוחות נוכחות")}{item("/admin/contributions","Leadership analytics","ניתוח ניהולי")}{item("/admin/members","Team members","חברי הקבוצה")}{item("/admin/permissions","Roles & permissions","תפקידים והרשאות")}{item("/admin/security","Security","אבטחה")}</section>:null}
       </nav>
       <NavLink className="web-profile" to="/profile"><span>{profile.display_name}</span><small>{memberTeams(profile).join(" · ")||pick("Team member","חבר/ת קבוצה")}</small></NavLink>
     </aside>
