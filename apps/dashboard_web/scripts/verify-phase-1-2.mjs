@@ -17,6 +17,8 @@ const competition = read("src/pages/CompetitionOperationsPage.tsx");
 const offlineDb = read("src/lib/offlineDb.ts");
 const serviceWorker = read("public/sw.js");
 const pitDisplay = read("src/pages/CompetitionDisplayPage.tsx");
+const realtimeCompetition = read("../../backend/supabase/competition_realtime_resilience_20260905.sql");
+const tbaSync = read("../../backend/supabase/functions/sync_tba_matches/index.ts");
 const migration = read("../../backend/supabase/unified_responsibility_engine_20260902.sql");
 const inventoryBoundary = read("../../backend/supabase/inventory_admin_boundary_20260905.sql");
 const competitionBoundary = read("../../backend/supabase/competition_access_boundary_20260905.sql");
@@ -53,12 +55,18 @@ const checks = [
   ["Push delivery filters members by announcement audience", sendPush.includes('if (announcement.audience === "members")') && sendPush.includes('announcement.audience!=="subteam"')],
   ["Announcement access is protected in the database", rolePermissions.includes('create policy "members read applicable announcements"') && rolePermissions.includes("public.has_permission('create_announcements'")],
   ["Competition command pack caches all critical event data", competition.includes("cacheCompetitionSnapshot") && offlineDb.includes("competitionCache")],
-  ["Offline match control is limited to authorized pit operators", competition.includes('canControl=isAdmin||myAssignments.some(x=>x.role==="pit_crew")') && competition.includes("if(online||!canControl")],
+  ["Offline match control is limited to authorized pit operators", competition.includes('canControl=isAdmin||myAssignments.some(x=>x.role==="pit_crew")') && competition.includes("if(!canControl||!next")],
   ["Offline competition changes synchronize on reconnect", competition.includes("flushOfflineChanges") && offlineDb.includes("competitionMutations")],
   ["Web application shell is available offline", serviceWorker.includes('request.mode==="navigate"') && serviceWorker.includes('caches.match("/index.html")')],
   ["Pit display uses the prepared competition cache", pitDisplay.includes("getCompetitionSnapshot") && pitDisplay.includes("applyOffline")],
   ["Pit display follows the manual active match", pitDisplay.includes("getCompetitionCommand") && pitDisplay.includes("commandMatchId")],
   ["Pit display clearly identifies cached data", pitDisplay.includes("OFFLINE PIT COMMAND") && pitDisplay.includes("prepared offline command pack")],
+  ["Only one competition controller can hold a live lease", realtimeCompetition.includes("lease_expires_at") && realtimeCompetition.includes("controller_device_id=target_device")],
+  ["Active match changes are validated against the event", realtimeCompetition.includes("Match does not belong to this event")],
+  ["Competition command state is distributed through Realtime", realtimeCompetition.includes("alter publication supabase_realtime add table public.competition_command_state") && competition.includes("postgres_changes")],
+  ["Prepared competition devices publish readiness", realtimeCompetition.includes("competition_device_readiness") && competition.includes("matches_count:nextMatches.length")],
+  ["TBA synchronization records schedule freshness", tbaSync.includes("scheduleFingerprint") && tbaSync.includes("schedule_synced_at")],
+  ["Pit display follows shared online command state", pitDisplay.includes('from("competition_command_state")') && pitDisplay.includes("active_match_id")],
 ];
 
 for (const [name, passed] of checks) {

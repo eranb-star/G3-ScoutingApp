@@ -145,11 +145,22 @@ Deno.serve(async (request) => {
       if (upsertError) return json({ error: `Could not save matches: ${upsertError.message}` }, 500);
     }
 
+    const fingerprintSource = qualificationMatches.map((match) => [match.match_number, match.scheduled_time, match.red_teams, match.blue_teams]);
+    const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(JSON.stringify(fingerprintSource)));
+    const scheduleFingerprint = Array.from(new Uint8Array(digest)).map((byte) => byte.toString(16).padStart(2, "0")).join("");
+    await admin.from("competition_command_state").upsert({
+      event_id: eventId,
+      schedule_synced_at: new Date().toISOString(),
+      schedule_fingerprint: scheduleFingerprint,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "event_id" });
+
     return json({
       ok: true,
       event_id: eventId,
       tba_event_key: event.tba_event_key,
       qm_count: qualificationMatches.length,
+      schedule_fingerprint: scheduleFingerprint,
       mode: body.replace ? "replace" : "upsert",
     });
   } catch (error) {
