@@ -16,6 +16,7 @@ const rolePermissions = read("../../backend/supabase/roles_permissions_multi_tea
 const competition = read("src/pages/CompetitionOperationsPage.tsx");
 const offlineDb = read("src/lib/offlineDb.ts");
 const serviceWorker = read("public/sw.js");
+const pitDisplay = read("src/pages/CompetitionDisplayPage.tsx");
 const migration = read("../../backend/supabase/unified_responsibility_engine_20260902.sql");
 const inventoryBoundary = read("../../backend/supabase/inventory_admin_boundary_20260905.sql");
 const competitionBoundary = read("../../backend/supabase/competition_access_boundary_20260905.sql");
@@ -55,6 +56,9 @@ const checks = [
   ["Offline match control is limited to authorized pit operators", competition.includes('canControl=isAdmin||myAssignments.some(x=>x.role==="pit_crew")') && competition.includes("if(online||!canControl")],
   ["Offline competition changes synchronize on reconnect", competition.includes("flushOfflineChanges") && offlineDb.includes("competitionMutations")],
   ["Web application shell is available offline", serviceWorker.includes('request.mode==="navigate"') && serviceWorker.includes('caches.match("/index.html")')],
+  ["Pit display uses the prepared competition cache", pitDisplay.includes("getCompetitionSnapshot") && pitDisplay.includes("applyOffline")],
+  ["Pit display follows the manual active match", pitDisplay.includes("getCompetitionCommand") && pitDisplay.includes("commandMatchId")],
+  ["Pit display clearly identifies cached data", pitDisplay.includes("OFFLINE PIT COMMAND") && pitDisplay.includes("prepared offline command pack")],
 ];
 
 for (const [name, passed] of checks) {
