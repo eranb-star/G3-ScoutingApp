@@ -1,12 +1,14 @@
 import { supabase } from "../supabase";
 
 export async function getUnreadUpdateCounts(memberId:string){
-  const [{data:member},{data:announcements},{data:announcementReads},{data:messages},{data:channelReads}]=await Promise.all([
+  const [{data:member},{data:announcements},{data:announcementReads},{data:messages},{data:channelReads},{data:actions},{data:actionStates}]=await Promise.all([
     supabase.from("team_members").select("role,subteam,subteams").eq("id",memberId).maybeSingle(),
     supabase.from("announcements").select("id,audience,audience_subteam").eq("archived",false),
     supabase.from("announcement_reads").select("announcement_id").eq("member_id",memberId),
     supabase.from("channel_messages").select("id,channel_id,author_id,created_at").eq("archived",false).neq("author_id",memberId).order("created_at",{ascending:false}).limit(500),
     supabase.from("channel_read_state").select("channel_id,last_read_at").eq("member_id",memberId),
+    supabase.from("team_actions").select("id,cancelled").eq("cancelled",false),
+    supabase.from("team_action_states").select("action_id,status,snoozed_until").eq("member_id",memberId),
   ]);
   const role=String(member?.role??"member").toLowerCase();
   const subteams=Array.from(new Set([...(member?.subteams??[]),member?.subteam??""])).map(value=>String(value).trim().toLowerCase()).filter(Boolean);
@@ -22,5 +24,8 @@ export async function getUnreadUpdateCounts(memberId:string){
   const readAnnouncements=new Set((announcementReads??[]).map(row=>row.announcement_id));
   const readByChannel=new Map((channelReads??[]).map(row=>[row.channel_id,new Date(row.last_read_at).getTime()]));
   const channelCount=(messages??[]).filter(message=>new Date(message.created_at).getTime()>(readByChannel.get(message.channel_id)??0)).length;
-  return {announcements:visibleAnnouncements.filter(item=>!readAnnouncements.has(item.id)).length,channels:channelCount};
+  const stateByAction=new Map((actionStates??[]).map(row=>[row.action_id,row]));
+  const now=Date.now();
+  const actionCount=(actions??[]).filter(action=>{const state=stateByAction.get(action.id);if(!state)return true;if(state.status==="completed"||state.status==="acknowledged")return false;if(state.status==="snoozed"&&state.snoozed_until&&new Date(state.snoozed_until).getTime()>now)return false;return true;}).length;
+  return {announcements:visibleAnnouncements.filter(item=>!readAnnouncements.has(item.id)).length,channels:channelCount,actions:actionCount};
 }

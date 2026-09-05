@@ -732,13 +732,14 @@ function NotificationBell() {
     if (!profile) return;
     const load = async () => {
       const counts=await getUnreadUpdateCounts(profile.id);
-      setUnread(counts.announcements+counts.channels);
+      setUnread(counts.announcements+counts.channels+counts.actions);
     };
     void load();
-    const channel = supabase.channel("notification-bell").on("postgres_changes", { event: "*", schema: "public", table: "announcements" }, load).on("postgres_changes", { event: "INSERT", schema: "public", table: "channel_messages" }, load).subscribe();
+    const channel = supabase.channel("notification-bell").on("postgres_changes", { event: "*", schema: "public", table: "announcements" }, load).on("postgres_changes", { event: "INSERT", schema: "public", table: "channel_messages" }, load).on("postgres_changes", { event: "*", schema: "public", table: "team_actions" }, load).on("postgres_changes", { event: "*", schema: "public", table: "team_action_states", filter: `member_id=eq.${profile.id}` }, load).subscribe();
     window.addEventListener("g3-announcements-changed", load);
     window.addEventListener("g3-channels-seen", load);
-    return () => { void supabase.removeChannel(channel); window.removeEventListener("g3-announcements-changed", load); window.removeEventListener("g3-channels-seen", load); };
+    window.addEventListener("g3-actions-changed", load);
+    return () => { void supabase.removeChannel(channel); window.removeEventListener("g3-announcements-changed", load); window.removeEventListener("g3-channels-seen", load); window.removeEventListener("g3-actions-changed", load); };
   }, [profile?.id]);
   return <button className="notification-bell" type="button" onClick={() => navigate("/updates?view=inbox")} aria-label={`${unread} unread updates`}><span aria-hidden="true">●</span>{unread > 0 ? <b>{unread > 99 ? "99+" : unread}</b> : null}</button>;
 }

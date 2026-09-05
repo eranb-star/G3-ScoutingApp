@@ -95,6 +95,11 @@ export default function MembersAdminPage() {
   return (
     <div className="hub-page web-admin-page web-admin-members">
       <header className="hub-page-header"><div><div className="hub-eyebrow">{pick("Administration","ניהול")}</div><h1>{pick("Team members","חברי הקבוצה")}</h1><p>{pick("Create accounts, assign roles and control access.","יצירת חשבונות, הקצאת תפקידים וניהול הרשאות.")}</p></div></header>
+      <section className="member-onboarding-summary" aria-label={pick("Member onboarding status","סטטוס קליטת חברים")}>
+        <article><span>{pick("Active members","חברים פעילים")}</span><strong>{members.filter(member=>member.active).length}</strong><small>{pick("Can sign in now","יכולים להתחבר כעת")}</small></article>
+        <article className={members.some(member=>member.active&&member.must_change_password)?"needs-attention":""}><span>{pick("Awaiting first login","ממתינים לכניסה ראשונה")}</span><strong>{members.filter(member=>member.active&&member.must_change_password).length}</strong><small>{pick("Temporary password still active","הסיסמה הזמנית עדיין פעילה")}</small></article>
+        <article><span>{pick("Inactive accounts","חשבונות לא פעילים")}</span><strong>{members.filter(member=>!member.active).length}</strong><small>{pick("Sign-in is blocked","הכניסה חסומה")}</small></article>
+      </section>
       <div className="admin-members-layout">
         <section className="hub-card admin-member-form">
           <h2>{pick("Add a member","הוספת חבר/ת קבוצה")}</h2><p>{pick("No invitation email is sent. The member changes this temporary password on first login.","לא נשלח דוא״ל הזמנה. המשתמש מחליף את הסיסמה הזמנית בכניסה הראשונה.")}</p>
