@@ -4,6 +4,7 @@ import { supabase } from "../supabase";
 
 type EventOption = { id: string; name: string };
 type ScoutEvidence = { id: string; match_id: string; created_at: string; data: Record<string, any>; notes: string | null; match_label: string };
+type PitEvidence = { id: string; source_kind: string; confidence: number; status: string; data: Record<string, any>; notes: string | null; review_note: string | null; created_at: string };
 
 type TeamPlayoffRow = {
   event_id: string;
@@ -152,6 +153,7 @@ export default function AnalysisPage() {
   const [filterMode, setFilterMode] = useState<"all" | "safe" | "auto" | "endgame" | "defense">("all");
   const [selectedTeam, setSelectedTeam] = useState<TeamPlayoffRow | null>(null);
   const [teamEvidence, setTeamEvidence] = useState<ScoutEvidence[]>([]);
+  const [pitEvidence, setPitEvidence] = useState<PitEvidence[]>([]);
   const [evidenceLoading, setEvidenceLoading] = useState(false);
 
   useEffect(() => {
@@ -318,9 +320,11 @@ export default function AnalysisPage() {
   const openTeam = async (team: TeamPlayoffRow) => {
     setSelectedTeam(team);
     setTeamEvidence([]);
+    setPitEvidence([]);
     setEvidenceLoading(true);
-    const entries = await supabase.from("scout_entries").select("id,match_id,created_at,data,notes")
-      .eq("event_id", eventId).eq("team_number", team.team_number).or("is_duplicate.eq.false,is_duplicate.is.null").order("created_at");
+    const [entries,pitReports] = await Promise.all([supabase.from("scout_entries").select("id,match_id,created_at,data,notes")
+      .eq("event_id", eventId).eq("team_number", team.team_number).or("is_duplicate.eq.false,is_duplicate.is.null").order("created_at"),supabase.from("pit_scouting_reports").select("id,source_kind,confidence,status,data,notes,review_note,created_at").eq("event_id",eventId).eq("team_number",team.team_number).in("status",["submitted","verified"]).order("created_at",{ascending:false})]);
+    if(!pitReports.error)setPitEvidence((pitReports.data??[]) as PitEvidence[]);
     if (entries.error) { setEvidenceLoading(false); return; }
     const matchIds = Array.from(new Set((entries.data ?? []).map((entry: any) => entry.match_id).filter(Boolean)));
     const matches = matchIds.length ? await supabase.from("matches").select("id,match_type,match_number").in("id", matchIds) : { data: [] as any[] };
@@ -343,8 +347,9 @@ export default function AnalysisPage() {
     const recent = rows.slice(-3), earlier = rows.slice(0, Math.max(0, rows.length - 3));
     const average = (items: typeof rows, key: "auto" | "teleop" | "cycles") => items.length ? items.reduce((sum, item) => sum + item[key], 0) / items.length : 0;
     const trend = earlier.length ? average(recent, "teleop") - average(earlier, "teleop") : 0;
-    return { rows, confidence: rows.length >= 6 ? "High" : rows.length >= 3 ? "Developing" : "Low", trend };
-  }, [teamEvidence]);
+    const verifiedPit=pitEvidence.filter(row=>row.status==="verified").length;
+    return { rows, verifiedPit, confidence: rows.length >= 6&&verifiedPit ? "High" : rows.length >= 3||verifiedPit ? "Developing" : "Low", trend };
+  }, [teamEvidence,pitEvidence]);
 
   const tabBtn = (active: boolean) => ({
     padding: "10px 12px",
@@ -549,6 +554,11 @@ export default function AnalysisPage() {
                     {evidenceLoading ? <p>Loading observed matches…</p> : evidenceSummary.rows.length ? evidenceSummary.rows.map(({ entry, auto, teleop, cycles }) => (
                       <article key={entry.id}><b>{entry.match_label}</b><div><span>AUTO <strong>{auto}</strong></span><span>TELEOP <strong>{teleop}</strong></span><span>CYCLES <strong>{cycles}</strong></span></div>{entry.notes ? <p>{entry.notes}</p> : null}</article>
                     )) : <p>No individual match evidence is available yet.</p>}
+                  </section>
+
+                  <section className="team-pit-intelligence">
+                    <header><div><small>PIT INTELLIGENCE</small><strong>Claims separated from verified evidence</strong></div><span>{evidenceSummary.verifiedPit} verified</span></header>
+                    {evidenceLoading ? <p>Loading pit evidence…</p> : pitEvidence.length ? pitEvidence.map(entry=><article className={`status-${entry.status}`} key={entry.id}><header><span>{entry.status === "verified" ? "G3 VERIFIED" : "PIT REPORTED"}</span><b>{entry.confidence}/5 confidence</b></header><small>{entry.source_kind.replaceAll("_"," ")} · {new Date(entry.created_at).toLocaleDateString()}</small><div>{Object.entries(entry.data??{}).filter(([,value])=>value!==""&&value!==null&&value!==undefined).map(([key,value])=><span key={key}><i>{key.replaceAll("_"," ")}</i><b>{String(value)}</b></span>)}</div>{entry.notes?<p>{entry.notes}</p>:null}{entry.review_note?<blockquote>Verification: {entry.review_note}</blockquote>:null}</article>) : <p>No pit profile has been submitted for this team.</p>}
                   </section>
 
                   <div style={{ padding: 10, borderRadius: 12, border: "1px solid #eee" }}>

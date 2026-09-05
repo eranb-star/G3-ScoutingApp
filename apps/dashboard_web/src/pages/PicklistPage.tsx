@@ -63,6 +63,7 @@ export default function PicklistPage() {
 
   const [allEventTeams, setAllEventTeams] = useState<number[]>([]);
   const [statsRows, setStatsRows] = useState<TeamRow[]>([]);
+  const [verifiedPitByTeam,setVerifiedPitByTeam]=useState<Record<number,number>>({});
 
   const [loadingTeams, setLoadingTeams] = useState(false);
   const [loadingStats, setLoadingStats] = useState(false);
@@ -125,6 +126,8 @@ export default function PicklistPage() {
     loadEventTeams();
   }, [eventId]);
 
+  useEffect(()=>{if(!eventId){setVerifiedPitByTeam({});return}void supabase.from("pit_scouting_reports").select("team_number").eq("event_id",eventId).eq("status","verified").then(({data})=>{const counts:Record<number,number>={};for(const row of data??[])counts[Number(row.team_number)]=(counts[Number(row.team_number)]??0)+1;setVerifiedPitByTeam(counts)})},[eventId]);
+
   // ---------- Load stats ----------
   useEffect(() => {
     const loadStats = async () => {
@@ -175,7 +178,7 @@ export default function PicklistPage() {
     const intel = computeAllianceIntel([r, r, r]); // safe way to compute risk label with same logic
     const score = pickRankValue(r);
 
-    return `${team} — score ${num(score, 1)} — matches ${r.matches_scouted ?? 0} — end ${pct(r.endgame_success_rate)} — dis ${pct(
+    return `${team} — score ${num(score, 1)} — matches ${r.matches_scouted ?? 0} — pit ${verifiedPitByTeam[team]?"verified":"unverified"} — end ${pct(r.endgame_success_rate)} — dis ${pct(
       r.disabled_rate
     )} — ${intel.riskLabel}`;
   }
@@ -660,6 +663,7 @@ export default function PicklistPage() {
                 <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>Team</th>
                 <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>Score</th>
                 <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>Matches</th>
+                <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>Evidence</th>
                 <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>Quick</th>
                 <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>Draft</th>
               </tr>
@@ -677,6 +681,7 @@ export default function PicklistPage() {
                     <td style={{ padding: 10, fontWeight: 1000 }}>#{team}</td>
                     <td style={{ padding: 10, fontWeight: 900 }}>{num(score, 1)}</td>
                     <td style={{ padding: 10 }}>{r.matches_scouted ?? 0}</td>
+                    <td style={{ padding: 10 }}>{verifiedPitByTeam[team]?<Badge text="PIT VERIFIED" bg="#e8fff6"/>:<Badge text="PIT UNVERIFIED" bg="#fff4cc"/>}</td>
                     <td style={{ padding: 10, opacity: 0.9 }}>
                       Auto {num(r.auto_score_avg, 1)} · Tele {num(r.teleop_score_avg, 1)} · End {pct(r.endgame_success_rate)} ·{" "}
                       {riskBadge(intel.riskLabel)}
