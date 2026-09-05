@@ -1,8 +1,10 @@
 // apps/dashboard_web/src/pages/ScoutingPage.tsx
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { supabase } from "../supabase";
 import TemplateForm from "../components/TemplateForm";
+import { useMemberAuth } from "../lib/memberAuth";
 import {
   enqueueScoutEntry,
   getQueuedScoutEntryCount,
@@ -12,6 +14,7 @@ import {
   getCachedMatches,
   cacheMatchTeams,
   getCachedMatchTeams,
+  getCompetitionSnapshot,
   listQueuedScoutEntries,
   removeQueuedScoutEntry,
 } from "../lib/offlineDb";
@@ -43,6 +46,16 @@ type ScoutRow = {
   name: string;
   is_active?: boolean | null;
 };
+
+type EventRow = { id: string; name: string; location?: string | null; start_date?: string | null };
+type AssignmentRow = { id: string; match_id: string | null; member_id: string; role: string; status: string };
+
+function teamForAssignment(role: string, match?: MatchRow) {
+  const station = /^scout_(red|blue)_([123])$/.exec(role);
+  if (!station || !match) return null;
+  const teams = station[1] === "red" ? match.red_teams : match.blue_teams;
+  return teams?.[Number(station[2]) - 1] ?? null;
+}
 
 // --------------------
 // Helpers
@@ -90,11 +103,14 @@ function offlineLikelyFromErrorMessage(msg: string) {
 
 export default function ScoutingPage() {
   const isNarrow = useIsNarrow(600);
+  const { profile } = useMemberAuth();
+  const [params] = useSearchParams();
 
   // =====================
   // Event + Template
   // =====================
-  const [eventId, setEventId] = useState<string>("");
+  const [events, setEvents] = useState<EventRow[]>([]);
+  const [eventId, setEventId] = useState<string>(() => params.get("event_id") ?? localStorage.getItem("g3_event_id") ?? "");
   const [template, setTemplate] = useState<any>(null);
   const [templateLoading, setTemplateLoading] = useState(false);
   const [templateError, setTemplateError] = useState<string>("");
@@ -122,6 +138,7 @@ export default function ScoutingPage() {
 
   // Selected match
   const [matchId, setMatchId] = useState<string>("");
+  const [assignments, setAssignments] = useState<AssignmentRow[]>([]);
 
   // =====================
   // Teams for Selected Match
@@ -143,6 +160,31 @@ export default function ScoutingPage() {
 
   // Prevent overlapping sync runs
   const syncInflight = useRef<Promise<void> | null>(null);
+
+  useEffect(() => {
+    void supabase.from("events").select("id,name,location,start_date").eq("active", true).order("start_date", { ascending: false })
+      .then(async ({ data, error }) => {
+        if (!error && data?.length) { setEvents(data as EventRow[]); return; }
+        if (!eventId) return;
+        const cached = await getCompetitionSnapshot(eventId);
+        setEvents((cached?.events ?? []) as EventRow[]);
+      });
+  }, [eventId]);
+
+  useEffect(() => {
+    if (!profile?.display_name) return;
+    setScoutName(profile.display_name);
+    setScoutLocked(true);
+    localStorage.setItem("g3_scout_name", profile.display_name);
+    localStorage.setItem("g3_scout_name_locked", "1");
+  }, [profile?.display_name]);
+
+  useEffect(() => {
+    if (!eventId || !profile?.id) { setAssignments([]); return; }
+    void supabase.from("competition_assignments").select("id,match_id,member_id,role,status")
+      .eq("event_id", eventId).eq("member_id", profile.id).like("role", "scout_%")
+      .then(({ data }) => setAssignments((data ?? []) as AssignmentRow[]));
+  }, [eventId, profile?.id]);
 
   useEffect(() => {
     let alive = true;
@@ -466,6 +508,21 @@ export default function ScoutingPage() {
     return m ? niceMatchLabel(m) : "";
   }, [matches, matchId]);
 
+  const currentAssignment = useMemo(() => assignments.find((item) => item.match_id === matchId) ?? null, [assignments, matchId]);
+
+  useEffect(() => {
+    const requestedMatch = params.get("match_id");
+    const nextAssignment = assignments.find((item) => item.status !== "completed" && matches.some((match) => match.id === item.match_id));
+    const target = requestedMatch && matches.some((match) => match.id === requestedMatch) ? requestedMatch : nextAssignment?.match_id;
+    if (target && target !== matchId) setMatchId(target);
+  }, [assignments, matches, params]);
+
+  useEffect(() => {
+    if (!currentAssignment) return;
+    const assignedTeam = teamForAssignment(currentAssignment.role, matches.find((item) => item.id === currentAssignment.match_id));
+    if (assignedTeam) setValues((previous) => ({ ...previous, team_number: assignedTeam }));
+  }, [currentAssignment, matches, matchTeams]);
+
   // =====================
   // Load Match Teams when match changes (ONLINE -> cache, OFFLINE -> cached fallback)
   // =====================
@@ -628,6 +685,10 @@ export default function ScoutingPage() {
       }
 
       setSaveMsg(`Saved ✅ (${selectedMatchLabel || "match"})`);
+      if (currentAssignment && currentAssignment.status !== "completed") {
+        await supabase.from("competition_assignments").update({ status: "completed" }).eq("id", currentAssignment.id);
+        setAssignments((rows) => rows.map((item) => item.id === currentAssignment.id ? { ...item, status: "completed" } : item));
+      }
       setValues((prev) => ({
         team_number: prev.team_number, // keep team selection
         notes: "",
@@ -650,8 +711,11 @@ export default function ScoutingPage() {
   // UI
   // =====================
   return (
-    <div style={{ padding: isNarrow ? 10 : 16, maxWidth: 1020 }}>
-      <h1 style={{ marginBottom: 6 }}>Scouting</h1>
+    <main className="scouting-command-page" style={{ padding: isNarrow ? 10 : 16, maxWidth: 1020 }}>
+      <header className="scouting-command-hero">
+        <div><span>G3 6740 · MATCH OPERATIONS</span><h1>Scout the match</h1><p>One assignment, one team, one clear report.</p></div>
+        <div className="scouting-sync-state"><b>{navigator.onLine ? "LIVE" : "OFFLINE"}</b><small>{offlineQueuedCount ? `${offlineQueuedCount} waiting to sync` : "All reports synchronized"}</small></div>
+      </header>
 
       {/* Soft offline info banner */}
       {offlineInfo ? (
@@ -684,10 +748,7 @@ export default function ScoutingPage() {
             style={controlStyle}
           >
             <option value="">Select Event</option>
-            <option value="f34e67ec-bac9-433e-a97a-1e295aef8f30">ISR District Event #1</option>
-            <option value="9fa31339-9f79-4d5b-9272-934b15d098d6">ISR District Event #2</option>
-            <option value="948f95ba-2935-4c5d-860b-6c90429a66c3">ISR District Event #3</option>
-            <option value="773deb87-bbfe-41d9-9537-7fd201f8998c">ISR District Event #4</option>
+            {events.map((event) => <option value={event.id} key={event.id}>{event.name}</option>)}
           </select>
         </div>
       </div>
@@ -695,7 +756,7 @@ export default function ScoutingPage() {
       {!eventId && <div style={{ opacity: 0.8 }}>בחר Event כדי לטעון טופס ומאצ׳ים.</div>}
 
       {/* SCOUT PICKER (picklist only — no manual “previous scout name” UI) */}
-      {eventId && (
+      {eventId && !profile && (
         <div style={{ marginBottom: 14, maxWidth: 520 }}>
           <div style={{ fontWeight: 900, marginBottom: 6 }}>בחר/י את השם שלך (ננעל לפי המכשיר)</div>
 
@@ -770,6 +831,19 @@ export default function ScoutingPage() {
           ) : null}
         </div>
       )}
+
+      {eventId && assignments.length > 0 ? (
+        <section className="scouting-assignment-rail" aria-label="My scouting assignments">
+          <div><span>MY SCOUTING RUN</span><strong>{assignments.filter((item) => item.status === "completed").length}/{assignments.length} reports complete</strong></div>
+          <div className="scouting-assignment-chips">
+            {assignments.map((assignment) => {
+              const match = matches.find((item) => item.id === assignment.match_id);
+              const team = teamForAssignment(assignment.role, match);
+              return <button type="button" className={`${assignment.match_id === matchId ? "is-current" : ""} ${assignment.status === "completed" ? "is-done" : ""}`} onClick={() => assignment.match_id && setMatchId(assignment.match_id)} key={assignment.id}><b>{match ? niceMatchLabel(match) : "EVENT"}</b><span>{team ? `Team ${team}` : "Awaiting draw"}</span><small>{assignment.status}</small></button>;
+            })}
+          </div>
+        </section>
+      ) : null}
 
       {/* TEMPLATE STATUS */}
       {eventId && templateLoading && <div style={{ opacity: 0.8 }}>Loading template…</div>}
@@ -954,6 +1028,6 @@ export default function ScoutingPage() {
           <TemplateForm template={template} values={values} setValue={setValue} />
         </>
       )}
-    </div>
+    </main>
   );
 }
