@@ -1,0 +1,20 @@
+begin;
+create table if not exists public.pit_scouting_reports(
+ id uuid primary key default gen_random_uuid(), entry_uuid uuid not null unique default gen_random_uuid(), event_id uuid not null references public.events(id) on delete cascade,
+ team_number integer not null check(team_number>0), reporter_id uuid not null references public.team_members(id), source_kind text not null default 'mixed' check(source_kind in('team_stated','g3_observed','mixed')),
+ confidence smallint not null default 3 check(confidence between 1 and 5), status text not null default 'submitted' check(status in('draft','submitted','verified','needs_review')),
+ data jsonb not null default '{}'::jsonb, notes text, device_id text, created_at timestamptz not null default now(), updated_at timestamptz not null default now()
+);
+create index if not exists pit_scouting_event_team_idx on public.pit_scouting_reports(event_id,team_number,updated_at desc);
+create table if not exists public.scouting_report_reviews(
+ id uuid primary key default gen_random_uuid(), event_id uuid not null references public.events(id) on delete cascade, match_id uuid not null references public.matches(id) on delete cascade,
+ team_number integer not null, accepted_entry_id uuid not null, excluded_entry_ids uuid[] not null default '{}', reason text not null, reviewed_by uuid not null references public.team_members(id), created_at timestamptz not null default now()
+);
+alter table public.pit_scouting_reports enable row level security;alter table public.scouting_report_reviews enable row level security;
+drop policy if exists pit_reports_read on public.pit_scouting_reports;create policy pit_reports_read on public.pit_scouting_reports for select to authenticated using(public.current_team_role() is not null);
+drop policy if exists pit_reports_create on public.pit_scouting_reports;create policy pit_reports_create on public.pit_scouting_reports for insert to authenticated with check(reporter_id=auth.uid() and public.current_team_role() is not null);
+drop policy if exists pit_reports_update on public.pit_scouting_reports;create policy pit_reports_update on public.pit_scouting_reports for update to authenticated using(reporter_id=auth.uid() or public.current_team_role() in('team_leader','mentor','admin')) with check(reporter_id=auth.uid() or public.current_team_role() in('team_leader','mentor','admin'));
+drop policy if exists scouting_reviews_read on public.scouting_report_reviews;create policy scouting_reviews_read on public.scouting_report_reviews for select to authenticated using(public.current_team_role() in('team_leader','mentor','admin'));
+create or replace function public.resolve_scouting_conflict(target_event uuid,target_match uuid,target_team integer,accepted_entry uuid,resolution_reason text) returns uuid language plpgsql security definer set search_path=public as $$declare review_id uuid; excluded uuid[];begin if public.current_team_role() not in('team_leader','mentor','admin') then raise exception 'Not authorized to resolve scouting conflicts';end if;if not exists(select 1 from public.scout_entries where id=accepted_entry and event_id=target_event and match_id=target_match and team_number=target_team) then raise exception 'Accepted report is not part of this conflict';end if;select coalesce(array_agg(id),'{}') into excluded from public.scout_entries where event_id=target_event and match_id=target_match and team_number=target_team and id<>accepted_entry;update public.scout_entries set is_duplicate=(id<>accepted_entry) where event_id=target_event and match_id=target_match and team_number=target_team;insert into public.scouting_report_reviews(event_id,match_id,team_number,accepted_entry_id,excluded_entry_ids,reason,reviewed_by) values(target_event,target_match,target_team,accepted_entry,excluded,resolution_reason,auth.uid()) returning id into review_id;return review_id;end$$;
+revoke all on function public.resolve_scouting_conflict(uuid,uuid,integer,uuid,text) from public;grant execute on function public.resolve_scouting_conflict(uuid,uuid,integer,uuid,text) to authenticated;
+commit;

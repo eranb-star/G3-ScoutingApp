@@ -49,6 +49,8 @@ import { Capacitor } from "@capacitor/core";
 import WebPortalShell, { WebCheckInNotice } from "./components/WebPortalShell";
 import CompetitionDisplayPage from "./pages/CompetitionDisplayPage";
 import PermissionsAdminPage from "./pages/PermissionsAdminPage";
+import PitScoutingPage from "./pages/PitScoutingPage";
+import ScoutingQualityPage from "./pages/ScoutingQualityPage";
 
 // ----------------------
 // Small helpers
@@ -802,7 +804,7 @@ function AppShell() {
   useEffect(()=>{window.scrollTo({top:0,left:0,behavior:"auto"});},[location.pathname,location.search]);
   useEffect(()=>{setWebAssistantOpen(false);},[location.pathname]);
   const isAuthScreen = location.pathname === "/login" || location.pathname === "/change-password";
-  const isPrimaryDestination=["/home","/work","/schedule","/updates","/growth","/competition","/more","/admin"].includes(location.pathname);
+  const isPrimaryDestination=["/home","/work","/schedule","/updates","/growth","/more","/admin"].includes(location.pathname);
   const activeIssue=location.pathname==="/robot-issues"?new URLSearchParams(location.search).get("issue"):null;
   const assistantPath=activeIssue?`/assistant?issue=${activeIssue}`:"/assistant";
   const isDisplayScreen=location.pathname==="/competition/display";
@@ -824,6 +826,8 @@ function AppShell() {
         <Route path="/more" element={<MemberGate><MorePage isAdmin={isAdmin} /></MemberGate>} />
         <Route path="/competition" element={<MemberGate><><CompetitionAssignmentBanner/><CompetitionOperationsPage isAdmin={isAdmin} /></></MemberGate>} />
         <Route path="/competition/display" element={<MemberGate><CompetitionDisplayPage /></MemberGate>} />
+        <Route path="/competition/pit-scouting" element={<MemberGate><PitScoutingPage /></MemberGate>} />
+        <Route path="/competition/scouting-quality" element={<MemberGate><ScoutingQualityPage /></MemberGate>} />
         <Route path="/growth" element={<MemberGate><TrainingCenterPage /></MemberGate>} />
         <Route path="/season-planning" element={<MemberGate><SeasonPlanningPage /></MemberGate>} />
         <Route path="/admin/members" element={<AdminGate><MembersAdminPage /></AdminGate>} />

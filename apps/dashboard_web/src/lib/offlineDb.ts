@@ -39,6 +39,21 @@ type ScoutsCacheRow = {
   cached_at: string; // ISO
 };
 
+export type QueuedPitScoutReport = {
+  entry_uuid: string;
+  event_id: string;
+  team_number: number;
+  reporter_id: string;
+  source_kind: string;
+  confidence: number;
+  status: string;
+  data: Record<string, unknown>;
+  notes: string | null;
+  device_id: string;
+  created_at: string;
+  updated_at: string;
+};
+
 export type CompetitionSnapshot = {
   event_id: string;
   event: any;
@@ -67,7 +82,7 @@ export type CompetitionMutation = {
   created_at: string;
 };
 
-type StoreName = "entryQueue" | "templateCache" | "matchesCache" | "matchTeamsCache" | "scoutsCache" | "competitionCache" | "competitionCommand" | "competitionMutations";
+type StoreName = "entryQueue" | "pitScoutQueue" | "templateCache" | "matchesCache" | "matchTeamsCache" | "scoutsCache" | "competitionCache" | "competitionCommand" | "competitionMutations";
 
 const DB_NAME = "g3_scouting_offline_v1";
 
@@ -75,7 +90,7 @@ const DB_NAME = "g3_scouting_offline_v1";
 // If ANY device already created DB at version 2,
 // opening with version 1 will throw VersionError.
 // We bump to 4 to be safe for future store additions.
-const DB_VERSION = 6;
+const DB_VERSION = 7;
 
 function openDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -87,6 +102,9 @@ function openDb(): Promise<IDBDatabase> {
       // Create stores if missing (safe across upgrades)
       if (!db.objectStoreNames.contains("entryQueue")) {
         db.createObjectStore("entryQueue", { keyPath: "entry_uuid" });
+      }
+      if (!db.objectStoreNames.contains("pitScoutQueue")) {
+        db.createObjectStore("pitScoutQueue", { keyPath: "entry_uuid" });
       }
       if (!db.objectStoreNames.contains("templateCache")) {
         db.createObjectStore("templateCache", { keyPath: "event_id" });
@@ -252,6 +270,19 @@ export async function cacheScouts(event_id: string, scouts: any[]): Promise<void
 export async function getCachedScouts(event_id: string): Promise<ScoutsCacheRow | null> {
   const row = await withStore<ScoutsCacheRow | undefined>("scoutsCache", "readonly", (store) => store.get(event_id));
   return row ?? null;
+}
+
+export async function enqueuePitScoutReport(report: QueuedPitScoutReport): Promise<void> {
+  await withStore<void>("pitScoutQueue", "readwrite", store => store.put(report));
+}
+
+export async function listQueuedPitScoutReports(): Promise<QueuedPitScoutReport[]> {
+  const rows = await withStore<QueuedPitScoutReport[]>("pitScoutQueue", "readonly", store => store.getAll());
+  return Array.isArray(rows) ? rows : [];
+}
+
+export async function removeQueuedPitScoutReport(entry_uuid: string): Promise<void> {
+  await withStore<void>("pitScoutQueue", "readwrite", store => store.delete(entry_uuid));
 }
 
 export async function cacheCompetitionSnapshot(snapshot: Omit<CompetitionSnapshot, "cached_at">): Promise<CompetitionSnapshot> {
