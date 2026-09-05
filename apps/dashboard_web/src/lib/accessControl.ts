@@ -7,8 +7,8 @@ export type PermissionKey="view_team_data"|"manage_team_projects"|"assign_team_w
 
 const defaults:Record<TeamRole,PermissionKey[]>={
   member:["view_team_data","operate_competition"],
-  team_leader:["view_team_data","manage_team_projects","assign_team_work","manage_robot_reliability","manage_training","manage_team_calendar","create_announcements","manage_inventory","submit_purchase_requests","operate_competition","view_team_reports"],
-  mentor:["view_team_data","manage_team_projects","assign_team_work","manage_robot_reliability","manage_training","validate_training","manage_team_calendar","create_announcements","manage_inventory","submit_purchase_requests","operate_competition","view_team_reports"],
+  team_leader:["view_team_data","manage_team_projects","assign_team_work","manage_robot_reliability","manage_training","manage_team_calendar","create_announcements","submit_purchase_requests","operate_competition","view_team_reports"],
+  mentor:["view_team_data","manage_team_projects","assign_team_work","manage_robot_reliability","manage_training","validate_training","manage_team_calendar","create_announcements","submit_purchase_requests","operate_competition","view_team_reports"],
   admin:["view_team_data","manage_team_projects","assign_team_work","manage_robot_reliability","manage_training","validate_training","manage_team_calendar","create_announcements","manage_inventory","submit_purchase_requests","operate_competition","view_team_reports","correct_attendance","manage_members","manage_permissions","view_security_audit"],
 };
 const teamScoped=new Set<PermissionKey>(["manage_team_projects","assign_team_work","manage_robot_reliability","manage_training","manage_team_calendar","create_announcements","manage_inventory","view_team_reports"]);

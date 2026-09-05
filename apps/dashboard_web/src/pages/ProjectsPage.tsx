@@ -8,7 +8,7 @@ import { frcTeams, teamByKey, teamMatches } from "../lib/frcTeams";
 import { useAccessControl } from "../lib/accessControl";
 
 type Project = { id:string; name:string; status:string; due_at:string|null; subteam:string|null; owner_id:string|null };
-type Task = { id:string; project_id:string; title:string; status:string; due_at:string|null; archived?:boolean };
+type Task = { id:string; project_id:string; title:string; status:string; due_at:string|null; archived?:boolean; assignee_id:string|null; created_by:string|null };
 
 const workstreams = frcTeams.map(team=>team.key);
 
@@ -34,7 +34,7 @@ export default function ProjectsPage() {
   async function load() {
     const [projectResult, taskResult] = await Promise.all([
       supabase.from("team_projects").select("id,name,status,due_at,subteam,owner_id").order("created_at", { ascending:false }),
-      supabase.from("project_tasks").select("id,project_id,title,status,due_at,archived").order("created_at"),
+      supabase.from("project_tasks").select("id,project_id,title,status,due_at,archived,assignee_id,created_by").order("created_at"),
     ]);
     if (projectResult.error || taskResult.error) setMessage(projectResult.error?.message ?? taskResult.error?.message ?? pick("Projects could not be loaded.", "לא ניתן לטעון את הפרויקטים."));
     setProjects((projectResult.data ?? []) as Project[]);
@@ -62,8 +62,8 @@ export default function ProjectsPage() {
     setMessage(error?.message ?? pick("Task created.", "המשימה נוצרה."));
     if (!error) { sessionStorage.removeItem("g3-project-task-draft");setAssistantDraft(false);setTaskProject(null); setTaskTitle(""); setTaskDue(""); await load(); }
   }
-  async function updateProject(project:Project, status:string) { const {error}=await supabase.from("team_projects").update({status,updated_at:new Date().toISOString()}).eq("id",project.id); setMessage(error?.message??pick("Project updated.","הפרויקט עודכן.")); if(!error)await load(); }
-  async function updateTask(task:Task, status:string) { const {error}=await supabase.from("project_tasks").update({status,completed_at:status==="done"?new Date().toISOString():null,updated_at:new Date().toISOString()}).eq("id",task.id); setMessage(error?.message??pick("Task updated.","המשימה עודכנה.")); if(!error)await load(); }
+  async function updateProject(project:Project, status:string) { if(project.owner_id!==profile?.id&&!access.can("manage_team_projects",project.subteam)){setMessage(pick("Only the project owner or an authorized team leader can change this status.","רק בעלי הפרויקט או מוביל/ת צוות מורשה יכולים לשנות את הסטטוס."));return;} const {error}=await supabase.from("team_projects").update({status,updated_at:new Date().toISOString()}).eq("id",project.id); setMessage(error?.message??pick("Project updated.","הפרויקט עודכן.")); if(!error)await load(); }
+  async function updateTask(task:Task, status:string) { if(!isAdmin&&task.assignee_id!==profile?.id&&task.created_by!==profile?.id){setMessage(pick("Only the assignee, task creator or an administrator can update this task.","רק האחראי/ת, יוצר/ת המשימה או מנהל/ת יכולים לעדכן אותה."));return;} const {error}=await supabase.from("project_tasks").update({status,completed_at:status==="done"?new Date().toISOString():null,updated_at:new Date().toISOString()}).eq("id",task.id); setMessage(error?.message??pick("Task updated.","המשימה עודכנה.")); if(!error)await load(); }
   async function archiveTask(task:Task) { if(!isAdmin)return; const {error}=await supabase.from("project_tasks").update({archived:true}).eq("id",task.id); setMessage(error?.message??pick("Task archived.","המשימה הועברה לארכיון.")); if(!error)await load(); }
   async function removeProject(project:Project) { if(!isAdmin||!confirm(pick(`Delete “${project.name}” and its tasks permanently?`,`למחוק לצמיתות את “${project.name}” ואת המשימות שלו?`)))return; const {error}=await supabase.from("team_projects").delete().eq("id",project.id); setMessage(error?.message??pick("Project deleted.","הפרויקט נמחק.")); if(!error)await load(); }
   async function removeTask(task:Task) { if(!isAdmin||!confirm(pick(`Delete “${task.title}” permanently?`,`למחוק לצמיתות את “${task.title}”?`)))return; const {error}=await supabase.from("project_tasks").delete().eq("id",task.id); setMessage(error?.message??pick("Task deleted.","המשימה נמחקה.")); if(!error)await load(); }

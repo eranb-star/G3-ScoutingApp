@@ -26,7 +26,7 @@ export default function TrainingCenterPage(){
   const {pick}=useLocalization();
   const {profile}=useMemberAuth();
   const access=useAccessControl();
-  const canEdit=access.can("manage_training")||(profile?.leader_subteams??[]).some(team=>access.can("manage_training",team));
+  const canCreate=access.can("manage_training")||(profile?.leader_subteams??[]).some(team=>access.can("manage_training",team));
   const canReview=access.can("validate_training");
   const canDelete=profile?.role==="admin";
   const canReorder=profile?.role==="admin";
@@ -75,6 +75,7 @@ export default function TrainingCenterPage(){
 
   async function saveCourse(e:FormEvent){
     e.preventDefault();
+    if(!access.can("manage_training",course.target_subteam||null)){setMessage(pick("Choose a department you are authorized to lead.","בחרו מחלקה שאתם מורשים להוביל."));return;}
     const payload={...course,target_subteam:course.target_subteam||null};
     const result=formMode==="edit"
       ? await supabase.from("training_courses").update(payload).eq("id",selected)
@@ -125,12 +126,13 @@ export default function TrainingCenterPage(){
   }
 
   const active=courses.find(x=>x.id===selected);
+  const canEdit=access.can("manage_training",active?.target_subteam);
   const courseModules=modules.filter(x=>x.course_id===selected);
   const myEnrollment=enrollments.find(x=>x.course_id===selected&&x.member_id===profile?.id);
   const courseAssessments=assessments.filter(x=>x.course_id===selected);
   const reviewQueue=assessmentSubmissions.filter(x=>courseAssessments.some(a=>a.id===x.assessment_id)&&["submitted","changes_requested"].includes(x.status));
   return <main className="hub-page training-center-page">
-    <header className="training-hero"><div><div className="hub-eyebrow">FRC 6740 · {pick("Structured qualification","הסמכה מובנית")}</div><h1>{pick("Skills Academy","אקדמיית מיומנויות")}</h1><p>{pick("Team leaders build FRC courses. Students complete practical modules and mentors validate the evidence.","מובילי הקבוצה בונים קורסי FRC. תלמידים משלימים יחידות מעשיות ומנטורים מאמתים את הראיות.")}</p></div>{canEdit?<button onClick={()=>{setCourse(blank);setFormMode(formMode==="create"?"closed":"create");}}>+ {pick("Create course","יצירת קורס")}</button>:null}</header>
+    <header className="training-hero"><div><div className="hub-eyebrow">FRC 6740 · {pick("Structured qualification","הסמכה מובנית")}</div><h1>{pick("Skills Academy","אקדמיית מיומנויות")}</h1><p>{pick("Team leaders build FRC courses. Students complete practical modules and mentors validate the evidence.","מובילי הקבוצה בונים קורסי FRC. תלמידים משלימים יחידות מעשיות ומנטורים מאמתים את הראיות.")}</p></div>{canCreate?<button onClick={()=>{setCourse({...blank,target_subteam:profile?.role==="team_leader"?(profile.leader_subteams?.[0]??""):""});setFormMode(formMode==="create"?"closed":"create");}}>+ {pick("Create course","יצירת קורס")}</button>:null}</header>
     {message?<div className="hub-message" role="status">{message}</div>:null}
     <nav className="academy-view-tabs" aria-label={pick("Skills Academy sections","אזורי אקדמיית המיומנויות")}>
       <button className={academyView==="content"?"is-active":""} onClick={()=>setAcademyView("content")}><span>01</span>{pick("Course content","תוכן הקורס")}</button>
