@@ -14,7 +14,7 @@ This is the single source of truth for resuming development. Read this file befo
 - Operational UX release was committed, pushed, promoted to production and installed on Android by the product owner. Released Android identity: version `1.6.0`, code `9`.
 - Team Media + Feedback Center was committed, pushed, promoted to production and installed on Android by the product owner.
 - Purchase Reliability + Attendance Reliability + Engineering Hub is committed and pushed in `ee3efbb`. Its exact authenticated Vercel preview passed; production promotion and Android `1.8.0` installation remain pending.
-- Current uncommitted product changes are a navigation/calendar/member-feedback refinement batch: Engineering Hub is separated from FRC departments, duplicate Media/Feedback Work destinations are removed, web navigation is reordered, the redundant web G3 Assist menu entry is removed, member edits show a prominent success notice, all members can open calendar event details, and authorized calendar managers can edit or logically delete events.
+- Current uncommitted product changes are a navigation/calendar/member-feedback refinement batch: Engineering Hub is separated from FRC departments, duplicate Media/Feedback Work destinations are removed, web navigation is reordered, the redundant web G3 Assist menu entry is removed, member edits show a prominent success notice, all members can open calendar event details with human-readable audiences, and authorized calendar managers can edit or logically delete events.
 - Local non-product changes: Android Studio may modify `android/.idea/deploymentTargetSelector.xml` and `android/.idea/misc.xml`. Never include these files in a product commit.
 - Live quiz-engine schema verified on 2026-09-06: `training_assessments.due_at`, `training_assessments.max_attempts`, `training_assessment_answer_keys`, `training_assessment_assignments` and `submit_training_quiz` are present and responding through Supabase. Do not rerun the migration merely for confirmation.
 
@@ -107,7 +107,9 @@ Prepared on 2026-09-06 as one web/Android batch; it is not production-released u
 - Engineering Hub has explicit readable hover/focus treatment rather than white text on its light special-card background.
 - Saving an edited member profile produces a prominent, dismissible success notice.
 - Calendar events are interactive in Month and Agenda views. Every permitted viewer can open full details; users with `manage_team_calendar` can edit or logically delete (cancel) an event using existing database policies.
-- TypeScript, Vite production build and all existing regression suites passed. The exact built web index and synchronized Android asset index matched SHA-256 `21BE89CE4A247BA51BFB3E02EBDCDE841CFF323224B69BBB8A62B4CD2BFF383A`.
+- Event details resolve an individual audience to the member's display name instead of exposing an internal UUID.
+- Migration `backend/supabase/calendar_event_management_20260906.sql` adds the permission-checked `cancel_team_calendar_event` RPC so cancellation can pass the visibility boundary and still trigger removal of the associated responsibility. It was directly executed in Supabase on 2026-09-06 and returned `Success. No rows returned`.
+- TypeScript, Vite production build and all existing regression suites passed. The corrected web and synchronized Android `index.html` hashes matched: `6B4653EF7F0A94728FA903F1D8C7A47FA9419DB00E8FEB15FA8D2901C9DE24A7`.
 
 ## Non-regression contract
 
@@ -228,7 +230,7 @@ Catalog enrichment remains normal content operations, not a missing implementati
 
 ## Next actions
 
-1. Commit and push the navigation/calendar/member-feedback refinement product files, excluding both Android Studio `.idea` files. No SQL or Edge Function deployment is required.
+1. Commit and push the navigation/calendar/member-feedback refinement product files, excluding both Android Studio `.idea` files. Its SQL migration is already deployed; no Edge Function deployment is required.
 2. Inspect the new exact Vercel preview at `/work`, `/admin/members` and `/schedule`. Do not mutate a real member solely for testing; use a safe profile change or validate the notice during the next real edit. Calendar details can be opened safely, but do not save/delete a production event unless intended.
 3. Promote only after preview acceptance, then build/install Android `1.8.0` once from the already synchronized assets. This single APK includes `ee3efbb` and the refinement batch.
 4. Execute the remaining real multi-role acceptance matrix in `RELEASE_ACCEPTANCE_20260906.md`. Do not delete QA users/data without explicit approval.
