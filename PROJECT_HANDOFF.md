@@ -15,7 +15,7 @@ This is the single source of truth for resuming development. Read this file befo
 - Team Media + Feedback Center was committed, pushed, promoted to production and installed on Android by the product owner.
 - Purchase Reliability + Attendance Reliability + Engineering Hub is committed and pushed in `ee3efbb`. Its exact authenticated Vercel preview passed, including purchase quantity `1`, all 10 GitHub repositories and the web attendance boundary.
 - Navigation/calendar/member-feedback refinement is committed and pushed across `f5c0d2a` and `c6063d3`. The exact preview was accepted by the product owner, including human-readable calendar audiences and successful event deletion.
-- The product owner stated an intention to promote this preview to production, but production promotion and Android `1.8.0` installation have not yet been explicitly confirmed. Treat both as pending until confirmed.
+- The product owner confirmed production promotion and creation of the Android `1.8.0` (code `11`) APK on 2026-09-06. Installation of that APK on a physical phone has not yet been stated separately; treat installation as pending unless confirmed.
 - There are no uncommitted product-code changes after `c6063d3`; only the two excluded Android Studio `.idea` files and this handoff status correction are local changes.
 - Local non-product changes: Android Studio may modify `android/.idea/deploymentTargetSelector.xml` and `android/.idea/misc.xml`. Never include these files in a product commit.
 - Live quiz-engine schema verified on 2026-09-06: `training_assessments.due_at`, `training_assessments.max_attempts`, `training_assessment_answer_keys`, `training_assessment_assignments` and `submit_training_quiz` are present and responding through Supabase. Do not rerun the migration merely for confirmation.
@@ -86,7 +86,7 @@ Prepared on 2026-09-06 as one web/Android batch; it is not production-released u
 - Both modules were inspected in the authenticated local phone-width preview after the live schema was installed. They loaded without schema errors and remained single-column/readable.
 - The exact final web bundle was synchronized to Android assets and its `index.html` hash matched. Released Android identity: version `1.7.0`, code `10`.
 
-## Purchase + Attendance Reliability + Engineering Hub — IMPLEMENTED AND BACKEND DEPLOYED, CLIENT RELEASE PENDING
+## Purchase + Attendance Reliability + Engineering Hub — PRODUCTION WEB RELEASED; ANDROID APK BUILT
 
 - Purchase requests accept whole quantities such as `1` and decimal quantities, expose a clear saving state, prevent duplicate submission and confirm the database save before reporting push-delivery status.
 - Attendance preserves check-out for a member with an active attendance record even when the meeting end time has passed. Expired open meetings are closed automatically without trapping that member.
@@ -99,9 +99,9 @@ Prepared on 2026-09-06 as one web/Android batch; it is not production-released u
 - The authenticated local preview loaded all 10 repositories across both G3 sources. At 319px phone width it rendered without horizontal overflow and retained usable, single-column repository cards.
 - The final web `dist/index.html` and synchronized Android asset `index.html` SHA-256 hashes matched (`CB8299A0DF6097DC856A8F2E82B97DC27C52114146C22EA01E1D50CFA35DAC6C`).
 - Android native source compatibility was checked against the installed Capacitor 8 APIs. A command-line Gradle compilation could not be completed because the only command-line JDK is Java 25 while the repository Gradle runtime does not support class-file version 69; use Android Studio's configured compatible Gradle JDK for the signed build.
-- Pending Android identity: version `1.8.0`, code `11`. Build/install only after exact preview acceptance and final asset synchronization.
+- Released build identity: Android version `1.8.0`, code `11`. The product owner confirmed the APK was created after exact preview acceptance and final asset synchronization; physical installation is not yet separately confirmed.
 
-## Navigation + Calendar refinement — COMMITTED, PUSHED AND PREVIEW-ACCEPTED; RELEASE CONFIRMATION PENDING
+## Navigation + Calendar refinement — PRODUCTION WEB RELEASED; ANDROID APK BUILT
 
 - Engineering Hub is a shared cross-department engineering system, displayed between FRC Departments and Team Operations rather than presented as a department.
 - Team Media and Feedback Center are no longer duplicated inside Team Operations. They remain available in the web navigation and in the phone More area.
@@ -149,7 +149,7 @@ Before asking for a commit:
 
 ## Exact remaining phases, in priority order
 
-### Purchase-request reliability fix — IMPLEMENTED AND PREVIEW-VERIFIED; RELEASE CONFIRMATION PENDING
+### Purchase-request reliability fix — RELEASED TO PRODUCTION WEB; ANDROID APK BUILT
 
 - Corrected the browser validation defect that accepted `1.01` but rejected a quantity of `1`; purchase quantities now accept both whole and two-decimal values.
 - Added explicit saving state, duplicate-submit protection and accessible progress messaging on web and Android.
@@ -225,18 +225,17 @@ Catalog enrichment remains normal content operations, not a missing implementati
 - Student improvement ideas and bug reports with category, severity, screenshots, status, owner and administrator triage.
 - Notifications and lifecycle visibility without mixing product feedback into normal team assignments.
 
-### Phase 8 — Engineering integrations — READ-ONLY GITHUB FOUNDATION IMPLEMENTED AND PREVIEW-VERIFIED; RELEASE CONFIRMATION PENDING
+### Phase 8 — Engineering integrations — READ-ONLY GITHUB FOUNDATION RELEASED TO PRODUCTION WEB; ANDROID APK BUILT
 
 - Start with safe links and status summaries for GitHub and the selected CAD platform (for example Onshape), then add authenticated read-only integrations only where they provide clear value.
 - Do not expose repository/CAD secrets or attempt full in-app replacement of those specialist tools.
 
 ## Next actions
 
-1. Confirm whether the accepted `c6063d3` Vercel preview has actually been promoted to production. Do not infer this from intent.
-2. Build/install Android `1.8.0` once after production promotion and explicitly confirm installation. This single APK includes `ee3efbb`, `f5c0d2a` and `c6063d3`.
-3. Physically validate GPS and School Wi-Fi check-in/check-out at the school; this cannot be marked complete from remote source/UI checks.
-4. Execute the real multi-role acceptance matrix in `RELEASE_ACCEPTANCE_20260906.md`. Do not delete QA users/data without explicit approval.
-5. Complete remaining production hardening: observability, database/index/RLS review, accessibility/cross-device audit, catalog link/staleness monitoring, backup/recovery documentation and the competition-day offline recovery drill.
+1. Install Android `1.8.0` on a physical phone if not already installed, then explicitly confirm installation.
+2. Physically validate GPS and School Wi-Fi check-in/check-out at the school; this cannot be marked complete from remote source/UI checks.
+3. Execute the real multi-role acceptance matrix in `RELEASE_ACCEPTANCE_20260906.md`. Do not delete QA users/data without explicit approval.
+4. Complete remaining production hardening: observability, database/index/RLS review, accessibility/cross-device audit, catalog link/staleness monitoring, backup/recovery documentation and the competition-day offline recovery drill.
 
 ## Definition of truth
 
