@@ -7,14 +7,16 @@ This is the single source of truth for resuming development. Read this file befo
 ## Exact current state
 
 - Working branch: `web-portal-preview`
-- Latest pushed product commit: `ee3efbb Add attendance reliability and G3 Engineering Hub`.
+- Latest pushed product commit: `c6063d3 Fix calendar audiences and event deletion`.
 - Supabase Skills Academy resource-catalog migration, production web promotion and signed APK installation for version `1.5.0` (code `8`): confirmed complete by the product owner on 2026-09-06.
 - Canonical production web domain: `https://g3-6740.com`. Vercel serves production on this domain and `https://www.g3-6740.com` redirects to the apex domain.
 - Supabase Authentication URL configuration was directly updated and verified on 2026-09-06: Site URL is `https://g3-6740.com`; allowed redirects are `https://g3-6740.com/**`, `https://www.g3-6740.com/**`, and the legacy production fallback `https://g3-scouting-app-5qpe.vercel.app/**`.
 - Operational UX release was committed, pushed, promoted to production and installed on Android by the product owner. Released Android identity: version `1.6.0`, code `9`.
 - Team Media + Feedback Center was committed, pushed, promoted to production and installed on Android by the product owner.
-- Purchase Reliability + Attendance Reliability + Engineering Hub is committed and pushed in `ee3efbb`. Its exact authenticated Vercel preview passed; production promotion and Android `1.8.0` installation remain pending.
-- Current uncommitted product changes are a navigation/calendar/member-feedback refinement batch: Engineering Hub is separated from FRC departments, duplicate Media/Feedback Work destinations are removed, web navigation is reordered, the redundant web G3 Assist menu entry is removed, member edits show a prominent success notice, all members can open calendar event details with human-readable audiences, and authorized calendar managers can edit or logically delete events.
+- Purchase Reliability + Attendance Reliability + Engineering Hub is committed and pushed in `ee3efbb`. Its exact authenticated Vercel preview passed, including purchase quantity `1`, all 10 GitHub repositories and the web attendance boundary.
+- Navigation/calendar/member-feedback refinement is committed and pushed across `f5c0d2a` and `c6063d3`. The exact preview was accepted by the product owner, including human-readable calendar audiences and successful event deletion.
+- The product owner stated an intention to promote this preview to production, but production promotion and Android `1.8.0` installation have not yet been explicitly confirmed. Treat both as pending until confirmed.
+- There are no uncommitted product-code changes after `c6063d3`; only the two excluded Android Studio `.idea` files and this handoff status correction are local changes.
 - Local non-product changes: Android Studio may modify `android/.idea/deploymentTargetSelector.xml` and `android/.idea/misc.xml`. Never include these files in a product commit.
 - Live quiz-engine schema verified on 2026-09-06: `training_assessments.due_at`, `training_assessments.max_attempts`, `training_assessment_answer_keys`, `training_assessment_assignments` and `submit_training_quiz` are present and responding through Supabase. Do not rerun the migration merely for confirmation.
 
@@ -99,7 +101,7 @@ Prepared on 2026-09-06 as one web/Android batch; it is not production-released u
 - Android native source compatibility was checked against the installed Capacitor 8 APIs. A command-line Gradle compilation could not be completed because the only command-line JDK is Java 25 while the repository Gradle runtime does not support class-file version 69; use Android Studio's configured compatible Gradle JDK for the signed build.
 - Pending Android identity: version `1.8.0`, code `11`. Build/install only after exact preview acceptance and final asset synchronization.
 
-## Navigation + Calendar refinement — IMPLEMENTED LOCALLY, RELEASE PENDING
+## Navigation + Calendar refinement — COMMITTED, PUSHED AND PREVIEW-ACCEPTED; RELEASE CONFIRMATION PENDING
 
 - Engineering Hub is a shared cross-department engineering system, displayed between FRC Departments and Team Operations rather than presented as a department.
 - Team Media and Feedback Center are no longer duplicated inside Team Operations. They remain available in the web navigation and in the phone More area.
@@ -147,13 +149,13 @@ Before asking for a commit:
 
 ## Exact remaining phases, in priority order
 
-### Purchase-request reliability fix — IMPLEMENTED, VERIFICATION PENDING
+### Purchase-request reliability fix — IMPLEMENTED AND PREVIEW-VERIFIED; RELEASE CONFIRMATION PENDING
 
 - Corrected the browser validation defect that accepted `1.01` but rejected a quantity of `1`; purchase quantities now accept both whole and two-decimal values.
 - Added explicit saving state, duplicate-submit protection and accessible progress messaging on web and Android.
 - A successful database save is now confirmed immediately; push-notification delivery finishes afterward and reports its own success or failure without making the user wonder whether the request was saved.
 - This change does not alter purchasing permissions: authorized team leaders and mentors may submit, while only administrators may approve, reject, order or receive.
-- Include this correction in the next combined Attendance Reliability + Engineering Hub release so only one new APK is required.
+- This correction is included in `ee3efbb` and the synchronized Android `1.8.0` bundle. Exact Vercel preview validation confirmed that quantity `1` is valid without creating a test request.
 
 ### Phase 1 — Skills Academy gradebook and progress dashboard — COMPLETE
 
@@ -223,18 +225,18 @@ Catalog enrichment remains normal content operations, not a missing implementati
 - Student improvement ideas and bug reports with category, severity, screenshots, status, owner and administrator triage.
 - Notifications and lifecycle visibility without mixing product feedback into normal team assignments.
 
-### Phase 8 — Engineering integrations — READ-ONLY GITHUB FOUNDATION IMPLEMENTED, RELEASE PENDING
+### Phase 8 — Engineering integrations — READ-ONLY GITHUB FOUNDATION IMPLEMENTED AND PREVIEW-VERIFIED; RELEASE CONFIRMATION PENDING
 
 - Start with safe links and status summaries for GitHub and the selected CAD platform (for example Onshape), then add authenticated read-only integrations only where they provide clear value.
 - Do not expose repository/CAD secrets or attempt full in-app replacement of those specialist tools.
 
 ## Next actions
 
-1. Commit and push the navigation/calendar/member-feedback refinement product files, excluding both Android Studio `.idea` files. Its SQL migration is already deployed; no Edge Function deployment is required.
-2. Inspect the new exact Vercel preview at `/work`, `/admin/members` and `/schedule`. Do not mutate a real member solely for testing; use a safe profile change or validate the notice during the next real edit. Calendar details can be opened safely, but do not save/delete a production event unless intended.
-3. Promote only after preview acceptance, then build/install Android `1.8.0` once from the already synchronized assets. This single APK includes `ee3efbb` and the refinement batch.
-4. Execute the remaining real multi-role acceptance matrix in `RELEASE_ACCEPTANCE_20260906.md`. Do not delete QA users/data without explicit approval.
-5. Complete remaining Phase 4 hardening: observability, database/RLS review, accessibility/cross-device audit, catalog broken-link/staleness checks and competition-day recovery drill.
+1. Confirm whether the accepted `c6063d3` Vercel preview has actually been promoted to production. Do not infer this from intent.
+2. Build/install Android `1.8.0` once after production promotion and explicitly confirm installation. This single APK includes `ee3efbb`, `f5c0d2a` and `c6063d3`.
+3. Physically validate GPS and School Wi-Fi check-in/check-out at the school; this cannot be marked complete from remote source/UI checks.
+4. Execute the real multi-role acceptance matrix in `RELEASE_ACCEPTANCE_20260906.md`. Do not delete QA users/data without explicit approval.
+5. Complete remaining production hardening: observability, database/index/RLS review, accessibility/cross-device audit, catalog link/staleness monitoring, backup/recovery documentation and the competition-day offline recovery drill.
 
 ## Definition of truth
 
