@@ -7,9 +7,9 @@ This is the single source of truth for resuming development. Read this file befo
 ## Exact current state
 
 - Working branch: `web-portal-preview`
-- Latest pushed product commit: `5e269b6 Build Skills Academy gradebook and progress tracking`.
-- Production web promotion and signed APK installation for the gradebook release: confirmed complete by the product owner on 2026-09-06.
-- Local product changes after `5e269b6`: combined learning-automation/hardening release is implemented; its SQL migration was confirmed successful by the product owner on 2026-09-06. Commit, Vercel promotion and signed APK remain pending.
+- Latest pushed product commit: `2292803 Automate Skills Academy progress and harden release`.
+- Supabase learning-automation migration, production web promotion and signed APK installation for version `1.4.0` (code `7`): confirmed complete by the product owner on 2026-09-06.
+- Local product changes after `2292803`: none. The handoff status correction in this file should be included in the next product commit.
 - Local non-product changes: Android Studio may modify `android/.idea/deploymentTargetSelector.xml` and `android/.idea/misc.xml`. Never include these files in a product commit.
 - Live quiz-engine schema verified on 2026-09-06: `training_assessments.due_at`, `training_assessments.max_attempts`, `training_assessment_answer_keys`, `training_assessment_assignments` and `submit_training_quiz` are present and responding through Supabase. Do not rerun the migration merely for confirmation.
 
@@ -25,9 +25,9 @@ This is the single source of truth for resuming development. Read this file befo
 - Live `submit_training_quiz` RPC presence: confirmed; the unauthenticated probe reached application validation and was correctly rejected as unassigned.
 - Web and Android `index.html` SHA-256 hashes: identical.
 - Final JavaScript bundle `index-C0AuLwVe.js`: present and byte-identical in web `dist` and Android assets.
-- Android release identity: version code `5`, version name `1.2.0`.
+- Android release identity: version code `7`, version name `1.4.0`.
 - Product source state: clean. Only the two excluded Android Studio `.idea` files are locally modified.
-- Result: approved to begin Phase 1 — Skills Academy gradebook and progress dashboard.
+- Result: Skills Academy gradebook and learning automation are released. Proceed to the real multi-role acceptance matrix, followed by the remaining production-hardening work.
 
 ## Completed capabilities — do not schedule them again
 
@@ -100,7 +100,7 @@ Implemented, committed, promoted to production and installed on Android on 2026-
 
 Phase 1 acceptance requires one real admin-created quiz assigned to a QA student, a submitted single-answer and multiple-answer attempt, automatic scoring, one written/manual review, correct Home responsibility behavior, and no student access to answer keys.
 
-### Phase 2 — Skills Academy learning automation — IMPLEMENTED LOCALLY, NOT RELEASED
+### Phase 2 — Skills Academy learning automation — COMPLETE
 
 - Due-soon and overdue reminders without duplicate notifications.
 - Changes-requested and retry flow with correct remaining-attempt behavior.
@@ -108,7 +108,7 @@ Phase 1 acceptance requires one real admin-created quiz assigned to a QA student
 - Optional achievements/certificates only after the underlying progression rules are reliable.
 - Instructor visibility into members who are blocked or falling behind.
 
-Implemented in the current worktree: duplicate-safe due/overdue action refresh, changes-requested/retry escalation, immutable progress history, qualification history, mentor support queue and student timeline. Migration `skills_academy_learning_automation_20260906.sql` was confirmed successful in Supabase on 2026-09-06.
+Implemented, committed, migrated successfully in Supabase, promoted to production and installed on Android on 2026-09-06: duplicate-safe due/overdue action refresh, changes-requested/retry escalation, immutable progress history, qualification history, mentor support queue and student timeline.
 
 ### Phase 3 — Full multi-role release acceptance — PREPARED, EXECUTION PENDING
 
@@ -118,7 +118,7 @@ Implemented in the current worktree: duplicate-safe due/overdue action refresh, 
 - Remove QA accounts and QA data only after tests pass and only with explicit product-owner approval for the deletion.
 - Produce a release checklist with evidence, not a verbal “looks good.”
 
-The evidence checklist is `RELEASE_ACCEPTANCE_20260906.md`. Automated source regression suites pass. Real admin/mentor/team-leader/student execution remains pending after the migration and preview deployment.
+The evidence checklist is `RELEASE_ACCEPTANCE_20260906.md`. Automated source regression suites and the production member-view smoke test pass. Real admin/mentor/team-leader/student execution remains pending.
 
 ### Phase 4 — Production hardening and scale — PARTIALLY STARTED
 
@@ -132,10 +132,9 @@ Heavy Skills Academy, Assistant and competition screens are now route-split; the
 
 ## Next actions
 
-1. Commit only the reported product files; exclude the two Android Studio `.idea` files and local Gradle/Android caches.
-2. Push and open the Vercel preview. Execute `RELEASE_ACCEPTANCE_20260906.md`, especially admin/student privacy, changes-requested retry and phone/Hebrew layout.
-3. If the preview gate passes, promote once, then generate/install one signed APK version `1.4.0` (code `7`).
-4. Execute the remaining real multi-role acceptance matrix. Do not delete QA users/data without explicit approval.
+1. Execute the remaining real multi-role acceptance matrix in `RELEASE_ACCEPTANCE_20260906.md`. Do not delete QA users/data without explicit approval.
+2. Complete Phase 4 hardening: observability, database/RLS review, accessibility/cross-device audit and competition-day recovery drill.
+3. Add externally curated learning resources only through a reviewed catalog; do not scrape, copy or iframe third-party course content without permission.
 
 ## Definition of truth
 
