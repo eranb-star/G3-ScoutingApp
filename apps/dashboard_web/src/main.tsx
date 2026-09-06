@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import React, { createContext, lazy, Suspense, useContext, useEffect, useMemo, useRef, useState } from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, NavLink, Route, Routes, Navigate, useLocation, useNavigate } from "react-router-dom";
 
@@ -31,29 +31,29 @@ import ProjectsPage from "./pages/ProjectsPage";
 import UpdatesPage from "./pages/UpdatesPage";
 import FrcWorkPage from "./pages/FrcWorkPage";
 import SecurityAdminPage from "./pages/SecurityAdminPage";
-import FrcAssistantPage from "./pages/FrcAssistantPage";
 import RobotIssuesPage from "./pages/RobotIssuesPage";
 import RobotReliabilityPage from "./pages/RobotReliabilityPage";
 import RobotMaintenancePage from "./pages/RobotMaintenancePage";
-import CompetitionOperationsPage from "./pages/CompetitionOperationsPage";
 import CompetitionAssignmentBanner from "./components/CompetitionAssignmentBanner";
 import TeamGrowthPage from "./pages/TeamGrowthPage";
 import SeasonPlanningPage from "./pages/SeasonPlanningPage";
 import SkillsAcademyGuide from "./components/SkillsAcademyGuide";
 import ContributionInsightsPage from "./pages/ContributionInsightsPage";
 import UnifiedCalendarPage from "./pages/UnifiedCalendarPage";
-import TrainingCenterPage from "./pages/TrainingCenterPage";
 import ContextBackBar from "./components/ContextBackBar";
 import { getUnreadUpdateCounts } from "./lib/unreadUpdates";
 import { Capacitor } from "@capacitor/core";
 import WebPortalShell, { WebCheckInNotice } from "./components/WebPortalShell";
-import CompetitionDisplayPage from "./pages/CompetitionDisplayPage";
 import PermissionsAdminPage from "./pages/PermissionsAdminPage";
-import PitScoutingPage from "./pages/PitScoutingPage";
-import ScoutingQualityPage from "./pages/ScoutingQualityPage";
-import CompetitionControlPage from "./pages/CompetitionControlPage";
-import TbaExplorerPage from "./pages/TbaExplorerPage";
-import PitAssignmentsPage from "./pages/PitAssignmentsPage";
+const FrcAssistantPage=lazy(()=>import("./pages/FrcAssistantPage"));
+const CompetitionOperationsPage=lazy(()=>import("./pages/CompetitionOperationsPage"));
+const TrainingCenterPage=lazy(()=>import("./pages/TrainingCenterPage"));
+const CompetitionDisplayPage=lazy(()=>import("./pages/CompetitionDisplayPage"));
+const PitScoutingPage=lazy(()=>import("./pages/PitScoutingPage"));
+const ScoutingQualityPage=lazy(()=>import("./pages/ScoutingQualityPage"));
+const CompetitionControlPage=lazy(()=>import("./pages/CompetitionControlPage"));
+const TbaExplorerPage=lazy(()=>import("./pages/TbaExplorerPage"));
+const PitAssignmentsPage=lazy(()=>import("./pages/PitAssignmentsPage"));
 
 // ----------------------
 // Small helpers
@@ -816,7 +816,7 @@ function AppShell() {
     <Shell>
       {!isAuthScreen && nativeApp ? <TopNav /> : null}
       {!isAuthScreen && (nativeApp || !isPrimaryDestination) ? <ContextBackBar /> : null}
-      <Routes>
+      <Suspense fallback={<div className="app-loading" role="status">Loading G3 workspace…</div>}><Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/change-password" element={<ChangePasswordPage />} />
         <Route path="/" element={<Navigate to="/home" replace />} />
@@ -889,7 +889,7 @@ function AppShell() {
           }
         />
         <Route path="*" element={<Navigate to="/home" replace />} />
-      </Routes>
+      </Routes></Suspense>
       {!isAuthScreen && !isDisplayScreen && location.pathname !== "/assistant" ? nativeApp?<NavLink className="assistant-fab" to={assistantPath} aria-label="Open G3 Assist"><img src="/g3-assistant.png" alt="" /></NavLink>:<button className="assistant-fab web-assistant-trigger" type="button" onClick={()=>{sessionStorage.removeItem("g3-assistant-active-conversation");setWebAssistantOpen(true);}} aria-label="Open G3 Assist"><img src="/g3-assistant.png" alt="" /></button> : null}
       {!nativeApp&&webAssistantOpen?<div className="web-assistant-backdrop" role="presentation" onMouseDown={event=>{if(event.target===event.currentTarget){sessionStorage.removeItem("g3-assistant-active-conversation");setWebAssistantOpen(false);}}}><section className="web-assistant-dialog" role="dialog" aria-modal="true" aria-label="G3 Assist"><button className="web-assistant-close" type="button" onClick={()=>{sessionStorage.removeItem("g3-assistant-active-conversation");setWebAssistantOpen(false);}} aria-label="Close G3 Assist">×</button><FrcAssistantPage/></section></div>:null}
       {!isAuthScreen && nativeApp ? <MobileNav /> : null}

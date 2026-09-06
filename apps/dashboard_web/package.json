@@ -10,6 +10,7 @@
     "verify:live-schema": "node scripts/verify-live-schema.mjs",
     "verify:skills-assessments": "node scripts/verify-skills-assessment-engine.mjs",
     "verify:skills-gradebook": "node scripts/verify-skills-gradebook.mjs",
+    "verify:learning-automation": "node scripts/verify-learning-automation.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

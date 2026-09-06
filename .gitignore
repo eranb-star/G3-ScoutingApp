@@ -24,7 +24,9 @@
 .gradle-user/
 .gradle-verify/
 .gradle-codex/
+.gradle-codex-jdk21/
 .gradle-jdk21/
+.android-codex/
 .android-user/
 .android/
 analytics.settings

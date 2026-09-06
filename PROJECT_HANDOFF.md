@@ -7,11 +7,9 @@ This is the single source of truth for resuming development. Read this file befo
 ## Exact current state
 
 - Working branch: `web-portal-preview`
-- Latest pushed handoff commit: `b9fa58d Document authoritative roadmap and regression safeguards`
-- Latest pushed product commit: `43f0d13 Build secure Skills Academy quiz and assessment engine`
-- Production web promotion: confirmed complete by the product owner on 2026-09-05.
-- Signed APK installation: confirmed complete and visually acceptable by the product owner on 2026-09-05.
-- Local product changes after `43f0d13`: none.
+- Latest pushed product commit: `5e269b6 Build Skills Academy gradebook and progress tracking`.
+- Production web promotion and signed APK installation for the gradebook release: confirmed complete by the product owner on 2026-09-06.
+- Local product changes after `5e269b6`: combined learning-automation/hardening release is implemented; its SQL migration was confirmed successful by the product owner on 2026-09-06. Commit, Vercel promotion and signed APK remain pending.
 - Local non-product changes: Android Studio may modify `android/.idea/deploymentTargetSelector.xml` and `android/.idea/misc.xml`. Never include these files in a product commit.
 - Live quiz-engine schema verified on 2026-09-06: `training_assessments.due_at`, `training_assessments.max_attempts`, `training_assessment_answer_keys`, `training_assessment_assignments` and `submit_training_quiz` are present and responding through Supabase. Do not rerun the migration merely for confirmation.
 
@@ -85,11 +83,11 @@ Before asking for a commit:
 
 ## Exact remaining phases, in priority order
 
-### Phase 1 — Skills Academy gradebook and progress dashboard
+### Phase 1 — Skills Academy gradebook and progress dashboard — COMPLETE
 
 This is the next implementation phase. Do not repeat quiz authoring.
 
-Implementation completed locally on 2026-09-06 and awaiting commit/release validation. The Supabase privacy and qualification migration was directly observed succeeding in the SQL Editor.
+Implemented, committed, promoted to production and installed on Android on 2026-09-06. The Supabase privacy and qualification migration was directly observed succeeding in the SQL Editor.
 
 - Instructor gradebook with course, member and status filters.
 - Student/course matrix showing assigned, not started, in progress, submitted, changes requested, passed, failed and overdue.
@@ -102,7 +100,7 @@ Implementation completed locally on 2026-09-06 and awaiting commit/release valid
 
 Phase 1 acceptance requires one real admin-created quiz assigned to a QA student, a submitted single-answer and multiple-answer attempt, automatic scoring, one written/manual review, correct Home responsibility behavior, and no student access to answer keys.
 
-### Phase 2 — Skills Academy learning automation
+### Phase 2 — Skills Academy learning automation — IMPLEMENTED LOCALLY, NOT RELEASED
 
 - Due-soon and overdue reminders without duplicate notifications.
 - Changes-requested and retry flow with correct remaining-attempt behavior.
@@ -110,7 +108,9 @@ Phase 1 acceptance requires one real admin-created quiz assigned to a QA student
 - Optional achievements/certificates only after the underlying progression rules are reliable.
 - Instructor visibility into members who are blocked or falling behind.
 
-### Phase 3 — Full multi-role release acceptance
+Implemented in the current worktree: duplicate-safe due/overdue action refresh, changes-requested/retry escalation, immutable progress history, qualification history, mentor support queue and student timeline. Migration `skills_academy_learning_automation_20260906.sql` was confirmed successful in Supabase on 2026-09-06.
+
+### Phase 3 — Full multi-role release acceptance — PREPARED, EXECUTION PENDING
 
 - Execute the end-to-end matrix on web and installed Android for admin, mentor, team leader and student.
 - Cover online/offline competition flows, task/notification delivery, permissions, assignments, purchasing, Skills Academy and scouting.
@@ -118,7 +118,9 @@ Phase 1 acceptance requires one real admin-created quiz assigned to a QA student
 - Remove QA accounts and QA data only after tests pass and only with explicit product-owner approval for the deletion.
 - Produce a release checklist with evidence, not a verbal “looks good.”
 
-### Phase 4 — Production hardening and scale
+The evidence checklist is `RELEASE_ACCEPTANCE_20260906.md`. Automated source regression suites pass. Real admin/mentor/team-leader/student execution remains pending after the migration and preview deployment.
+
+### Phase 4 — Production hardening and scale — PARTIALLY STARTED
 
 - Performance profiling and route/code splitting for the large web bundle.
 - Error monitoring, Edge Function observability, retry/timeout classification and capacity reporting.
@@ -126,13 +128,14 @@ Phase 1 acceptance requires one real admin-created quiz assigned to a QA student
 - Accessibility audit and final cross-device polish.
 - Competition-day operational drill and documented offline recovery procedure.
 
-## Tomorrow’s first actions
+Heavy Skills Academy, Assistant and competition screens are now route-split; the initial JS bundle dropped from about 897 KB to 764 KB. Remaining hardening items above are still pending and must not be described as complete.
 
-1. Read this file and run `git status` and `git log -3 --oneline`.
-2. Confirm only the two `.idea` files are dirty; do not commit them.
-3. The live schema and grading RPC presence are confirmed. During Phase 1 acceptance, reuse an existing QA course for the full admin-to-student quiz submission test rather than creating unnecessary production data.
-4. Begin Phase 1 — Skills Academy gradebook and progress dashboard.
-5. Batch Phase 1 web and phone work into one release so only one Vercel promotion and one signed APK are needed.
+## Next actions
+
+1. Commit only the reported product files; exclude the two Android Studio `.idea` files and local Gradle/Android caches.
+2. Push and open the Vercel preview. Execute `RELEASE_ACCEPTANCE_20260906.md`, especially admin/student privacy, changes-requested retry and phone/Hebrew layout.
+3. If the preview gate passes, promote once, then generate/install one signed APK version `1.4.0` (code `7`).
+4. Execute the remaining real multi-role acceptance matrix. Do not delete QA users/data without explicit approval.
 
 ## Definition of truth
 

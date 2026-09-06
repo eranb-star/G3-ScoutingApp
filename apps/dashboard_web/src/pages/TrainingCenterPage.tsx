@@ -14,6 +14,7 @@ type QuizQuestion={id:string;prompt:any;kind:"single_choice"|"multiple_choice"|"
 type PublicQuizQuestion=Omit<QuizQuestion,"correct_answers">;
 type Assessment = { id:string; course_id:string; module_id:string|null; title:string; instructions:string; assessment_type:"assignment"|"quiz"|"practical"|"reflection"; questions:(string|PublicQuizQuestion)[]; required:boolean; graded:boolean; max_score:number|null; passing_score:number|null; due_at:string|null; max_attempts:number; sort_order:number; active:boolean };
 type AssessmentSubmission = { id:string; assessment_id:string; enrollment_id:string; member_id:string; response:string; answers:Record<string,string|string[]>; resource_url:string|null; status:"draft"|"submitted"|"reviewed"|"changes_requested"; score:number|null; feedback:string|null; submitted_at:string|null; attempt_number:number };
+type ProgressEvent = { id:string; enrollment_id:string; assessment_id:string|null; submission_id:string|null; member_id:string; event_type:string; from_status:string|null; to_status:string|null; score:number|null; attempt_number:number|null; details:string|null; created_at:string };
 type Person = { id:string; display_name:string; subteam:string|null; subteams:string[] };
 type CourseForm = { title:string; description:string; domain:string; target_subteam:string; required:boolean };
 const blank:CourseForm={title:"",description:"",domain:"mechanical",target_subteam:"",required:true};
@@ -39,6 +40,7 @@ export default function TrainingCenterPage(){
   const [evidence,setEvidence]=useState<Evidence[]>([]);
   const [assessments,setAssessments]=useState<Assessment[]>([]);
   const [assessmentSubmissions,setAssessmentSubmissions]=useState<AssessmentSubmission[]>([]);
+  const [progressEvents,setProgressEvents]=useState<ProgressEvent[]>([]);
   const [people,setPeople]=useState<Person[]>([]);
   const [selected,setSelected]=useState("");
   const [message,setMessage]=useState("");
@@ -62,7 +64,8 @@ export default function TrainingCenterPage(){
   const [submissionDrafts,setSubmissionDrafts]=useState<Record<string,{response:string;resource_url:string;answers:Record<string,string|string[]>}>>({});
 
   async function load(){
-    const [c,m,e,v,p,a,s,k]=await Promise.all([
+    await supabase.rpc("refresh_my_training_reminders");
+    const [c,m,e,v,p,a,s,k,h]=await Promise.all([
       supabase.from("training_courses").select("*").eq("active",true).order("sort_order").order("created_at"),
       supabase.from("training_modules").select("*").order("sort_order"),
       supabase.from("training_enrollments").select("*"),
@@ -70,11 +73,12 @@ export default function TrainingCenterPage(){
       supabase.from("team_members").select("id,display_name,subteam,subteams").eq("active",true),
       supabase.from("training_assessments").select("*").eq("active",true).order("sort_order"),
       supabase.from("training_assessment_submissions").select("*").order("updated_at",{ascending:false}),
-      supabase.from("training_assessment_answer_keys").select("assessment_id,answers")
+      supabase.from("training_assessment_answer_keys").select("assessment_id,answers"),
+      supabase.from("training_progress_events").select("*").order("created_at",{ascending:false}).limit(500)
     ]);
     const next=(c.data??[]) as Course[];
     setCourses(next); setModules((m.data??[]) as Module[]); setEnrollments((e.data??[]) as Enrollment[]); setEvidence((v.data??[]) as Evidence[]); setPeople((p.data??[]) as Person[]);
-    if(!a.error)setAssessments((a.data??[]) as Assessment[]); if(!s.error)setAssessmentSubmissions((s.data??[]) as AssessmentSubmission[]);if(!k.error)setAnswerKeys(Object.fromEntries((k.data??[]).map(row=>[row.assessment_id,row.answers])));
+    if(!a.error)setAssessments((a.data??[]) as Assessment[]); if(!s.error)setAssessmentSubmissions((s.data??[]) as AssessmentSubmission[]);if(!k.error)setAnswerKeys(Object.fromEntries((k.data??[]).map(row=>[row.assessment_id,row.answers])));if(!h.error)setProgressEvents((h.data??[]) as ProgressEvent[]);
     if(!selected&&next[0]) setSelected(next[0].id);
     else if(selected&&!next.some(x=>x.id===selected)) setSelected(next[0]?.id??"");
   }
@@ -173,6 +177,6 @@ export default function TrainingCenterPage(){
     </section>:null}
 
     {academyView==="review"&&canReview?<section className="academy-review-workspace"><header><div><span>{pick("Instructor workspace","מרחב מדריכים")}</span><h2>{pick("Review queue","תור לבדיקה")}</h2><p>{pick("One place for submitted work, feedback and optional scores.","מקום אחד לעבודות שהוגשו, משוב וציונים אופציונליים.")}</p></div><label>{pick("Course","קורס")}<select value={selected} onChange={e=>setSelected(e.target.value)}>{courses.map(item=><option value={item.id} key={item.id}>{item.title}</option>)}</select></label></header><div className="academy-review-list">{reviewQueue.length?reviewQueue.map(item=>{const assessment=assessments.find(row=>row.id===item.assessment_id),person=people.find(row=>row.id===item.member_id);return <article key={item.id}><header><div><strong>{person?.display_name??pick("Member","חבר/ה")}</strong><span>{assessment?.title}</span></div><b>{item.status.replace("_"," ")}</b></header>{item.response?<p>{item.response}</p>:null}{Object.values(item.answers??{}).map((answer,index)=><blockquote key={index}>{answer}</blockquote>)}{item.resource_url?<a href={item.resource_url} target="_blank" rel="noreferrer">{pick("Open submitted evidence","פתיחת הראיה שהוגשה")} ↗</a>:null}<footer><button onClick={()=>void reviewAssessment(item,"reviewed")}>{pick("Approve / grade","אישור / ציון")}</button><button className="secondary" onClick={()=>void reviewAssessment(item,"changes_requested")}>{pick("Request changes","בקשת תיקון")}</button></footer></article>}):<div className="academy-empty"><strong>{pick("Review queue is clear","תור הבדיקה ריק")}</strong><p>{pick("New student submissions will appear here.","הגשות חדשות של תלמידים יופיעו כאן.")}</p></div>}</div></section>:null}
-    {academyView==="progress"?<SkillsGradebook pick={pick} profileId={profile?.id} canReview={canReview} courses={courses} modules={modules} enrollments={enrollments} evidence={evidence} assessments={assessments} submissions={assessmentSubmissions} people={people}/>:null}
+    {academyView==="progress"?<SkillsGradebook pick={pick} profileId={profile?.id} canReview={canReview} courses={courses} modules={modules} enrollments={enrollments} evidence={evidence} assessments={assessments} submissions={assessmentSubmissions} people={people} progressEvents={progressEvents}/>:null}
   </main>;
 }
