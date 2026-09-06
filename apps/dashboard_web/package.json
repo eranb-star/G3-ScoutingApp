@@ -11,6 +11,7 @@
     "verify:skills-assessments": "node scripts/verify-skills-assessment-engine.mjs",
     "verify:skills-gradebook": "node scripts/verify-skills-gradebook.mjs",
     "verify:learning-automation": "node scripts/verify-learning-automation.mjs",
+    "verify:skills-catalog": "node scripts/verify-skills-resource-catalog.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
