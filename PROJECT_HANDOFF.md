@@ -1,18 +1,35 @@
 # G3 Scouting App — Authoritative Handoff
 
-Last updated: 2026-09-05 (Asia/Jerusalem)
+Last updated: 2026-09-06 (Asia/Jerusalem)
 
 This is the single source of truth for resuming development. Read this file before changing the app. Do not reconstruct the roadmap from chat memory.
 
 ## Exact current state
 
 - Working branch: `web-portal-preview`
+- Latest pushed handoff commit: `b9fa58d Document authoritative roadmap and regression safeguards`
 - Latest pushed product commit: `43f0d13 Build secure Skills Academy quiz and assessment engine`
 - Production web promotion: confirmed complete by the product owner on 2026-09-05.
 - Signed APK installation: confirmed complete and visually acceptable by the product owner on 2026-09-05.
 - Local product changes after `43f0d13`: none.
 - Local non-product changes: Android Studio may modify `android/.idea/deploymentTargetSelector.xml` and `android/.idea/misc.xml`. Never include these files in a product commit.
-- The live execution of `backend/supabase/skills_academy_quiz_engine_20260905.sql` was not independently observable from the repository. Confirm its behavior with the Phase 1 smoke test before extending its schema; do not rerun it blindly merely because this file cannot prove execution.
+- Live quiz-engine schema verified on 2026-09-06: `training_assessments.due_at`, `training_assessments.max_attempts`, `training_assessment_answer_keys`, `training_assessment_assignments` and `submit_training_quiz` are present and responding through Supabase. Do not rerun the migration merely for confirmation.
+
+## Verified readiness checkpoint — 2026-09-06
+
+- TypeScript and Vite production build: passed.
+- Phase 1–2 regression suite: passed.
+- Phase 4–5 regression suite: passed.
+- Phase 6 regression suite: passed.
+- Skills Assessment Engine suite: passed, including private answers and single/multiple-answer grading semantics.
+- Live Supabase REST schema check: passed (`HTTP 200`).
+- Live quiz-engine tables and columns: passed (`HTTP 200`).
+- Live `submit_training_quiz` RPC presence: confirmed; the unauthenticated probe reached application validation and was correctly rejected as unassigned.
+- Web and Android `index.html` SHA-256 hashes: identical.
+- Final JavaScript bundle `index-C0AuLwVe.js`: present and byte-identical in web `dist` and Android assets.
+- Android release identity: version code `5`, version name `1.2.0`.
+- Product source state: clean. Only the two excluded Android Studio `.idea` files are locally modified.
+- Result: approved to begin Phase 1 — Skills Academy gradebook and progress dashboard.
 
 ## Completed capabilities — do not schedule them again
 
@@ -111,8 +128,8 @@ Phase 1 acceptance requires one real admin-created quiz assigned to a QA student
 
 1. Read this file and run `git status` and `git log -3 --oneline`.
 2. Confirm only the two `.idea` files are dirty; do not commit them.
-3. Run a small live Skills Academy smoke test to confirm the secure quiz migration is active: create a temporary quiz, verify single/multiple answer authoring, and confirm a student submission reaches server-side grading. Do not create additional production test data if an existing QA course can be reused.
-4. Begin Phase 1 only after that smoke test passes.
+3. The live schema and grading RPC presence are confirmed. During Phase 1 acceptance, reuse an existing QA course for the full admin-to-student quiz submission test rather than creating unnecessary production data.
+4. Begin Phase 1 — Skills Academy gradebook and progress dashboard.
 5. Batch Phase 1 web and phone work into one release so only one Vercel promotion and one signed APK are needed.
 
 ## Definition of truth
