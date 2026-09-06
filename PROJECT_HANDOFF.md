@@ -149,6 +149,17 @@ Before asking for a commit:
 
 ## Exact remaining phases, in priority order
 
+### Purchase governance dashboard — IMPLEMENTED; DATABASE MIGRATION VERIFIED; RELEASE PENDING
+
+- The existing Purchasing tab is now the single purchase-control dashboard; no duplicate navigation area was added.
+- Clear status counts and filters cover awaiting review, approved, ordered, received and rejected requests.
+- Request cards use strongly differentiated status colors, clear action buttons and a durable per-request audit timeline.
+- Rejection requires a written reason; it is stored on the request, recorded in immutable status history and shown to the requester.
+- Only administrators can transition purchase status. The database RPC validates every allowed transition, not only the visible buttons.
+- Every successful transition creates a persistent requester update in Home/Updates and invokes push delivery. If push is unavailable, the persistent update, saved status and audit remain visible and the UI states this accurately.
+- `purchase_audit_dashboard_20260907.sql` was executed in Supabase SQL Editor on 2026-09-07 and returned `Success. No rows returned`.
+- Web/Android shared UI is prepared for Android `1.9.0`; production promotion and installation are not yet confirmed.
+
 ### Purchase-request reliability fix — RELEASED TO PRODUCTION WEB; ANDROID APK BUILT
 
 - Corrected the browser validation defect that accepted `1.01` but rejected a quantity of `1`; purchase quantities now accept both whole and two-decimal values.
