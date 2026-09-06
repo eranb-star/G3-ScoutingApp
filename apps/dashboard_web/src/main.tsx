@@ -55,6 +55,9 @@ const CompetitionControlPage=lazy(()=>import("./pages/CompetitionControlPage"));
 const TbaExplorerPage=lazy(()=>import("./pages/TbaExplorerPage"));
 const PitAssignmentsPage=lazy(()=>import("./pages/PitAssignmentsPage"));
 
+function WorkspaceLoading(){const[slow,setSlow]=useState(false);useEffect(()=>{const timer=window.setTimeout(()=>setSlow(true),6000);return()=>window.clearTimeout(timer);},[]);return <section className="workspace-loader" role="status" aria-live="polite"><img src="/g3-assistant.png" alt=""/><div><strong>Opening G3 workspace…</strong><span>{slow?"This connection is taking longer than usual. You can retry safely.":"Loading the latest team data and tools."}</span></div>{slow?<button type="button" onClick={()=>window.location.reload()}>Retry</button>:null}</section>}
+class WorkspaceErrorBoundary extends React.Component<{children:React.ReactNode},{failed:boolean}>{state={failed:false};static getDerivedStateFromError(){return{failed:true}}componentDidCatch(error:unknown){console.error("Workspace route failed to load",error)}render(){return this.state.failed?<section className="workspace-loader is-error" role="alert"><img src="/g3-assistant.png" alt=""/><div><strong>G3 could not open this area</strong><span>Your data is safe. Reload to fetch the latest application version.</span></div><button type="button" onClick={()=>window.location.reload()}>Reload G3</button></section>:this.props.children}}
+
 // ----------------------
 // Small helpers
 // ----------------------
@@ -816,7 +819,7 @@ function AppShell() {
     <Shell>
       {!isAuthScreen && nativeApp ? <TopNav /> : null}
       {!isAuthScreen && (nativeApp || !isPrimaryDestination) ? <ContextBackBar /> : null}
-      <Suspense fallback={<div className="app-loading" role="status">Loading G3 workspace…</div>}><Routes>
+      <WorkspaceErrorBoundary><Suspense fallback={<WorkspaceLoading/>}><Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/change-password" element={<ChangePasswordPage />} />
         <Route path="/" element={<Navigate to="/home" replace />} />
@@ -889,7 +892,7 @@ function AppShell() {
           }
         />
         <Route path="*" element={<Navigate to="/home" replace />} />
-      </Routes></Suspense>
+      </Routes></Suspense></WorkspaceErrorBoundary>
       {!isAuthScreen && !isDisplayScreen && location.pathname !== "/assistant" ? nativeApp?<NavLink className="assistant-fab" to={assistantPath} aria-label="Open G3 Assist"><img src="/g3-assistant.png" alt="" /></NavLink>:<button className="assistant-fab web-assistant-trigger" type="button" onClick={()=>{sessionStorage.removeItem("g3-assistant-active-conversation");setWebAssistantOpen(true);}} aria-label="Open G3 Assist"><img src="/g3-assistant.png" alt="" /></button> : null}
       {!nativeApp&&webAssistantOpen?<div className="web-assistant-backdrop" role="presentation" onMouseDown={event=>{if(event.target===event.currentTarget){sessionStorage.removeItem("g3-assistant-active-conversation");setWebAssistantOpen(false);}}}><section className="web-assistant-dialog" role="dialog" aria-modal="true" aria-label="G3 Assist"><button className="web-assistant-close" type="button" onClick={()=>{sessionStorage.removeItem("g3-assistant-active-conversation");setWebAssistantOpen(false);}} aria-label="Close G3 Assist">×</button><FrcAssistantPage/></section></div>:null}
       {!isAuthScreen && nativeApp ? <MobileNav /> : null}

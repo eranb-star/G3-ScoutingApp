@@ -53,6 +53,21 @@ The following are already represented by committed code and regression checks:
 - Advanced scouting coverage, analysis, quality views, picklist evidence and worldwide TBA match/video library.
 - G3 Assistant multimodal/history/knowledge workflows previously implemented. Provider capacity remains an external operational risk and must not be presented as a UI-only defect without checking function logs.
 
+## Operational UX release — IMPLEMENTED AND LOCALLY VERIFIED, RELEASE PENDING
+
+Prepared on 2026-09-06 as one web/Android batch; it is not production-released until the product owner confirms promotion and installation.
+
+- Tools & Equipment now records **Model** and **Amount**; legacy asset-tag values are migrated into Model.
+- Equipment return dates use a calendar picker.
+- Skills Academy assignments and tests can target the whole team, multiple teams or multiple individual members. Publishing enrolls eligible recipients, creates their assessment assignment and Home responsibility, and removes recipients excluded by a narrowed target.
+- Skills Academy Home/deep links now open directly to the requested Academy view.
+- Multi-day calendar events render on every covered date, with range validation and visible start/end times.
+- Lazy-route loading has a slow-load explanation, Retry action and a recoverable error boundary. The service worker uses refreshed network-first application assets to reduce stale deployment chunks.
+- Supabase migration `backend/supabase/operational_ux_release_20260906.sql` was directly observed succeeding (`Success. No rows returned`).
+- Operational UX verification passed all 11 checks; TypeScript and Vite production build passed. Calendar, inventory and assessment targeting were inspected in the authenticated local preview at narrow/mobile width; the multi-day October 29–31 event appeared on all three dates.
+- The exact final web bundle was copied to Android assets and its `index.html` hash matched the build output.
+- Pending Android release identity: version code `9`, version name `1.6.0`.
+
 ## Non-regression contract
 
 Every future change must preserve all of these behaviors:
@@ -146,11 +161,28 @@ Heavy Skills Academy, Assistant and competition screens are now route-split; the
 
 Catalog enrichment remains normal content operations, not a missing implementation phase. Continue reviewing resources for underrepresented domains (mechanical, electrical, strategy/scouting, drive/pit, field build and publicity/awards) before publishing them. Broken-link automation and scheduled stale-content review belong to Phase 4 hardening.
 
+### Phase 6 — Team Media — NOT STARTED
+
+- A governed media hub for robot photos, CAD renders/drawings, workshop progress and event albums.
+- Supabase Storage policies, upload compression, captions/tags, permissions, retention and usable web/phone galleries.
+- Keep robot engineering media and wider team/event media clearly separated inside one Team Media area.
+
+### Phase 7 — Feedback Center — NOT STARTED
+
+- Student improvement ideas and bug reports with category, severity, screenshots, status, owner and administrator triage.
+- Notifications and lifecycle visibility without mixing product feedback into normal team assignments.
+
+### Phase 8 — Engineering integrations — NOT STARTED
+
+- Start with safe links and status summaries for GitHub and the selected CAD platform (for example Onshape), then add authenticated read-only integrations only where they provide clear value.
+- Do not expose repository/CAD secrets or attempt full in-app replacement of those specialist tools.
+
 ## Next actions
 
-1. Execute the remaining real multi-role acceptance matrix in `RELEASE_ACCEPTANCE_20260906.md`. Do not delete QA users/data without explicit approval.
-2. Complete Phase 4 hardening: observability, database/RLS review, accessibility/cross-device audit, catalog broken-link/staleness checks and competition-day recovery drill.
-3. Expand the live catalog through the completed administrator workflow, prioritizing underrepresented FRC domains. Research and approve every source; do not scrape, copy or iframe third-party content without permission.
+1. Commit and push the pending Operational UX release, excluding both Android Studio `.idea` files. Test the exact Vercel preview before promotion, then build/install Android `1.6.0` from the synchronized assets.
+2. Execute the remaining real multi-role acceptance matrix in `RELEASE_ACCEPTANCE_20260906.md`. Do not delete QA users/data without explicit approval.
+3. Complete Phase 4 hardening: observability, database/RLS review, accessibility/cross-device audit, catalog broken-link/staleness checks and competition-day recovery drill.
+4. Build Phase 6 Team Media, followed by Phase 7 Feedback Center and then the deliberately scoped Phase 8 engineering integrations.
 
 ## Definition of truth
 

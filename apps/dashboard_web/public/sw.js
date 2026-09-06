@@ -1,4 +1,4 @@
-const CACHE="g3-team-hub-shell-v1";
+const CACHE="g3-team-hub-shell-v2";
 const SHELL=["/","/index.html","/g3-assistant.png"];
 
 self.addEventListener("install",event=>{
@@ -18,7 +18,11 @@ self.addEventListener("fetch",event=>{
     event.respondWith(fetch(request).then(response=>{const copy=response.clone();caches.open(CACHE).then(cache=>cache.put("/index.html",copy));return response;}).catch(()=>caches.match("/index.html")));
     return;
   }
-  if(url.pathname.startsWith("/assets/")||url.pathname.endsWith(".png")){
+  if(url.pathname.startsWith("/assets/")){
+    event.respondWith(fetch(request).then(response=>{const copy=response.clone();caches.open(CACHE).then(cache=>cache.put(request,copy));return response;}).catch(()=>caches.match(request)));
+    return;
+  }
+  if(url.pathname.endsWith(".png")){
     event.respondWith(caches.match(request).then(cached=>cached||fetch(request).then(response=>{const copy=response.clone();caches.open(CACHE).then(cache=>cache.put(request,copy));return response;})));
   }
 });
