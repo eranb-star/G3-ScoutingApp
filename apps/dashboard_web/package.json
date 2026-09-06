@@ -15,6 +15,7 @@
     "verify:operational-ux": "node scripts/verify-operational-ux.mjs",
     "verify:media-feedback": "node scripts/verify-media-feedback.mjs",
     "verify:attendance-engineering": "node scripts/verify-attendance-engineering.mjs",
+    "verify:absence-attendance": "node scripts/verify-absence-attendance.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useLocalization } from "../lib/localization";
 import { useMemberAuth } from "../lib/memberAuth";
 import { supabase } from "../supabase";
+import {visibleResponsibilities} from "../lib/responsibilityVisibility";
 
 type Action = { id:string; title:string; details:string|null; action_type:string; due_at:string|null; priority:string; created_at:string; destination?:string|null; source_table?:string|null; source_id?:string|null };
 type State = { action_id:string; status:string; snoozed_until:string|null };
@@ -59,7 +60,7 @@ export default function HomeActionInbox({mode="home"}:{mode?:"home"|"work"}) {
   }
 
   useEffect(()=>{void load();},[profile?.id]);
-  const available=useMemo(()=>{const now=Date.now();return actions.filter(action=>{const state=states.find(item=>item.action_id===action.id);if(state?.status==="completed")return false;if(state?.status==="snoozed"&&state.snoozed_until&&new Date(state.snoozed_until).getTime()>now)return false;const due=action.due_at?new Date(action.due_at).getTime():null;if(action.action_type==="meeting"&&due&&due<now-12*3600000)return false;if(mode==="work")return true;return !due||due<=now+7*86400000||["high","urgent"].includes(action.priority);});},[actions,states,mode]);
+  const available=useMemo(()=>visibleResponsibilities(actions,states,mode),[actions,states,mode]);
   const visible=showAll?available:available.slice(0,mode==="home"?4:6);
 
   async function updateState(action:Action,status:string,snoozed_until?:string){if(!profile)return;const now=new Date().toISOString();const {error}=await supabase.from("team_action_states").upsert({action_id:action.id,member_id:profile.id,status,snoozed_until:snoozed_until??null,acknowledged_at:status==="acknowledged"?now:null,completed_at:status==="completed"?now:null,updated_at:now},{onConflict:"action_id,member_id"});setMessage(error?.message??pick("Responsibility updated.","המשימה עודכנה."));if(!error)await load();}

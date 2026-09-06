@@ -149,6 +149,18 @@ Before asking for a commit:
 
 ## Exact remaining phases, in priority order
 
+### Responsibility consistency + governed attendance — IMPLEMENTED; DATABASE MIGRATION VERIFIED; RELEASE PENDING
+
+- Home and Work now use one shared responsibility-visibility rule. Completed, currently snoozed and expired meeting actions can no longer inflate the Home counter while remaining absent from the destination list.
+- Attendance is consolidated into one center with Overview, Absence requests and authorized By meeting roster views.
+- Members request absence only against an upcoming calendar event and must provide a reason.
+- Active administrators and mentors receive a targeted persistent review action. This currently includes Tal Teren because she is an active mentor; the rule is role-based and does not hardcode a person's name.
+- Approval and rejection both require a written reviewer response. The member receives a targeted persistent update, and every state is retained in absence history.
+- Administrators and mentors can select a meeting, mark the applicable members present with accessible checkboxes, and save the roster with a required audit note.
+- Re-saving a roster safely updates present members and removes only prior manually-entered attendance that is now unchecked; both outcomes are recorded in the attendance audit log. GPS/Wi-Fi records are never silently removed by roster editing.
+- `absence_attendance_governance_20260907.sql` was executed in Supabase SQL Editor on 2026-09-07 and returned `Success. No rows returned`.
+- Production promotion and Android installation are not yet confirmed. Keep this in the same pending release batch as the purchase governance dashboard.
+
 ### Purchase governance dashboard — IMPLEMENTED; DATABASE MIGRATION VERIFIED; RELEASE PENDING
 
 - The existing Purchasing tab is now the single purchase-control dashboard; no duplicate navigation area was added.
