@@ -7,11 +7,11 @@ This is the single source of truth for resuming development. Read this file befo
 ## Exact current state
 
 - Working branch: `web-portal-preview`
-- Latest pushed product commit: `2292803 Automate Skills Academy progress and harden release`.
-- Supabase learning-automation migration, production web promotion and signed APK installation for version `1.4.0` (code `7`): confirmed complete by the product owner on 2026-09-06.
+- Latest pushed product commit: `0db8619 Prepare Skills Academy catalog Android release`.
+- Supabase Skills Academy resource-catalog migration, production web promotion and signed APK installation for version `1.5.0` (code `8`): confirmed complete by the product owner on 2026-09-06.
 - Canonical production web domain: `https://g3-6740.com`. Vercel serves production on this domain and `https://www.g3-6740.com` redirects to the apex domain.
 - Supabase Authentication URL configuration was directly updated and verified on 2026-09-06: Site URL is `https://g3-6740.com`; allowed redirects are `https://g3-6740.com/**`, `https://www.g3-6740.com/**`, and the legacy production fallback `https://g3-scouting-app-5qpe.vercel.app/**`.
-- Local product changes after `2292803`: none. The handoff status correction in this file should be included in the next product commit.
+- Local product changes after `0db8619`: this handoff update only; commit it separately. No application source changes are pending.
 - Local non-product changes: Android Studio may modify `android/.idea/deploymentTargetSelector.xml` and `android/.idea/misc.xml`. Never include these files in a product commit.
 - Live quiz-engine schema verified on 2026-09-06: `training_assessments.due_at`, `training_assessments.max_attempts`, `training_assessment_answer_keys`, `training_assessment_assignments` and `submit_training_quiz` are present and responding through Supabase. Do not rerun the migration merely for confirmation.
 
@@ -25,11 +25,14 @@ This is the single source of truth for resuming development. Read this file befo
 - Live Supabase REST schema check: passed (`HTTP 200`).
 - Live quiz-engine tables and columns: passed (`HTTP 200`).
 - Live `submit_training_quiz` RPC presence: confirmed; the unauthenticated probe reached application validation and was correctly rejected as unassigned.
-- Web and Android `index.html` SHA-256 hashes: identical.
-- Final JavaScript bundle `index-C0AuLwVe.js`: present and byte-identical in web `dist` and Android assets.
-- Android release identity: version code `7`, version name `1.4.0`.
-- Product source state: clean. Only the two excluded Android Studio `.idea` files are locally modified.
-- Result: Skills Academy gradebook and learning automation are released. Proceed to the real multi-role acceptance matrix, followed by the remaining production-hardening work.
+- Skills Academy resource-catalog migration: executed successfully by the product owner.
+- Exact Vercel preview for commit `8a3b33b` authenticated and inspected before promotion: passed.
+- Live catalog returned all 12 seeded approved resources; search, filtering, administrator review form, course-attachment controls and narrow/mobile rendering were directly verified without mutating production records.
+- Skills catalog verification suite: passed all 10 checks. Existing Phase 1–2, Skills Assessment, Gradebook and Learning Automation suites also passed before release.
+- Android assets were explicitly synchronized from the validated final web `dist` before the APK was built.
+- Android release identity: version code `8`, version name `1.5.0`.
+- Release product source state was clean. The only current product change is this handoff update; the two Android Studio `.idea` files remain excluded.
+- Result: Skills Academy gradebook, learning automation and reviewed resource-catalog foundation are released. Proceed to the real multi-role acceptance matrix, followed by the remaining production-hardening work.
 
 ## Completed capabilities — do not schedule them again
 
@@ -43,6 +46,7 @@ The following are already represented by committed code and regression checks:
 - Robot reliability, issue tracking, maintenance, analytics and export.
 - Skills Academy course governance, curated courses, member/team assignment, modules, evidence, instructor review and course ordering.
 - Skills Academy assignments, quizzes and grading foundation.
+- Reviewed Skills Academy learning-resource catalog, administrator governance, approved-only member visibility, search/filtering and course resource attachment.
 - Secure quiz engine: private answer keys, single-answer questions, multiple-answer questions, written answers, automatic server grading, manual review, due dates, passing score and attempt limits.
 - Competition assignments, replacements, event context, live command state, pit display and offline competition cache/control.
 - Guided offline pit scouting, event-scoped pit teams, unique pit assignments, verification/conflict review and separation of pit evidence from match evidence.
@@ -87,7 +91,7 @@ Before asking for a commit:
 
 ### Phase 1 — Skills Academy gradebook and progress dashboard — COMPLETE
 
-This is the next implementation phase. Do not repeat quiz authoring.
+Do not repeat this phase or quiz authoring.
 
 Implemented, committed, promoted to production and installed on Android on 2026-09-06. The Supabase privacy and qualification migration was directly observed succeeding in the SQL Editor.
 
@@ -132,20 +136,21 @@ The evidence checklist is `RELEASE_ACCEPTANCE_20260906.md`. Automated source reg
 
 Heavy Skills Academy, Assistant and competition screens are now route-split; the initial JS bundle dropped from about 897 KB to 764 KB. Remaining hardening items above are still pending and must not be described as complete.
 
-### Phase 5 — Skills Academy curated learning catalog — PENDING
+### Phase 5 — Skills Academy curated learning catalog — COMPLETE (FOUNDATION + STARTER CATALOG)
 
-- Build a reviewed catalog of high-quality, free learning resources for mechanical, CAD, electrical, programming, safety, strategy/scouting, drive/pit, business/outreach, field build and awards/publicity.
-- Allow authorized course creators to search the catalog and attach approved resources to courses or modules without copying third-party content.
-- Store source, topic, level, language, estimated duration, resource type and last-verification date; make external links clearly clickable on web and phone.
-- Prefer direct links. Embed videos or course material only where the provider explicitly permits embedding; do not scrape or reproduce copyrighted course content.
-- Give administrators a review workflow to approve, edit, retire and reorder catalog resources, with broken-link and stale-content checks.
-- Keep the existing curated courses, course governance, assignments, quizzes, gradebook and automation intact. This phase extends their learning content; it does not rebuild those completed capabilities.
+- Implemented the catalog schema, RLS, review states, metadata, approved-only member access and course-resource attachment controls.
+- Added 12 reviewed starter resources from FIRST, WPILib, FRCDesign, Autodesk, CTR Electronics, Spectrum 3847 and The Compass Alliance.
+- Added responsive Learning Library UI with search, domain/level filters, direct external links and administrator add/edit/review/retire controls.
+- Added approved resources directly to course content through `CourseResourceShelf`.
+- Migration executed, exact authenticated preview validated, production promoted and Android `1.5.0` installed on 2026-09-06.
+
+Catalog enrichment remains normal content operations, not a missing implementation phase. Continue reviewing resources for underrepresented domains (mechanical, electrical, strategy/scouting, drive/pit, field build and publicity/awards) before publishing them. Broken-link automation and scheduled stale-content review belong to Phase 4 hardening.
 
 ## Next actions
 
 1. Execute the remaining real multi-role acceptance matrix in `RELEASE_ACCEPTANCE_20260906.md`. Do not delete QA users/data without explicit approval.
-2. Complete Phase 4 hardening: observability, database/RLS review, accessibility/cross-device audit and competition-day recovery drill.
-3. Implement Phase 5, the reviewed Skills Academy learning catalog. Research and approve sources before adding them; do not scrape, copy or iframe third-party course content without permission.
+2. Complete Phase 4 hardening: observability, database/RLS review, accessibility/cross-device audit, catalog broken-link/staleness checks and competition-day recovery drill.
+3. Expand the live catalog through the completed administrator workflow, prioritizing underrepresented FRC domains. Research and approve every source; do not scrape, copy or iframe third-party content without permission.
 
 ## Definition of truth
 
