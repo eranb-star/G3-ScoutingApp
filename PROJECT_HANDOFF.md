@@ -9,6 +9,8 @@ This is the single source of truth for resuming development. Read this file befo
 - Working branch: `web-portal-preview`
 - Latest pushed product commit: `2292803 Automate Skills Academy progress and harden release`.
 - Supabase learning-automation migration, production web promotion and signed APK installation for version `1.4.0` (code `7`): confirmed complete by the product owner on 2026-09-06.
+- Canonical production web domain: `https://g3-6740.com`. Vercel serves production on this domain and `https://www.g3-6740.com` redirects to the apex domain.
+- Supabase Authentication URL configuration was directly updated and verified on 2026-09-06: Site URL is `https://g3-6740.com`; allowed redirects are `https://g3-6740.com/**`, `https://www.g3-6740.com/**`, and the legacy production fallback `https://g3-scouting-app-5qpe.vercel.app/**`.
 - Local product changes after `2292803`: none. The handoff status correction in this file should be included in the next product commit.
 - Local non-product changes: Android Studio may modify `android/.idea/deploymentTargetSelector.xml` and `android/.idea/misc.xml`. Never include these files in a product commit.
 - Live quiz-engine schema verified on 2026-09-06: `training_assessments.due_at`, `training_assessments.max_attempts`, `training_assessment_answer_keys`, `training_assessment_assignments` and `submit_training_quiz` are present and responding through Supabase. Do not rerun the migration merely for confirmation.
@@ -130,11 +132,20 @@ The evidence checklist is `RELEASE_ACCEPTANCE_20260906.md`. Automated source reg
 
 Heavy Skills Academy, Assistant and competition screens are now route-split; the initial JS bundle dropped from about 897 KB to 764 KB. Remaining hardening items above are still pending and must not be described as complete.
 
+### Phase 5 — Skills Academy curated learning catalog — PENDING
+
+- Build a reviewed catalog of high-quality, free learning resources for mechanical, CAD, electrical, programming, safety, strategy/scouting, drive/pit, business/outreach, field build and awards/publicity.
+- Allow authorized course creators to search the catalog and attach approved resources to courses or modules without copying third-party content.
+- Store source, topic, level, language, estimated duration, resource type and last-verification date; make external links clearly clickable on web and phone.
+- Prefer direct links. Embed videos or course material only where the provider explicitly permits embedding; do not scrape or reproduce copyrighted course content.
+- Give administrators a review workflow to approve, edit, retire and reorder catalog resources, with broken-link and stale-content checks.
+- Keep the existing curated courses, course governance, assignments, quizzes, gradebook and automation intact. This phase extends their learning content; it does not rebuild those completed capabilities.
+
 ## Next actions
 
 1. Execute the remaining real multi-role acceptance matrix in `RELEASE_ACCEPTANCE_20260906.md`. Do not delete QA users/data without explicit approval.
 2. Complete Phase 4 hardening: observability, database/RLS review, accessibility/cross-device audit and competition-day recovery drill.
-3. Add externally curated learning resources only through a reviewed catalog; do not scrape, copy or iframe third-party course content without permission.
+3. Implement Phase 5, the reviewed Skills Academy learning catalog. Research and approve sources before adding them; do not scrape, copy or iframe third-party course content without permission.
 
 ## Definition of truth
 
