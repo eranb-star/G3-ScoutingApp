@@ -7,13 +7,14 @@ This is the single source of truth for resuming development. Read this file befo
 ## Exact current state
 
 - Working branch: `web-portal-preview`
-- Latest pushed product commit: `a580cae Add Team Media and Feedback Center`.
+- Latest pushed product commit: `ee3efbb Add attendance reliability and G3 Engineering Hub`.
 - Supabase Skills Academy resource-catalog migration, production web promotion and signed APK installation for version `1.5.0` (code `8`): confirmed complete by the product owner on 2026-09-06.
 - Canonical production web domain: `https://g3-6740.com`. Vercel serves production on this domain and `https://www.g3-6740.com` redirects to the apex domain.
 - Supabase Authentication URL configuration was directly updated and verified on 2026-09-06: Site URL is `https://g3-6740.com`; allowed redirects are `https://g3-6740.com/**`, `https://www.g3-6740.com/**`, and the legacy production fallback `https://g3-scouting-app-5qpe.vercel.app/**`.
 - Operational UX release was committed, pushed, promoted to production and installed on Android by the product owner. Released Android identity: version `1.6.0`, code `9`.
 - Team Media + Feedback Center was committed, pushed, promoted to production and installed on Android by the product owner.
-- Current local product changes are the combined Purchase Reliability + Attendance Reliability + Engineering Hub release documented below. They are not yet committed, promoted or installed.
+- Purchase Reliability + Attendance Reliability + Engineering Hub is committed and pushed in `ee3efbb`. Its exact authenticated Vercel preview passed; production promotion and Android `1.8.0` installation remain pending.
+- Current uncommitted product changes are a navigation/calendar/member-feedback refinement batch: Engineering Hub is separated from FRC departments, duplicate Media/Feedback Work destinations are removed, web navigation is reordered, the redundant web G3 Assist menu entry is removed, member edits show a prominent success notice, all members can open calendar event details, and authorized calendar managers can edit or logically delete events.
 - Local non-product changes: Android Studio may modify `android/.idea/deploymentTargetSelector.xml` and `android/.idea/misc.xml`. Never include these files in a product commit.
 - Live quiz-engine schema verified on 2026-09-06: `training_assessments.due_at`, `training_assessments.max_attempts`, `training_assessment_answer_keys`, `training_assessment_assignments` and `submit_training_quiz` are present and responding through Supabase. Do not rerun the migration merely for confirmation.
 
@@ -97,6 +98,16 @@ Prepared on 2026-09-06 as one web/Android batch; it is not production-released u
 - The final web `dist/index.html` and synchronized Android asset `index.html` SHA-256 hashes matched (`CB8299A0DF6097DC856A8F2E82B97DC27C52114146C22EA01E1D50CFA35DAC6C`).
 - Android native source compatibility was checked against the installed Capacitor 8 APIs. A command-line Gradle compilation could not be completed because the only command-line JDK is Java 25 while the repository Gradle runtime does not support class-file version 69; use Android Studio's configured compatible Gradle JDK for the signed build.
 - Pending Android identity: version `1.8.0`, code `11`. Build/install only after exact preview acceptance and final asset synchronization.
+
+## Navigation + Calendar refinement — IMPLEMENTED LOCALLY, RELEASE PENDING
+
+- Engineering Hub is a shared cross-department engineering system, displayed between FRC Departments and Team Operations rather than presented as a department.
+- Team Media and Feedback Center are no longer duplicated inside Team Operations. They remain available in the web navigation and in the phone More area.
+- Web navigation follows task flow: Home, Work, Skills Academy, Competition, Updates, Team Media, FRC Knowledge; Feedback Center is last. The G3 Assist menu entry is removed because the persistent assistant control already opens it everywhere.
+- Engineering Hub has explicit readable hover/focus treatment rather than white text on its light special-card background.
+- Saving an edited member profile produces a prominent, dismissible success notice.
+- Calendar events are interactive in Month and Agenda views. Every permitted viewer can open full details; users with `manage_team_calendar` can edit or logically delete (cancel) an event using existing database policies.
+- TypeScript, Vite production build and all existing regression suites passed. The exact built web index and synchronized Android asset index matched SHA-256 `21BE89CE4A247BA51BFB3E02EBDCDE841CFF323224B69BBB8A62B4CD2BFF383A`.
 
 ## Non-regression contract
 
@@ -217,9 +228,9 @@ Catalog enrichment remains normal content operations, not a missing implementati
 
 ## Next actions
 
-1. Commit and push only the listed product files, excluding both Android Studio `.idea` files. Supabase is already deployed and no SQL is required.
-2. Test purchase quantity `1`, Engineering Hub and the visible attendance controls in the exact Vercel preview before promotion. GPS/Wi-Fi must be physically tested in Android at the school.
-3. Promote only after preview acceptance, then build/install Android `1.8.0` from synchronized assets using Android Studio's compatible Gradle JDK.
+1. Commit and push the navigation/calendar/member-feedback refinement product files, excluding both Android Studio `.idea` files. No SQL or Edge Function deployment is required.
+2. Inspect the new exact Vercel preview at `/work`, `/admin/members` and `/schedule`. Do not mutate a real member solely for testing; use a safe profile change or validate the notice during the next real edit. Calendar details can be opened safely, but do not save/delete a production event unless intended.
+3. Promote only after preview acceptance, then build/install Android `1.8.0` once from the already synchronized assets. This single APK includes `ee3efbb` and the refinement batch.
 4. Execute the remaining real multi-role acceptance matrix in `RELEASE_ACCEPTANCE_20260906.md`. Do not delete QA users/data without explicit approval.
 5. Complete remaining Phase 4 hardening: observability, database/RLS review, accessibility/cross-device audit, catalog broken-link/staleness checks and competition-day recovery drill.
 

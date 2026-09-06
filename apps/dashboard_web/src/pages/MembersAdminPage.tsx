@@ -90,11 +90,12 @@ export default function MembersAdminPage() {
   }
 
   function editMember(member: MemberProfile) {setEditingMember(member);setEditingName(member.display_name);setEditingRole(member.role);setEditingSubteams(member.subteams?.length?member.subteams:member.subteam?[member.subteam]:[]);setEditingLeaderSubteams(member.leader_subteams??[]);}
-  async function saveMember(event:FormEvent){event.preventDefault();if(!editingMember||!editingName.trim())return;try{await invoke({action:"update_profile",userId:editingMember.id,displayName:editingName,role:editingRole,subteams:editingSubteams,leaderSubteams:editingRole==="team_leader"?editingLeaderSubteams:[]});setEditingMember(null);await loadMembers();}catch(error){setMessage(error instanceof Error?error.message:"Update failed");}}
+  async function saveMember(event:FormEvent){event.preventDefault();if(!editingMember||!editingName.trim())return;try{const savedName=editingName.trim();await invoke({action:"update_profile",userId:editingMember.id,displayName:savedName,role:editingRole,subteams:editingSubteams,leaderSubteams:editingRole==="team_leader"?editingLeaderSubteams:[]});setEditingMember(null);setMessage(pick(`${savedName}'s member profile was saved successfully.`,`הפרופיל של ${savedName} נשמר בהצלחה.`));await loadMembers();}catch(error){setMessage(error instanceof Error?error.message:"Update failed");}}
 
   return (
     <div className="hub-page web-admin-page web-admin-members">
       <header className="hub-page-header"><div><div className="hub-eyebrow">{pick("Administration","ניהול")}</div><h1>{pick("Team members","חברי הקבוצה")}</h1><p>{pick("Create accounts, assign roles and control access.","יצירת חשבונות, הקצאת תפקידים וניהול הרשאות.")}</p></div></header>
+      {message ? <div className="auth-message member-save-notice" role="status" aria-live="polite"><span>✓ {message}</span><button type="button" onClick={()=>setMessage("")} aria-label={pick("Dismiss message","סגירת הודעה")}>×</button></div> : null}
       <section className="member-onboarding-summary" aria-label={pick("Member onboarding status","סטטוס קליטת חברים")}>
         <article><span>{pick("Active members","חברים פעילים")}</span><strong>{members.filter(member=>member.active).length}</strong><small>{pick("Can sign in now","יכולים להתחבר כעת")}</small></article>
         <article className={members.some(member=>member.active&&member.must_change_password)?"needs-attention":""}><span>{pick("Awaiting first login","ממתינים לכניסה ראשונה")}</span><strong>{members.filter(member=>member.active&&member.must_change_password).length}</strong><small>{pick("Temporary password still active","הסיסמה הזמנית עדיין פעילה")}</small></article>
@@ -112,7 +113,6 @@ export default function MembersAdminPage() {
             <label>{pick("Temporary password","סיסמה זמנית")}<div className="auth-inline"><input readOnly value={password} /><button type="button" onClick={() => setPassword(temporaryPassword())}>{pick("Generate","יצירה")}</button></div></label>
             <button className="hub-button">{pick("Create account","יצירת חשבון")}</button>
           </form>
-          {message ? <div className="auth-message" role="status"><span>{message}</span><button type="button" onClick={()=>setMessage("")} aria-label={pick("Dismiss message","סגירת הודעה")}>×</button></div> : null}
           {handoffs.length?<section className="credential-handoff-list" aria-labelledby="credential-handoff-title"><header><div><span>{pick("Current admin session","הפעלת הניהול הנוכחית")}</span><h3 id="credential-handoff-title">{pick("Temporary login handoff","מסירת פרטי כניסה זמניים")}</h3></div><b>{handoffs.length}</b></header><p>{pick("These credentials are held only while this page remains open. Copy them securely before leaving.","פרטים אלה נשמרים רק כל עוד דף זה פתוח. יש להעתיק אותם באופן מאובטח לפני היציאה.")}</p>{handoffs.map(item=><article key={item.memberId}><div><strong>{item.name}</strong><small>{item.email}</small></div><span>{item.kind==="created"?pick("New account","חשבון חדש"):pick("Password reset","איפוס סיסמה")}</span><button type="button" onClick={()=>setActiveHandoff(item)}>{pick("View & copy","הצגה והעתקה")}</button></article>)}</section>:null}
         </section>
         <section className="hub-card admin-member-list">

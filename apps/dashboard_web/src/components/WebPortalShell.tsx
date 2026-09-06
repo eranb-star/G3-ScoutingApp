@@ -10,11 +10,10 @@ import { supabase } from "../supabase";
 const links = [
   ["/home", "Home", "בית"],
   ["/work", "Work", "עבודה"],
-  ["/updates", "Updates", "עדכונים"],
   ["/growth", "Skills Academy", "אקדמיית מיומנויות"],
-  ["/media", "Team Media", "מדיה קבוצתית"],
-  ["/feedback", "Feedback", "משוב"],
   ["/competition", "Competition", "תחרות"],
+  ["/updates", "Updates", "עדכונים"],
+  ["/media", "Team Media", "מדיה קבוצתית"],
 ] as const;
 
 export default function WebPortalShell({children}:{children:ReactNode}) {
@@ -38,8 +37,8 @@ export default function WebPortalShell({children}:{children:ReactNode}) {
       <nav id="web-navigation" aria-label={pick("Team navigation","ניווט הקבוצה")}>
         {links.map(([path,en,he])=><div key={path}>{item(path,en,he)}</div>)}
         <div>{item("/updates?view=knowledge","FRC knowledge","ידע FRC")}</div>
-        <div>{item("/assistant","G3 Assist","G3 Assist")}</div>
         {isAdmin?<section className="web-admin-nav"><small>{pick("ADMINISTRATION","ניהול")}</small>{item("/admin","Workshop dashboard","לוח הסדנה")}{item("/admin/reports","Attendance reports","דוחות נוכחות")}{item("/admin/contributions","Leadership analytics","ניתוח ניהולי")}{item("/admin/members","Team members","חברי הקבוצה")}{item("/admin/permissions","Roles & permissions","תפקידים והרשאות")}{item("/admin/security","Security","אבטחה")}</section>:null}
+        <div className="web-feedback-link">{item("/feedback","Feedback Center","מרכז משוב")}</div>
       </nav>
       <NavLink className="web-profile" to="/profile"><span>{profile.display_name}</span><small>{memberTeams(profile).join(" · ")||pick("Team member","חבר/ת קבוצה")}</small></NavLink>
       <button className="web-signout" type="button" onClick={()=>void signOut()}>{pick("Sign out","יציאה")}</button>
