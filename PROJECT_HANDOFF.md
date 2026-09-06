@@ -89,6 +89,8 @@ Before asking for a commit:
 
 This is the next implementation phase. Do not repeat quiz authoring.
 
+Implementation completed locally on 2026-09-06 and awaiting commit/release validation. The Supabase privacy and qualification migration was directly observed succeeding in the SQL Editor.
+
 - Instructor gradebook with course, member and status filters.
 - Student/course matrix showing assigned, not started, in progress, submitted, changes requested, passed, failed and overdue.
 - Assessment drill-down with all attempts, answers, score, reviewer feedback and timestamps.
