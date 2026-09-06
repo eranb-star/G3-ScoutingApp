@@ -7,11 +7,12 @@ This is the single source of truth for resuming development. Read this file befo
 ## Exact current state
 
 - Working branch: `web-portal-preview`
-- Latest pushed product commit: `0db8619 Prepare Skills Academy catalog Android release`.
+- Latest pushed product commit: `013ae76 Add operational UX release and targeted Skills assignments`.
 - Supabase Skills Academy resource-catalog migration, production web promotion and signed APK installation for version `1.5.0` (code `8`): confirmed complete by the product owner on 2026-09-06.
 - Canonical production web domain: `https://g3-6740.com`. Vercel serves production on this domain and `https://www.g3-6740.com` redirects to the apex domain.
 - Supabase Authentication URL configuration was directly updated and verified on 2026-09-06: Site URL is `https://g3-6740.com`; allowed redirects are `https://g3-6740.com/**`, `https://www.g3-6740.com/**`, and the legacy production fallback `https://g3-scouting-app-5qpe.vercel.app/**`.
-- Local product changes after `0db8619`: this handoff update only; commit it separately. No application source changes are pending.
+- Operational UX release was committed, pushed, promoted to production and installed on Android by the product owner. Released Android identity: version `1.6.0`, code `9`.
+- Current local product changes are the combined Team Media + Feedback Center release documented below. They are implemented and locally verified but not yet committed, promoted or installed.
 - Local non-product changes: Android Studio may modify `android/.idea/deploymentTargetSelector.xml` and `android/.idea/misc.xml`. Never include these files in a product commit.
 - Live quiz-engine schema verified on 2026-09-06: `training_assessments.due_at`, `training_assessments.max_attempts`, `training_assessment_answer_keys`, `training_assessment_assignments` and `submit_training_quiz` are present and responding through Supabase. Do not rerun the migration merely for confirmation.
 
@@ -53,7 +54,7 @@ The following are already represented by committed code and regression checks:
 - Advanced scouting coverage, analysis, quality views, picklist evidence and worldwide TBA match/video library.
 - G3 Assistant multimodal/history/knowledge workflows previously implemented. Provider capacity remains an external operational risk and must not be presented as a UI-only defect without checking function logs.
 
-## Operational UX release — IMPLEMENTED AND LOCALLY VERIFIED, RELEASE PENDING
+## Operational UX release — COMPLETE
 
 Prepared on 2026-09-06 as one web/Android batch; it is not production-released until the product owner confirms promotion and installation.
 
@@ -66,7 +67,20 @@ Prepared on 2026-09-06 as one web/Android batch; it is not production-released u
 - Supabase migration `backend/supabase/operational_ux_release_20260906.sql` was directly observed succeeding (`Success. No rows returned`).
 - Operational UX verification passed all 11 checks; TypeScript and Vite production build passed. Calendar, inventory and assessment targeting were inspected in the authenticated local preview at narrow/mobile width; the multi-day October 29–31 event appeared on all three dates.
 - The exact final web bundle was copied to Android assets and its `index.html` hash matched the build output.
-- Pending Android release identity: version code `9`, version name `1.6.0`.
+- Released Android identity: version code `9`, version name `1.6.0`.
+
+## Team Media + Feedback Center release — IMPLEMENTED AND LOCALLY VERIFIED, RELEASE PENDING
+
+- Team Media provides one responsive, searchable archive with separate Robot, CAD & Drawings, Workshop Progress, Events and Team Stories collections.
+- Authenticated members can upload JPG, PNG, WebP, GIF and PDF files. Large images are compressed client-side before upload; the private bucket limit is 15 MB. Media includes title, caption, collection, date and tags.
+- Team members can view the gallery. Uploaders can delete their own items; admins and mentors can manage all items. Storage and database policies enforce these boundaries.
+- Feedback Center supports improvement ideas and bug reports, affected area, impact/severity, optional screenshot, threaded conversation and visible status.
+- Submitters can only see their own feedback. Admins and mentors see the team inbox, assign an owner and move work through new, reviewing, planned, in progress, resolved and closed states.
+- New feedback creates an administrator announcement. Status/owner changes synchronize back to the submitter through the shared Home/Work responsibility engine.
+- Supabase migration `backend/supabase/team_media_feedback_center_20260906.sql` was directly run and returned `Success. No rows returned`.
+- All existing regression suites passed. The new Team Media + Feedback suite passed all 12 checks; TypeScript and Vite production builds passed.
+- Both modules were inspected in the authenticated local phone-width preview after the live schema was installed. They loaded without schema errors and remained single-column/readable.
+- The exact final web bundle was synchronized to Android assets and its `index.html` hash matched. Pending Android identity: version `1.7.0`, code `10`.
 
 ## Non-regression contract
 
@@ -161,13 +175,13 @@ Heavy Skills Academy, Assistant and competition screens are now route-split; the
 
 Catalog enrichment remains normal content operations, not a missing implementation phase. Continue reviewing resources for underrepresented domains (mechanical, electrical, strategy/scouting, drive/pit, field build and publicity/awards) before publishing them. Broken-link automation and scheduled stale-content review belong to Phase 4 hardening.
 
-### Phase 6 — Team Media — NOT STARTED
+### Phase 6 — Team Media — IMPLEMENTED, RELEASE PENDING
 
 - A governed media hub for robot photos, CAD renders/drawings, workshop progress and event albums.
 - Supabase Storage policies, upload compression, captions/tags, permissions, retention and usable web/phone galleries.
 - Keep robot engineering media and wider team/event media clearly separated inside one Team Media area.
 
-### Phase 7 — Feedback Center — NOT STARTED
+### Phase 7 — Feedback Center — IMPLEMENTED, RELEASE PENDING
 
 - Student improvement ideas and bug reports with category, severity, screenshots, status, owner and administrator triage.
 - Notifications and lifecycle visibility without mixing product feedback into normal team assignments.
@@ -179,10 +193,10 @@ Catalog enrichment remains normal content operations, not a missing implementati
 
 ## Next actions
 
-1. Commit and push the pending Operational UX release, excluding both Android Studio `.idea` files. Test the exact Vercel preview before promotion, then build/install Android `1.6.0` from the synchronized assets.
-2. Execute the remaining real multi-role acceptance matrix in `RELEASE_ACCEPTANCE_20260906.md`. Do not delete QA users/data without explicit approval.
+1. Commit and push the pending Team Media + Feedback Center release, excluding both Android Studio `.idea` files. Test the exact Vercel preview before promotion, then build/install Android `1.7.0` from the synchronized assets.
+2. Execute the remaining real multi-role acceptance matrix in `RELEASE_ACCEPTANCE_20260906.md`, including media upload/view/delete boundaries and student-versus-leadership feedback visibility. Do not delete QA users/data without explicit approval.
 3. Complete Phase 4 hardening: observability, database/RLS review, accessibility/cross-device audit, catalog broken-link/staleness checks and competition-day recovery drill.
-4. Build Phase 6 Team Media, followed by Phase 7 Feedback Center and then the deliberately scoped Phase 8 engineering integrations.
+4. Proceed to deliberately scoped Phase 8 engineering integrations only after the combined release passes acceptance.
 
 ## Definition of truth
 

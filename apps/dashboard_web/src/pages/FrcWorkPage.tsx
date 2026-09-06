@@ -24,6 +24,8 @@ const operationalAreas=[
   {key:"decisions",en:"Decision log",he:"יומן החלטות",detailEn:"Technical decisions and rationale",detailHe:"החלטות טכניות והסיבות להן"},
   {key:"packing",en:"Pit & packing",he:"פיט ואריזה",detailEn:"Competition packing and readiness",detailHe:"אריזה לתחרות ומוכנות"},
   {key:"assignments",en:"Assignments",he:"שיבוצים",detailEn:"Event and workshop roles",detailHe:"תפקידי אירוע וסדנה"},
+  {key:"media",en:"Team Media",he:"מדיה קבוצתית",detailEn:"Robot, CAD, workshop and event archive",detailHe:"ארכיון רובוט, CAD, סדנה ואירועים",path:"/media"},
+  {key:"feedback",en:"Feedback Center",he:"מרכז משוב",detailEn:"Ideas, bugs and accountable improvement",detailHe:"רעיונות, תקלות ושיפור עם אחריות",path:"/feedback"},
 ] as const;
 function areaMatches(subteam:string|null|undefined,key:string){return teamMatches(subteam,key);}
 

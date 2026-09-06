@@ -12,6 +12,8 @@ const links = [
   ["/work", "Work", "עבודה"],
   ["/updates", "Updates", "עדכונים"],
   ["/growth", "Skills Academy", "אקדמיית מיומנויות"],
+  ["/media", "Team Media", "מדיה קבוצתית"],
+  ["/feedback", "Feedback", "משוב"],
   ["/competition", "Competition", "תחרות"],
 ] as const;
 

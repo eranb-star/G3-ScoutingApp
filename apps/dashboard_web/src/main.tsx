@@ -16,6 +16,7 @@ import {
 
 import "./index.css";
 import "./teamHub.css";
+import "./mediaFeedback.css";
 import { supabase } from "./supabase";
 import { MemberAuthProvider, useMemberAuth } from "./lib/memberAuth";
 import { ChangePasswordPage, LoginPage } from "./pages/AuthPages";
@@ -54,6 +55,8 @@ const ScoutingQualityPage=lazy(()=>import("./pages/ScoutingQualityPage"));
 const CompetitionControlPage=lazy(()=>import("./pages/CompetitionControlPage"));
 const TbaExplorerPage=lazy(()=>import("./pages/TbaExplorerPage"));
 const PitAssignmentsPage=lazy(()=>import("./pages/PitAssignmentsPage"));
+const TeamMediaPage=lazy(()=>import("./pages/TeamMediaPage"));
+const FeedbackCenterPage=lazy(()=>import("./pages/FeedbackCenterPage"));
 
 function WorkspaceLoading(){const[slow,setSlow]=useState(false);useEffect(()=>{const timer=window.setTimeout(()=>setSlow(true),6000);return()=>window.clearTimeout(timer);},[]);return <section className="workspace-loader" role="status" aria-live="polite"><img src="/g3-assistant.png" alt=""/><div><strong>Opening G3 workspace…</strong><span>{slow?"This connection is taking longer than usual. You can retry safely.":"Loading the latest team data and tools."}</span></div>{slow?<button type="button" onClick={()=>window.location.reload()}>Retry</button>:null}</section>}
 class WorkspaceErrorBoundary extends React.Component<{children:React.ReactNode},{failed:boolean}>{state={failed:false};static getDerivedStateFromError(){return{failed:true}}componentDidCatch(error:unknown){console.error("Workspace route failed to load",error)}render(){return this.state.failed?<section className="workspace-loader is-error" role="alert"><img src="/g3-assistant.png" alt=""/><div><strong>G3 could not open this area</strong><span>Your data is safe. Reload to fetch the latest application version.</span></div><button type="button" onClick={()=>window.location.reload()}>Reload G3</button></section>:this.props.children}}
@@ -838,6 +841,8 @@ function AppShell() {
         <Route path="/competition/library" element={<MemberGate><TbaExplorerPage /></MemberGate>} />
         <Route path="/competition/pit-assignments" element={<MemberGate><PitAssignmentsPage /></MemberGate>} />
         <Route path="/growth" element={<MemberGate><TrainingCenterPage /></MemberGate>} />
+        <Route path="/media" element={<MemberGate><TeamMediaPage /></MemberGate>} />
+        <Route path="/feedback" element={<MemberGate><FeedbackCenterPage /></MemberGate>} />
         <Route path="/season-planning" element={<MemberGate><SeasonPlanningPage /></MemberGate>} />
         <Route path="/admin/members" element={<AdminGate><MembersAdminPage /></AdminGate>} />
         <Route path="/admin" element={<AdminGate><AdminDashboardPage /></AdminGate>} />

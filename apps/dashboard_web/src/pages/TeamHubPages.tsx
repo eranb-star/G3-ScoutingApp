@@ -373,6 +373,8 @@ export function MorePage({ isAdmin }: { isAdmin: boolean }) {
   const { t, pick } = useLocalization();
   const rows = [
     [t("attendance"), pick("Personal history and verified workshop hours","היסטוריה אישית ושעות סדנה מאומתות"), "/attendance"],
+    [pick("Team Media","מדיה קבוצתית"), pick("Robot, CAD, workshop and event gallery","גלריית רובוט, CAD, סדנה ואירועים"), "/media"],
+    [pick("Feedback Center","מרכז משוב"), pick("Share an idea or report a problem","שליחת רעיון או דיווח על בעיה"), "/feedback"],
     [t("profile"), pick("Team directory, roles and subteams","ספר חברי הקבוצה, תפקידים ותתי־צוותים"), "/profile"],
     [t("settings"), pick("Language, notifications, privacy and account","שפה, התראות, פרטיות וחשבון"), "/settings"],
   ];
