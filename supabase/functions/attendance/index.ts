@@ -33,18 +33,22 @@ Deno.serve(async (request) => {
     if (!member?.active || member.must_change_password) return response({ error: "Active member access required" }, 403);
 
     const body = await request.json() as { action: "open_workshop" | "check_in" | "check_out"; meetingId?: string; verification?: "location" | "wifi"; latitude?: number; longitude?: number; accuracy?: number; ssid?: string };
+    const nowIso = new Date().toISOString();
+    let expiredMeetings = admin.from("team_meetings").update({ status: "closed" }).eq("status", "open").lt("ends_at", nowIso);
+    if (body.action === "check_out" && body.meetingId) expiredMeetings = expiredMeetings.neq("id", body.meetingId);
+    await expiredMeetings;
     let method: "location" | "trusted_wifi" = "location";
     let distance: number | null = null;
     let accuracy: number | null = null;
     if (body.verification === "wifi") {
       const ssid = body.ssid?.trim();
-      if (!ssid) return response({ error: "Connected Wi-Fi could not be identified" }, 400);
+      if (!ssid) return response({ error: "Connected Wi-Fi could not be identified", code: "WIFI_NAME_UNAVAILABLE" }, 400);
       const { data: trusted } = await admin.from("trusted_wifi_networks").select("id").eq("ssid", ssid).eq("active", true).maybeSingle();
-      if (!trusted) return response({ error: "Connect to the trusted workshop Wi-Fi and try again" }, 403);
+      if (!trusted) return response({ error: "This Wi-Fi network is not registered as a trusted workshop network", code: "WIFI_NOT_TRUSTED" }, 403);
       method = "trusted_wifi";
     } else {
-      if (![body.latitude, body.longitude, body.accuracy].every(Number.isFinite)) return response({ error: "A valid location reading is required" }, 400);
-      if (body.accuracy! > 150) return response({ error: "Location accuracy is too low. Move near a window and try again." }, 400);
+      if (![body.latitude, body.longitude, body.accuracy].every(Number.isFinite)) return response({ error: "A valid location reading is required", code: "LOCATION_UNAVAILABLE" }, 400);
+      if (body.accuracy! > 150) return response({ error: "Location accuracy is too low. Try the school Wi-Fi verification instead.", code: "LOCATION_INACCURATE", accuracyMetres: Math.round(body.accuracy!) }, 400);
       const { data: workshop } = await admin.from("workshop_locations").select("latitude,longitude,radius_m").eq("active", true).single();
       if (!workshop) return response({ error: "Workshop location has not been configured" }, 503);
       distance = Math.round(distanceMetres(body.latitude!, body.longitude!, workshop.latitude, workshop.longitude));
@@ -53,7 +57,6 @@ Deno.serve(async (request) => {
     }
 
     if (body.action === "open_workshop") {
-      const nowIso = new Date().toISOString();
       const { data: existing } = await admin.from("team_meetings").select("id,title,starts_at,ends_at,status,meeting_type").eq("status", "open").lte("starts_at", nowIso).gte("ends_at", nowIso).order("opened_at", { ascending: false }).limit(1).maybeSingle();
       if (existing) return response({ meeting: existing, alreadyOpen: true });
       const now = new Date();
@@ -76,7 +79,8 @@ Deno.serve(async (request) => {
 
     if (!body.meetingId) return response({ error: "Meeting ID is required" }, 400);
     const { data: meeting } = await admin.from("team_meetings").select("id,status").eq("id", body.meetingId).single();
-    if (!meeting || meeting.status !== "open") return response({ error: "This meeting is not open for attendance" }, 400);
+    const { data: activeAttendance } = await admin.from("attendance_records").select("id,checked_out_at").eq("meeting_id", body.meetingId).eq("member_id", auth.user.id).is("checked_out_at", null).maybeSingle();
+    if (!meeting || (meeting.status !== "open" && !(body.action === "check_out" && activeAttendance))) return response({ error: "This meeting is not open for attendance", code: "MEETING_NOT_OPEN" }, 400);
 
     if (body.action === "check_in") {
       const { data: existing } = await admin.from("attendance_records").select("id,checked_out_at").eq("meeting_id", body.meetingId).eq("member_id", auth.user.id).maybeSingle();

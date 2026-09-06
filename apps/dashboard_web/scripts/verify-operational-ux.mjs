@@ -5,6 +5,9 @@ const root=path.resolve(import.meta.dirname,"../../..");
 const read=file=>fs.readFileSync(path.join(root,file),"utf8");
 const checks=[
   ["inventory stores model and amount",read("apps/dashboard_web/src/pages/ToolsInventoryPage.tsx").includes("model:tool.model||null")&&read("apps/dashboard_web/src/pages/ToolsInventoryPage.tsx").includes("amount:Math.max")],
+  ["purchase quantities accept whole and decimal values",read("apps/dashboard_web/src/pages/ToolsInventoryPage.tsx").includes('min="0.01" step="0.01"')],
+  ["purchase submission exposes progress and disables duplicate saves",read("apps/dashboard_web/src/pages/ToolsInventoryPage.tsx").includes("isSubmittingPurchase")&&read("apps/dashboard_web/src/pages/ToolsInventoryPage.tsx").includes('aria-busy={isSubmittingPurchase}')],
+  ["purchase confirmation appears before push delivery completes",read("apps/dashboard_web/src/pages/ToolsInventoryPage.tsx").indexOf('Purchase request saved. Notifying administrators')<read("apps/dashboard_web/src/pages/ToolsInventoryPage.tsx").indexOf('send-purchase-push')],
   ["equipment return uses a calendar picker",read("apps/dashboard_web/src/pages/ToolsInventoryPage.tsx").includes('input.type="date"')],
   ["calendar renders overlapping multi-day events",read("apps/dashboard_web/src/pages/UnifiedCalendarPage.tsx").includes("occursOnDay(x,d)")],
   ["calendar rejects reversed ranges",read("apps/dashboard_web/src/pages/UnifiedCalendarPage.tsx").includes("endsAt<startsAt")],

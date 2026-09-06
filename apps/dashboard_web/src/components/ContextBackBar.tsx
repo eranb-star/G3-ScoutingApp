@@ -15,7 +15,7 @@ export default function ContextBackBar({fallbackTo,label}:{fallbackTo?:string;la
   const showEventContext=inCompetition&&!location.pathname.startsWith("/competition/library")&&!location.pathname.startsWith("/analysis/picklist");
   useEffect(()=>{if(!showEventContext){setEventName("");return;}const id=localStorage.getItem("g3_event_id");if(!id){setEventName("");return;}supabase.from("events").select("name").eq("id",id).maybeSingle().then(({data})=>setEventName(data?.name??""));},[showEventContext,location.pathname]);
   if (fallbackTo) return null;
-  const inWork = location.pathname === "/projects" || location.pathname === "/tools" || location.pathname === "/frc-operations" || location.pathname === "/robot-issues" || location.pathname === "/robot-reliability" || location.pathname === "/robot-maintenance" || location.pathname === "/growth" || location.pathname === "/season-planning" || location.pathname === "/media" || location.pathname === "/feedback";
+  const inWork = location.pathname === "/projects" || location.pathname === "/tools" || location.pathname === "/frc-operations" || location.pathname === "/robot-issues" || location.pathname === "/robot-reliability" || location.pathname === "/robot-maintenance" || location.pathname === "/growth" || location.pathname === "/season-planning" || location.pathname === "/media" || location.pathname === "/feedback" || location.pathname === "/engineering";
   const parentByRoute:Record<string,{path:string;en:string;he:string}>={
     "/schedule":{path:"/home",en:"Home",he:"בית"},
     "/attendance":{path:"/more",en:"More",he:"עוד"},

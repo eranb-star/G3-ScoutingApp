@@ -7,12 +7,13 @@ This is the single source of truth for resuming development. Read this file befo
 ## Exact current state
 
 - Working branch: `web-portal-preview`
-- Latest pushed product commit: `013ae76 Add operational UX release and targeted Skills assignments`.
+- Latest pushed product commit: `a580cae Add Team Media and Feedback Center`.
 - Supabase Skills Academy resource-catalog migration, production web promotion and signed APK installation for version `1.5.0` (code `8`): confirmed complete by the product owner on 2026-09-06.
 - Canonical production web domain: `https://g3-6740.com`. Vercel serves production on this domain and `https://www.g3-6740.com` redirects to the apex domain.
 - Supabase Authentication URL configuration was directly updated and verified on 2026-09-06: Site URL is `https://g3-6740.com`; allowed redirects are `https://g3-6740.com/**`, `https://www.g3-6740.com/**`, and the legacy production fallback `https://g3-scouting-app-5qpe.vercel.app/**`.
 - Operational UX release was committed, pushed, promoted to production and installed on Android by the product owner. Released Android identity: version `1.6.0`, code `9`.
-- Current local product changes are the combined Team Media + Feedback Center release documented below. They are implemented and locally verified but not yet committed, promoted or installed.
+- Team Media + Feedback Center was committed, pushed, promoted to production and installed on Android by the product owner.
+- Current local product changes are the combined Purchase Reliability + Attendance Reliability + Engineering Hub release documented below. They are not yet committed, promoted or installed.
 - Local non-product changes: Android Studio may modify `android/.idea/deploymentTargetSelector.xml` and `android/.idea/misc.xml`. Never include these files in a product commit.
 - Live quiz-engine schema verified on 2026-09-06: `training_assessments.due_at`, `training_assessments.max_attempts`, `training_assessment_answer_keys`, `training_assessment_assignments` and `submit_training_quiz` are present and responding through Supabase. Do not rerun the migration merely for confirmation.
 
@@ -69,7 +70,7 @@ Prepared on 2026-09-06 as one web/Android batch; it is not production-released u
 - The exact final web bundle was copied to Android assets and its `index.html` hash matched the build output.
 - Released Android identity: version code `9`, version name `1.6.0`.
 
-## Team Media + Feedback Center release — IMPLEMENTED AND LOCALLY VERIFIED, RELEASE PENDING
+## Team Media + Feedback Center release — COMPLETE
 
 - Team Media provides one responsive, searchable archive with separate Robot, CAD & Drawings, Workshop Progress, Events and Team Stories collections.
 - Authenticated members can upload JPG, PNG, WebP, GIF and PDF files. Large images are compressed client-side before upload; the private bucket limit is 15 MB. Media includes title, caption, collection, date and tags.
@@ -80,7 +81,22 @@ Prepared on 2026-09-06 as one web/Android batch; it is not production-released u
 - Supabase migration `backend/supabase/team_media_feedback_center_20260906.sql` was directly run and returned `Success. No rows returned`.
 - All existing regression suites passed. The new Team Media + Feedback suite passed all 12 checks; TypeScript and Vite production builds passed.
 - Both modules were inspected in the authenticated local phone-width preview after the live schema was installed. They loaded without schema errors and remained single-column/readable.
-- The exact final web bundle was synchronized to Android assets and its `index.html` hash matched. Pending Android identity: version `1.7.0`, code `10`.
+- The exact final web bundle was synchronized to Android assets and its `index.html` hash matched. Released Android identity: version `1.7.0`, code `10`.
+
+## Purchase + Attendance Reliability + Engineering Hub — IMPLEMENTED AND BACKEND DEPLOYED, CLIENT RELEASE PENDING
+
+- Purchase requests accept whole quantities such as `1` and decimal quantities, expose a clear saving state, prevent duplicate submission and confirm the database save before reporting push-delivery status.
+- Attendance preserves check-out for a member with an active attendance record even when the meeting end time has passed. Expired open meetings are closed automatically without trapping that member.
+- Phone attendance now offers explicit GPS and School Wi-Fi verification. Rejected or inaccurate GPS automatically continues to trusted Wi-Fi, with precise status messages.
+- The Android Wi-Fi bridge requests Fine/Coarse Location and Android 13+ Nearby Wi-Fi runtime permissions before reading the SSID.
+- Engineering Hub is a read-only, department-oriented catalog combining `GlueGunAndGlitter` (software) and `GlueGunGlitter` (CAD/drawings, scouting, experiments and legacy work). Account ownership is shown as source metadata, not separate navigation.
+- Repository cards expose repository, commits, issues and releases links plus language, activity, stale/archive signals and a cached last-known catalog for weak connectivity.
+- Supabase deployment was directly observed on 2026-09-06: updated `attendance` and new `github-repositories` Edge Functions both show a fresh live deployment. No SQL migration is required.
+- All existing automated regression suites passed. The new Attendance + Engineering suite passed all 12 checks; TypeScript and Vite production builds passed.
+- The authenticated local preview loaded all 10 repositories across both G3 sources. At 319px phone width it rendered without horizontal overflow and retained usable, single-column repository cards.
+- The final web `dist/index.html` and synchronized Android asset `index.html` SHA-256 hashes matched (`CB8299A0DF6097DC856A8F2E82B97DC27C52114146C22EA01E1D50CFA35DAC6C`).
+- Android native source compatibility was checked against the installed Capacitor 8 APIs. A command-line Gradle compilation could not be completed because the only command-line JDK is Java 25 while the repository Gradle runtime does not support class-file version 69; use Android Studio's configured compatible Gradle JDK for the signed build.
+- Pending Android identity: version `1.8.0`, code `11`. Build/install only after exact preview acceptance and final asset synchronization.
 
 ## Non-regression contract
 
@@ -117,6 +133,14 @@ Before asking for a commit:
 9. Exclude `.idea` files, temporary Gradle caches, generated scratch data and test accounts from commits/releases.
 
 ## Exact remaining phases, in priority order
+
+### Purchase-request reliability fix — IMPLEMENTED, VERIFICATION PENDING
+
+- Corrected the browser validation defect that accepted `1.01` but rejected a quantity of `1`; purchase quantities now accept both whole and two-decimal values.
+- Added explicit saving state, duplicate-submit protection and accessible progress messaging on web and Android.
+- A successful database save is now confirmed immediately; push-notification delivery finishes afterward and reports its own success or failure without making the user wonder whether the request was saved.
+- This change does not alter purchasing permissions: authorized team leaders and mentors may submit, while only administrators may approve, reject, order or receive.
+- Include this correction in the next combined Attendance Reliability + Engineering Hub release so only one new APK is required.
 
 ### Phase 1 — Skills Academy gradebook and progress dashboard — COMPLETE
 
@@ -175,28 +199,29 @@ Heavy Skills Academy, Assistant and competition screens are now route-split; the
 
 Catalog enrichment remains normal content operations, not a missing implementation phase. Continue reviewing resources for underrepresented domains (mechanical, electrical, strategy/scouting, drive/pit, field build and publicity/awards) before publishing them. Broken-link automation and scheduled stale-content review belong to Phase 4 hardening.
 
-### Phase 6 — Team Media — IMPLEMENTED, RELEASE PENDING
+### Phase 6 — Team Media — COMPLETE
 
 - A governed media hub for robot photos, CAD renders/drawings, workshop progress and event albums.
 - Supabase Storage policies, upload compression, captions/tags, permissions, retention and usable web/phone galleries.
 - Keep robot engineering media and wider team/event media clearly separated inside one Team Media area.
 
-### Phase 7 — Feedback Center — IMPLEMENTED, RELEASE PENDING
+### Phase 7 — Feedback Center — COMPLETE
 
 - Student improvement ideas and bug reports with category, severity, screenshots, status, owner and administrator triage.
 - Notifications and lifecycle visibility without mixing product feedback into normal team assignments.
 
-### Phase 8 — Engineering integrations — NOT STARTED
+### Phase 8 — Engineering integrations — READ-ONLY GITHUB FOUNDATION IMPLEMENTED, RELEASE PENDING
 
 - Start with safe links and status summaries for GitHub and the selected CAD platform (for example Onshape), then add authenticated read-only integrations only where they provide clear value.
 - Do not expose repository/CAD secrets or attempt full in-app replacement of those specialist tools.
 
 ## Next actions
 
-1. Commit and push the pending Team Media + Feedback Center release, excluding both Android Studio `.idea` files. Test the exact Vercel preview before promotion, then build/install Android `1.7.0` from the synchronized assets.
-2. Execute the remaining real multi-role acceptance matrix in `RELEASE_ACCEPTANCE_20260906.md`, including media upload/view/delete boundaries and student-versus-leadership feedback visibility. Do not delete QA users/data without explicit approval.
-3. Complete Phase 4 hardening: observability, database/RLS review, accessibility/cross-device audit, catalog broken-link/staleness checks and competition-day recovery drill.
-4. Proceed to deliberately scoped Phase 8 engineering integrations only after the combined release passes acceptance.
+1. Commit and push only the listed product files, excluding both Android Studio `.idea` files. Supabase is already deployed and no SQL is required.
+2. Test purchase quantity `1`, Engineering Hub and the visible attendance controls in the exact Vercel preview before promotion. GPS/Wi-Fi must be physically tested in Android at the school.
+3. Promote only after preview acceptance, then build/install Android `1.8.0` from synchronized assets using Android Studio's compatible Gradle JDK.
+4. Execute the remaining real multi-role acceptance matrix in `RELEASE_ACCEPTANCE_20260906.md`. Do not delete QA users/data without explicit approval.
+5. Complete remaining Phase 4 hardening: observability, database/RLS review, accessibility/cross-device audit, catalog broken-link/staleness checks and competition-day recovery drill.
 
 ## Definition of truth
 

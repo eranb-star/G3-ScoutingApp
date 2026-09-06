@@ -14,6 +14,7 @@
     "verify:skills-catalog": "node scripts/verify-skills-resource-catalog.mjs",
     "verify:operational-ux": "node scripts/verify-operational-ux.mjs",
     "verify:media-feedback": "node scripts/verify-media-feedback.mjs",
+    "verify:attendance-engineering": "node scripts/verify-attendance-engineering.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

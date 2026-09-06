@@ -2,24 +2,47 @@ package com.g3.scouting;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-import androidx.core.content.ContextCompat;
+import android.os.Build;
 import com.getcapacitor.JSObject;
+import com.getcapacitor.PermissionState;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
+import com.getcapacitor.annotation.Permission;
+import com.getcapacitor.annotation.PermissionCallback;
 
-@CapacitorPlugin(name = "WifiInfo")
+@CapacitorPlugin(name = "WifiInfo", permissions = {
+    @Permission(alias = "location", strings = { Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION }),
+    @Permission(alias = "nearbyWifi", strings = { Manifest.permission.NEARBY_WIFI_DEVICES })
+})
 public class WifiInfoPlugin extends Plugin {
     @PluginMethod
     public void getCurrentNetwork(PluginCall call) {
-        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            call.reject("Location permission is required to read the connected Wi-Fi network");
+        if (getPermissionState("location") != PermissionState.GRANTED) {
+            requestPermissionForAlias("location", call, "permissionCallback");
             return;
         }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && getPermissionState("nearbyWifi") != PermissionState.GRANTED) {
+            requestPermissionForAlias("nearbyWifi", call, "permissionCallback");
+            return;
+        }
+        resolveNetwork(call);
+    }
+
+    @PermissionCallback
+    private void permissionCallback(PluginCall call) {
+        if (getPermissionState("location") == PermissionState.GRANTED &&
+            (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU || getPermissionState("nearbyWifi") == PermissionState.GRANTED)) {
+            resolveNetwork(call);
+        } else {
+            call.reject("Wi-Fi permission was not granted");
+        }
+    }
+
+    private void resolveNetwork(PluginCall call) {
         WifiManager manager = (WifiManager) getContext().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         WifiInfo info = manager == null ? null : manager.getConnectionInfo();
         String ssid = info == null ? null : info.getSSID();

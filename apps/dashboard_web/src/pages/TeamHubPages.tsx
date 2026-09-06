@@ -210,7 +210,7 @@ export function CheckInPage() {
   const { pick } = useLocalization();
   const { profile } = useMemberAuth();
   const [activeMeeting, setActiveMeeting] = useState<TeamMeeting | null>(null);
-  const [attendance, setAttendance] = useState<{ checked_in_at: string; checked_out_at: string | null } | null>(null);
+  const [attendance, setAttendance] = useState<{ meeting_id?:string; checked_in_at: string; checked_out_at: string | null } | null>(null);
   const [working, setWorking] = useState(false);
   const [message, setMessage] = useState("");
   const [locationConfigured, setLocationConfigured] = useState<boolean | null>(null);
@@ -228,18 +228,21 @@ export function CheckInPage() {
     Promise.all([
       supabase.from("team_meetings").select("id,title,starts_at,ends_at,status,meeting_type").eq("status", "open").order("opened_at", { ascending: false }),
       supabase.from("team_meetings").select("id,title,starts_at,ends_at,status,meeting_type").in("status", ["scheduled","open"]).gt("starts_at", now).order("starts_at").limit(1),
-    ]).then(([openResult, nextResult]) => {
-      const meeting = ((openResult.data ?? []) as TeamMeeting[]).find(item => isMeetingWindowAvailable(item, currentTime)) ?? null;
+      profile ? supabase.from("attendance_records").select("meeting_id,checked_in_at,checked_out_at").eq("member_id",profile.id).is("checked_out_at",null).order("checked_in_at",{ascending:false}).limit(1).maybeSingle() : Promise.resolve({data:null}),
+    ]).then(async([openResult, nextResult, activeResult]) => {
+      const openMeetings=(openResult.data ?? []) as TeamMeeting[],activeRecord=activeResult.data as {meeting_id:string;checked_in_at:string;checked_out_at:null}|null;
+      let meeting = (activeRecord?openMeetings.find(item=>item.id===activeRecord.meeting_id):null) ?? openMeetings.find(item => isMeetingWindowAvailable(item, currentTime)) ?? null;
+      if(activeRecord&&!meeting){const{data}=await supabase.from("team_meetings").select("id,title,starts_at,ends_at,status,meeting_type").eq("id",activeRecord.meeting_id).maybeSingle();meeting=data as TeamMeeting|null;}
       setActiveMeeting(meeting);
       setNextMeeting((nextResult.data?.[0] ?? null) as TeamMeeting | null);
-      void loadAttendance(meeting);
+      if(activeRecord&&meeting?.id===activeRecord.meeting_id)setAttendance(activeRecord);else void loadAttendance(meeting);
     });
     if (profile?.role === "admin") supabase.from("workshop_locations").select("id").eq("active", true).maybeSingle().then(({ data }) => setLocationConfigured(Boolean(data)));
   }, [profile?.id]);
 
-  async function verifyAndRecord(action: "open_workshop" | "check_in" | "check_out") {
+  async function verifyAndRecord(action: "open_workshop" | "check_in" | "check_out", preferred: "location" | "wifi") {
     if (action !== "open_workshop" && !activeMeeting) return;
-    setWorking(true); setMessage("Requesting one precise location reading…");
+    setWorking(true);
     const submit = async (verification: "location" | "wifi", details: Record<string, unknown>) => {
       const { data, error } = await supabase.functions.invoke("attendance", { body: { action, meetingId: activeMeeting?.id, verification, ...details } });
       if (error || data?.error) {
@@ -248,7 +251,7 @@ export function CheckInPage() {
         if (!reason && functionContext) {
           try { reason = (await functionContext.clone().json())?.error; } catch { /* friendly fallback below */ }
         }
-        setMessage(reason || pick("Check-in could not be completed. Confirm that you are at Shvilim High School and try again.","לא ניתן להשלים את דיווח הנוכחות. ודאו שאתם נמצאים בשטח תיכון שבילים ונסו שוב."));
+        return {ok:false,reason:reason || pick("Check-in could not be completed. Confirm that you are at Shvilim High School and try again.","לא ניתן להשלים את דיווח הנוכחות. ודאו שאתם נמצאים בשטח תיכון שבילים ונסו שוב.")};
       }
       else if (action === "open_workshop") {
         const opened = data.meeting as TeamMeeting;
@@ -256,17 +259,20 @@ export function CheckInPage() {
         setMessage(data.alreadyOpen ? "A workshop session is already open." : "Workshop opened. You can now check in.");
         await loadAttendance(opened);
       } else { setMessage(action === "check_in" ? "Checked in successfully." : "Checked out successfully."); await loadAttendance(activeMeeting); window.dispatchEvent(new Event("g3-attendance-changed")); }
+      return {ok:true,reason:""};
+    };
+    const verifyWifi = async (fallbackReason?:string) => {
+      setMessage(fallbackReason?pick(`${fallbackReason} Trying the trusted school Wi-Fi…`,`${fallbackReason} מנסה לאמת באמצעות רשת בית הספר…`):pick("Reading the connected school Wi-Fi…","קורא את רשת בית הספר המחוברת…"));
+      try { const { ssid } = await WifiInfo.getCurrentNetwork(); const result=await submit("wifi", { ssid });if(!result.ok)setMessage(result.reason); }
+      catch(error) { setMessage(error instanceof Error?error.message:pick("The school Wi-Fi could not be verified. Confirm Wi-Fi is enabled and grant the requested permission.","לא ניתן לאמת את רשת בית הספר. ודאו שה-Wi-Fi פעיל ואשרו את ההרשאה המבוקשת.")); }
       setWorking(false);
     };
-    const tryWifiFallback = async () => {
-      setMessage("GPS unavailable. Checking the trusted workshop Wi-Fi…");
-      try { const { ssid } = await WifiInfo.getCurrentNetwork(); await submit("wifi", { ssid }); }
-      catch { setMessage("GPS is unavailable and the trusted workshop Wi-Fi could not be verified."); setWorking(false); }
-    };
-    if (!navigator.geolocation) return void tryWifiFallback();
+    if(preferred==="wifi")return void verifyWifi();
+    setMessage(pick("Requesting one precise GPS reading…","מבקש קריאת GPS מדויקת אחת…"));
+    if (!navigator.geolocation) return void verifyWifi(pick("GPS is unavailable.","ה-GPS אינו זמין."));
     navigator.geolocation.getCurrentPosition(
-      (position) => void submit("location", { latitude: position.coords.latitude, longitude: position.coords.longitude, accuracy: position.coords.accuracy }),
-      () => void tryWifiFallback(),
+      async(position) => {const result=await submit("location", { latitude: position.coords.latitude, longitude: position.coords.longitude, accuracy: position.coords.accuracy });if(result.ok)setWorking(false);else await verifyWifi(result.reason);},
+      () => void verifyWifi(pick("GPS could not provide a reliable reading.","ה-GPS לא הצליח לספק קריאה אמינה.")),
       { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     );
   }
@@ -283,7 +289,8 @@ export function CheckInPage() {
           {!activeMeeting && nextMeeting ? <p className="next-meeting-note"><strong>{pick("Next scheduled meeting:","המפגש המתוכנן הבא:")}</strong> {nextMeeting.title} · {israelDateTime.format(new Date(nextMeeting.starts_at))}. {pick("If you are at school for unscheduled work, you may open an ad-hoc session below.","אם אתם בבית הספר לעבודה שלא תוכננה מראש, ניתן לפתוח מפגש מיוחד למטה.")}</p> : null}
           <p>{pick("The app requests one location reading, verifies that you are at the workshop, and discards the raw coordinates.","האפליקציה מבקשת קריאת מיקום אחת, מאמתת שאתם בסדנה ומוחקת את הקואורדינטות הגולמיות.")}</p>
           {attendance ? <div className="attendance-current"><strong>{attendance.checked_out_at ? "Attendance complete" : "Currently checked in"}</strong><span>Arrived {israelDateTime.format(new Date(attendance.checked_in_at))}{attendance.checked_out_at ? ` · Left ${israelDateTime.format(new Date(attendance.checked_out_at))}` : ""}</span></div> : null}
-          <button type="button" className="hub-button" disabled={working || Boolean(attendance?.checked_out_at)} onClick={() => verifyAndRecord(activeMeeting ? attendance ? "check_out" : "check_in" : "open_workshop")}>{working ? pick("Verifying location…","מאמת מיקום…") : attendance ? pick("Verify location and check out","אימות מיקום ודיווח יציאה") : activeMeeting ? pick("Verify location and check in","אימות מיקום ודיווח כניסה") : pick("I'm at Shvilim — open an ad-hoc session","אני בשבילים — פתיחת מפגש מיוחד")}</button>
+          <div className="attendance-verification-actions"><button type="button" className="hub-button" disabled={working || Boolean(attendance?.checked_out_at)} onClick={() => verifyAndRecord(activeMeeting ? attendance ? "check_out" : "check_in" : "open_workshop","location")}>{working ? pick("Verifying…","מאמת…") : attendance ? pick("GPS · Check out","GPS · יציאה") : activeMeeting ? pick("GPS · Check in","GPS · כניסה") : pick("GPS · Open workshop","GPS · פתיחת סדנה")}</button><button type="button" className="attendance-wifi-button" disabled={working || Boolean(attendance?.checked_out_at)} onClick={() => verifyAndRecord(activeMeeting ? attendance ? "check_out" : "check_in" : "open_workshop","wifi")}>{pick("School Wi-Fi","רשת בית הספר")}</button></div>
+          <small className="attendance-method-help">{pick("Use GPS outdoors. Inside the school, connect to the registered school Wi-Fi and choose School Wi-Fi.","מחוץ למבנה השתמשו ב-GPS. בתוך בית הספר התחברו לרשת הרשומה ובחרו רשת בית הספר.")}</small>
           {message ? <div className="auth-message">{message}</div> : null}
           {profile?.role === "admin" && locationConfigured === false ? <div className="auth-message auth-error">Administrator setup required: workshop coordinates are not configured yet.</div> : null}
         </div>
