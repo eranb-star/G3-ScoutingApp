@@ -1,13 +1,13 @@
 # G3 Scouting App — Authoritative Handoff
 
-Last updated: 2026-09-06 (Asia/Jerusalem)
+Last updated: 2026-09-07 (Asia/Jerusalem)
 
 This is the single source of truth for resuming development. Read this file before changing the app. Do not reconstruct the roadmap from chat memory.
 
 ## Exact current state
 
 - Working branch: `web-portal-preview`
-- Latest pushed product commit: `c6063d3 Fix calendar audiences and event deletion`.
+- Latest pushed product commit: `a35d548 Add governed absences and meeting attendance` (preceded by `2e6ccad Add audited purchase approval dashboard`).
 - Supabase Skills Academy resource-catalog migration, production web promotion and signed APK installation for version `1.5.0` (code `8`): confirmed complete by the product owner on 2026-09-06.
 - Canonical production web domain: `https://g3-6740.com`. Vercel serves production on this domain and `https://www.g3-6740.com` redirects to the apex domain.
 - Supabase Authentication URL configuration was directly updated and verified on 2026-09-06: Site URL is `https://g3-6740.com`; allowed redirects are `https://g3-6740.com/**`, `https://www.g3-6740.com/**`, and the legacy production fallback `https://g3-scouting-app-5qpe.vercel.app/**`.
@@ -15,8 +15,8 @@ This is the single source of truth for resuming development. Read this file befo
 - Team Media + Feedback Center was committed, pushed, promoted to production and installed on Android by the product owner.
 - Purchase Reliability + Attendance Reliability + Engineering Hub is committed and pushed in `ee3efbb`. Its exact authenticated Vercel preview passed, including purchase quantity `1`, all 10 GitHub repositories and the web attendance boundary.
 - Navigation/calendar/member-feedback refinement is committed and pushed across `f5c0d2a` and `c6063d3`. The exact preview was accepted by the product owner, including human-readable calendar audiences and successful event deletion.
-- The product owner confirmed production promotion and creation of the Android `1.8.0` (code `11`) APK on 2026-09-06. Installation of that APK on a physical phone has not yet been stated separately; treat installation as pending unless confirmed.
-- There are no uncommitted product-code changes after `c6063d3`; only the two excluded Android Studio `.idea` files and this handoff status correction are local changes.
+- The product owner confirmed production promotion and creation of the combined Android `1.9.0` (code `12`) APK on 2026-09-07. Installation of that APK on a physical phone has not yet been stated separately; treat installation as pending unless confirmed.
+- There are no uncommitted product-code changes after `a35d548`; only the two excluded Android Studio `.idea` files and this handoff status update are local changes.
 - Local non-product changes: Android Studio may modify `android/.idea/deploymentTargetSelector.xml` and `android/.idea/misc.xml`. Never include these files in a product commit.
 - Live quiz-engine schema verified on 2026-09-06: `training_assessments.due_at`, `training_assessments.max_attempts`, `training_assessment_answer_keys`, `training_assessment_assignments` and `submit_training_quiz` are present and responding through Supabase. Do not rerun the migration merely for confirmation.
 
@@ -36,7 +36,7 @@ This is the single source of truth for resuming development. Read this file befo
 - Skills catalog verification suite: passed all 10 checks. Existing Phase 1–2, Skills Assessment, Gradebook and Learning Automation suites also passed before release.
 - Android assets were explicitly synchronized from the validated final web `dist` before the APK was built.
 - Android release identity: version code `8`, version name `1.5.0`.
-- Release product source state was clean. The only current product change is this handoff update; the two Android Studio `.idea` files remain excluded.
+- At that 2026-09-06 checkpoint, the product source was clean; the two Android Studio `.idea` files remained excluded.
 - Result: Skills Academy gradebook, learning automation and reviewed resource-catalog foundation are released. Proceed to the real multi-role acceptance matrix, followed by the remaining production-hardening work.
 
 ## Completed capabilities — do not schedule them again
@@ -60,7 +60,7 @@ The following are already represented by committed code and regression checks:
 
 ## Operational UX release — COMPLETE
 
-Prepared on 2026-09-06 as one web/Android batch; it is not production-released until the product owner confirms promotion and installation.
+Prepared on 2026-09-06 as one web/Android batch and subsequently released as recorded below.
 
 - Tools & Equipment now records **Model** and **Amount**; legacy asset-tag values are migrated into Model.
 - Equipment return dates use a calendar picker.
@@ -149,7 +149,7 @@ Before asking for a commit:
 
 ## Exact remaining phases, in priority order
 
-### Responsibility consistency + governed attendance — IMPLEMENTED; DATABASE MIGRATION VERIFIED; RELEASE PENDING
+### Responsibility consistency + governed attendance — PRODUCTION WEB RELEASED; ANDROID APK BUILT
 
 - Home and Work now use one shared responsibility-visibility rule. Completed, currently snoozed and expired meeting actions can no longer inflate the Home counter while remaining absent from the destination list.
 - Attendance is consolidated into one center with Overview, Absence requests and authorized By meeting roster views.
@@ -159,9 +159,9 @@ Before asking for a commit:
 - Administrators and mentors can select a meeting, mark the applicable members present with accessible checkboxes, and save the roster with a required audit note.
 - Re-saving a roster safely updates present members and removes only prior manually-entered attendance that is now unchecked; both outcomes are recorded in the attendance audit log. GPS/Wi-Fi records are never silently removed by roster editing.
 - `absence_attendance_governance_20260907.sql` was executed in Supabase SQL Editor on 2026-09-07 and returned `Success. No rows returned`.
-- Production promotion and Android installation are not yet confirmed. Keep this in the same pending release batch as the purchase governance dashboard.
+- The product owner confirmed production promotion and creation of Android `1.9.0` (code `12`) on 2026-09-07. Physical installation is not yet separately confirmed.
 
-### Purchase governance dashboard — IMPLEMENTED; DATABASE MIGRATION VERIFIED; RELEASE PENDING
+### Purchase governance dashboard — PRODUCTION WEB RELEASED; ANDROID APK BUILT
 
 - The existing Purchasing tab is now the single purchase-control dashboard; no duplicate navigation area was added.
 - Clear status counts and filters cover awaiting review, approved, ordered, received and rejected requests.
@@ -170,7 +170,7 @@ Before asking for a commit:
 - Only administrators can transition purchase status. The database RPC validates every allowed transition, not only the visible buttons.
 - Every successful transition creates a persistent requester update in Home/Updates and invokes push delivery. If push is unavailable, the persistent update, saved status and audit remain visible and the UI states this accurately.
 - `purchase_audit_dashboard_20260907.sql` was executed in Supabase SQL Editor on 2026-09-07 and returned `Success. No rows returned`.
-- Web/Android shared UI is prepared for Android `1.9.0`; production promotion and installation are not yet confirmed.
+- The product owner confirmed production promotion and creation of Android `1.9.0` (code `12`) on 2026-09-07. Physical installation is not yet separately confirmed.
 
 ### Purchase-request reliability fix — RELEASED TO PRODUCTION WEB; ANDROID APK BUILT
 
@@ -255,7 +255,7 @@ Catalog enrichment remains normal content operations, not a missing implementati
 
 ## Next actions
 
-1. Install Android `1.8.0` on a physical phone if not already installed, then explicitly confirm installation.
+1. Install Android `1.9.0` (code `12`) on a physical phone if not already installed, then explicitly confirm installation.
 2. Physically validate GPS and School Wi-Fi check-in/check-out at the school; this cannot be marked complete from remote source/UI checks.
 3. Execute the real multi-role acceptance matrix in `RELEASE_ACCEPTANCE_20260906.md`. Do not delete QA users/data without explicit approval.
 4. Complete remaining production hardening: observability, database/index/RLS review, accessibility/cross-device audit, catalog link/staleness monitoring, backup/recovery documentation and the competition-day offline recovery drill.
