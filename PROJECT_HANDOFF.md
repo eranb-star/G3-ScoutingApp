@@ -155,8 +155,8 @@ Before asking for a commit:
 - Absence submission now invokes push delivery for every generated administrator/mentor review action. Approval/rejection invokes push delivery for the member's decision action. Persistent actions remain the source of truth when FCM is unavailable.
 - Updates Inbox retains acknowledged but unresolved responsibilities instead of making them disappear after first opening. The Home responsibility total remains the complete unresolved set, while the notification badge remains the unread subset.
 - Authentication token refresh and browser tab resume no longer clear a validated member profile. Stale profile responses cannot overwrite the current account. This prevents the transient **Account unavailable** unmount that erased unsaved in-memory form state.
-- The GitHub Edge Function supports private repositories when a server-side `GITHUB_TOKEN` has read access. Public access remains the safe fallback; no GitHub credential is exposed to the React client.
-- Secure private-repository activation still requires an authorized read-only GitHub credential to be saved as the Supabase Edge Function secret `GITHUB_TOKEN`, followed by deployment of `github-repositories`. This is an external authorization step, not completed by source code alone.
+- The GitHub Edge Function can use a server-side credential, while public access remains the safe fallback and no GitHub credential is exposed to the React client.
+- **Standby/deferred:** private GitHub activation will be completed later with the Software team leader. Because private repositories belong to two owners (`GlueGunAndGlitter` and `GlueGunGlitter`), the intended final design is two owner-scoped, fine-grained, read-only credentials stored only as Supabase Edge Function secrets. Do not request, paste or commit credentials in chat/source, and do not let this deferred item block the current mobile reliability release.
 - New regression suite `verify-mobile-notification-stability.mjs` passes all 9 checks. Relevant absence/attendance, attendance/engineering and finance/receiving suites also pass, for 49 targeted checks total. TypeScript completed in the normal build chain; local Vite bundling in the current Codex process is blocked by its filesystem sandbox before loading `vite.config.ts`, not by an application compile error.
 - Product files in this batch: Android build version, package scripts, member auth lifecycle, operational push helper, Attendance, phone More navigation, Updates Inbox, GitHub Edge Function, new verifier, and this handoff. Exclude both Android Studio `.idea` files.
 
@@ -284,10 +284,12 @@ Catalog enrichment remains normal content operations, not a missing implementati
 
 ## Next actions
 
-1. Install Android `1.9.0` (code `12`) on a physical phone if not already installed, then explicitly confirm installation.
-2. Physically validate GPS and School Wi-Fi check-in/check-out at the school; this cannot be marked complete from remote source/UI checks.
+1. Commit/push and validate the current combined mobile Finance, notification consistency and tab-resume batch in its exact Vercel preview.
+2. Build and install Android `2.1.0` (code `14`) only after the final web bundle has been synchronized to Android assets; validate Finance in More, absence push, Inbox responsibility visibility and tab/app resume on the physical phone.
 3. Execute the real multi-role acceptance matrix in `RELEASE_ACCEPTANCE_20260906.md`. Do not delete QA users/data without explicit approval.
-4. Complete remaining production hardening: observability, database/index/RLS review, accessibility/cross-device audit, catalog link/staleness monitoring, backup/recovery documentation and the competition-day offline recovery drill.
+4. Physically validate GPS and School Wi-Fi check-in/check-out at the school and run the competition-day offline recovery drill; neither can be marked complete remotely.
+5. Complete production hardening: observability/Firebase telemetry, database/index/RLS review, accessibility/cross-device audit, catalog link/staleness monitoring, and backup/recovery documentation.
+6. Standby with the Software team leader: authorize the two private GitHub owners using separate fine-grained read-only credentials, adapt/deploy the Edge Function for both secrets, and validate private repository visibility without exposing credentials.
 
 ## Definition of truth
 
