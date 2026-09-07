@@ -1,34 +1,89 @@
 # G3 Scouting App — Authoritative Handoff
 
-Last updated: 2026-09-07 (Asia/Jerusalem)
+Last updated: 2026-09-08 (Asia/Jerusalem)
 
 This is the single source of truth for resuming development. Read this file before changing the app. Do not reconstruct the roadmap from chat memory.
 
-## Exact current state
+## Exact current state — authoritative resume checkpoint, 2026-09-08
 
-- Exact preview for pushed notification-fix commit `c658945`: `https://g3-scouting-app-5qpe-lssrk99sl-eranbos-projects.vercel.app`. Authenticated inspection confirmed Inbox `5 unread · 6 open responsibilities`, five New items and one Viewed item, phone-width readability, and no `קיקאוף מדומה`. **Do not promote yet:** Home showed `0 unread` because `ProductivityHomePage.tsx` omitted `counts.actions`. That single calculation is now corrected locally. TypeScript/Vite and all 13 source suites passed; final assets copied for the same pending `2.1.3` / code `17` release. No new APK built. Pending follow-up is two files: `apps/dashboard_web/src/pages/ProductivityHomePage.tsx` and this handoff. Proposed commit: `Include unread responsibilities in Home notification count`. Push, verify the next exact preview has Home and Inbox both at the same unread count, then promote and build normal release. Keep both `.idea` files excluded.
-- Notification repair checkpoint: user reported SQL success for `calendar_milestone_notification_cancellation_20260907.sql`. The assistant then reopened the authenticated preview and directly verified that `קיקאוף מדומה` is absent and six other responsibilities remain. This verifies the existing-record cancellation repair. The old deployed UI still says `6 new`; the local unread-label/count correction is not deployed yet. Next commit/push the five-file follow-up batch and inspect its exact Vercel preview before promotion and Android `2.1.3` installation. Future reactivation prevention has code review evidence, not a live mutation test.
-- User confirmed normal Android `2.1.2` installed, QA button absent, and Finance & reimbursements working. Performance screenshot showed an 80 ms native app-start metric, confirming ingestion; Firebase displayed a service-issue banner limiting collection. Crash delivery was already confirmed separately. Production web promotion remains unconfirmed.
-- New reported defect under investigation: phone bell `5`, Inbox `7 new`, and calendar-deleted `קיקאוף מדומה` still visible as a task. Inbox `7 new` was reproduced in the authenticated preview. Code counts all unresolved actions there but only unread actions in the bell. The user confirmed deletion was in Calendar; the existing calendar cancellation path does not cancel an associated milestone action. Exact live calendar linkage is not yet queried, so the specific record's linkage remains to be confirmed.
-- Prepared follow-up: Inbox badge uses the shared unread-count function, header distinguishes unread items from open responsibilities, and viewed actions are labeled. Idempotent `backend/supabase/calendar_milestone_notification_cancellation_20260907.sql` cancels notifications for explicitly linked cancelled milestone-calendar entries, backfills those existing links, and guards against later reactivation. It preserves source records and per-member states. **SQL is not executed or PostgreSQL-runtime-tested yet.** No production records were changed during investigation.
-- Follow-up TypeScript/Vite build and all 13 existing source suites passed. Final web assets copied to Android. Pending release is `2.1.3` / code `17`; no new APK built or installed. Next: execute and verify SQL, inspect affected counts/task in authenticated app, then follow commit/push/exact-preview/promotion/APK workflow. Do not call this fixed live yet.
-- Follow-up pending product batch: **5 files**: `PROJECT_HANDOFF.md`, `apps/dashboard_web/src/pages/UpdatesPage.tsx`, `apps/dashboard_web/android/app/build.gradle`, `apps/dashboard_web/scripts/verify-mobile-notification-stability.mjs`, `backend/supabase/calendar_milestone_notification_cancellation_20260907.sql`. Proposed commit: `Align unread counts and cancel deleted calendar milestone notifications`. Exclude both `.idea` files. Vercel promotion and a new normal APK are required for the Inbox display fix; the database cancellation repair takes effect server-side after execution.
-- Firebase phone evidence: the user installed the test APK, deliberately crashed it and reopened it. Their Crashlytics screenshots confirm one event from one user, version `2.1.2-crash-test`, exception `java.lang.RuntimeException - G3 Crashlytics QA test`. **Native crash delivery is verified.** The displayed frame `com.g3.scouting.MainActivity.H0` is obfuscated; source-level deobfuscation remains unverified (local APK builds excluded mapping uploads). Performance Monitoring metrics, normal release installation and production promotion remain unconfirmed. Next inspect Performance Monitoring in the user's external browser, then finish normal release/device acceptance.
-- Firebase batch `e1a111f` is committed and pushed. The user-supplied preview `https://g3-scouting-app-5qpe-707ixb22i-eranbos-projects.vercel.app` passed authenticated administrator Finance inspection at desktop (1440px) and phone (390px) widths. The user reported the real tab-resume check looked OK; afterward the assistant directly observed both draft values still present and canceled the unsaved expense without saving any records. Preview acceptance covers this targeted smoke test, not the full multi-role matrix. **Next: promote this exact deployment, then complete Android/Firebase device acceptance.** Production promotion and phone installation remain unconfirmed. This evidence update is documentation-only and does not require a new product build.
-- Current local checkpoint: **Firebase Spark native diagnostics prepared; live acceptance pending** (2026-09-07). See the checkpoint below and `docs/FIREBASE_SPARK.md`. Pending Android identity is now `2.1.2` (code `16`); older `2.1.1` references below describe the earlier correction, not this release candidate.
-- Working branch: `web-portal-preview`
-- Latest pushed product commit: `1ff64f3 Connect purchase payments to finance tracking` (preceded by `cbcdbb0 Show existing purchases in finance dashboard` and `9bdc20c Add governed purchasing and private finance management`).
-- Supabase Skills Academy resource-catalog migration, production web promotion and signed APK installation for version `1.5.0` (code `8`): confirmed complete by the product owner on 2026-09-06.
-- Canonical production web domain: `https://g3-6740.com`. Vercel serves production on this domain and `https://www.g3-6740.com` redirects to the apex domain.
-- Supabase Authentication URL configuration was directly updated and verified on 2026-09-06: Site URL is `https://g3-6740.com`; allowed redirects are `https://g3-6740.com/**`, `https://www.g3-6740.com/**`, and the legacy production fallback `https://g3-scouting-app-5qpe.vercel.app/**`.
-- Operational UX release was committed, pushed, promoted to production and installed on Android by the product owner. Released Android identity: version `1.6.0`, code `9`.
-- Team Media + Feedback Center was committed, pushed, promoted to production and installed on Android by the product owner.
-- Purchase Reliability + Attendance Reliability + Engineering Hub is committed and pushed in `ee3efbb`. Its exact authenticated Vercel preview passed, including purchase quantity `1`, all 10 GitHub repositories and the web attendance boundary.
-- Navigation/calendar/member-feedback refinement is committed and pushed across `f5c0d2a` and `c6063d3`. The exact preview was accepted by the product owner, including human-readable calendar audiences and successful event deletion.
-- The product owner confirmed production promotion and creation of the combined Android `1.9.0` (code `12`) APK on 2026-09-07. Installation of that APK on a physical phone has not yet been stated separately; treat installation as pending unless confirmed.
-- The first attempted Android `2.1.0` (code `14`) package was proven to contain a stale web bundle: its packaged assets did not include Finance navigation or the profile-resume fix. Never treat that APK as valid. The corrected follow-up is Android `2.1.1` (code `15`) and must not be described as built/installed until explicitly confirmed.
-- Local non-product changes: Android Studio may modify `android/.idea/deploymentTargetSelector.xml` and `android/.idea/misc.xml`. Never include these files in a product commit.
-- Live quiz-engine schema verified on 2026-09-06: `training_assessments.due_at`, `training_assessments.max_attempts`, `training_assessment_answer_keys`, `training_assessment_assignments` and `submit_training_quiz` are present and responding through Supabase. Do not rerun the migration merely for confirmation.
+This section supersedes all older pending/next-action statements in the historical release sections below. We stopped for the day during Phase 3. Do not restart Firebase setup, repeat migrations, recreate QA accounts, or rebuild already-installed releases.
+
+### First action tomorrow
+
+The browser was last signed in as **QA Student**, on Updates/Inbox. The last instruction to the owner was **Full navigation → Sign out → sign in with your administrator account → tell me “admin in.”** That administrator sign-in has NOT yet been confirmed. First inspect available browser tabs/session; if still QA Student, ask the owner to complete that sign-in. Never assume an old tab ID remains valid.
+
+Once administrator sign-in is confirmed, prepare clearly named QA learning content: a single-answer question, a multiple-answer question, and a written/manual-review response. The intended recipient is **QA Student only**, not the whole team. Show the exact test contents and recipient before publishing/creating notifications. No such content or assignment has been created yet. Then test student submission, server scoring, answer-key privacy, attempt limits, instructor review and Home/Updates behavior. Continue with mentor/team-leader boundaries afterward.
+
+### Phase 3 state and QA access
+
+- Detailed evidence and execution order: `docs/PHASE3_ACCEPTANCE_20260908.md`. Original learning checklist: `RELEASE_ACCEPTANCE_20260906.md`. Phase 3 is STARTED, not complete.
+- Owner authorized password resets for ONLY QA Student, QA Mentor and QA Team Leader. This authorization persists; do not ask for the same authorization again. Browser password-change rules require the owner to perform the reset/change actions.
+- **QA Student**: `qa.student.20260905@g3-test.invalid`. Owner completed Reset password and subsequently signed in. The app reached Home, so access is verified. Password belongs with the owner; no password is stored in this handoff. Do not reset again unless necessary.
+- **QA Mentor**: `qa.mentor.20260905@g3-test.invalid`. Existing account, role mentor, QA team. Reset/sign-in NOT yet completed in this session.
+- **QA Team Leader**: `qa.leader.20260905@g3-test.invalid`. Existing account, role team_leader, Mechanical team. Reset/sign-in NOT yet completed; assigned leadership scopes still need inspection.
+- These accounts were created/used by the earlier assistant, not the owner. Do not assume the owner knows their credentials. No saved prior QA credentials were found in the repository or earlier task work directory. Task retrieval for “Move G3 FRC scouting app” returned empty turn items, so it did not recover prior account details.
+- Administrator inspection: Academy lists ten existing courses and authoring/assignment controls. Gradebook showed ONE real enrollment (Ofir Bongart, Team Onboarding, Not started, 0/3 modules, 0/0 assessments). Do not modify this real enrollment for QA.
+- Student checks PASSED: no Administration navigation; no Academy create/edit/assign/instructor-gradebook controls; My progress contains zero assigned courses; direct `/admin/finance` and `/admin/members` URLs redirect to Home without protected content rendering.
+- Student Home and Inbox both showed **3 unread**: two meeting responsibilities plus one announcement. Inbox had **2 open responsibilities**. The admin-only absence review, admin's scouting tasks and cancelled `קיקאוף מדומה` did not appear in this student Inbox.
+- These are browser UI/route checks, NOT proof of database/RLS resistance to crafted requests. Backend permission/answer-key tests, actual submissions/grading and multi-role end-to-end tests remain pending.
+- No QA course, quiz, assignment, submission, grade or purchasing record was created during these initial checks. No existing team records were modified by the assistant. The owner changed QA Student credentials.
+
+### Released baseline — do not repeat
+
+- Workspace: `C:/Users/user/Documents/GitHub/G3-ScoutingApp`; branch `web-portal-preview`.
+- Latest committed/pushed product HEAD: **87c3bfd Include unread responsibilities in Home notification count**.
+- Previous product commits: **c658945 Align unread counts and cancel deleted calendar milestone notifications**; **e1a111f Add Spark-compatible Android diagnostics and preserve auth startup fix**.
+- Canonical production: `https://g3-6740.com`; www redirects to apex. Owner confirmed production promotion of 87c3bfd.
+- Exact accepted preview used for Phase 3: `https://g3-scouting-app-5qpe-5grv7zac7-eranbos-projects.vercel.app`. Its backend is the existing shared Supabase project, NOT an isolated preview database. Supabase project reference: `hnqwhuuxlqfyawqymaaz`.
+- Android **2.1.3, versionCode 17**, normal signed `release`: owner confirmed INSTALLED. Do not ask to build/install it again. Individual matching-count/deleted-task/no-QA-button checks were requested but not separately confirmed for 2.1.3. Earlier normal 2.1.2 installation, button absence and Finance & reimbursements operation were explicitly confirmed.
+- Final local web/Android asset index SHA-256: `01F746059ADDE67C60342F042F0999ED146657E66C2387BEF446423B172D52AE`; entry `assets/index-M9cqZ27g.js`. TypeScript/Vite and all 13 existing offline source suites passed for this final source. Assets were synchronized using Capacitor. Do not infer Android Studio output path/timestamp from old CLI APKs.
+- The stale 2.1.0 APK is invalid historical output. Versions 2.1.1/2.1.2 mentioned in older sections are superseded, not pending work.
+
+### Notification repair — released and verified on web
+
+- Defect: bell counted unread while Inbox counted every unresolved action and called them all “new”; Home separately omitted unread actions.
+- Current implementation: shared unread count for Home and Inbox badge, separate open-responsibility total, viewed/new labels. Exact final admin preview showed **5 unread** on Home and Inbox, **6 open responsibilities** (five New, one Viewed).
+- Owner deleted `קיקאוף מדומה` in Calendar, but its linked milestone action remained. `backend/supabase/calendar_milestone_notification_cancellation_20260907.sql` repairs explicitly linked cancelled milestone-calendar notifications and prevents later milestone updates from reactivating them. It preserves milestones and member history.
+- Owner reported SQL SUCCESS. Assistant reopened authenticated Inbox and confirmed the deleted task was gone. Do NOT rerun just for confirmation. Future reactivation guard was reviewed but not tested via live mutations.
+
+### Firebase Spark — current evidence
+
+- Project `scouting-6740`, app `com.g3.scouting` / G3 Team Hub Android. Owner screenshot confirmed **Spark, $0/month**. Never enable paid Firebase/Google Cloud services, attach billing, upgrade Blaze, or configure paid exports.
+- Existing FCM preserved; Android Crashlytics and Performance Monitoring added. No Firebase database migration; Supabase remains backend and Vercel remains web hosting.
+- Owner installed 2.1.2-crash-test, triggered the deliberate crash and reopened the app. Screenshots verified one crash from one user, version `2.1.2-crash-test`, `java.lang.RuntimeException - G3 Crashlytics QA test`.
+- Performance dashboard displayed native app-start **80 ms**. Firebase's orange banner reported a service-side incident limiting collected volume; this is not evidence of an app defect or a need to upgrade.
+- Remaining telemetry checks: readable/deobfuscated stack frames (observed frame was `MainActivity.H0`), push reception/deep links, and normal-release telemetry. CLI test APK builds excluded mapping-upload tasks; later owner Android Studio mapping upload success was not observed.
+- `telemetryQa` variant has QA crash button, reports enabled, version suffix `-crash-test`. Normal `release` has test flag false and R8 removes the button; `debug` disables telemetry. `-Pg3TelemetryEnabled=false` disables normal release collection; FCM remains.
+- Both old CLI signed 2.1.2 QA/release builds passed R8/lint/signature checks and contained all 19 matching web assets. Their approximately 4.65 MB size vs debug 10.02 MB came mainly from shrinking compiled Android code, not missing web files. Those old CLI APKs are NOT the current 2.1.3 delivery.
+- Relevant runbook: `docs/FIREBASE_SPARK.md`; older numbered release steps there are historical instructions, not a reason to repeat completed setup.
+
+### Working tree at stop
+
+- Product source is committed. Uncommitted documentation: `PROJECT_HANDOFF.md` (updated), `docs/PHASE3_ACCEPTANCE_20260908.md` (new).
+- Existing unrelated local changes: `apps/dashboard_web/android/.idea/deploymentTargetSelector.xml` and `apps/dashboard_web/android/.idea/misc.xml`. Preserve them and NEVER include in product commits.
+- No commit/push is needed merely to resume testing. These documentation updates are saved locally; they have not been committed/pushed. Include them in the next appropriate documentation/product commit only with the exact reviewed list.
+
+### Collaboration and release workflow — mandatory continuity
+
+- User expects action, not “I will” followed by stopping. Do authorized work immediately; only pause when an actual sign-in/device/approval dependency remains. Give one concrete next action and exact UI labels/file list/version when asking the owner to act.
+- Workflow for a product fix: finish code → tests → give exact product file count/list and commit message → owner commits/pushes in GitHub Desktop, excluding .idea → inspect the EXACT Vercel preview → owner promotes → sync exact final web assets → owner builds signed APK in Android Studio → owner installs/validates. Do not skip preview or repeatedly schedule completed releases.
+- New preview hostnames require separate app login; the owner signs in using G3 credentials. Google/Firebase credentials are unrelated. Owner cannot sign Google into Codex because they do not remember the password; use screenshots from their already-signed-in external browser. Do not ask for Google login again.
+- Android Studio: Build → Generate Signed App Bundle / APK → APK → existing keystore/passwords → Next → release → Create. Existing key alias g3-upload. Do not create another keystore. If a newly added variant is absent, Gradle sync refreshes the IDE; account for this before instructing builds.
+- Java 21 available: `C:/Users/user/.jdks/jbr-21.0.11`. Android Studio bundled JBR is Java 25 and is unsuitable for this Gradle wrapper. Gradle cache used: workspace `.gradle-jdk21`. Fresh `--no-daemon` avoids reusing a sandbox-restricted daemon. Escalate sandbox network/Windows-user lookup failures according to tool rules.
+- Web commands from `apps/dashboard_web`: `node node_modules/typescript/bin/tsc -b`; `node node_modules/vite/bin/vite.js build --configLoader runner`; `node node_modules/@capacitor/cli/bin/capacitor copy android`. `npm` was not on this tool shell's PATH; node is available. Run verification scripts from the app directory. Exclude live-schema probe unless specifically needed; Firebase artifact verifier requires freshly built manifests.
+- Do not claim backend privacy based only on hidden buttons. No destructive QA cleanup or real finance/purchase actions. Publishing tests must target only the reviewed QA recipient; no messages/notifications to real members without explicit authorization.
+
+### Remaining roadmap
+
+1. Phase 3 multi-role acceptance — IN PROGRESS, resume exactly as above.
+2. Phase 4 hardening — web performance, backend errors/timeouts, query/index/RLS review, backup/recovery, accessibility, offline competition drill. Native Firebase ingestion is already verified; do not rebuild that foundation.
+3. Physical school GPS/Wi-Fi attendance and competition offline recovery — owner/device/site involvement required.
+4. Phase 8 private GitHub integration — deferred with Software team leader; two owner-scoped read-only credentials for GlueGunAndGlitter and GlueGunGlitter, server-side secrets only. CAD integration future scope.
+5. Phases 1, 2, 5, 6, 7 are complete: gradebook, learning automation, catalog foundation, Team Media, Feedback Center. Catalog enrichment is content operations, not unfinished foundation.
+
+## Historical release record
+
+The sections below preserve earlier evidence. Their old pending, next-action and version statements are historical and MUST NOT override the current checkpoint above.
 
 ## Verified readiness checkpoint — 2026-09-06
 
@@ -311,8 +366,8 @@ Catalog enrichment remains normal content operations, not a missing implementati
 
 ## Next actions
 
-1. Review the nine-file pending batch, commit/push, and validate the included auth startup fix in its exact Vercel preview before promotion. The user's release workflow is commit → push → exact preview acceptance → production promotion → final Android sync/build → phone validation. Do not skip directly to Firebase or APK steps. Spark is confirmed; no paid services are authorized.
-2. Build and install Android `2.1.2` (code `16`) from the validated final synchronized assets; validate native diagnostics, Finance through the top Administration center, absence push, Inbox responsibility visibility and tab/app resume on the physical phone. Do not use the stale `2.1.0` APK.
+1. Android `2.1.3` is installed and production web promotion is confirmed. Finish the individual phone checks (matching unread counts, cancelled-task absence, no QA button) and push smoke test; verify readable Crashlytics stack frames. Do not repeat the completed commit/push/promotion/install batch.
+2. Proceed to Phase 3 multi-role acceptance, then Phase 4 hardening. For future product changes preserve the user's release workflow: commit → push → exact preview acceptance → production promotion → final Android sync/build → phone validation. Spark is confirmed; no paid services are authorized.
 3. Execute the real multi-role acceptance matrix in `RELEASE_ACCEPTANCE_20260906.md`. Do not delete QA users/data without explicit approval.
 4. Physically validate GPS and School Wi-Fi check-in/check-out at the school and run the competition-day offline recovery drill; neither can be marked complete remotely.
 5. Complete production hardening: observability/Firebase telemetry, database/index/RLS review, accessibility/cross-device audit, catalog link/staleness monitoring, and backup/recovery documentation.
