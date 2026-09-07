@@ -15,6 +15,8 @@ const checks=[
  ["double receiving is rejected",sql.includes("request.status<>'ordered'")],
  ["reimbursements cannot exceed the balance",sql.includes("new_total>expense.amount")],
  ["finance dashboard tracks personal debt",finance.includes("Team owes personally")&&finance.includes("reimbursed_amount")],
+ ["finance dashboard includes approved ordered and legacy purchases",finance.includes("Committed and legacy purchases")&&finance.includes('status==="approved"||x.status==="ordered"')&&finance.includes("legacyReceived")],
+ ["legacy received purchases can be linked to an expense",finance.includes("Complete financial record")&&finance.includes("purchase_id:item.id")],
  ["budgets funds and expenses are manageable",finance.includes("Set budget")&&finance.includes("Record funds")&&finance.includes("Record expense")],
  ["mobile finance and dialogs collapse safely",css.includes(".finance-ledger>article{grid-template-columns:1fr")&&css.includes(".operations-dialog{grid-template-columns:1fr")]
 ];

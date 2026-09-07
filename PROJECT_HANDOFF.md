@@ -157,6 +157,7 @@ Before asking for a commit:
 - Ordered purchases now open a governed receiving workflow with actual quantity, actual cost, payment source and one of three explicit inventory outcomes: add to an existing item, create a new item, or record an expense without stock.
 - The database receive operation locks the purchase, rejects duplicate receipt, updates inventory and its movement history when applicable, records the expense, advances purchase history and creates the requester update in one transaction.
 - A new administrator-only Finance & reimbursements workspace records expenses, funds raised, category budgets, personal advances, partial/full repayments, outstanding balance and CSV export.
+- Finance also reads the existing purchase pipeline: approved and ordered requests appear immediately as commitments using their estimated cost, and purchases received before finance tracking appear as legacy items requiring completion. Historical records are not silently omitted and estimated values are never presented as actual spend.
 - Finance access is protected by both `AdminGate` and Supabase RLS. Purchase financial data is restricted to its requester and administrators rather than all members.
 - Android was synchronized to the final production bundle and advanced to `2.0.0` (code `13`). The APK has not yet been built or installed.
 - New migration: `operations_finance_receiving_20260907.sql`. The product owner executed it successfully in Supabase on 2026-09-07.
