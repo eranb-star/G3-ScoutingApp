@@ -45,6 +45,7 @@ export function MemberAuthProvider({ children }: { children: React.ReactNode }) 
     if (!activeSession?.user) {
       profileRef.current = null;
       setProfile(null);
+      setLoading(false);
       return;
     }
     if (clearExisting || profileRef.current?.id !== activeSession.user.id) {
@@ -61,14 +62,17 @@ export function MemberAuthProvider({ children }: { children: React.ReactNode }) 
     if (requestId !== requestRef.current) return;
     if (error) {
       setProfileError(error.message);
+      setLoading(false);
       return;
     }
     if (!data) {
       setProfileError("This account is not connected to an approved G3 team member.");
+      setLoading(false);
       return;
     }
     profileRef.current = data as MemberProfile;
     setProfile(profileRef.current);
+    setLoading(false);
   };
 
   const refreshProfile = async () => {
@@ -81,7 +85,6 @@ export function MemberAuthProvider({ children }: { children: React.ReactNode }) 
     supabase.auth.getSession().then(async ({ data }) => {
       if (!alive) return;
       await loadProfile(data.session, true);
-      if (alive) setLoading(false);
     });
 
     const { data: listener } = supabase.auth.onAuthStateChange((event, nextSession) => {
@@ -89,7 +92,6 @@ export function MemberAuthProvider({ children }: { children: React.ReactNode }) 
         if (!alive) return;
         if (event === "SIGNED_OUT") await loadProfile(null, true);
         else await loadProfile(nextSession, event === "SIGNED_IN" && profileRef.current?.id !== nextSession?.user.id);
-        if (alive) setLoading(false);
       }, 0);
     });
     return () => {

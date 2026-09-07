@@ -17,8 +17,9 @@ const checks=[
   ["viewed responsibilities remain visible in inbox",updates.includes('status==="completed"')&&!updates.includes('status==="acknowledged"||state.status==="completed"')],
   ["token refresh retains the validated profile",auth.includes("profileRef.current")&&!auth.includes("setProfile(null);\n    setProfileError")],
   ["stale profile requests cannot overwrite current account",auth.includes("requestId !== requestRef.current")],
+  ["initial session races cannot reveal Account unavailable",auth.includes("setProfile(profileRef.current);\n    setLoading(false);")&&!auth.includes("if (alive) setLoading(false)")],
   ["GitHub token remains server-side",github.includes('Deno.env.get("GITHUB_TOKEN")')&&!read("apps/dashboard_web/src/pages/EngineeringHubPage.tsx").includes("GITHUB_TOKEN")],
   ["authenticated GitHub user endpoint can return private repositories",github.includes("/user/repos")&&github.includes("visibility=all")],
-  ["corrected Android package has a distinct release identity",read("apps/dashboard_web/android/app/build.gradle").includes('versionCode 15')&&read("apps/dashboard_web/android/app/build.gradle").includes('versionName "2.1.1"')],
+  ["corrected Android package has a distinct release identity",read("apps/dashboard_web/android/app/build.gradle").includes('versionCode 16')&&read("apps/dashboard_web/android/app/build.gradle").includes('versionName "2.1.2"')],
 ];
 let failed=0;for(const[name,ok]of checks){console.log(`${ok?"PASS":"FAIL"} ${name}`);if(!ok)failed++}if(failed)process.exit(1);console.log(`PASS ${checks.length} mobile, notification and stability checks`);

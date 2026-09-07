@@ -12,6 +12,23 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(G3PushPlugin.class);
         super.onCreate(savedInstanceState);
         openNotificationDestination(getIntent());
+        if (BuildConfig.CRASHLYTICS_TEST_BUILD) {
+            android.widget.Button testCrash = new android.widget.Button(this);
+            testCrash.setText("QA: Test Crash");
+            android.widget.FrameLayout.LayoutParams params = new android.widget.FrameLayout.LayoutParams(
+                android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
+                android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
+                android.view.Gravity.BOTTOM | android.view.Gravity.CENTER_HORIZONTAL);
+            params.bottomMargin = Math.round(32 * getResources().getDisplayMetrics().density);
+            addContentView(testCrash, params);
+            testCrash.setOnClickListener(view -> new android.app.AlertDialog.Builder(this)
+                .setTitle("Crashlytics test")
+                .setMessage("This will deliberately close the app. Reopen it to send the test report to Firebase.")
+                .setNegativeButton("Cancel", null)
+                .setPositiveButton("Test Crash", (dialog, which) -> {
+                    throw new RuntimeException("G3 Crashlytics QA test");
+                }).show());
+        }
     }
 
     @Override

@@ -1,5 +1,16 @@
 apply plugin: 'com.android.application'
 
+// Spark-compatible native telemetry. Disable in a release with -Pg3TelemetryEnabled=false.
+def g3TelemetryEnabled = providers.gradleProperty('g3TelemetryEnabled').getOrElse('true') == 'true'
+def hasFirebaseConfiguration = file('google-services.json').exists()
+if (hasFirebaseConfiguration) {
+    apply plugin: 'com.google.gms.google-services'
+    apply plugin: 'com.google.firebase.crashlytics'
+    apply plugin: 'com.google.firebase.firebase-perf'
+} else {
+    logger.warn('google-services.json not found; Firebase push and telemetry are unavailable.')
+}
+
 def keystorePropertiesFile = rootProject.file('keystore.properties')
 def keystoreProperties = new Properties()
 if (keystorePropertiesFile.exists()) {
@@ -7,14 +18,18 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
+    buildFeatures {
+        buildConfig true
+    }
     namespace = "com.g3.scouting"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
         applicationId "com.g3.scouting"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 15
-        versionName "2.1.1"
+        versionCode 16
+        versionName "2.1.2"
+        buildConfigField 'boolean', 'CRASHLYTICS_TEST_BUILD', 'false'
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -38,11 +53,23 @@ android {
         }
     }
     buildTypes {
+        debug {
+            manifestPlaceholders = [g3TelemetryCollectionEnabled: 'false']
+        }
         release {
+            manifestPlaceholders = [g3TelemetryCollectionEnabled: (g3TelemetryEnabled && hasFirebaseConfiguration).toString()]
             signingConfig signingConfigs.release
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        // Explicit QA variant: the normal release has no test-crash control.
+        telemetryQa {
+            initWith release
+            matchingFallbacks = ['release']
+            versionNameSuffix '-crash-test'
+            buildConfigField 'boolean', 'CRASHLYTICS_TEST_BUILD', 'true'
+            manifestPlaceholders = [g3TelemetryCollectionEnabled: hasFirebaseConfiguration.toString()]
         }
     }
 }
@@ -65,18 +92,12 @@ dependencies {
     implementation project(':capacitor-cordova-android-plugins')
     implementation platform('com.google.firebase:firebase-bom:34.17.0')
     implementation 'com.google.firebase:firebase-messaging'
+    implementation 'com.google.firebase:firebase-crashlytics'
+    implementation 'com.google.firebase:firebase-perf'
 }
 
 apply from: 'capacitor.build.gradle'
 
-try {
-    def servicesJSON = file('google-services.json')
-    if (servicesJSON.text) {
-        apply plugin: 'com.google.gms.google-services'
-    }
-} catch(Exception e) {
-    logger.info("google-services.json not found, google-services plugin not applied. Push Notifications won't work")
-}
 subprojects {
     afterEvaluate { project ->
         if (project.hasProperty("android")) {
