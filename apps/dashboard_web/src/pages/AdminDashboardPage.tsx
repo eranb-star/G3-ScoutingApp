@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../supabase";
 import { useLocalization } from "../lib/localization";
+import { useNavigate } from "react-router-dom";
 
 type OpenMeeting = { id: string; title: string; opened_at: string | null; starts_at: string };
 type AttendanceRow = { id: string; member_id: string; checked_in_at: string; checked_out_at: string | null; check_in_method: string };
@@ -13,6 +14,7 @@ function elapsed(from: string, to?: string | null) {
 
 export default function AdminDashboardPage() {
   const { pick } = useLocalization();
+  const navigate = useNavigate();
   const [meeting, setMeeting] = useState<OpenMeeting | null>(null);
   const [attendance, setAttendance] = useState<AttendanceRow[]>([]);
   const [members, setMembers] = useState<Record<string, MemberName>>({});
@@ -66,9 +68,19 @@ export default function AdminDashboardPage() {
   }
 
   const present = attendance.filter((row) => !row.checked_out_at);
+  const destinations = [
+    [pick("Finance & reimbursements","כספים והחזרים"),pick("Purchasing, budgets, personal advances and repayments","רכש, תקציבים, מקדמות אישיות והחזרים"),"/admin/finance","₪"],
+    [pick("Team members","חברי הקבוצה"),pick("Accounts, roles and department membership","חשבונות, תפקידים ושיוך למחלקות"),"/admin/members","ID"],
+    [pick("Roles & permissions","תפקידים והרשאות"),pick("Control what every role can view and manage","שליטה במה שכל תפקיד יכול לראות ולנהל"),"/admin/permissions","ACL"],
+    [pick("Security","אבטחה"),pick("Account protection and security oversight","הגנת חשבונות ופיקוח אבטחה"),"/admin/security","SEC"],
+    [pick("Attendance center","מרכז נוכחות"),pick("Absences, meeting rosters and attendance reports","היעדרויות, רשימות מפגש ודוחות נוכחות"),"/admin/reports","TIME"],
+    [pick("Leadership analytics","ניתוח ניהולי"),pick("Workload, learning and participation signals","עומס, למידה ומדדי השתתפות"),"/admin/contributions","DATA"],
+  ];
   return (
     <div className="hub-page web-admin-page web-admin-dashboard">
-      <header className="hub-page-header"><div><div className="hub-eyebrow">{pick("Administration · Live","ניהול · בזמן אמת")}</div><h1>{pick("Workshop dashboard","לוח בקרת הסדנה")}</h1><p>{pick("Run today’s workshop: open attendance, monitor who is present and correct active records without leaving this dashboard.","ניהול הסדנה של היום: פתיחת נוכחות, מעקב אחר הנוכחים ותיקון רשומות פעילות בלי לצאת מלוח הבקרה.")}</p></div><div className={`workshop-live-chip${meeting?" is-live":""}`}><span aria-hidden="true"/>{meeting?pick("Live session","מפגש פעיל"):pick("Ready to open","מוכן לפתיחה")}</div></header>
+      <header className="hub-page-header"><div><div className="hub-eyebrow">{pick("G3 PRIVATE OPERATIONS","ניהול פרטי G3")}</div><h1>{pick("Administration center","מרכז ניהול")}</h1><p>{pick("One secure place for people, permissions, finance, attendance and leadership oversight.","מקום מאובטח אחד לניהול אנשים, הרשאות, כספים, נוכחות ופיקוח ניהולי.")}</p></div><div className={`workshop-live-chip${meeting?" is-live":""}`}><span aria-hidden="true"/>{meeting?pick("Workshop live","הסדנה פעילה"):pick("Workshop closed","הסדנה סגורה")}</div></header>
+      <nav className="admin-center-grid" aria-label={pick("Administration areas","תחומי ניהול")}>{destinations.map(([title,body,path,mark])=><button type="button" key={path} onClick={()=>navigate(path)}><span>{mark}</span><strong>{title}</strong><small>{body}</small><b aria-hidden="true">→</b></button>)}</nav>
+      <div className="admin-section-heading"><span>{pick("LIVE WORKSHOP OPERATIONS","תפעול סדנה בזמן אמת")}</span><h2>{pick("Workshop control","בקרת סדנה")}</h2></div>
       <section className={`hub-card admin-live-banner${meeting ? " is-open" : ""}`}>
         <div><div className="hub-status-label">{meeting ? pick("WORKSHOP OPEN","הסדנה פתוחה") : pick("WORKSHOP CLOSED","הסדנה סגורה")}</div><h2>{meeting?.title ?? pick("No attendance session is open","אין מפגש נוכחות פתוח")}</h2><p>{meeting ? pick(`${present.length} members currently checked in`,`${present.length} חברים נמצאים כעת`) : pick("Open an ad-hoc session for members working outside regular meeting hours.","פתיחת מפגש מיוחד לחברים שעובדים מחוץ לשעות הקבועות.")}</p></div>
         {meeting ? <button className="admin-danger-button" onClick={closeNow}>{pick("Close workshop","סגירת הסדנה")}</button> : <div className="admin-open-controls"><input value={title} onChange={(e) => setTitle(e.target.value)} /><button className="hub-button" onClick={openNow}>{pick("Open workshop now","פתיחת הסדנה עכשיו")}</button></div>}
