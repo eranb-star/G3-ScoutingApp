@@ -1,6 +1,6 @@
 import fs from "node:fs";
 const root=new URL("../",import.meta.url),read=path=>fs.readFileSync(new URL(path,root),"utf8");
-const tools=read("src/pages/ToolsInventoryPage.tsx"),finance=read("src/pages/FinanceAdminPage.tsx"),shell=read("src/components/WebPortalShell.tsx"),calendar=read("src/pages/UnifiedCalendarPage.tsx"),css=read("src/teamHub.css"),sql=read("../../backend/supabase/operations_finance_receiving_20260907.sql"),main=read("src/main.tsx");
+const tools=read("src/pages/ToolsInventoryPage.tsx"),finance=read("src/pages/FinanceAdminPage.tsx"),shell=read("src/components/WebPortalShell.tsx"),calendar=read("src/pages/UnifiedCalendarPage.tsx"),css=read("src/teamHub.css"),sql=read("../../backend/supabase/operations_finance_receiving_20260907.sql"),paymentSql=read("../../backend/supabase/purchase_payment_finance_link_20260907.sql"),main=read("src/main.tsx");
 const checks=[
  ["attendance is first-class web navigation",shell.includes('["/attendance", "Attendance"')],
  ["calendar opens event-scoped absence request",calendar.includes("/attendance?view=absences&event=${selected.id}")],
@@ -16,7 +16,10 @@ const checks=[
  ["reimbursements cannot exceed the balance",sql.includes("new_total>expense.amount")],
  ["finance dashboard tracks personal debt",finance.includes("Team owes personally")&&finance.includes("reimbursed_amount")],
  ["finance dashboard includes approved ordered and legacy purchases",finance.includes("Committed and legacy purchases")&&finance.includes('status==="approved"||x.status==="ordered"')&&finance.includes("legacyReceived")],
- ["legacy received purchases can be linked to an expense",finance.includes("Complete financial record")&&finance.includes("purchase_id:item.id")],
+ ["ordered purchases expose explicit payment capture",finance.includes("Record payment")&&finance.includes('supabase.rpc("record_purchase_payment"')],
+ ["personal payment requires a named payer",finance.includes("Who paid personally?")&&paymentSql.includes("p_payment_source='personal' and p_paid_by is null")],
+ ["payment creates or updates the linked expense",paymentSql.includes("on conflict(purchase_id) do update")&&paymentSql.includes("reimbursement_status")],
+ ["receiving reuses an existing payment expense",paymentSql.includes("create or replace function public.receive_purchase_request")&&paymentSql.includes("on conflict(purchase_id) do update")],
  ["budgets funds and expenses are manageable",finance.includes("Set budget")&&finance.includes("Record funds")&&finance.includes("Record expense")],
  ["mobile finance and dialogs collapse safely",css.includes(".finance-ledger>article{grid-template-columns:1fr")&&css.includes(".operations-dialog{grid-template-columns:1fr")]
 ];

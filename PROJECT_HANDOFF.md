@@ -163,6 +163,9 @@ Before asking for a commit:
 - New migration: `operations_finance_receiving_20260907.sql`. The product owner executed it successfully in Supabase on 2026-09-07.
 - Automated build, all pre-existing verification suites and the new 15-check finance/receiving regression suite pass.
 - Authenticated local validation passed for Attendance navigation, visible absence actions, the calendar event shortcut, Purchasing dashboard and the empty private Finance dashboard at the narrow responsive viewport. No financial or purchasing test data was created. A full ordered-purchase receiving transaction remains part of multi-role acceptance.
+- Follow-up validation exposed and corrected a missing pre-receipt payment connection: approved/ordered purchases appear as commitments, ordered purchases explicitly show payment pending, and administrators record actual amount/date/source/payer. Personal payment immediately creates the linked amount owed; later receiving updates the same expense rather than duplicating it.
+- Existing ordered purchases were directly observed in the authenticated local Finance dashboard (three requests, ₪118 estimated commitment). No payment was inferred or written.
+- Supplemental migration `purchase_payment_finance_link_20260907.sql` was executed successfully by the product owner on 2026-09-07. The authenticated local payment form was then verified against an existing ordered purchase, including actual amount/date, payment source, named personal payer and responsive layout; the form was cancelled without writing test data.
 
 ### Responsibility consistency + governed attendance — PRODUCTION WEB RELEASED; ANDROID APK BUILT
 
