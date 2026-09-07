@@ -13,6 +13,7 @@ const links = [
   ["/growth", "Skills Academy", "אקדמיית מיומנויות"],
   ["/competition", "Competition", "תחרות"],
   ["/updates", "Updates", "עדכונים"],
+  ["/attendance", "Attendance", "נוכחות"],
   ["/media", "Team Media", "מדיה קבוצתית"],
 ] as const;
 
@@ -37,7 +38,7 @@ export default function WebPortalShell({children}:{children:ReactNode}) {
       <nav id="web-navigation" aria-label={pick("Team navigation","ניווט הקבוצה")}>
         {links.map(([path,en,he])=><div key={path}>{item(path,en,he)}</div>)}
         <div>{item("/updates?view=knowledge","FRC knowledge","ידע FRC")}</div>
-        {isAdmin?<section className="web-admin-nav"><small>{pick("ADMINISTRATION","ניהול")}</small>{item("/admin","Workshop dashboard","לוח הסדנה")}{item("/admin/reports","Attendance reports","דוחות נוכחות")}{item("/admin/contributions","Leadership analytics","ניתוח ניהולי")}{item("/admin/members","Team members","חברי הקבוצה")}{item("/admin/permissions","Roles & permissions","תפקידים והרשאות")}{item("/admin/security","Security","אבטחה")}</section>:null}
+        {isAdmin?<section className="web-admin-nav"><small>{pick("ADMINISTRATION","ניהול")}</small>{item("/admin","Workshop dashboard","לוח הסדנה")}{item("/admin/finance","Finance & reimbursements","כספים והחזרים")}{item("/admin/contributions","Leadership analytics","ניתוח ניהולי")}{item("/admin/members","Team members","חברי הקבוצה")}{item("/admin/permissions","Roles & permissions","תפקידים והרשאות")}{item("/admin/security","Security","אבטחה")}</section>:null}
         <div className="web-feedback-link">{item("/feedback","Feedback Center","מרכז משוב")}</div>
       </nav>
       <NavLink className="web-profile" to="/profile"><span>{profile.display_name}</span><small>{memberTeams(profile).join(" · ")||pick("Team member","חבר/ת קבוצה")}</small></NavLink>

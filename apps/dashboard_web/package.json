@@ -16,6 +16,7 @@
     "verify:media-feedback": "node scripts/verify-media-feedback.mjs",
     "verify:attendance-engineering": "node scripts/verify-attendance-engineering.mjs",
     "verify:absence-attendance": "node scripts/verify-absence-attendance.mjs",
+    "verify:finance-receiving": "node scripts/verify-finance-receiving.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

@@ -149,6 +149,20 @@ Before asking for a commit:
 
 ## Exact remaining phases, in priority order
 
+### Operations UX + governed receiving + private finance — IMPLEMENTED; MIGRATION EXECUTED; READY FOR COMMIT
+
+- Attendance is now a first-class website navigation destination, while phone access remains in More.
+- Calendar event details include a direct event-scoped Request absence action.
+- Shared primary/secondary button contracts prevent dialog/container CSS from creating invisible white-on-white labels.
+- Ordered purchases now open a governed receiving workflow with actual quantity, actual cost, payment source and one of three explicit inventory outcomes: add to an existing item, create a new item, or record an expense without stock.
+- The database receive operation locks the purchase, rejects duplicate receipt, updates inventory and its movement history when applicable, records the expense, advances purchase history and creates the requester update in one transaction.
+- A new administrator-only Finance & reimbursements workspace records expenses, funds raised, category budgets, personal advances, partial/full repayments, outstanding balance and CSV export.
+- Finance access is protected by both `AdminGate` and Supabase RLS. Purchase financial data is restricted to its requester and administrators rather than all members.
+- Android was synchronized to the final production bundle and advanced to `2.0.0` (code `13`). The APK has not yet been built or installed.
+- New migration: `operations_finance_receiving_20260907.sql`. The product owner executed it successfully in Supabase on 2026-09-07.
+- Automated build, all pre-existing verification suites and the new 15-check finance/receiving regression suite pass.
+- Authenticated local validation passed for Attendance navigation, visible absence actions, the calendar event shortcut, Purchasing dashboard and the empty private Finance dashboard at the narrow responsive viewport. No financial or purchasing test data was created. A full ordered-purchase receiving transaction remains part of multi-role acceptance.
+
 ### Responsibility consistency + governed attendance — PRODUCTION WEB RELEASED; ANDROID APK BUILT
 
 - Home and Work now use one shared responsibility-visibility rule. Completed, currently snoozed and expired meeting actions can no longer inflate the Home counter while remaining absent from the destination list.

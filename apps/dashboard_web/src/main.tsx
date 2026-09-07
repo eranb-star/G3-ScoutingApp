@@ -46,6 +46,7 @@ import { getUnreadUpdateCounts } from "./lib/unreadUpdates";
 import { Capacitor } from "@capacitor/core";
 import WebPortalShell, { WebCheckInNotice } from "./components/WebPortalShell";
 import PermissionsAdminPage from "./pages/PermissionsAdminPage";
+import FinanceAdminPage from "./pages/FinanceAdminPage";
 const FrcAssistantPage=lazy(()=>import("./pages/FrcAssistantPage"));
 const CompetitionOperationsPage=lazy(()=>import("./pages/CompetitionOperationsPage"));
 const TrainingCenterPage=lazy(()=>import("./pages/TrainingCenterPage"));
@@ -852,6 +853,7 @@ function AppShell() {
         <Route path="/admin/contributions" element={<AdminGate><ContributionInsightsPage /></AdminGate>} />
         <Route path="/admin/security" element={<AdminGate><SecurityAdminPage /></AdminGate>} />
         <Route path="/admin/permissions" element={<AdminGate><PermissionsAdminPage /></AdminGate>} />
+        <Route path="/admin/finance" element={<AdminGate><FinanceAdminPage /></AdminGate>} />
         <Route path="/attendance" element={<MemberGate><AttendanceReportsPage /></MemberGate>} />
         <Route path="/profile" element={<MemberGate><ProfilePage /></MemberGate>} />
         <Route path="/projects" element={<MemberGate><ProjectsPage /></MemberGate>} />
