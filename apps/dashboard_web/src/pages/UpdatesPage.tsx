@@ -15,7 +15,7 @@ type Announcement = { id: string; title: string; body: string; priority: string;
 type Channel = { id: string; name: string; name_he: string | null; description: string | null; kind: string; subteam: string | null };
 type ChannelMessage = { id: string; channel_id: string; body: string; created_at: string; author_id: string; team_members?: { display_name?: string; subteam?: string | null } | null };
 type KnowledgeItem = { id: string; title: string; excerpt: string; url: string; publishedAt: string; category: string };
-type TeamAction = { id:string; title:string; details:string|null; action_type:string; priority:string; due_at:string|null; destination:string|null; created_at:string };
+type TeamAction = { id:string; title:string; details:string|null; action_type:string; priority:string; due_at:string|null; destination:string|null; created_at:string; viewed:boolean };
 type ActionState = { action_id:string; status:string; snoozed_until:string|null };
 
 const dateTime = new Intl.DateTimeFormat("en-IL", { timeZone: "Asia/Jerusalem", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
@@ -99,7 +99,7 @@ export default function UpdatesPage() {
     ]);
     const states=new Map(((stateResult.data??[]) as ActionState[]).map(item=>[item.action_id,item]));
     const now=Date.now();
-    setActions(((actionResult.data??[]) as TeamAction[]).filter(item=>{const state=states.get(item.id);if(!state)return true;if(state.status==="acknowledged"||state.status==="completed")return false;if(state.status==="snoozed"&&state.snoozed_until&&new Date(state.snoozed_until).getTime()>now)return false;return true;}));
+    setActions(((actionResult.data??[]) as Omit<TeamAction,"viewed">[]).filter(item=>{const state=states.get(item.id);if(state?.status==="completed")return false;if(state?.status==="snoozed"&&state.snoozed_until&&new Date(state.snoozed_until).getTime()>now)return false;return true;}).map(item=>({...item,viewed:states.get(item.id)?.status==="acknowledged"})));
   }
 
   useEffect(() => { void loadCore(); }, [profile?.id, isAdmin, showArchived]);
@@ -145,7 +145,7 @@ export default function UpdatesPage() {
     if(!profile)return;
     const now=new Date().toISOString();
     await supabase.from("team_action_states").upsert({action_id:action.id,member_id:profile.id,status:"acknowledged",acknowledged_at:now,snoozed_until:null,updated_at:now},{onConflict:"action_id,member_id"});
-    setActions(current=>current.filter(item=>item.id!==action.id));
+    setActions(current=>current.map(item=>item.id===action.id?{...item,viewed:true}:item));
     window.dispatchEvent(new Event("g3-actions-changed"));
     navigate(action.destination||"/work");
   }

@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "../supabase";
 import { Capacitor, registerPlugin } from "@capacitor/core";
@@ -35,12 +35,22 @@ export function MemberAuthProvider({ children }: { children: React.ReactNode }) 
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<MemberProfile | null>(null);
   const [profileError, setProfileError] = useState("");
+  const profileRef = useRef<MemberProfile | null>(null);
+  const requestRef = useRef(0);
 
-  const loadProfile = async (activeSession: Session | null) => {
+  const loadProfile = async (activeSession: Session | null, clearExisting = false) => {
+    const requestId = ++requestRef.current;
     setSession(activeSession);
-    setProfile(null);
     setProfileError("");
-    if (!activeSession?.user) return;
+    if (!activeSession?.user) {
+      profileRef.current = null;
+      setProfile(null);
+      return;
+    }
+    if (clearExisting || profileRef.current?.id !== activeSession.user.id) {
+      profileRef.current = null;
+      setProfile(null);
+    }
 
     const { data, error } = await supabase
       .from("team_members")
@@ -48,6 +58,7 @@ export function MemberAuthProvider({ children }: { children: React.ReactNode }) 
       .eq("id", activeSession.user.id)
       .maybeSingle();
 
+    if (requestId !== requestRef.current) return;
     if (error) {
       setProfileError(error.message);
       return;
@@ -56,7 +67,8 @@ export function MemberAuthProvider({ children }: { children: React.ReactNode }) 
       setProfileError("This account is not connected to an approved G3 team member.");
       return;
     }
-    setProfile(data as MemberProfile);
+    profileRef.current = data as MemberProfile;
+    setProfile(profileRef.current);
   };
 
   const refreshProfile = async () => {
@@ -68,14 +80,15 @@ export function MemberAuthProvider({ children }: { children: React.ReactNode }) 
     let alive = true;
     supabase.auth.getSession().then(async ({ data }) => {
       if (!alive) return;
-      await loadProfile(data.session);
+      await loadProfile(data.session, true);
       if (alive) setLoading(false);
     });
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+    const { data: listener } = supabase.auth.onAuthStateChange((event, nextSession) => {
       window.setTimeout(async () => {
         if (!alive) return;
-        await loadProfile(nextSession);
+        if (event === "SIGNED_OUT") await loadProfile(null, true);
+        else await loadProfile(nextSession, event === "SIGNED_IN" && profileRef.current?.id !== nextSession?.user.id);
         if (alive) setLoading(false);
       }, 0);
     });

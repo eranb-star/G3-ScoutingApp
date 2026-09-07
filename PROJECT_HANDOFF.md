@@ -7,7 +7,7 @@ This is the single source of truth for resuming development. Read this file befo
 ## Exact current state
 
 - Working branch: `web-portal-preview`
-- Latest pushed product commit: `a35d548 Add governed absences and meeting attendance` (preceded by `2e6ccad Add audited purchase approval dashboard`).
+- Latest pushed product commit: `1ff64f3 Connect purchase payments to finance tracking` (preceded by `cbcdbb0 Show existing purchases in finance dashboard` and `9bdc20c Add governed purchasing and private finance management`).
 - Supabase Skills Academy resource-catalog migration, production web promotion and signed APK installation for version `1.5.0` (code `8`): confirmed complete by the product owner on 2026-09-06.
 - Canonical production web domain: `https://g3-6740.com`. Vercel serves production on this domain and `https://www.g3-6740.com` redirects to the apex domain.
 - Supabase Authentication URL configuration was directly updated and verified on 2026-09-06: Site URL is `https://g3-6740.com`; allowed redirects are `https://g3-6740.com/**`, `https://www.g3-6740.com/**`, and the legacy production fallback `https://g3-scouting-app-5qpe.vercel.app/**`.
@@ -16,7 +16,7 @@ This is the single source of truth for resuming development. Read this file befo
 - Purchase Reliability + Attendance Reliability + Engineering Hub is committed and pushed in `ee3efbb`. Its exact authenticated Vercel preview passed, including purchase quantity `1`, all 10 GitHub repositories and the web attendance boundary.
 - Navigation/calendar/member-feedback refinement is committed and pushed across `f5c0d2a` and `c6063d3`. The exact preview was accepted by the product owner, including human-readable calendar audiences and successful event deletion.
 - The product owner confirmed production promotion and creation of the combined Android `1.9.0` (code `12`) APK on 2026-09-07. Installation of that APK on a physical phone has not yet been stated separately; treat installation as pending unless confirmed.
-- There are no uncommitted product-code changes after `a35d548`; only the two excluded Android Studio `.idea` files and this handoff status update are local changes.
+- A combined mobile Finance, absence-notification, private-GitHub and tab-resume stability correction is currently implemented locally and awaiting commit/preview. It advances Android to `2.1.0` (code `14`). Do not describe it as deployed or installed until explicitly confirmed.
 - Local non-product changes: Android Studio may modify `android/.idea/deploymentTargetSelector.xml` and `android/.idea/misc.xml`. Never include these files in a product commit.
 - Live quiz-engine schema verified on 2026-09-06: `training_assessments.due_at`, `training_assessments.max_attempts`, `training_assessment_answer_keys`, `training_assessment_assignments` and `submit_training_quiz` are present and responding through Supabase. Do not rerun the migration merely for confirmation.
 
@@ -148,6 +148,17 @@ Before asking for a commit:
 9. Exclude `.idea` files, temporary Gradle caches, generated scratch data and test accounts from commits/releases.
 
 ## Exact remaining phases, in priority order
+
+### Mobile Finance + notification consistency + private GitHub + tab stability — IMPLEMENTED LOCALLY; AWAITING COMMIT/PREVIEW
+
+- Phone More now exposes **Finance & reimbursements** to administrators only; the existing route remains protected by `AdminGate` and database RLS.
+- Absence submission now invokes push delivery for every generated administrator/mentor review action. Approval/rejection invokes push delivery for the member's decision action. Persistent actions remain the source of truth when FCM is unavailable.
+- Updates Inbox retains acknowledged but unresolved responsibilities instead of making them disappear after first opening. The Home responsibility total remains the complete unresolved set, while the notification badge remains the unread subset.
+- Authentication token refresh and browser tab resume no longer clear a validated member profile. Stale profile responses cannot overwrite the current account. This prevents the transient **Account unavailable** unmount that erased unsaved in-memory form state.
+- The GitHub Edge Function supports private repositories when a server-side `GITHUB_TOKEN` has read access. Public access remains the safe fallback; no GitHub credential is exposed to the React client.
+- Secure private-repository activation still requires an authorized read-only GitHub credential to be saved as the Supabase Edge Function secret `GITHUB_TOKEN`, followed by deployment of `github-repositories`. This is an external authorization step, not completed by source code alone.
+- New regression suite `verify-mobile-notification-stability.mjs` passes all 9 checks. Relevant absence/attendance, attendance/engineering and finance/receiving suites also pass, for 49 targeted checks total. TypeScript completed in the normal build chain; local Vite bundling in the current Codex process is blocked by its filesystem sandbox before loading `vite.config.ts`, not by an application compile error.
+- Product files in this batch: Android build version, package scripts, member auth lifecycle, operational push helper, Attendance, phone More navigation, Updates Inbox, GitHub Edge Function, new verifier, and this handoff. Exclude both Android Studio `.idea` files.
 
 ### Operations UX + governed receiving + private finance — IMPLEMENTED; MIGRATION EXECUTED; READY FOR COMMIT
 
