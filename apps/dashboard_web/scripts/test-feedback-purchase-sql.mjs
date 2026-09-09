@@ -62,7 +62,23 @@ assert.equal(history.length,1);
 assert.equal('estimated_cost' in history[0],false);assert.equal('reason' in history[0],false);assert.equal('requested_by' in history[0],false);
 await db.exec(`set test.uid='${student}';`);
 assert.equal((await rows('select * from purchase_product_history()')).length,0);
-await db.exec(`reset role;delete from feedback_reports where id='${report}';`);
+await db.exec(`reset role;
+alter table feedback_reports add column created_at timestamptz default now();
+create table announcements(id uuid primary key default gen_random_uuid(),title text,body text,audience text,created_by uuid,created_at timestamptz,archived boolean default false);
+insert into announcements(title,body,audience,created_by,created_at)
+select 'New bug report: '||title,'Student submitted feedback for '||area||'. Open Feedback Center to review it.','admins',submitted_by,created_at from feedback_reports;
+insert into announcements(title,body,audience,created_by,created_at)
+select title,body,audience,created_by,created_at+interval '1 second' from announcements;
+insert into announcements(title,body,audience,created_by,created_at)
+select title,'Unrelated manually written announcement',audience,created_by,created_at from announcements limit 1;
+insert into team_actions(source_table,source_id,cancelled) select 'announcements',id,false from announcements;`);
+await db.exec(read('feedback_legacy_announcement_cleanup_20260910.sql'));
+assert.equal((await rows('select * from announcements where archived')).length,1);
+assert.equal((await rows('select * from announcements where not archived')).length,2);
+assert.equal((await rows("select * from team_actions where source_table='announcements' and cancelled")).length,1);
+await db.exec(read('feedback_legacy_announcement_cleanup_20260910.sql'));
+assert.equal((await rows('select * from announcements where archived')).length,1);
+await db.exec(`delete from feedback_reports where id='${report}';`);
 assert.equal((await rows("select * from team_actions where source_table='feedback_reviews' and not cancelled")).length,0);
 await db.close();
 console.log('PASS PostgreSQL migrations: creation, targeting, scoped delivery IDs, status lifecycle, reopen, role changes, rerun, deletion and private purchase history');
