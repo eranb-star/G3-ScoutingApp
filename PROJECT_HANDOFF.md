@@ -1,6 +1,14 @@
 # G3 Scouting App — Authoritative Handoff
 
-Last updated: 2026-09-08 (Asia/Jerusalem)
+Last updated: 2026-09-10 (Asia/Jerusalem)
+
+## Current work — 2026-09-10 feedback notifications and purchase reuse
+
+Owner authorized BOTH changes after reviewing the proposal. Implementation and local checks are complete; SQL application, commit/push, authenticated deployment preview, promotion and new APK remain pending. Read `docs/FEEDBACK_PURCHASE_REUSE_20260910.md` for exact behavior, limitations, tests, 12-file commit list and activation order. Next owner action: run the two new SQL migrations in the existing Supabase project, feedback first then purchase history. No SQL was run against live Supabase in this task. No paid Firebase services enabled.
+
+The two pre-existing Android `.idea` changes remain preserved and excluded. At task start these were the only uncommitted files; the earlier September 8 documentation was already committed. Do not restart prior Firebase work or repeat old migrations. Phase 3 learning QA below remains paused while these owner-requested fixes are prepared.
+
+Separate September 8–10 connectivity diagnosis: work laptop presented **Fortiguard SDNS Blocked Page** certificate from Fortinet, proving DNS-filter redirection rather than the site's certificate being shown. Public HTTPS and www/HTTP redirects passed from our connection. Owner was given FortiGuard Education review wording; submission/outcome not confirmed. No site/security configuration changed. School cause not independently confirmed.
 
 This is the single source of truth for resuming development. Read this file before changing the app. Do not reconstruct the roadmap from chat memory.
 
