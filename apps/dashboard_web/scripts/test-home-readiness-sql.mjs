@@ -134,4 +134,18 @@ await db.exec(`reset role;update project_tasks set due_at=now()+interval '1 day'
 await db.exec(`reset role;update project_tasks set due_at=now()-interval '1 day',status='done' where title='Overdue QA';set role authenticated;`);assert.equal((await rows('select overdue_project_tasks() as t'))[0].t.length,0);
 await db.exec(`reset role;update project_tasks set status='todo' where title='Overdue QA';update team_projects set status='archived';set role authenticated;`);assert.equal((await rows('select overdue_project_tasks() as t'))[0].t.length,0);
 await db.exec('reset role');await db.exec(overdueMigration);console.log('PASS overdue tasks: source state, due date, ownership/RLS, archive, Home response, rerun');
+await db.exec(`create function is_admin() returns boolean language sql stable as $$select auth.uid()='${admin}'::uuid$$;
+alter table frc_purchase_requests add column created_at timestamptz default now();alter table frc_purchase_requests add column item_name text;
+create policy admin_purchase_read on frc_purchase_requests for select to authenticated using(is_admin());
+insert into frc_purchase_requests(id,status,item_name,created_at) values('60000000-0000-0000-0000-000000000001','requested','Age QA',now()-interval '80 hours');`);
+const agingMigration=fs.readFileSync(new URL('../../../backend/supabase/purchase_approval_aging_20260910.sql',import.meta.url),'utf8');await db.exec(agingMigration);
+await db.exec(`set role authenticated;set test.uid='${admin}';`);
+assert.equal((await rows('select purchase_approval_aging() as a'))[0].a.requests.length,1);
+await db.exec('update purchase_approval_settings set threshold_hours=90');assert.equal((await rows('select purchase_approval_aging() as a'))[0].a.requests.length,0);
+await assert.rejects(()=>db.exec('update purchase_approval_settings set threshold_hours=0'));
+await db.exec(`set test.uid='${student}';`);assert.equal((await rows('select purchase_approval_aging() as a'))[0].a,null);
+assert.equal((await rows('update purchase_approval_settings set threshold_hours=1 returning id')).length,0);
+await db.exec(`reset role;update purchase_approval_settings set threshold_hours=72;update frc_purchase_requests set status='approved' where item_name='Age QA';set role authenticated;set test.uid='${admin}';`);
+assert.equal((await rows('select purchase_approval_aging() as a'))[0].a.requests.length,0);
+await db.exec('reset role');await db.exec(agingMigration);console.log('PASS approval aging: admin only, threshold changes/validation, nonadmin writes denied, approved request clears, rerun');
 await db.close();console.log('PASS readiness SQL: old event edit/link/reschedule/audience/cancel, opt-in/threshold/lifecycle/audit/idempotency, ownership and source RLS, safe purchase counts');

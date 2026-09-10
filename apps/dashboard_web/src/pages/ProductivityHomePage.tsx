@@ -1,3 +1,4 @@
+import PurchaseApprovalAging from "../components/PurchaseApprovalAging";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLocalization } from "../lib/localization";
@@ -29,7 +30,7 @@ export default function ProductivityHomePage({isAdmin,allowCheckIn=true}:{isAdmi
   <section className="home-now-panel"><span className={`home-live-indicator${active?" is-live":""}`}/><div><strong>{active?pick(`${active.title} is open`,`${active.title} פתוח`):pick("No workshop session is open","אין מפגש סדנה פתוח")}</strong><small>{active?pick(`${presence} people currently checked in`,`${presence} אנשים נמצאים כרגע`):next?`${pick("Next","הבא")}: ${next.title} · ${time.format(new Date(next.starts_at))}`:pick("No upcoming meeting loaded","לא נטען מפגש קרוב")}</small></div><button className="hub-button" onClick={()=>navigate(allowCheckIn?"/check-in":"/schedule")}>{allowCheckIn?pick("Check in / out","כניסה / יציאה"):pick("Team schedule","לוח הקבוצה")}</button></section>
   <section className="home-metrics"><button onClick={()=>navigate("/updates?view=inbox")}><strong>{unread}</strong><span>{pick("Unread updates","עדכונים שלא נקראו")}</span></button><button onClick={()=>navigate("/work")}><strong>{responsibilityCount}</strong><span>{pick("My responsibilities","האחריות שלי")}</span></button><button onClick={()=>navigate("/work?focus=blockers")}><strong>{blockers}</strong><span>{pick("Team blockers","חסמי קבוצה")}</span><small>{pick("Open blocker desk","פתיחת שולחן חסמים")} →</small></button><button onClick={()=>robotMaintenance?navigate("/robot-maintenance"):navigate("/tools")}><strong>{maintenance+robotMaintenance}</strong><span>{pick("Maintenance alerts","התראות תחזוקה")}</span></button></section>
   <HomeActionInbox overdueTasks={readiness.error?[]:readiness.data?.overdue_tasks??[]} risks={readiness.error?[]:readiness.data?.risks??[]}/>
-  <HomeTeamRisks data={readiness.data} error={readiness.error}/>
+  <PurchaseApprovalAging data={readiness.data?.approval_aging} error={readiness.error}/><HomeTeamRisks data={readiness.data} error={readiness.error}/>
   <button className="home-competition-card" onClick={()=>navigate("/competition")}><span><small>{pick("FRC competition","תחרות FRC")}</small><strong>{pick("Competition center","מרכז התחרות")}</strong><em>{pick("Scouting, live analysis and alliance strategy","סקאוטינג, ניתוח חי ואסטרטגיית בריתות")}</em></span><b>{pick("Open","פתיחה")} →</b></button>
   </main>;
 }

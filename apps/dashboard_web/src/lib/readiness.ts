@@ -1,7 +1,7 @@
 export type OverdueTask={id:string;title:string;assignee_id:string|null;owner:string|null;due_at:string;priority:string;created_at:string;days_overdue:number;href:string};
 export type ReadinessSignal={id:string;signal_type:'CRITICAL_ROBOT_ISSUE'|'STOCK_BELOW_MINIMUM';source_id:string;severity:'warning'|'high'|'critical';title:string;summary:string;assigned_user_id:string|null;href:string;opened_at:string};
 export type HomeEvent={checklist?:{total:number;done:number;overdue:number};id:string;title:string;event_type:string;days_until:number;start_day:string;end_day:string;competition_event_id:string|null};
-export type ReadinessData={overdue_tasks?:OverdueTask[];as_of:string;event:HomeEvent|null;events?:HomeEvent[];risks:ReadinessSignal[];purchases:{part_id:string;status:string;requests:number}[]};
+export type ReadinessData={approval_aging?:{threshold_hours:number;requests:{id:string;item_name:string;created_at:string;waiting_hours:number}[]}|null;overdue_tasks?:OverdueTask[];as_of:string;event:HomeEvent|null;events?:HomeEvent[];risks:ReadinessSignal[];purchases:{part_id:string;status:string;requests:number}[]};
 export function eventContext(event:HomeEvent,pick:(en:string,he:string)=>string){
  if(event.days_until>0)return pick(`${event.days_until} days until ${event.title}`,`עוד ${event.days_until} ימים עד ${event.title}`);
  if(event.days_until===0)return pick(`${event.title} starts today`,`${event.title} מתחיל היום`);
