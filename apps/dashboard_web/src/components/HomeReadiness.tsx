@@ -4,7 +4,7 @@ import {supabase} from '../supabase';
 import {useMemberAuth} from '../lib/memberAuth';
 import {useLocalization} from '../lib/localization';
 import {useAccessControl} from '../lib/accessControl';
-import {eventContext,type ReadinessData} from '../lib/readiness';
+import {eventContext,featuredEvents,type ReadinessData} from '../lib/readiness';
 
 export function useHomeReadiness(){
  const {profile}=useMemberAuth();const [data,setData]=useState<ReadinessData|null>(null),[error,setError]=useState(false);
@@ -15,7 +15,8 @@ export function HomeEventContext({data,error}:{data:ReadinessData|null;error:boo
  const {pick}=useLocalization(),navigate=useNavigate();
  if(error)return <p role="status">{pick('Readiness could not be refreshed. Open the source systems for current information.','לא ניתן לרענן את המוכנות. פתחו את מערכות המקור למידע עדכני.')}</p>;
  if(!data)return <p>{pick('Loading today’s context…','טוען את תמונת היום…')}</p>;
- return <div className="home-event-context">{data.event?<button onClick={()=>navigate(`/schedule?event=${data.event!.id}`)}>{eventContext(data.event,pick)} <span aria-hidden="true">↗</span></button>:<p>{pick('Your live command center for today’s team work.','מרכז השליטה החי שלכם לעבודת הקבוצה היום.')}</p>}{data.risks.length?<small>{pick(`${data.risks.length} active risks visible to you`,`${data.risks.length} סיכונים פעילים בתחום הצפייה שלך`)}</small>:null}</div>;
+ const events=featuredEvents(data);
+ return <div className="home-event-context">{events.length?<><button className="home-countdown-primary" onClick={()=>navigate(`/schedule?event=${events[0].id}`)}>{eventContext(events[0],pick)} <span aria-hidden="true">↗</span></button>{events.length>1?<details className="home-countdown-list" open><summary>{pick(`More featured events (${events.length-1})`,`אירועים נוספים (${events.length-1})`)}</summary>{events.slice(1).map(event=><button key={event.id} onClick={()=>navigate(`/schedule?event=${event.id}`)}>{eventContext(event,pick)} <span aria-hidden="true">↗</span></button>)}</details>:null}</>:<p>{pick('Your live command center for today’s team work.','מרכז השליטה החי שלכם לעבודת הקבוצה היום.')}</p>}{data.risks.length?<small>{pick(`${data.risks.length} active risks visible to you`,`${data.risks.length} סיכונים פעילים בתחום הצפייה שלך`)}</small>:null}</div>;
 }
 export function HomeTeamRisks({data,error}:{data:ReadinessData|null;error:boolean}){
  const {profile}=useMemberAuth(),{pick}=useLocalization(),access=useAccessControl(),navigate=useNavigate();const[all,setAll]=useState(false);

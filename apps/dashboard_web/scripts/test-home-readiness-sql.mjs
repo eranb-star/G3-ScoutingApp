@@ -64,4 +64,16 @@ await db.exec('reset role');await db.exec(migration);assert.equal(await count(),
 await db.exec(`delete from robot_issues where id='${issue}';`);assert.equal(await count(),1);
 await db.exec(`update frc_purchase_requests set status='received';`);assert.equal((await rows('select * from readiness_purchase_counts')).length,0);
 assert.ok((await rows('select * from system_signal_history')).length>=6);
+const countdownMigration=fs.readFileSync(new URL('../../../backend/supabase/home_readiness_countdowns_20260910.sql',import.meta.url),'utf8');
+await db.exec(countdownMigration);
+await db.exec(`update team_calendar_events set cancelled=false,target_type='all' where id='${calendar}';
+insert into team_calendar_events(id,title,event_type,starts_at,ends_at,home_featured,home_priority) values
+('40000000-0000-0000-0000-000000000002','Second event','meeting',now()+interval '2 days',now()+interval '3 days',true,10);
+set role authenticated;set test.uid='${admin}';`);
+context=(await rows('select home_readiness_context() as data'))[0].data;
+assert.equal(context.events.length,2);assert.equal(context.events[0].id,calendar);assert.equal(context.event.id,context.events[0].id);
+await db.exec(`reset role;update team_calendar_events set target_type='member',target_value='${student}' where id='${calendar}';set role authenticated;`);
+context=(await rows('select home_readiness_context() as data'))[0].data;assert.equal(context.events.length,1);assert.equal(context.events[0].title,'Second event');
+await db.exec('reset role');await db.exec(countdownMigration);
+console.log('PASS multiple countdowns: all eligible, current competition first, legacy compatibility, audience filtering, rerun');
 await db.close();console.log('PASS readiness SQL: old event edit/link/reschedule/audience/cancel, opt-in/threshold/lifecycle/audit/idempotency, ownership and source RLS, safe purchase counts');
