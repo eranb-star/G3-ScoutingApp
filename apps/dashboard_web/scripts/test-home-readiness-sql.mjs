@@ -108,4 +108,20 @@ await db.exec(`reset role;update team_calendar_events set cancelled=false where 
 assert.equal((await rows('select * from project_tasks')).length,1);
 await db.exec('reset role');await db.exec(checklistMigration);
 console.log('PASS checklists: source completion, overdue, Home summary, source visibility, unauthorized writes, duplicate prevention, rollback, unlink preserves task, rerun');
+const allTypesMigration=fs.readFileSync(new URL('../../../backend/supabase/event_checklists_all_types_20260910.sql',import.meta.url),'utf8');
+await db.exec(allTypesMigration);
+for(const type of ['team_event','fundraising','competition','training','deadline','meeting','other']){
+ await db.exec(`update team_calendar_events set event_type='${type}' where id='${calendar}';set role authenticated;set test.uid='${admin}';`);
+ const id=(await rows(`select create_competition_task('${calendar}','${event}','Prepare ${type}','${student}',now()) as id`))[0].id;
+ assert.ok((await rows(`select competition_checklist('${calendar}') as c`))[0].c.some(t=>t.id===id));
+ await db.exec('reset role');
+}
+await db.exec(`set role authenticated;set test.uid='${other}';`);
+assert.equal((await rows(`select competition_checklist('${calendar}') as c`))[0].c.length,0);
+await assert.rejects(()=>db.exec(`select create_competition_task('${calendar}','${event}','Forbidden','${other}',now())`));
+await db.exec(`reset role;update team_calendar_events set cancelled=true where id='${calendar}';set role authenticated;set test.uid='${admin}';`);
+assert.equal((await rows(`select competition_checklist('${calendar}') as c`))[0].c.length,0);
+await assert.rejects(()=>db.exec(`select create_competition_task('${calendar}','${event}','Cancelled','${student}',now())`));
+await db.exec('reset role');await db.exec(allTypesMigration);
+console.log('PASS all seven event types: create/read, source visibility, rejected unauthorized/cancelled writes, rerun');
 await db.close();console.log('PASS readiness SQL: old event edit/link/reschedule/audience/cancel, opt-in/threshold/lifecycle/audit/idempotency, ownership and source RLS, safe purchase counts');
