@@ -4,6 +4,7 @@ import { useLocalization } from "../lib/localization";
 import { useMemberAuth } from "../lib/memberAuth";
 import { supabase } from "../supabase";
 import {visibleResponsibilities} from "../lib/responsibilityVisibility";
+import {mergeReadinessPriorities,type ReadinessSignal} from "../lib/readiness";
 
 type Action = { id:string; title:string; details:string|null; action_type:string; due_at:string|null; priority:string; created_at:string; destination?:string|null; source_table?:string|null; source_id?:string|null };
 type State = { action_id:string; status:string; snoozed_until:string|null };
@@ -41,7 +42,7 @@ async function enrichCompetitionActions(actions:Action[]) {
   });
 }
 
-export default function HomeActionInbox({mode="home"}:{mode?:"home"|"work"}) {
+export default function HomeActionInbox({mode="home",risks=[]}:{mode?:"home"|"work";risks?:ReadinessSignal[]}) {
   const {profile}=useMemberAuth(),{pick}=useLocalization(),navigate=useNavigate();
   const [actions,setActions]=useState<Action[]>([]),[states,setStates]=useState<State[]>([]),[message,setMessage]=useState(""),[showAll,setShowAll]=useState(false),[loading,setLoading]=useState(true);
 
@@ -60,16 +61,22 @@ export default function HomeActionInbox({mode="home"}:{mode?:"home"|"work"}) {
   }
 
   useEffect(()=>{void load();},[profile?.id]);
-  const available=useMemo(()=>visibleResponsibilities(actions,states,mode),[actions,states,mode]);
-  const visible=showAll?available:available.slice(0,mode==="home"?4:6);
+  const personalRisks=risks.filter(r=>r.assigned_user_id===profile?.id&&r.signal_type==='CRITICAL_ROBOT_ISSUE');
+  const riskFor=(action:Action)=>personalRisks.find(r=>action.source_table==='robot_issues'&&action.source_id===r.source_id);
+  const available=useMemo(()=>{
+    const ordinary=visibleResponsibilities(actions,states,mode);
+    if(mode!=='home')return ordinary;
+    return mergeReadinessPriorities(actions,ordinary,risks,profile?.id);
+  },[actions,states,mode,risks,profile?.id]);
+  const visible=showAll?available:available.slice(0,6);
 
   async function updateState(action:Action,status:string,snoozed_until?:string){if(!profile)return;const now=new Date().toISOString();const {error}=await supabase.from("team_action_states").upsert({action_id:action.id,member_id:profile.id,status,snoozed_until:snoozed_until??null,acknowledged_at:status==="acknowledged"?now:null,completed_at:status==="completed"?now:null,updated_at:now},{onConflict:"action_id,member_id"});setMessage(error?.message??pick("Responsibility updated.","המשימה עודכנה."));if(!error)await load();}
 
   return <section className={`hub-card home-action-inbox responsibility-inbox responsibility-${mode}`} aria-labelledby={`${mode}-responsibility-title`}>
-    <header><div><div className="hub-eyebrow">{pick(mode==="home"?"Your priorities":"Personal command",mode==="home"?"סדר העדיפויות שלך":"מרכז אישי")}</div><h2 id={`${mode}-responsibility-title`}>{pick(mode==="home"?"What needs you":"My responsibilities",mode==="home"?"מה דורש אותך":"האחריות שלי")}</h2></div><span aria-label={pick(`${available.length} active responsibilities`,`${available.length} משימות פעילות`)}>{loading?"—":available.length}</span></header>
+    <header><div><div className="hub-eyebrow">{pick(mode==="home"?"Your priorities":"Personal command",mode==="home"?"סדר העדיפויות שלך":"מרכז אישי")}</div><h2 id={`${mode}-responsibility-title`}>{pick(mode==="home"?"What needs you":"My responsibilities",mode==="home"?"מה דורש אותך":"האחריות שלי")}</h2></div><span aria-label={pick(`${available.length} ${mode==="home"?"priorities":"active responsibilities"}`,`${available.length} ${mode==="home"?"עדיפויות":"משימות פעילות"}`)}>{loading?"—":available.length}</span></header>
     {message?<small className="action-message" role="status">{message}</small>:null}
-    {loading?<div className="work-skeleton"/>:visible.length?visible.map(action=>{const state=states.find(item=>item.action_id===action.id);return <article className={`priority-${action.priority}`} key={action.id}><button className="responsibility-open" onClick={()=>navigate(action.destination||"/work")}><span>{action.action_type.replace("_"," ")}</span><strong>{action.title}</strong><small>{action.details}{action.due_at?` · ${new Date(action.due_at).toLocaleDateString()}`:""}</small></button><div className="responsibility-actions">{!state||state.status==="new"?<button onClick={()=>void updateState(action,"acknowledged")}>{pick("Acknowledge","אישור קבלה")}</button>:null}<button onClick={()=>void updateState(action,"completed")}>{pick("Complete","השלמה")}</button><button className="secondary" onClick={()=>void updateState(action,"snoozed",new Date(Date.now()+24*3600000).toISOString())}>{pick("Tomorrow","מחר")}</button></div></article>}):<p>{pick(mode==="home"?"Nothing needs your attention in the next seven days.":"You have no active responsibilities.",mode==="home"?"אין פעולות הדורשות את תשומת לבכם בשבעת הימים הקרובים.":"אין לכם אחריות פעילה כרגע.")}</p>}
-    {available.length>(mode==="home"?4:6)?<button className="work-disclosure-link" onClick={()=>setShowAll(value=>!value)}>{showAll?pick("Show priorities only","הצגת עדיפויות בלבד"):pick(`View all ${available.length}`,`הצגת כל ${available.length}`)} <span>{showAll?"↑":"↓"}</span></button>:null}
+    {loading?<div className="work-skeleton"/>:visible.length?visible.map(action=>{const state=states.find(item=>item.action_id===action.id),risk=riskFor(action);return <article className={`priority-${risk?'urgent':action.priority}`} key={action.id}><button className="responsibility-open" onClick={()=>navigate(action.destination||"/work")}><span>{risk?pick('Critical robot issue','תקלה קריטית ברובוט'):action.action_type.replace("_"," ")}</span><strong>{action.title}</strong><small>{action.details}{action.due_at?` · ${new Date(action.due_at).toLocaleDateString()}`:""}</small></button><div className="responsibility-actions">{(!state||state.status==="new")&&!action.id.startsWith('signal-')?<button onClick={()=>void updateState(action,"acknowledged")}>{pick("Acknowledge","אישור קבלה")}</button>:null}{risk?<small>{pick('Resolve in Robot Issues to clear this risk.','יש לפתור את התקלה ברובוט להסרת הסיכון.')}</small>:<><button onClick={()=>void updateState(action,"completed")}>{pick("Complete","השלמה")}</button><button className="secondary" onClick={()=>void updateState(action,"snoozed",new Date(Date.now()+24*3600000).toISOString())}>{pick("Tomorrow","מחר")}</button></>}</div></article>}):<p>{pick(mode==="home"?"Nothing needs your attention in the next seven days.":"You have no active responsibilities.",mode==="home"?"אין פעולות הדורשות את תשומת לבכם בשבעת הימים הקרובים.":"אין לכם אחריות פעילה כרגע.")}</p>}
+    {available.length>6?<button className="work-disclosure-link" onClick={()=>setShowAll(value=>!value)}>{showAll?pick("Show priorities only","הצגת עדיפויות בלבד"):pick(`View all ${available.length}`,`הצגת כל ${available.length}`)} <span>{showAll?"↑":"↓"}</span></button>:null}
     <footer>{pick(mode==="home"?"Home stays focused on the next seven days. Open Work for the complete list.":"Project, training, calendar, competition and robot responsibilities stay synchronized with their source.",mode==="home"?"מסך הבית מתמקד בשבעת הימים הקרובים. הרשימה המלאה נמצאת בעבודה.":"פרויקטים, הכשרות, יומן, תחרות ואחריות לרובוט מסונכרנים עם המקור שלהם.")}</footer>
   </section>;
 }

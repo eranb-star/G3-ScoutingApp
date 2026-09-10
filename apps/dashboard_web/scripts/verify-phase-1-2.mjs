@@ -26,7 +26,7 @@ const academyBoundary = read("../../backend/supabase/skills_academy_access_bound
 
 const checks = [
   ["Work treats qualified training as complete", work.includes('status!=="qualified"') && !work.includes('status!=="completed"')],
-  ["Home has a single responsibility list", home.includes("<HomeActionInbox/>") && !home.includes("home-my-work")],
+  ["Home has a single responsibility list", (home.match(/<HomeActionInbox\b/g)??[]).length===1 && !home.includes("home-my-work")],
   ["Work uses the shared responsibility list", work.includes('<HomeActionInbox mode="work" />')],
   ["Responsibilities deep-link to source records", inbox.includes("action.destination||\"/work\"")],
   ["Archived project tasks cancel responsibilities", migration.includes("new.archived or new.status='done'")],

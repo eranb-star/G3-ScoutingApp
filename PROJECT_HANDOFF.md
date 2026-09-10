@@ -2,7 +2,23 @@
 
 Last updated: 2026-09-10 (Asia/Jerusalem)
 
-## Current work — 2026-09-10 feedback notifications and purchase reuse
+## Current work — 2026-09-10 Home competition readiness
+
+This checkpoint supersedes older next-action statements below. Owner authorized implementation with “ok, let's start,” then “continue.” Phase 1 is locally implemented: editable existing Calendar competition metadata/Home countdown, opt-in per-item stock thresholds, critical issue and stock signals with source RLS, and nonduplicated personal critical priorities. Read `docs/HOME_READINESS_PHASE1_20260910.md` for scope, tests, limitations, exact 18-file commit list and release order.
+
+Owner confirmed **SQL success** for `backend/supabase/home_readiness_phase1_20260910.sql`. Do not repeat it. NEXT OWNER ACTION: commit the 18 feature/documentation files on `web-portal-preview`, excluding the three Android files, then push and provide the new Vercel preview URL. Commit/push, authenticated preview acceptance, production promotion and Android asset copy remain pending. Do not build an APK from this phase yet. Prior 2.1.4 preparation remains uncommitted and its installation is unconfirmed.
+
+All four original modified files were preserved: this handoff, Android app/build.gradle and two Android .idea files. Feature commit excludes those three Android files. No paid Firebase services. Phase 3 learning QA remains paused. Do not restart Firebase setup or repeat already completed feedback/purchase migrations.
+
+## Historical release — 2026-09-10 feedback notifications and purchase reuse
+
+### Production promotion and Android 2.1.4 preparation
+
+Release manifest verification (`:app:processReleaseMainManifest`, Java 21) passed outside the sandbox after its Android user-directory access limitation. This validates manifest generation; it is not a completed signed APK build.
+
+Owner confirmed both SQL migrations succeeded, cleanup returned 1 archived announcement / 0 cancelled legacy actions, and Inbox duplication is gone. Owner accepted preview and explicitly confirmed **Promoted to production**. Git HEAD is `2c18c01 Archive duplicate legacy feedback announcements`, following `33706b7 Notify admins about feedback and add reusable purchase history`. Do not repeat these SQL migrations or request promotion again.
+
+Prepared Android **2.1.4 / versionCode 18** in `apps/dashboard_web/android/app/build.gradle`. TypeScript/Vite passed; Capacitor copy completed and all 19 bundled web files matched dist byte-for-byte. Index SHA-256: `8d226c4351d3d73c277cbab1c848424240ac2f1256dd0ed4cf6d0a97ba2f7b8b`; entry `assets/index-C5xyeIJq.js`. Normal release retains `CRASHLYTICS_TEST_BUILD=false`. No signed 2.1.4 APK built or installed yet: owner must build normal signed release in Android Studio with the existing keystore, then install over 2.1.3. Save these two release files (handoff and build.gradle) with commit message `Prepare Android 2.1.4 release`, excluding the same two `.idea` files. No further web promotion is required for this version/documentation-only commit. This checkpoint supersedes pending SQL/preview/promotion statements below.
 
 ### Follow-up: duplicate legacy feedback notification
 
