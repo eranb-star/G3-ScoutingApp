@@ -124,4 +124,14 @@ assert.equal((await rows(`select competition_checklist('${calendar}') as c`))[0]
 await assert.rejects(()=>db.exec(`select create_competition_task('${calendar}','${event}','Cancelled','${student}',now())`));
 await db.exec('reset role');await db.exec(allTypesMigration);
 console.log('PASS all seven event types: create/read, source visibility, rejected unauthorized/cancelled writes, rerun');
+await db.exec("alter table project_tasks add column priority text default 'normal';alter table project_tasks add column created_at timestamptz default now();");
+const overdueMigration=fs.readFileSync(new URL('../../../backend/supabase/overdue_project_tasks_20260910.sql',import.meta.url),'utf8');await db.exec(overdueMigration);
+await db.exec(`update project_tasks set status='done';insert into project_tasks(id,project_id,title,status,assignee_id,due_at,created_by) values('50000000-0000-0000-0000-000000000001','${event}','Overdue QA','todo','${student}',now()-interval '2 days','${admin}');set role authenticated;set test.uid='${student}';`);
+let overdue=(await rows('select overdue_project_tasks() as t'))[0].t;assert.equal(overdue.length,1);assert.equal(overdue[0].days_overdue,2);
+assert.equal((await rows('select home_readiness_context() as c'))[0].c.overdue_tasks.length,1);
+await db.exec(`set test.uid='${other}';`);assert.equal((await rows('select overdue_project_tasks() as t'))[0].t.length,0);
+await db.exec(`reset role;update project_tasks set due_at=now()+interval '1 day' where title='Overdue QA';set role authenticated;set test.uid='${student}';`);assert.equal((await rows('select overdue_project_tasks() as t'))[0].t.length,0);
+await db.exec(`reset role;update project_tasks set due_at=now()-interval '1 day',status='done' where title='Overdue QA';set role authenticated;`);assert.equal((await rows('select overdue_project_tasks() as t'))[0].t.length,0);
+await db.exec(`reset role;update project_tasks set status='todo' where title='Overdue QA';update team_projects set status='archived';set role authenticated;`);assert.equal((await rows('select overdue_project_tasks() as t'))[0].t.length,0);
+await db.exec('reset role');await db.exec(overdueMigration);console.log('PASS overdue tasks: source state, due date, ownership/RLS, archive, Home response, rerun');
 await db.close();console.log('PASS readiness SQL: old event edit/link/reschedule/audience/cancel, opt-in/threshold/lifecycle/audit/idempotency, ownership and source RLS, safe purchase counts');

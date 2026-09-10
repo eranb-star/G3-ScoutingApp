@@ -10,3 +10,12 @@ assert.equal(mergeReadinessPriorities([task],[task],[risk],'other').length,1);
 assert.equal(mergeReadinessPriorities([task],[task],[],'me').length,1);
 assert.equal(merged[0].priority,'normal'); // Do not modify stored/source action.
 console.log('PASS context wording and priorities: single source item, critical first, hidden-action restoration, ownership and nonmutation');
+
+const {mergeOverdueTasks,overdueLabel}=await import('../src/lib/readiness.ts');
+const overdueTask={id:'late1',title:'Late work',assignee_id:'me',owner:'Me',due_at:'2026-09-01T12:00:00Z',priority:'normal',created_at:'2026-08-01T12:00:00Z',days_overdue:2,href:'/projects?task=late1'};
+const sourceAction={id:'action1',title:'Late work',details:null,action_type:'assignment',due_at:overdueTask.due_at,priority:'normal',created_at:overdueTask.created_at,source_table:'project_tasks',source_id:'late1'};
+assert.equal(mergeOverdueTasks([sourceAction],[sourceAction],[overdueTask],'me').length,1);
+assert.equal(mergeOverdueTasks([sourceAction],[],[overdueTask],'me')[0].id,'action1');
+assert.equal(mergeOverdueTasks([],[],[overdueTask],'other').length,0);
+assert.equal(overdueLabel({...overdueTask,days_overdue:0},(en)=>en),'Overdue today');
+console.log('PASS overdue priority deduplication, hidden responsibility restoration, ownership, today wording');
