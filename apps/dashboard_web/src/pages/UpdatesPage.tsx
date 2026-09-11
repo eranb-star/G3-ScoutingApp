@@ -15,7 +15,7 @@ type Announcement = { id: string; title: string; body: string; priority: string;
 type Channel = { id: string; name: string; name_he: string | null; description: string | null; kind: string; subteam: string | null };
 type ChannelMessage = { id: string; channel_id: string; body: string; created_at: string; author_id: string; team_members?: { display_name?: string; subteam?: string | null } | null };
 type KnowledgeItem = { id: string; title: string; excerpt: string; url: string; publishedAt: string; category: string };
-type TeamAction = { id:string; title:string; details:string|null; action_type:string; priority:string; due_at:string|null; destination:string|null; created_at:string; viewed:boolean };
+type TeamAction = { source_table?:string|null; id:string; title:string; details:string|null; action_type:string; priority:string; due_at:string|null; destination:string|null; created_at:string; viewed:boolean };
 type ActionState = { action_id:string; status:string; snoozed_until:string|null };
 
 const dateTime = new Intl.DateTimeFormat("en-IL", { timeZone: "Asia/Jerusalem", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
@@ -95,12 +95,12 @@ export default function UpdatesPage() {
     const counts=await getUnreadUpdateCounts(profile.id);
     setUnseenChannelCount(counts.channels);setUnreadTotal(counts.announcements+counts.channels+counts.actions);
     const [actionResult,stateResult]=await Promise.all([
-      supabase.from("team_actions").select("id,title,details,action_type,priority,due_at,destination,created_at").eq("cancelled",false).order("due_at",{ascending:true,nullsFirst:false}).limit(50),
+      supabase.from("team_actions").select("id,title,details,action_type,priority,due_at,destination,created_at,source_table").eq("cancelled",false).order("due_at",{ascending:true,nullsFirst:false}).limit(50),
       supabase.from("team_action_states").select("action_id,status,snoozed_until").eq("member_id",profile.id),
     ]);
     const states=new Map(((stateResult.data??[]) as ActionState[]).map(item=>[item.action_id,item]));
     const now=Date.now();
-    setActions(((actionResult.data??[]) as Omit<TeamAction,"viewed">[]).filter(item=>{const state=states.get(item.id);if(state?.status==="completed")return false;if(state?.status==="snoozed"&&state.snoozed_until&&new Date(state.snoozed_until).getTime()>now)return false;return true;}).map(item=>({...item,viewed:states.get(item.id)?.status==="acknowledged"})));
+    setActions(((actionResult.data??[]) as Omit<TeamAction,"viewed">[]).filter(item=>{const state=states.get(item.id);if(state?.status==="completed"&&item.source_table!=="project_tasks")return false;if(state?.status==="snoozed"&&state.snoozed_until&&new Date(state.snoozed_until).getTime()>now)return false;return true;}).map(item=>({...item,viewed:["acknowledged","completed"].includes(states.get(item.id)?.status??"")})));
   }
 
   useEffect(() => { void loadCore(); }, [profile?.id, isAdmin, showArchived]);

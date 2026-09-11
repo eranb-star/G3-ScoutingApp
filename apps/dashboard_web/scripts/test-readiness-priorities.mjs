@@ -19,3 +19,11 @@ assert.equal(mergeOverdueTasks([sourceAction],[],[overdueTask],'me')[0].id,'acti
 assert.equal(mergeOverdueTasks([],[],[overdueTask],'other').length,0);
 assert.equal(overdueLabel({...overdueTask,days_overdue:0},(en)=>en),'Overdue today');
 console.log('PASS overdue priority deduplication, hidden responsibility restoration, ownership, today wording');
+
+const {visibleResponsibilities}=await import('../src/lib/responsibilityVisibility.ts');
+const sourceTask={id:'task-reminder',source_table:'project_tasks',action_type:'assignment',due_at:null,priority:'normal'};
+const dismissed=[{action_id:'task-reminder',status:'completed',snoozed_until:null}];
+assert.equal(visibleResponsibilities([sourceTask],dismissed,'home').length,1);
+assert.equal(visibleResponsibilities([{...sourceTask,source_table:'other'}],dismissed,'home').length,0);
+assert.equal(visibleResponsibilities([sourceTask],[{...dismissed[0],status:'snoozed',snoozed_until:new Date(Date.now()+86400000).toISOString()}],'home').length,0);
+console.log('PASS project task visibility ignores old dismissal, preserves snooze and other responsibility behavior');
