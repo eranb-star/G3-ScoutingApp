@@ -2,6 +2,11 @@
 
 Last updated: 2026-09-10 (Asia/Jerusalem)
 
+
+## Latest APK checkpoint — 2.1.6 built (2026-09-11)
+
+Owner explicitly requested APK now and deferred mentor-review acceptance testing. Preview fbhchg1e2 is deployed; signed-in read-only inspection confirmed mentor setup and reviewer choices load. No live checkpoint created or approved. SQL application not explicitly confirmed by owner in this turn. Built signed release 2.1.6/versionCode 20 using existing signing configuration. Artifact: apps/dashboard_web/android/app/build/outputs/apk/release/app-release.apk. TypeScript/Vite, Capacitor copy, all 19 asset comparisons, Gradle assembleRelease and apksigner verification passed. Normal crash-test control remains disabled. Offline build skipped Crashlytics mapping upload; upload remains pending for deobfuscated native crash reports for this build. No paid service or production promotion performed. Phone installation and mentor workflow acceptance remain pending, at owner's request. Commit only PROJECT_HANDOFF.md and android/app/build.gradle as Prepare Android 2.1.6 combined release; exclude the two pre-existing .idea files. Latest checkpoint overrides historical next steps below.
+
 ## Latest implementation — opt-in mentor review checkpoints
 
 Owner authorized implementation after discussing CAD drawing review, mechanical prototype approval and other selected milestone gates. Implemented locally in existing Projects tasks; not deployed or SQL-applied yet. Prior production promotion remains confirmed. ONE consolidated APK remains pending; no Android asset copy/version change in this batch.
