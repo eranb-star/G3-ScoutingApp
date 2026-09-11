@@ -2,6 +2,18 @@
 
 Last updated: 2026-09-10 (Asia/Jerusalem)
 
+## Latest follow-up — inventory forms, admin categories and project discovery
+
+Owner accepted the operations-batch deployment step and supplied preview `https://g3-scouting-app-5qpe-ekdvpb0xx-eranbos-projects.vercel.app/home`. Read-only check found Home loaded, project Open task visible, no horizontal overflow. Owner then reported oversized inventory checkboxes, missing Software category and unclear project creation route.
+
+Implemented follow-up: Add part/equipment have explicit headings, two-column desktop/one-column mobile fields, 20px checkbox controls and Save/Cancel footer. Inventory → Parts & stock / Tools & equipment → Manage categories (admin only) supports add, rename, disable/re-enable; category names stay text-compatible, renames atomically update existing items, disable preserves records, legacy categories are imported, Software seeded for both scopes. Historical finance/purchase snapshots unchanged. Administrator RPC checks active membership and is_admin; direct category writes revoked. Existing category lists remain fallback until migration; management shows setup error if unavailable. Renamed default categories do not reappear on migration rerun.
+
+Project analysis: Projects already supports all FRC teams; Business & Outreach is one workspace, not a required entry point. Work now has prominent Team projects link above responsibilities; follows the member's team when available, otherwise the all-workspace picker. Selected workspace shows create form only with existing scoped manage_team_projects permission; read-only users receive a clear explanation. No project reassignment or permission broadening.
+
+NEXT: run only `backend/supabase/inventory_categories_20260911.sql`, then commit/push NINE follow-up files excluding both Android .idea modifications (11 total Git entries). Commit message: `Improve inventory forms, admin categories and team project navigation`. Nine files: handoff; category SQL; InventoryCategories.tsx; ToolsInventoryPage.tsx; FrcWorkPage.tsx; ProjectsPage.tsx; teamHub.css; preview-home-readiness.mjs; test-inventory-categories.mjs. Existing operations SQL does not need repeating. Keep same combined preview/release plan, no Android copy/version/build now.
+
+Validation: TypeScript/Vite passed (existing chunk warning); PGlite category tests passed admin-only writes, duplicates, legacy import, rename propagation/scope, disable preservation and migration rerun. Real-component fixture verified equipment form at desktop width (two equal columns, 20px checkbox, no overflow), Hebrew mobile stock form (20px checkbox, no overflow). No live category/item changes made. Owner preview validation remains pending; do not claim comprehensive role/live mutation acceptance.
+
 ## Latest checkpoint — September 11: combined operations batch IMPLEMENTED
 
 This checkpoint supersedes all earlier pending-step instructions. Owner authorized maintenance readiness, event-specific robot checks and inventory planning together, plus the Home task-button correction. All are now locally implemented. Do not ask again whether to proceed with these phases. Keep preview only until owner accepts; ONE final APK after promotion, no intermediate Android copy/version bump. Two Android .idea modifications are preserved and excluded.

@@ -59,6 +59,8 @@ export default function FrcWorkPage(){
 
   return <main className="hub-page work-page work-command-center">
     <header className="work-command-header work-command-header-compact"><div><div className="hub-eyebrow">G3 6740 · {pick("Build operations","תפעול הבנייה")}</div><h1>{pick("Work","עבודה")}</h1><p>{pick("Your next action, your team and the systems that keep the robot moving.","הפעולה הבאה, הצוות שלכם והמערכות שמקדמות את הרובוט.")}</p></div>{myArea?<button className="hub-button" onClick={()=>navigate(`/projects?subteam=${myArea.key}`)}>{pick("Open my workspace","פתיחת המרחב שלי")} →</button>:null}</header>
+    <section className="work-project-entry"><div><h2>{pick("Team projects","פרויקטי צוות")}</h2><p>{pick("Create and manage projects in Mechanical, Electrical, Software, CAD or any other team workspace.","יצירה וניהול פרויקטים במכניקה, אלקטרוניקה, תוכנה, CAD ובכל צוות אחר.")}</p></div><button className="hub-button" onClick={()=>navigate(myArea?`/projects?subteam=${myArea.key}`:"/projects")}>{pick("Open team projects","פתיחת פרויקטי צוות")}</button></section>
+
 
     <HomeActionInbox mode="work" />
 
