@@ -1,3 +1,4 @@
+import {useProjectRefresh} from "../lib/projectRefresh";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useLocalization } from "../lib/localization";
@@ -74,6 +75,7 @@ export default function UpdatesPage() {
     setParams({view:"announcements",announcement:id},{replace:true});
   }
 
+ useProjectRefresh(()=>loadCore());
   async function loadCore() {
     if (!profile) return;
     const [announcementResult, readResult, channelResult, savedResult] = await Promise.all([

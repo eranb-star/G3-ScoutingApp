@@ -2,6 +2,16 @@
 
 Last updated: 2026-09-10 (Asia/Jerusalem)
 
+## Latest fix — project source/assignment consistency
+
+Owner reported deleted task still present in Work/Home assignments and requested combined lifecycle consistency. Confirmed cause in unified_responsibility_engine_20260902.sql: project_task_to_action handled INSERT/UPDATE but no DELETE. New `backend/supabase/project_action_consistency_20260911.sql` handles delete/cascade delete, reconciles project name/status changes, updates task title/due/priority/assignee/status/archive, cancels old orphan assignments, and repairs existing task actions. Stable source action ID avoids duplicates. Reopen/reassignment clears the current assignee's old dismissal/snooze so responsibility is visible again. Other action types untouched. Completing a project does not silently complete its unfinished tasks; task status remains authoritative. Existing dependency deletion restrictions remain.
+
+Frontend: all Projects mutations and dependency/checklist changes notify same-origin tabs. Home priorities/counts, Work summaries, Projects/dependencies, Updates feed and event preparation refresh on local change, tab return/focus and cross-tab storage notifications. Home readiness already refreshes periodically/on focus; storage refresh added. This is not guaranteed instantaneous push to another device: other-device edits appear on navigation/focus (and existing readiness interval). No new polling, Realtime publication or paid services. Mutation success now verifies affected rows for archive/delete/project update, preventing a no-op permission denial from appearing successful.
+
+Validation: focused PGlite actual-function/migration tests passed title/due/priority, project rename, complete/reopen, archive/restore, reassign/unassign, task deletion, project cascade deletion, orphan repair, stable action identity and denied direct reconciliation calls. TypeScript/Vite passed. No real tasks deleted or edited for testing.
+
+NEXT: run ONLY project_action_consistency_20260911.sql, then commit/push TWELVE files (exclude the two Android .idea changes). Suggested commit: `Synchronize project task lifecycle across Home Work and Updates`. Combined preview/release still pending, no APK yet. Current inventory-category changes were already committed in working-tree baseline; do not repeat that commit or earlier SQL. Do not claim owner has applied this new consistency SQL until confirmed.
+
 ## Latest follow-up — inventory forms, admin categories and project discovery
 
 Owner accepted the operations-batch deployment step and supplied preview `https://g3-scouting-app-5qpe-ekdvpb0xx-eranbos-projects.vercel.app/home`. Read-only check found Home loaded, project Open task visible, no horizontal overflow. Owner then reported oversized inventory checkboxes, missing Software category and unclear project creation route.

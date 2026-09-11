@@ -1,3 +1,4 @@
+import {useProjectRefresh} from "../lib/projectRefresh";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLocalization } from "../lib/localization";
@@ -46,6 +47,7 @@ export default function HomeActionInbox({mode="home",overdueTasks=[],risks=[]}:{
   const {profile}=useMemberAuth(),{pick}=useLocalization(),navigate=useNavigate();
   const [actions,setActions]=useState<Action[]>([]),[states,setStates]=useState<State[]>([]),[message,setMessage]=useState(""),[showAll,setShowAll]=useState(false),[loading,setLoading]=useState(true);
 
+ useProjectRefresh(()=>load());
   async function load(){
     if(!profile)return;
     setLoading(true);

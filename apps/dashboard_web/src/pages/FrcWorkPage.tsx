@@ -1,3 +1,4 @@
+import {useProjectRefresh} from "../lib/projectRefresh";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useLocalization } from "../lib/localization";
@@ -32,13 +33,15 @@ export default function FrcWorkPage(){
   const [projects,setProjects]=useState<Project[]>([]),[tasks,setTasks]=useState<Task[]>([]),[courses,setCourses]=useState<Course[]>([]),[modules,setModules]=useState<Module[]>([]),[enrollments,setEnrollments]=useState<Enrollment[]>([]),[evidence,setEvidence]=useState<Evidence[]>([]),[issues,setIssues]=useState<Issue[]>([]),[components,setComponents]=useState<Component[]>([]);
   const [departmentsOpen,setDepartmentsOpen]=useState(()=>!Capacitor.isNativePlatform());
   const [operationsOpen,setOperationsOpen]=useState(()=>!Capacitor.isNativePlatform());
-  useEffect(()=>{if(!profile)return;Promise.all([
+  function loadWork(){if(!profile)return;return Promise.all([
     supabase.from("team_projects").select("id,name,status,subteam,due_at").neq("status","archived").order("updated_at",{ascending:false}).limit(100),
     supabase.from("project_tasks").select("id,project_id,title,status,due_at,assignee_id").eq("archived",false).order("due_at",{ascending:true,nullsFirst:false}).limit(250),
     supabase.from("training_courses").select("id,title").eq("active",true).order("created_at"),supabase.from("training_modules").select("id,course_id").order("sort_order"),
     supabase.from("training_enrollments").select("id,course_id,status,due_at").eq("member_id",profile.id),supabase.from("training_evidence").select("enrollment_id,module_id,status").eq("member_id",profile.id),
     supabase.from("robot_issues").select("id,severity,status").eq("archived",false).neq("status","resolved"),supabase.from("robot_components").select("id,name,status,service_interval_days,last_serviced_at").neq("status","retired"),
-  ]).then(([p,t,c,m,n,e,i,r])=>{setProjects((p.data??[]) as Project[]);setTasks((t.data??[]) as Task[]);setCourses((c.data??[]) as Course[]);setModules((m.data??[]) as Module[]);setEnrollments((n.data??[]) as Enrollment[]);setEvidence((e.data??[]) as Evidence[]);setIssues((i.data??[]) as Issue[]);setComponents((r.data??[]) as Component[]);});},[profile?.id]);
+  ]).then(([p,t,c,m,n,e,i,r])=>{setProjects((p.data??[]) as Project[]);setTasks((t.data??[]) as Task[]);setCourses((c.data??[]) as Course[]);setModules((m.data??[]) as Module[]);setEnrollments((n.data??[]) as Enrollment[]);setEvidence((e.data??[]) as Evidence[]);setIssues((i.data??[]) as Issue[]);setComponents((r.data??[]) as Component[]);});}
+  useEffect(()=>{void loadWork();},[profile?.id]);
+  useProjectRefresh(()=>loadWork());
 
   const myAreas=frcAreas.filter(area=>memberTeams(profile).some(team=>areaMatches(team,area.key)));
   const myArea=myAreas[0];

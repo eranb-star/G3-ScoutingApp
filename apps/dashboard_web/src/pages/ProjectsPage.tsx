@@ -1,3 +1,4 @@
+import {useProjectRefresh,notifyProjectChange} from "../lib/projectRefresh";
 import TaskDependencies, {type TaskDependency} from "../components/TaskDependencies";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -34,6 +35,7 @@ export default function ProjectsPage() {
   const [savingTask,setSavingTask]=useState<string|null>(null);
   const [dependencies,setDependencies]=useState<TaskDependency[]>([]);
   const [dependenciesLoaded,setDependenciesLoaded]=useState(false);
+ useProjectRefresh(()=>load());
   async function loadDependencies(){try{const r=await supabase.rpc("task_dependency_context",{p_home:false});setDependenciesLoaded(!r.error);setDependencies(r.error?[]:r.data??[]);}catch{setDependenciesLoaded(false);}}
   const [assistantDraft,setAssistantDraft]=useState(false);
 
@@ -61,26 +63,26 @@ export default function ProjectsPage() {
     event.preventDefault(); if (!profile) return;
     const { error } = await supabase.from("team_projects").insert({ name:name.trim(), subteam, due_at:due||null, status:"planning", owner_id:profile.id, created_by:profile.id });
     setMessage(error?.message ?? pick("Project created.", "הפרויקט נוצר."));
-    if (!error) { setName(""); setDue(""); await load(); }
+    if (!error) { setName(""); setDue(""); await load();notifyProjectChange(); }
   }
   async function createTask(event:FormEvent) {
     event.preventDefault(); if (!profile || !taskProject) return;
     const { error } = await supabase.from("project_tasks").insert({ project_id:taskProject, title:taskTitle.trim(), due_at:taskDue?new Date(`${taskDue}T18:00:00+03:00`).toISOString():null, status:"todo", assignee_id:profile.id, created_by:profile.id });
     setMessage(error?.message ?? pick("Task created.", "המשימה נוצרה."));
-    if (!error) { sessionStorage.removeItem("g3-project-task-draft");setAssistantDraft(false);setTaskProject(null); setTaskTitle(""); setTaskDue(""); await load(); }
+    if (!error) { sessionStorage.removeItem("g3-project-task-draft");setAssistantDraft(false);setTaskProject(null); setTaskTitle(""); setTaskDue(""); await load();notifyProjectChange(); }
   }
-  async function updateProject(project:Project, status:string) { if(project.owner_id!==profile?.id&&!access.can("manage_team_projects",project.subteam)){setMessage(pick("Only the project owner or an authorized team leader can change this status.","רק בעלי הפרויקט או מוביל/ת צוות מורשה יכולים לשנות את הסטטוס."));return;} const {error}=await supabase.from("team_projects").update({status,updated_at:new Date().toISOString()}).eq("id",project.id); setMessage(error?.message??pick("Project updated.","הפרויקט עודכן.")); if(!error)await load(); }
+  async function updateProject(project:Project, status:string) { if(project.owner_id!==profile?.id&&!access.can("manage_team_projects",project.subteam)){setMessage(pick("Only the project owner or an authorized team leader can change this status.","רק בעלי הפרויקט או מוביל/ת צוות מורשה יכולים לשנות את הסטטוס."));return;} const {error}=await supabase.from("team_projects").update({status,updated_at:new Date().toISOString()}).eq("id",project.id).select("id").single(); setMessage(error?.message??pick("Project updated.","הפרויקט עודכן.")); if(!error){await load();notifyProjectChange();} }
   async function updateTask(task:Task, status:string) {
     if(savingTask)return;
     if(!isAdmin&&task.assignee_id!==profile?.id&&task.created_by!==profile?.id){setMessage(pick("Only the assignee, task creator or an administrator can update this task.","רק האחראי/ת, יוצר/ת המשימה או מנהל/ת יכולים לעדכן אותה."));return;}
     setSavingTask(task.id);
     try{const {error}=await supabase.from("project_tasks").update({status,completed_at:status==="done"?new Date().toISOString():null,updated_at:new Date().toISOString()}).eq("id",task.id).select("id").single();if(error)throw error;
-    setTaskDrafts(d=>{const next={...d};delete next[task.id];return next;});setMessage(pick("Task saved.","המשימה נשמרה."));await load();window.dispatchEvent(new Event('g3-actions-changed'));
+    setTaskDrafts(d=>{const next={...d};delete next[task.id];return next;});setMessage(pick("Task saved.","המשימה נשמרה."));await load();notifyProjectChange();
     }catch{setMessage(pick("Task could not be saved. Your selection is kept; try again.","לא ניתן לשמור את המשימה. הבחירה נשמרה בטופס; נסו שוב."));}finally{setSavingTask(null);}
   }
-  async function archiveTask(task:Task) { if(!isAdmin)return; const {error}=await supabase.from("project_tasks").update({archived:true}).eq("id",task.id); setMessage(error?.message??pick("Task archived.","המשימה הועברה לארכיון.")); if(!error)await load(); }
-  async function removeProject(project:Project) { if(!isAdmin||!confirm(pick(`Delete “${project.name}” and its tasks permanently?`,`למחוק לצמיתות את “${project.name}” ואת המשימות שלו?`)))return; const {error}=await supabase.from("team_projects").delete().eq("id",project.id); setMessage(error?.message??pick("Project deleted.","הפרויקט נמחק.")); if(!error)await load(); }
-  async function removeTask(task:Task) { if(!isAdmin||!confirm(pick(`Delete “${task.title}” permanently?`,`למחוק לצמיתות את “${task.title}”?`)))return; const {error}=await supabase.from("project_tasks").delete().eq("id",task.id); setMessage(error?.message??pick("Task deleted.","המשימה נמחקה.")); if(!error)await load(); }
+  async function archiveTask(task:Task) { if(!isAdmin)return; const {error}=await supabase.from("project_tasks").update({archived:true}).eq("id",task.id).select("id").single(); setMessage(error?.message??pick("Task archived.","המשימה הועברה לארכיון.")); if(!error){await load();notifyProjectChange();} }
+  async function removeProject(project:Project) { if(!isAdmin||!confirm(pick(`Delete “${project.name}” and its tasks permanently?`,`למחוק לצמיתות את “${project.name}” ואת המשימות שלו?`)))return; const {error}=await supabase.from("team_projects").delete().eq("id",project.id).select("id").single(); setMessage(error?.message??pick("Project deleted.","הפרויקט נמחק.")); if(!error){await load();notifyProjectChange();} }
+  async function removeTask(task:Task) { if(!isAdmin||!confirm(pick(`Delete “${task.title}” permanently?`,`למחוק לצמיתות את “${task.title}”?`)))return; const {error}=await supabase.from("project_tasks").delete().eq("id",task.id).select("id").single(); setMessage(error?.message??pick("Task deleted.","המשימה נמחקה.")); if(!error){await load();notifyProjectChange();} }
 
   const visible = projects.filter((project) => (archived ? project.status === "archived" : project.status !== "archived") && (!selected || (project.subteam??"").toLowerCase().includes(selected)));
   const selectedProject=params.get("project");
