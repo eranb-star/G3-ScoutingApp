@@ -148,4 +148,38 @@ assert.equal((await rows('update purchase_approval_settings set threshold_hours=
 await db.exec(`reset role;update purchase_approval_settings set threshold_hours=72;update frc_purchase_requests set status='approved' where item_name='Age QA';set role authenticated;set test.uid='${admin}';`);
 assert.equal((await rows('select purchase_approval_aging() as a'))[0].a.requests.length,0);
 await db.exec('reset role');await db.exec(agingMigration);console.log('PASS approval aging: admin only, threshold changes/validation, nonadmin writes denied, approved request clears, rerun');
+const dependencyMigration=fs.readFileSync(new URL('../../../backend/supabase/cross_team_task_dependencies_20260911.sql',import.meta.url),'utf8');
+await db.exec(dependencyMigration);
+const depA='70000000-0000-0000-0000-000000000001',depB='70000000-0000-0000-0000-000000000002',depC='70000000-0000-0000-0000-000000000003';
+await db.exec(`update team_projects set status='active';insert into project_tasks(id,project_id,title,status,assignee_id,created_by,due_at) values
+('${depA}','${event}','Mechanical fabrication','todo','${student}','${admin}',now()+interval '1 day'),
+('${depB}','${event}','CAD approval','todo','${admin}','${admin}',now()-interval '1 day'),
+('${depC}','${event}','Electrical design','todo','${admin}','${admin}',now());set role authenticated;set test.uid='${admin}';
+insert into project_task_dependencies(task_id,prerequisite_id) values('${depA}','${depB}'),('${depB}','${depC}');`);
+await assert.rejects(()=>db.exec(`insert into project_task_dependencies(task_id,prerequisite_id) values('${depC}','${depA}')`));
+await assert.rejects(()=>db.exec(`insert into project_task_dependencies(task_id,prerequisite_id) values('${depA}','${depA}')`));
+await assert.rejects(()=>db.exec(`insert into project_task_dependencies(task_id,prerequisite_id) values('${depA}','${depB}')`));
+let edges=(await rows('select task_dependency_context(false) as e'))[0].e;assert.equal(edges.length,2);assert.equal(edges.find(e=>e.task_id===depA).waiting,true);
+await db.exec(`reset role;update project_tasks set status='done' where id='${depB}';set role authenticated;`);
+edges=(await rows('select task_dependency_context(false) as e'))[0].e;assert.equal(edges.find(e=>e.task_id===depA).waiting,false);
+await db.exec(`reset role;update project_tasks set status='todo' where id='${depB}';set role authenticated;`);
+assert.equal((await rows('select task_dependency_context(true) as e'))[0].e.find(e=>e.task_id===depA).waiting,true);
+await db.exec(`set test.uid='${student}';`);
+edges=(await rows('select task_dependency_context(true) as e'))[0].e;assert.equal(edges.length,1);assert.equal(edges[0].title,null);assert.equal(edges[0].waiting,true);assert.equal(edges[0].href,null);
+await assert.rejects(()=>db.exec(`insert into project_task_dependencies(task_id,prerequisite_id) values('${depA}','${depC}')`));
+assert.equal((await rows(`delete from project_task_dependencies where task_id='${depA}' returning task_id`)).length,0);
+await db.exec(`reset role;update project_tasks set archived=true,status='done' where id='${depB}';set role authenticated;set test.uid='${admin}';`);
+edges=(await rows('select task_dependency_context(false) as e'))[0].e;assert.equal(edges.find(e=>e.task_id===depA).waiting,true);
+await db.exec('reset role');await assert.rejects(()=>db.exec(`delete from project_tasks where id='${depB}'`));
+await db.exec(`set role authenticated;delete from project_task_dependencies where task_id='${depA}';`);assert.equal((await rows(`select id from project_tasks where id='${depB}'`)).length,1);
+await db.exec('reset role');await db.exec(dependencyMigration);
+console.log('PASS task dependencies: multi-edge chain, cycles/self/duplicates rejected, completion/reopen/archive, hidden-source privacy, unauthorized writes, deletion safety, unlink preserves source, rerun');
+await db.exec(`create or replace function has_permission(p text,target_team text) returns boolean language sql stable as $$select auth.uid()='${admin}'::uuid or (auth.uid()='${student}'::uuid and target_team='Mechanical')$$;
+insert into team_projects values('80000000-0000-0000-0000-000000000001','CAD project','CAD','active');
+update project_tasks set project_id='80000000-0000-0000-0000-000000000001',assignee_id='${student}' where id='${depC}';set role authenticated;set test.uid='${student}';
+insert into project_task_dependencies(task_id,prerequisite_id) values('${depA}','${depC}');`);
+assert.equal((await rows('select task_dependency_context(false) as e'))[0].e.find(e=>e.task_id===depA).subteam,'CAD');
+assert.equal((await rows(`delete from project_task_dependencies where task_id='${depA}' returning task_id`)).length,1);
+await assert.rejects(()=>db.exec(`insert into project_task_dependencies(task_id,prerequisite_id) values('${depC}','${depA}')`));
+await db.exec('reset role');console.log('PASS cross-team link uses downstream assignment scope, without granting control over CAD tasks');
 await db.close();console.log('PASS readiness SQL: old event edit/link/reschedule/audience/cancel, opt-in/threshold/lifecycle/audit/idempotency, ownership and source RLS, safe purchase counts');
