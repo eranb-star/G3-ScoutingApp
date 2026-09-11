@@ -2,6 +2,16 @@
 
 Last updated: 2026-09-10 (Asia/Jerusalem)
 
+## Latest checkpoint — September 11: combined operations batch IMPLEMENTED
+
+This checkpoint supersedes all earlier pending-step instructions. Owner authorized maintenance readiness, event-specific robot checks and inventory planning together, plus the Home task-button correction. All are now locally implemented. Do not ask again whether to proceed with these phases. Keep preview only until owner accepts; ONE final APK after promotion, no intermediate Android copy/version bump. Two Android .idea modifications are preserved and excluded.
+
+NEXT OWNER ACTION: run ONLY `backend/supabase/operations_readiness_batch_20260911.sql` in Supabase SQL Editor. After SQL success, commit/push the combined product files (exclude both .idea files), then review the new Vercel preview. See `docs/OPERATIONS_BATCH_20260911.md` for exact controls and focused acceptance steps. No previous SQL needs repeating. No paid Firebase service, cron or push notification was enabled. Live records were not changed in this implementation turn.
+
+Implemented: editable per-component service owner/interval/first due date, atomic serviced-event record and baseline update, shared Home/maintenance due calculation; event-linked required existing test plans with tester/deadline, source RLS and assigned-tester/scoped-manager enforcement, latest event-specific result, retest after plan changes, upcoming-30-day Home summary; optional inventory replenishment target, aggregate pending/approved/ordered quantities, suggested reviewed purchase draft; Home task navigation and reminder controls separated with source-only completion unchanged.
+
+Validation: TypeScript/Vite passed; operations date/quantity rules and expanded PGlite SQL passed, including RLS denial, event privacy, unrelated-pass exclusion, latest fail, changed-plan retest, service status preservation, aggregate quantities and migration rerun. Real-component fixture checked event form desktop/Hebrew mobile, mobile service settings and inventory draft quantity 7 with no overflow. Fixture blocks writes; live SQL/preview validation remains owner work. Build has existing large-chunk advisory. Preserve all existing source permission policies.
+
 ## Current work — 2026-09-10 Home competition readiness
 
 Latest requested correction: project task completion belongs only in Projects, not Home/Work reminder controls. HomeActionInbox now replaces Complete with Open task for project_tasks, labels snooze Remind tomorrow and explains source-only status; handler also refuses completed state for project_tasks. Existing overdue tasks keep source-only resolution. Shared visibility and Updates now retain active project tasks previously marked completed in reminder state; treated as already read in Updates, preserving unread counts. Actual completed source tasks remain excluded by existing cancelled-action RLS/queries. Other responsibility types unchanged. TypeScript and focused visibility tests passed. Pending SIX files: this handoff, HomeActionInbox.tsx, responsibilityVisibility.ts, ProductivityHomePage.tsx, UpdatesPage.tsx, test-readiness-priorities.mjs. No SQL. Message `Keep project task completion in Projects only`. Exclude .idea; still preview only, no production/APK.

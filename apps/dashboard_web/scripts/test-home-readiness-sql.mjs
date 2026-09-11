@@ -182,4 +182,49 @@ assert.equal((await rows('select task_dependency_context(false) as e'))[0].e.fin
 assert.equal((await rows(`delete from project_task_dependencies where task_id='${depA}' returning task_id`)).length,1);
 await assert.rejects(()=>db.exec(`insert into project_task_dependencies(task_id,prerequisite_id) values('${depC}','${depA}')`));
 await db.exec('reset role');console.log('PASS cross-team link uses downstream assignment scope, without granting control over CAD tasks');
+
+// Operations batch: use source tables with RLS; replay the production migration.
+await db.exec(`reset role;
+alter table frc_purchase_requests add column quantity numeric default 2;
+create table robot_components(id uuid primary key,status text,last_serviced_at timestamptz,updated_at timestamptz,service_interval_days integer);
+create table robot_component_events(id uuid primary key default gen_random_uuid(),component_id uuid references robot_components,event_type text,notes text,robot_location text,performed_by uuid,performed_at timestamptz default now());
+create table robot_test_plans(id uuid primary key,title text,subsystem text,active boolean default true,procedure text,success_criteria text,safety_notes text);
+create table robot_test_runs(id uuid primary key default gen_random_uuid(),plan_id uuid references robot_test_plans,result text,performed_by uuid,performed_at timestamptz default now());
+alter table robot_components enable row level security;create policy components_read on robot_components for select to authenticated using(true);create policy components_write on robot_components for update to authenticated using(auth.uid()='${admin}');
+alter table robot_test_plans enable row level security;create policy plans_read on robot_test_plans for select to authenticated using(true);
+alter table robot_test_runs enable row level security;create policy runs_read on robot_test_runs for select to authenticated using(true);create policy runs_add on robot_test_runs for insert to authenticated with check(true);
+grant select,update on robot_components to authenticated;grant select,insert on robot_component_events,robot_test_runs to authenticated;grant select on robot_test_plans to authenticated;
+insert into robot_components(id,status,service_interval_days)values('${issue}','spare',30);
+insert into robot_test_plans(id,title,subsystem,active) values('${issue}','Intake acceptance','mechanical',true);
+update team_calendar_events set cancelled=false,target_type='all',starts_at=now()+interval '10 days',ends_at=now()+interval '11 days',competition_event_id=null where id='${calendar}';
+set test.uid='${admin}';`);
+const operationsMigration=fs.readFileSync(new URL('../../../backend/supabase/operations_readiness_batch_20260911.sql',import.meta.url),'utf8');
+await db.exec(operationsMigration);
+await db.exec(`set role authenticated;select record_component_service('${issue}','QA service','bench');`);
+assert.equal((await rows('select status from robot_components'))[0].status,'spare');
+assert.equal((await rows('select * from robot_component_events')).length,1);
+await db.exec(`set test.uid='${student}';`);await assert.rejects(()=>db.exec(`select record_component_service('${issue}','denied','bench')`));
+assert.equal((await rows('select * from robot_component_events')).length,1);
+await db.exec(`set test.uid='${admin}';insert into event_robot_requirements(calendar_event_id,plan_id,owner_id,due_at)values('${calendar}','${issue}','${student}',now()+interval '5 days');`);
+const requirement=(await rows('select id from event_robot_requirements'))[0].id;
+await db.exec(`insert into robot_test_runs(plan_id,result,performed_by)values('${issue}','pass','${admin}');`);
+assert.equal((await rows(`select event_robot_check_context('${calendar}') as data`))[0].data[0].result,null);
+await db.exec(`set test.uid='${other}';`);await assert.rejects(()=>db.exec(`insert into robot_test_runs(plan_id,event_requirement_id,result)values('${issue}','${requirement}','pass')`));
+await assert.rejects(()=>db.exec(`insert into event_robot_requirements(calendar_event_id,plan_id,owner_id,due_at)values('${calendar}','${issue}','${other}',now())`));
+await db.exec(`set test.uid='${student}';insert into robot_test_runs(plan_id,event_requirement_id,result)values('${issue}','${requirement}','pass');`);
+assert.equal((await rows(`select event_robot_check_context('${calendar}') as data`))[0].data[0].result,'pass');
+await db.exec(`insert into robot_test_runs(plan_id,event_requirement_id,result)values('${issue}','${requirement}','fail');`);
+assert.equal((await rows(`select event_robot_check_context('${calendar}') as data`))[0].data[0].result,'fail');
+await db.exec(`reset role;update robot_test_plans set procedure='Revised procedure' where id='${issue}';set role authenticated;`);
+assert.equal((await rows(`select event_robot_check_context('${calendar}') as data`))[0].data[0].result,'stale');
+await db.exec(`reset role;update team_calendar_events set target_type='member',target_value='${admin}' where id='${calendar}';set role authenticated;set test.uid='${student}';`);
+assert.deepEqual((await rows(`select event_robot_check_context('${calendar}') as data`))[0].data,[]);
+await db.exec(`reset role;update frc_purchase_requests set quantity=7 where part_id='${part}';`);
+const sums=await rows(`select status,quantity from readiness_purchase_counts where part_id='${part}'`);
+for(const row of sums){const actual=(await rows(`select sum(quantity) as n from frc_purchase_requests where part_id='${part}' and status='${row.status}'`))[0].n;assert.equal(Number(row.quantity),Number(actual));}
+await assert.rejects(()=>db.exec(`update frc_parts_inventory set target_quantity=-1 where id='${part}'`));
+await db.exec(operationsMigration);
+assert.equal((await rows('select count(*)::int as n from event_robot_requirements'))[0].n,1);
+console.log('PASS operations: service authorization and status preservation, event-specific latest results, assigned tester, hidden-event privacy, aggregate quantities, target validation, migration rerun');
+
 await db.close();console.log('PASS readiness SQL: old event edit/link/reschedule/audience/cancel, opt-in/threshold/lifecycle/audit/idempotency, ownership and source RLS, safe purchase counts');
