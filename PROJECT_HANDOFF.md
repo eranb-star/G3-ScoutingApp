@@ -1,3 +1,9 @@
+## Latest APK — signed 2.1.7 complete (2026-09-12)
+
+Owner confirmed web production deployment. Built from commit 72e849a plus Android version bump to 2.1.7 / versionCode 21 using existing G3 release signing configuration. Artifact: apps/dashboard_web/android/app/build/outputs/apk/release/app-release.apk (4,683,596 bytes). SHA256: b15d2055f61ffb21b9fe45f812c8c6980a89177b0fff409762af20cf91736ebd. TypeScript/Vite, Capacitor copy, signed release build, apksigner and all 19 actual APK web-file comparisons passed. QA switching, mentor review and quantity approval UI present; no remote preview URL; normal release crash-test button disabled. Final assembleRelease included successful Crashlytics mapping upload in the SAME invocation, so package and uploaded mapping match. Earlier offline/skipped-mapping attempts are superseded by this final successful build. Phone installation and live QA switching/review acceptance remain pending. No additional SQL or Edge Function deployment needed.
+
+Commit only PROJECT_HANDOFF.md and apps/dashboard_web/android/app/build.gradle as Prepare Android 2.1.7 release. Preserve/exclude the two existing Android .idea modifications. No commit or push performed by agent.
+
 ## Deployment update — QA Edge Function (2026-09-12)
 
 Owner confirmed qa_test_sessions_20260912.sql succeeded. Agent deployed qa-test-session through the signed-in Supabase dashboard to project hnqwhuuxlqfyawqymaaz (verified against VITE_SUPABASE_URL). Dashboard displayed Successfully deployed edge function and the matching endpoint. Legacy JWT verification remains ON. No commit/push or web production promotion performed. NEXT: owner commits/pushes pending feature files excluding the two Android .idea files, opens the new preview, then live QA switch/return acceptance. Do not ask owner to redeploy the function or rerun SQL.
