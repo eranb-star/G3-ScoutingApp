@@ -1,0 +1,202 @@
+[
+  {
+    "script": "test-active-event.mjs",
+    "classification": "LOCAL_PGLITE_OR_PURE_TEST",
+    "run_in_local_batch": true,
+    "exit_code": 0,
+    "seconds": 0.92,
+    "output": "PASS same-page selection, cross-tab selection, unrelated storage filtering, focus refresh and cleanup\n"
+  },
+  {
+    "script": "test-feedback-purchase-sql.mjs",
+    "classification": "LOCAL_PGLITE_OR_PURE_TEST",
+    "run_in_local_batch": true,
+    "exit_code": 0,
+    "seconds": 3.33,
+    "output": "PASS PostgreSQL migrations: creation, targeting, scoped delivery IDs, status lifecycle, reopen, role changes, rerun, deletion and private purchase history\n"
+  },
+  {
+    "script": "test-home-readiness-sql.mjs",
+    "classification": "LOCAL_PGLITE_OR_PURE_TEST",
+    "run_in_local_batch": true,
+    "exit_code": 0,
+    "seconds": 3.51,
+    "output": "PASS multiple countdowns: all eligible, current competition first, legacy compatibility, audience filtering, rerun\nPASS checklists: source completion, overdue, Home summary, source visibility, unauthorized writes, duplicate prevention, rollback, unlink preserves task, rerun\nPASS all seven event types: create/read, source visibility, rejected unauthorized/cancelled writes, rerun\nPASS overdue tasks: source state, due date, ownership/RLS, archive, Home response, rerun\nPASS approval aging: admin only, threshold changes/validation, nonadmin writes denied, approved request clears, rerun\nPASS task dependencies: multi-edge chain, cycles/self/duplicates rejected, completion/reopen/archive, hidden-source privacy, unauthorized writes, deletion safety, unlink preserves source, rerun\nPASS cross-team link uses downstream assignment scope, without granting control over CAD tasks\nPASS operations: service authorization and status preservation, event-specific latest results, assigned tester, hidden-event privacy, aggregate quantities, target validation, migration rerun\nPASS readiness SQL: old event edit/link/reschedule/audience/cancel, opt-in/threshold/lifecycle/audit/idempotency, ownership and source RLS, safe purchase counts\n"
+  },
+  {
+    "script": "test-inventory-categories.mjs",
+    "classification": "LOCAL_PGLITE_OR_PURE_TEST",
+    "run_in_local_batch": true,
+    "exit_code": 0,
+    "seconds": 2.62,
+    "output": "PASS categories: admin-only writes, case-insensitive duplicates, legacy values, atomic rename, scope separation, disable preserves records, rerun\n"
+  },
+  {
+    "script": "test-operations-planning.mjs",
+    "classification": "LOCAL_PGLITE_OR_PURE_TEST",
+    "run_in_local_batch": true,
+    "exit_code": 0,
+    "seconds": 0.2,
+    "output": "PASS service baseline, repeat interval, winter timezone boundary, spare exclusion and replenishment quantities\n"
+  },
+  {
+    "script": "test-project-action-consistency.mjs",
+    "classification": "LOCAL_PGLITE_OR_PURE_TEST",
+    "run_in_local_batch": true,
+    "exit_code": 0,
+    "seconds": 2.61,
+    "output": "PASS project actions: edit/due/priority, parent rename, completion/reopen, archive/restore, reassignment/unassignment, task delete, parent cascade delete, orphan repair, stable identity, internal function access\n"
+  },
+  {
+    "script": "test-project-review-gates.mjs",
+    "classification": "LOCAL_PGLITE_OR_PURE_TEST",
+    "run_in_local_batch": true,
+    "exit_code": 0,
+    "seconds": 3.03,
+    "output": "PASS owner assignment permissions, planned versus submitted mentor queues\nPASS review gates: opt-in, permissions, no self-approval, direct status enforcement, revisions, changes/retest, stale decisions, reviewer reassignment, admin override, source completion, dependency state, audit retention, source privacy and rerun\n"
+  },
+  {
+    "script": "test-purchase-quantity.mjs",
+    "classification": "LOCAL_PGLITE_OR_PURE_TEST",
+    "run_in_local_batch": true,
+    "exit_code": 0,
+    "seconds": 2.56,
+    "output": "PASS partial approval, pending counts, permissions, receiving cap, remainder idempotency, declined remainder, migration rerun\n"
+  },
+  {
+    "script": "test-purchase-reuse.mjs",
+    "classification": "LOCAL_PGLITE_OR_PURE_TEST",
+    "run_in_local_batch": true,
+    "exit_code": 0,
+    "seconds": 0.14,
+    "output": "PASS purchase reuse: clean draft, historical records preserved, received-only selection, search/category and unavailable inventory\n"
+  },
+  {
+    "script": "test-qa-test-sessions.mjs",
+    "classification": "LOCAL_PGLITE_OR_PURE_TEST",
+    "run_in_local_batch": true,
+    "exit_code": 0,
+    "seconds": 2.83,
+    "output": "QA allowlist, RLS, attribution, identity checks and fail-closed session issuance passed.\n"
+  },
+  {
+    "script": "test-readiness-priorities.mjs",
+    "classification": "LOCAL_PGLITE_OR_PURE_TEST",
+    "run_in_local_batch": true,
+    "exit_code": 0,
+    "seconds": 0.14,
+    "output": "PASS context wording and priorities: single source item, critical first, hidden-action restoration, ownership and nonmutation\nPASS overdue priority deduplication, hidden responsibility restoration, ownership, today wording\nPASS project task visibility ignores old dismissal, preserves snooze and other responsibility behavior\n"
+  },
+  {
+    "script": "verify-absence-attendance.mjs",
+    "classification": "STATIC_SOURCE_ASSERTIONS",
+    "run_in_local_batch": true,
+    "exit_code": 0,
+    "seconds": 0.09,
+    "output": "PASS home and work share responsibility visibility\nPASS absence requests require calendar event and reason\nPASS absence review requires written response\nPASS admins and mentors receive review actions\nPASS member receives decision action\nPASS manual roster is permission checked and audited\nPASS attendance center separates overview absences and roster\nPASS phone roster uses one readable column\nPASS 8 absence + attendance checks\n"
+  },
+  {
+    "script": "verify-attendance-engineering.mjs",
+    "classification": "STATIC_SOURCE_ASSERTIONS",
+    "run_in_local_batch": true,
+    "exit_code": 0,
+    "seconds": 0.08,
+    "output": "PASS active check-out survives expired meeting\nPASS expired open meetings close automatically\nPASS GPS and school Wi-Fi are explicit\nPASS rejected GPS falls back to trusted Wi-Fi\nPASS Android requests Wi-Fi runtime permissions\nPASS engineering hub combines both G3 sources\nPASS engineering catalog is authenticated and read-only\nPASS engineering hub caches last successful catalog\nPASS engineering hub organizes repositories by purpose\nPASS legacy seasons classify as archive before software\nPASS engineering route is lazy and work-linked\nPASS purchase reliability correction remains included\nPASS 12 attendance + engineering checks\n"
+  },
+  {
+    "script": "verify-finance-receiving.mjs",
+    "classification": "STATIC_SOURCE_ASSERTIONS",
+    "run_in_local_batch": true,
+    "exit_code": 0,
+    "seconds": 0.08,
+    "output": "PASS attendance is first-class web navigation\nPASS calendar opens event-scoped absence request\nPASS dialog primary button contrast is explicit\nPASS receiving uses atomic governed RPC\nPASS receiving supports existing new and expense-only\nPASS actual quantity and cost are required\nPASS finance route uses AdminGate\nPASS finance tables enforce RLS\nPASS purchase costs are requester/admin scoped\nPASS stock and expense are recorded in one receive transaction\nPASS double receiving is rejected\nPASS reimbursements cannot exceed the balance\nPASS finance dashboard tracks personal debt\nPASS finance dashboard includes approved ordered and legacy purchases\nPASS ordered purchases expose explicit payment capture\nPASS personal payment requires a named payer\nPASS payment creates or updates the linked expense\nPASS receiving reuses an existing payment expense\nPASS budgets funds and expenses are manageable\nPASS mobile finance and dialogs collapse safely\nPASS 20 finance + receiving checks\n"
+  },
+  {
+    "script": "verify-firebase-spark.mjs",
+    "classification": "LOCAL_GENERATED_ANDROID_ARTIFACT_CHECK",
+    "run_in_local_batch": true,
+    "exit_code": 0,
+    "seconds": 0.7,
+    "output": "PASS debug merged manifest: telemetry false, FCM preserved\nPASS release merged manifest: telemetry true, FCM preserved\nPASS all 19 web build files match Android assets\nLocal artifact checks only: Spark billing and live event delivery require Firebase console evidence.\n"
+  },
+  {
+    "script": "verify-learning-automation.mjs",
+    "classification": "STATIC_SOURCE_ASSERTIONS",
+    "run_in_local_batch": true,
+    "exit_code": 0,
+    "seconds": 0.08,
+    "output": "PASS immutable progression history\nPASS duplicate-safe history\nPASS due-soon and overdue refresh\nPASS changes-requested action\nPASS student-owned reminder refresh\nPASS history RLS\nPASS client refreshes reminders\nPASS support queue\nPASS progress timeline\nPASS heavy routes are lazy\n"
+  },
+  {
+    "script": "verify-media-feedback.mjs",
+    "classification": "STATIC_SOURCE_ASSERTIONS",
+    "run_in_local_batch": true,
+    "exit_code": 0,
+    "seconds": 0.09,
+    "output": "PASS media and feedback routes are member-gated\nPASS team media has five purposeful collections\nPASS images are compressed before upload\nPASS media storage is private and size-limited\nPASS media deletion is owner or leadership scoped\nPASS feedback supports ideas, bugs and screenshots\nPASS students only see their own feedback while leaders triage\nPASS feedback status returns through team responsibilities\nPASS feedback comments share the report privacy boundary\nPASS phone layouts collapse without narrow columns\nPASS native calendar input is used for media dates\nPASS Hebrew labels are included in both modules\nPASS 12 Team Media + Feedback checks\n"
+  },
+  {
+    "script": "verify-mobile-notification-stability.mjs",
+    "classification": "STATIC_SOURCE_ASSERTIONS",
+    "run_in_local_batch": true,
+    "exit_code": 1,
+    "seconds": 0.09,
+    "output": "PASS administration center exposes finance and governance\nPASS phone More does not duplicate administration\nPASS absence submission invokes responsibility push\nPASS absence decision invokes member push\nPASS viewed responsibilities remain visible in inbox\nPASS token refresh retains the validated profile\nPASS stale profile requests cannot overwrite current account\nFAIL initial session races cannot reveal Account unavailable\nPASS GitHub token remains server-side\nPASS authenticated GitHub user endpoint can return private repositories\nPASS corrected Android package has a distinct release identity\n"
+  },
+  {
+    "script": "verify-operational-ux.mjs",
+    "classification": "STATIC_SOURCE_ASSERTIONS",
+    "run_in_local_batch": true,
+    "exit_code": 0,
+    "seconds": 0.09,
+    "output": "PASS inventory stores model and amount\nPASS purchase quantities accept whole and decimal values\nPASS purchase submission exposes progress and disables duplicate saves\nPASS purchase confirmation appears before push delivery completes\nPASS purchase dashboard exposes clear status filters\nPASS purchase rejection requires an audited reason\nPASS purchase state changes use the secured transition RPC\nPASS purchase status changes create persistent requester updates\nPASS equipment return uses a calendar picker\nPASS calendar renders overlapping multi-day events\nPASS calendar rejects reversed ranges\nPASS calendar events open complete details\nPASS calendar managers can edit and logically delete\nPASS member edits provide explicit save confirmation\nPASS work navigation separates shared engineering and removes duplicate utilities\nPASS web menu avoids duplicate assistant navigation and ends with feedback\nPASS assessment UI supports all, teams and people\nPASS assessment scope is stored in the payload\nPASS assessment responsibilities open the requested Academy view\nPASS database filters assessment recipients\nPASS database creates recipient responsibilities\nPASS route loading has retry and failure recovery\nPASS service worker refreshes deployed assets\nPASS 23 operational UX checks\n"
+  },
+  {
+    "script": "verify-phase-1-2.mjs",
+    "classification": "STATIC_SOURCE_ASSERTIONS",
+    "run_in_local_batch": true,
+    "exit_code": 0,
+    "seconds": 0.11,
+    "output": "PASS Work treats qualified training as complete\nPASS Home has a single responsibility list\nPASS Work uses the shared responsibility list\nPASS Responsibilities deep-link to source records\nPASS Archived project tasks cancel responsibilities\nPASS Qualified training cancels responsibilities\nPASS Competition assignments synchronize\nPASS Mandatory calendar events synchronize\nPASS Robot issues synchronize\nPASS Announcements archive cleanly\nPASS Only administrators manage inventory by default\nPASS Team leaders submit purchase requests without inventory control\nPASS Inventory boundary is enforced for every role\nPASS Skills Academy edits are scoped to the selected course\nPASS Team leaders default new courses to a led department\nPASS Unauthorized course targets are rejected before submission\nPASS Project status updates verify ownership or team authority\nPASS Task status updates verify assignee or creator\nPASS Only administrators create competition assignments\nPASS Members cannot reassign their competition station\nPASS Only administrators publish competition briefings\nPASS Pit updates are limited to responsible members\nPASS Students cannot self-grade assessment submissions\nPASS Assessment enrollment must match its course\nPASS Students cannot award their own qualification\nPASS Announcement visibility follows the selected audience\nPASS Unread announcement counts respect audience boundaries\nPASS Push delivery filters members by announcement audience\nPASS Announcement access is protected in the database\nPASS Competition command pack caches all critical event data\nPASS Offline match control is limited to authorized pit operators\nPASS Offline competition changes synchronize on reconnect\nPASS Web application shell is available offline\nPASS Pit display uses the prepared competition cache\nPASS Pit display follows the manual active match\nPASS Pit display clearly identifies cached data\nPASS Only one competition controller can hold a live lease\nPASS Active match changes are validated against the event\nPASS Competition command state is distributed through Realtime\nPASS Prepared competition devices publish readiness\nPASS TBA synchronization records schedule freshness\nPASS Pit display follows shared online command state\n"
+  },
+  {
+    "script": "verify-phase-4-5.mjs",
+    "classification": "STATIC_SOURCE_ASSERTIONS",
+    "run_in_local_batch": true,
+    "exit_code": 0,
+    "seconds": 0.08,
+    "output": "PASS Pit teams are event-scoped\nPASS Assigned pits are prioritized\nPASS Pit intake uses guided steps\nPASS Pit reports remain offline-safe\nPASS Pit assignment uniqueness is enforced\nPASS Assigned teams require explicit removal before reassignment\nPASS Leadership controller access is explicit\nPASS Controller state follows realtime\nPASS TBA library supports season and team\nPASS Synchronized matches link to TBA\n"
+  },
+  {
+    "script": "verify-phase-6.mjs",
+    "classification": "STATIC_SOURCE_ASSERTIONS",
+    "run_in_local_batch": true,
+    "exit_code": 0,
+    "seconds": 0.09,
+    "output": "PASS Quality uses responsive report cards\nPASS Quality resolves an active event before reporting evidence status\nPASS Structured pit evidence is formatted for people\nPASS Conflicts retain a required reason\nPASS Pit evidence has leadership review\nPASS Pit verification preserves audit details\nPASS Analysis separates pit from match evidence\nPASS Analysis excludes duplicate match reports\nPASS Picklist exposes verified pit coverage\nPASS Mobile quality avoids compressed table columns\n"
+  },
+  {
+    "script": "verify-skills-assessment-engine.mjs",
+    "classification": "STATIC_SOURCE_ASSERTIONS",
+    "run_in_local_batch": true,
+    "exit_code": 0,
+    "seconds": 0.09,
+    "output": "\u2713 single-answer quiz authoring\n\u2713 multi-answer quiz authoring\n\u2713 correct-answer control semantics\n\u2713 student multi-select rendering\n\u2713 answer keys removed from public question JSON\n\u2713 server-side quiz submission\n\u2713 private answer-key table\n\u2713 server-side grading function\n\u2713 single-answer grading semantics\n\u2713 multi-answer exact-match grading\n\u2713 multiple-attempt integrity\n\u2713 assignment/action publication\n\u2713 selected-answer visual state\n\u2713 mobile assessment layout\nSkills Academy assessment engine verification passed.\n"
+  },
+  {
+    "script": "verify-skills-gradebook.mjs",
+    "classification": "STATIC_SOURCE_ASSERTIONS",
+    "run_in_local_batch": true,
+    "exit_code": 0,
+    "seconds": 0.11,
+    "output": "\u2713 gradebook navigation\n\u2713 complete progress states\n\u2713 attempt answer drill-down\n\u2713 authorized gradebook export\n\u2713 student-facing record filter\n\u2713 learner-record privacy policies\n\u2713 outcome-based qualification\n\u2713 assessment pass rule\n\u2713 legacy qualification regression removed\n\u2713 responsive gradebook layout\nSkills Academy gradebook verification passed.\n"
+  },
+  {
+    "script": "verify-skills-resource-catalog.mjs",
+    "classification": "STATIC_SOURCE_ASSERTIONS",
+    "run_in_local_batch": true,
+    "exit_code": 0,
+    "seconds": 0.09,
+    "output": "PASS catalog navigation\nPASS course resource shelf\nPASS search and filters\nPASS admin governance\nPASS course attachment workflow\nPASS student-safe resource policy\nPASS admin-only catalog mutation\nPASS team-scoped attachments\nPASS reviewed seed catalog\nPASS responsive catalog\nSkills Academy resource catalog verification passed.\n"
+  }
+]

@@ -32,3 +32,6 @@
 analytics.settings
 **/build/
 **/app/release/
+
+# Local staging schema exports
+docs/staging/*.local.*

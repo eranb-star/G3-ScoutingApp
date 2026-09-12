@@ -1,0 +1,11 @@
+import {useEffect,useState} from 'react';
+import {supabase} from '../supabase';
+import {useLocalization} from '../lib/localization';
+export default function StageReviewers({taskId,primary,initial,onSaved}:{taskId:string;primary:string;initial?:string[];onSaved:()=>Promise<void>}){
+ const{pick}=useLocalization();const[people,setPeople]=useState<{id:string;display_name:string}[]>([]),[ids,setIds]=useState(initial?.length?initial:[primary]),[note,setNote]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState('');
+ useEffect(()=>{void supabase.from('team_members').select('id,display_name').eq('active',true).in('role',['mentor','admin']).then(r=>{if(!r.error)setPeople(r.data??[]);});},[]);
+ return <details className="review-evidence-editor"><summary>{pick('Required stage reviewers','בודקים נדרשים לשלב')}</summary><p>{pick('Every listed reviewer must approve. The first reviewer records requirement findings. Saving a changed reviewer list requires a fresh submission.','כל הבודקים ברשימה חייבים לאשר. הבודק הראשון רושם ממצאים לדרישות. שינוי רשימת הבודקים דורש הגשה חדשה.')}</p><form className="review-evidence-item" onSubmit={async e=>{e.preventDefault();setBusy(true);const r=await supabase.rpc('configure_project_reviewers',{p_task:taskId,p_reviewers:ids,p_reason:note});setBusy(false);setError(r.error?.message??pick('Reviewers saved. Submit the work again.','הבודקים נשמרו. יש להגיש את העבודה שוב.'));if(!r.error)await onSaved();}}>
+ {ids.map((id,i)=><label key={i}>{pick('Reviewer','בודק')} {i+1}<select required value={id} onChange={e=>setIds(ids.map((x,j)=>i===j?e.target.value:x))}><option value="">{pick('Choose reviewer','בחירת בודק')}</option>{people.map(p=><option value={p.id} key={p.id}>{p.display_name}</option>)}</select>{i>0?<button type="button" onClick={()=>setIds(ids.filter((_,j)=>j!==i))}>{pick('Remove','הסרה')}</button>:null}</label>)}
+ {ids.length<5?<button type="button" className="hub-button secondary" onClick={()=>setIds([...ids,''])}>{pick('Add reviewer','הוספת בודק')}</button>:null}
+ <label>{pick('Reason for reviewer configuration','סיבה להגדרת הבודקים')}<textarea required minLength={3} value={note} onChange={e=>setNote(e.target.value)}/></label><button className="hub-button" disabled={busy}>{pick('Save required reviewers','שמירת בודקים נדרשים')}</button><p role="status">{error}</p></form></details>;
+}
