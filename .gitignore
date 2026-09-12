@@ -35,3 +35,5 @@ analytics.settings
 
 # Local staging schema exports
 docs/staging/*.local.*
+
+/releases/*.apk

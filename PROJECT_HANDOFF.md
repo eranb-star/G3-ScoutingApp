@@ -593,3 +593,7 @@ Catalog enrichment remains normal content operations, not a missing implementati
 ## Hosted Release 1 QA — 2026-09-13
 Created no-cost isolated QA Supabase cyooubycafubbnkjcqlw under G3 Isolated QA. Schema-only plus synthetic data; production untouched. Pushed codex/release-1-qa. Tested release 1ee69ae at https://g3-scouting-app-5qpe-lhugwqwwg-eranbos-projects.vercel.app. Real student -> two mentors -> source done -> dependent in_progress -> Home synchronized passed. Fixed additional mentor missing in Home queue. See docs/staging/README.md and docs/RELEASE_1_CHECKPOINT.md. Do not directly promote QA-configured deployment; after acceptance use production migrations and production-configured build. No new APK. User's Android IDE modifications remain uncommitted.
 
+
+## Production Release 1 — 2026-09-13
+User authorized end-to-end rollout. Six migrations committed atomically to production; release 321ccc4 rebuilt with production environment and deployed as C6wLiAH8eTjyuji3rt9UEyknn4HU on g3-6740.com. Signed APK 2.1.8/code22 built and verified at releases/G3-Team-Hub-2.1.8.apk. See docs/RELEASE_1_PRODUCTION_20260913.md for evidence and pending authenticated/phone checks. Preserve Android IDE user edits. No new SQL action required from user.
+
