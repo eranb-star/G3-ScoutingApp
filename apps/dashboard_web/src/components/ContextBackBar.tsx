@@ -20,7 +20,7 @@ export default function ContextBackBar({fallbackTo,label}:{fallbackTo?:string;la
     "/schedule":{path:"/home",en:"Home",he:"בית"},
     "/attendance":{path:"/more",en:"More",he:"עוד"},
     "/profile":{path:"/more",en:"More",he:"עוד"},
-    "/settings":{path:"/more",en:"More",he:"עוד"},
+    "/settings":{path:"/home",en:"Home",he:"בית"},
     "/admin/members":{path:"/admin",en:"Administration",he:"ניהול"},
     "/admin/reports":{path:"/admin",en:"Administration",he:"ניהול"},
     "/admin/contributions":{path:"/admin",en:"Administration",he:"ניהול"},
