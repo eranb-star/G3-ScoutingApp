@@ -12,7 +12,7 @@ User authorized the complete production rollout and one APK after Student and Me
 - Vercel created a **fresh production-environment build**, not a direct alias of the QA bundle: `C6wLiAH8eTjyuji3rt9UEyknn4HU`, Ready, assigned to `g3-6740.com`.
 - Immutable deployment: https://g3-scouting-app-5qpe-j57a3baqh-eranbos-projects.vercel.app
 - Live HTTP check: 200; served bundle contains production Supabase reference and no isolated QA reference. Production login screen loaded normally.
-- Authenticated production Home/Projects check pending user sign-in at time of writing.
+- Authenticated production smoke check passed on the production deployment: Home loaded for Eran and showed 4 pending / 0 overdue purchasing approvals; Home task link opened the correct Projects task; review details loaded the assigned reviewer, acceptance criteria and stage-reviewer controls. No task data changed. This is a read-only smoke check, not a repeat of the synthetic submission/approval test.
 
 ## Android
 
