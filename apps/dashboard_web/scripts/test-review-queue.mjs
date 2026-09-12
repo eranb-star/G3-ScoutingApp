@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {needsReview} from '../src/lib/reviewQueue.ts';
+const gate={reviewer_id:'mentor1',reviewer_ids:['mentor1','mentor2'],submission:{status:'pending',submitted_by:'student',required_reviewers:['mentor1','mentor2'],reviewer_decisions:{mentor1:{decision:'approved'}}}};
+assert.equal(needsReview(gate,'mentor2'),true);
+assert.equal(needsReview(gate,'mentor1'),false);
+assert.equal(needsReview(gate,'other'),false);
+assert.equal(needsReview({...gate,submission:null},'mentor2'),false);
+assert.equal(needsReview({...gate,submission:null},'mentor2',true),true);
+assert.equal(needsReview({...gate,submission:{...gate.submission,status:'approved'}},'mentor2'),false);
+assert.equal(needsReview({...gate,submission:{...gate.submission,reviewer_decisions:{}}},'mentor1'),true);
+assert.equal(needsReview({...gate,submission:{...gate.submission,required_reviewers:['mentor1']}},'mentor2'),false);
+console.log('PASS secondary reviewer queue, recorded votes, planned work and revision snapshots');
