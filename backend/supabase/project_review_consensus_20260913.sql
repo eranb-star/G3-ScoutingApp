@@ -97,7 +97,7 @@ begin
  update public.project_review_gates set reviewer_id=p_reviewer,criteria=trim(p_criteria),
  current_submission=case when criteria is distinct from trim(p_criteria) then null else current_submission end where task_id=p_task;
  if g.criteria is distinct from trim(p_criteria) or g.reviewer_id is distinct from p_reviewer then update public.project_tasks set status='in_progress',completed_at=null,updated_at=now() where id=p_task;
-  insert into public.project_review_audit(task_id,action,actor_id,note)values(p_task,'required_reviewers_changed',auth.uid(),p_reason||' | '||to_jsonb(p_reviewers)::text);end if;
+  insert into public.project_review_audit(task_id,action,actor_id,note)values(p_task,'required_reviewers_changed',auth.uid(),p_reason||' | '||p_reviewer::text);end if;
  end if;
  insert into public.project_review_audit(task_id,action,actor_id,note)values(p_task,'configured',auth.uid(),coalesce(nullif(trim(p_reason),''),'Review checkpoint enabled')||' | reviewer='||(select display_name from public.team_members where id=p_reviewer)||' | criteria='||trim(p_criteria));
 end$$;

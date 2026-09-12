@@ -179,5 +179,10 @@ assert.ok((await rows('select task_change_impact() data'))[0].data.some(r=>r.tas
 await as(other);await assert.rejects(async()=>db.query('select submit_project_review_evidence($1,$2,$3::jsonb,$4,$5)',[task,'Self-M',evidence,(await context()).submission.id,'Own submission']));
 console.log('PASS saved immutable configuration, multi-reviewer consensus and transitive change impact');
 
+await as(admin);
+await db.query('select configure_project_review($1,$2,$3,$4)',[task,other,'Updated release acceptance criterion','Reassign primary reviewer']);
+assert.equal((await context()).submission,null);
+assert.equal((await context()).reviewer_id,other);
+console.log('PASS final consensus migration primary reviewer reassignment and audit');
 if(process.env.G3_REVIEW_FIXTURE!=='1')await db.close();console.log('PASS owner assignment permissions, planned versus submitted mentor queues');console.log('PASS review gates: opt-in, permissions, no self-approval, direct status enforcement, revisions, changes/retest, stale decisions, reviewer reassignment, admin override, source completion, dependency state, audit retention, source privacy and rerun');
 export {db,admin,mentor,student,other,task,child,project};

@@ -20,3 +20,8 @@ Scope limits: Storage policies/objects, Edge functions and cron were not copied.
 ## Acceptance result
 Tested commit 1ee69ae: https://g3-scouting-app-5qpe-lhugwqwwg-eranbos-projects.vercel.app. Core authenticated student/two-mentor/dependency/Home flow passed. Secondary reviewer queue bug fixed and retested. Final synthetic source is approved/done, dependent is in_progress. First profile fetch hit a transient JWT-issued-at-future error; reload and later sign-ins succeeded. Physical phone and external integrations remain unverified. Production acceptance remains with the user.
 
+
+## QA configuration correction — 2026-09-13
+User accepted Student and Mentor previews. Admin Home exposed a missing singleton seed: purchase_approval_settings had zero rows. Restored id=true, threshold_hours=72 in isolated QA only, using ON CONFLICT DO NOTHING. Hosted Admin Home now shows 0 pending / 0 overdue. No production change or frontend rebuild needed.
+The Settings QA switcher has zero registered qa_test_accounts in this schema-only environment; its Edge function was not deployed. Synthetic acceptance accounts use direct Auth sign-in. This switcher remains outside acceptance coverage; do not imply it was tested or that production QA accounts disappeared.
+
