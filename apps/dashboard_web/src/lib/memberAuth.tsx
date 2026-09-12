@@ -1,3 +1,5 @@
+import { getQaTestSession } from "./qaTestSession";
+import { QaTestBanner } from "../components/QaTestAccounts";
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "../supabase";
@@ -48,6 +50,13 @@ export function MemberAuthProvider({ children }: { children: React.ReactNode }) 
       setLoading(false);
       return;
     }
+    const qa = getQaTestSession();
+    if (qa && activeSession.user.id !== qa.targetId) {
+      setProfile(null);
+      setProfileError('QA session identity mismatch. Return to admin and start again.');
+      setLoading(false);
+      return;
+    }
     if (clearExisting || profileRef.current?.id !== activeSession.user.id) {
       profileRef.current = null;
       setProfile(null);
@@ -70,7 +79,8 @@ export function MemberAuthProvider({ children }: { children: React.ReactNode }) 
       setLoading(false);
       return;
     }
-    profileRef.current = data as MemberProfile;
+    // Admin-issued QA login does not use or change the account's temporary password.
+    profileRef.current = { ...data, must_change_password: qa ? false : data.must_change_password } as MemberProfile;
     setProfile(profileRef.current);
     setLoading(false);
   };
@@ -101,7 +111,7 @@ export function MemberAuthProvider({ children }: { children: React.ReactNode }) 
   }, []);
 
   useEffect(() => {
-    if (!profile?.active || profile.must_change_password || Capacitor.getPlatform() !== "android") return;
+    if (getQaTestSession() || !profile?.active || profile.must_change_password || Capacitor.getPlatform() !== "android") return;
     G3Push.getToken().then(({ token }) => supabase.from("push_tokens").upsert({ token, member_id: profile.id, platform: "android", active: true, updated_at: new Date().toISOString() })).catch(() => undefined);
   }, [profile?.id, profile?.active, profile?.must_change_password]);
 
@@ -119,7 +129,7 @@ export function MemberAuthProvider({ children }: { children: React.ReactNode }) 
     () => ({ loading, session, profile, profileError, refreshProfile }),
     [loading, session, profile, profileError]
   );
-  return <MemberAuthContext.Provider value={value}>{children}</MemberAuthContext.Provider>;
+  return <MemberAuthContext.Provider value={value}><QaTestBanner />{children}</MemberAuthContext.Provider>;
 }
 
 export function useMemberAuth() {

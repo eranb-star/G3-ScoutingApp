@@ -1,7 +1,23 @@
+## Deployment update — QA Edge Function (2026-09-12)
+
+Owner confirmed qa_test_sessions_20260912.sql succeeded. Agent deployed qa-test-session through the signed-in Supabase dashboard to project hnqwhuuxlqfyawqymaaz (verified against VITE_SUPABASE_URL). Dashboard displayed Successfully deployed edge function and the matching endpoint. Legacy JWT verification remains ON. No commit/push or web production promotion performed. NEXT: owner commits/pushes pending feature files excluding the two Android .idea files, opens the new preview, then live QA switch/return acceptance. Do not ask owner to redeploy the function or rerun SQL.
+
+## Latest implementation — QA-only test sessions (2026-09-12)
+
+Owner chose QA ACCOUNTS ONLY. Implemented exact-email QA Student/Mentor/Team Leader switching from Settings, real Supabase permissions, separate tab session/offline database, persistent Return to admin banner, server start/end audit and scoped database change audit. Includes the previous compact mentor-review layout fix. No passwords/emails changed, no real-member impersonation, no promotion and no APK.
+
+NEXT: run backend/supabase/qa_test_sessions_20260912.sql, deploy supabase/functions/qa-test-session/index.ts as qa-test-session in the SAME Supabase project, then commit/push preview. Detailed steps, safeguards and acceptance: docs/QA_ACCOUNT_SWITCHING_20260912.md. Commit: Add QA-only account switching and fix review status layout. Exclude existing android/.idea/deploymentTargetSelector.xml and misc.xml. SQL/Edge Function have NOT been applied/deployed by this agent. Focused SQL and actual-handler mock tests passed, TypeScript/Vite build passed, phone-width account controls visually verified. Live switch/return acceptance remains pending. Do not claim full live QA passed.
+
 # G3 Scouting App — Authoritative Handoff
 
 Last updated: 2026-09-10 (Asia/Jerusalem)
 
+
+## Latest correction — compact review status / QA account switching scope
+
+Owner supplied screenshot of reviewer explanation squeezed into a tall narrow column. Fixed review-task-action to a single-column grid at all widths, removed nested explanation border/padding and shortened explanation. Synthetic mobile screenshot verified readable full-width status and explanation. No business logic/SQL changes; commit THREE files (handoff, ProjectTaskReview.tsx, teamHub.css), excluding two preserved .idea files. Suggested commit: Fix compact mentor review status layout.
+
+Owner also requests admin impersonation for testing (QA member, QA Mentor, QA Team Leader examples). Current auth loads profile by real Supabase session user ID, so cosmetic role changes are insufficient. Asked whether scope is only explicitly designated QA accounts (recommended) or includes real team members; answer pending. Do not claim switching implemented. Proposed real QA-account session with conspicuous testing banner, return-to-admin, backend authorization and audit of initiating administrator/target. Need enforce QA allowlist, preserve real RLS and avoid merely changing role/session labels. Avoid touching real accounts until scope is answered. No credentials accessed or sessions switched.
 
 ## Latest follow-up — event refresh and action clarity (2026-09-12)
 

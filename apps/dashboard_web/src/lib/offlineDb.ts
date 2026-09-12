@@ -1,3 +1,4 @@
+import { getQaTestSession } from "./qaTestSession";
 // apps/dashboard_web/src/lib/offlineDb.ts
 // Offline cache + queue using IndexedDB (no deps)
 // Fixes: VersionError (requested version < existing version)
@@ -84,7 +85,8 @@ export type CompetitionMutation = {
 
 type StoreName = "entryQueue" | "pitScoutQueue" | "templateCache" | "matchesCache" | "matchTeamsCache" | "scoutsCache" | "competitionCache" | "competitionCommand" | "competitionMutations";
 
-const DB_NAME = "g3_scouting_offline_v1";
+const qaSession = getQaTestSession();
+const DB_NAME = "g3_scouting_offline_v1" + (qaSession ? `_${qaSession.id}` : "");
 
 // IMPORTANT:
 // If ANY device already created DB at version 2,

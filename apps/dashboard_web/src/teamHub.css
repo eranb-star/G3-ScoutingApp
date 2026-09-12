@@ -1105,3 +1105,12 @@ main.productivity-home{display:flex!important;flex-direction:column;gap:16px;max
 .purchase-overview .purchase-status-badge{display:inline-flex;align-items:center;padding:5px 9px;border-radius:999px;font-size:12px;font-weight:700}.purchase-overview .status-requested{background:#fff1ce;color:#775400}.purchase-overview .status-approved{background:#e6f5eb;color:#17613c}.purchase-overview .status-ordered{background:#e9f0ff;color:#244b89}.purchase-overview .status-received{background:#e4f4f0;color:#176153}.purchase-overview .status-rejected,.purchase-overview .status-cancelled{background:#f5e9ed;color:#7e384f}@media(min-width:1000px){.purchase-dashboard{grid-template-columns:repeat(7,minmax(0,1fr))}}
 @media(max-width:640px){.purchase-overview caption{display:block;box-sizing:border-box;width:100%;white-space:normal;line-height:1.4}.purchase-overview td:last-child button{font-size:14px;min-height:44px}}
 .context-back-bar button.active-event-chip{display:flex;flex-direction:column;align-items:flex-start;text-align:start;white-space:normal;min-height:52px}.review-unavailable{grid-column:1/-1;flex-basis:100%;padding:12px;border:1px solid #e5d1df;border-radius:10px;background:#fff8fc;color:#654358;font-size:14px;line-height:1.5}.review-task-action .review-unavailable{margin:0;flex:1}
+
+/* A status explanation is a full-width row, never a shrinking action column. */
+.task-review-shell .review-task-action{display:grid;grid-template-columns:minmax(0,1fr);align-items:start;gap:10px;padding:16px}.review-task-action>div{min-width:0}.task-review-shell .review-task-action .review-unavailable{width:auto;min-width:0;max-width:none;margin:0;padding:0;border:0;background:transparent;line-height:1.5;overflow-wrap:break-word}.review-task-action>.hub-button{justify-self:start;max-width:100%}@media(max-width:640px){.review-task-action>.hub-button{justify-self:stretch}}
+.qa-account-buttons { display:flex; flex-wrap:wrap; gap:12px; margin-top:18px; }
+.qa-test-banner { position:sticky; top:0; z-index:10000; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; padding:12px 24px; background:#fff0fa; border-bottom:2px solid #df008c; color:#301526; }
+.qa-test-banner > div { display:grid; gap:3px; min-width:0; }
+.qa-test-banner span { font-size:14px; }
+.qa-test-banner .hub-button { flex-shrink:0; min-height:44px; }
+@media(max-width:600px) { .qa-test-banner { padding:10px 16px; } .qa-account-buttons { display:grid; } }
