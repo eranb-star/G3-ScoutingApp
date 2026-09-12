@@ -16,3 +16,7 @@ Do not directly promote a QA-configured build. Production requires the six migra
 The free project is for synthetic acceptance, not production or backup. No new paid project was created. Local schema/seed exports are ignored by Git. The clipboard helper serves only those exports on localhost and should be stopped after setup.
 
 Scope limits: Storage policies/objects, Edge functions and cron were not copied. Full external integrations and device push are not part of this review-flow acceptance. Existing Android IDE edits remain uncommitted.
+
+## Acceptance result
+Tested commit 1ee69ae: https://g3-scouting-app-5qpe-lhugwqwwg-eranbos-projects.vercel.app. Core authenticated student/two-mentor/dependency/Home flow passed. Secondary reviewer queue bug fixed and retested. Final synthetic source is approved/done, dependent is in_progress. First profile fetch hit a transient JWT-issued-at-future error; reload and later sign-ins succeeded. Physical phone and external integrations remain unverified. Production acceptance remains with the user.
+

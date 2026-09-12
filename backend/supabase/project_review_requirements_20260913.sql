@@ -29,7 +29,7 @@ begin
    or coalesce(length(trim(r->>'acceptance')),0) not between 3 and 600
    or coalesce(r->>'method','') not in ('inspection','test','analysis','demonstration')
   then raise exception 'Each requirement needs a description, measurable acceptance criterion and verification method';end if;
-  n:=n+1; normalized:=normalized||jsonb_build_array(jsonb_build_object('id',gen_random_uuid(),'requirement',trim(r->>'requirement'),'acceptance',trim(r->>'acceptance'),'method',r->>'method')); 
+  n:=n+1; normalized:=normalized||jsonb_build_array(jsonb_build_object('id',gen_random_uuid(),'requirement',trim(r->>'requirement'),'acceptance',trim(r->>'acceptance'),'method',r->>'method'));
   criteria:=criteria||case when n>1 then E'\n\n' else '' end||'R'||n||': '||trim(r->>'requirement')||E'\nAcceptance: '||trim(r->>'acceptance')||E'\nVerification: '||(r->>'method');
  end loop;
  if length(criteria)>4000 then raise exception 'Keep the combined requirements within 4000 characters';end if;

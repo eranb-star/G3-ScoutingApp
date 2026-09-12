@@ -589,3 +589,7 @@ Catalog enrichment remains normal content operations, not a missing implementati
 - “Deployed” means the product owner or deployment system confirmed production promotion.
 - “Phone released” means the product owner confirmed the newly versioned APK was installed.
 - Anything else must be described as pending or unverified.
+
+## Hosted Release 1 QA — 2026-09-13
+Created no-cost isolated QA Supabase cyooubycafubbnkjcqlw under G3 Isolated QA. Schema-only plus synthetic data; production untouched. Pushed codex/release-1-qa. Tested release 1ee69ae at https://g3-scouting-app-5qpe-lhugwqwwg-eranbos-projects.vercel.app. Real student -> two mentors -> source done -> dependent in_progress -> Home synchronized passed. Fixed additional mentor missing in Home queue. See docs/staging/README.md and docs/RELEASE_1_CHECKPOINT.md. Do not directly promote QA-configured deployment; after acceptance use production migrations and production-configured build. No new APK. User's Android IDE modifications remain uncommitted.
+
