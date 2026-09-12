@@ -1,3 +1,4 @@
+import {setActiveEvent} from "../lib/activeEvent";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../supabase";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -399,7 +400,7 @@ export default function PicklistPage() {
       <div style={{ marginTop: 14, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
         <select
           value={eventId}
-          onChange={(e) => { setEventId(e.target.value); localStorage.setItem("g3_event_id", e.target.value); }}
+          onChange={(e) => { setEventId(e.target.value); setActiveEvent(e.target.value); }}
           style={{ width: 320, padding: 10, borderRadius: 12, border: "1px solid #ccc" }}
         >
           <option value="">Select Event</option>

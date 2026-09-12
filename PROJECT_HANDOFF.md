@@ -3,6 +3,12 @@
 Last updated: 2026-09-10 (Asia/Jerusalem)
 
 
+## Latest follow-up — event refresh and action clarity (2026-09-12)
+
+Owner reported static Active event placeholder, absent submission and ambiguous purchasing Approve. Confirmed code bug: ContextBackBar fetched selected event only on route change, missing same-page initial selection/event changes. Added activeEvent helper; Competition overview, Analysis, Picklist and Pit scouting writes notify current-tab subscribers; header refreshes on same-tab change, cross-tab storage and focus, ignores stale fetch responses, distinguishes missing selection/loading/unavailable event, and opens Overview when clicked. Purchase first button renamed Review quantity & approve…; it only opens the existing quantity dialog. Final Approve N in dialog saves. Checkpoint submission now explains unavailable state visibly (logged-in reviewer cannot self-submit, absent gate requires configuration, unauthorized/archived cases) rather than silently hiding controls. Existing self-approval protections unchanged.
+
+No SQL change. Prior combined commit ffa5b77 is present locally. Connected browser still exposes old fbhchg1e2; owner may be testing externally. Requested actual preview URL asynchronously; not yet received. Do not assert their deployment is stale based solely on ambient URL. No live task inspected/reassigned/submitted and no purchase approved. New local follow-up needs commit/push 11 files excluding the two preserved .idea files, message Fix active event refresh and clarify approval actions. Focused event-change tests and TypeScript passed. New full preview/phone acceptance remains pending. Avoid repeating broad tests.
+
 ## Latest implementation — combined workflow corrections (2026-09-12)
 
 Owner authorized ALL ten reported purchasing/review/Settings/UI improvements. Implemented locally; new SQL NOT applied, not committed/pushed/promoted and no new APK prepared. Preserve/exclude two existing Android .idea files. Existing signed 2.1.6 does not include this batch. ONE combined preview next.

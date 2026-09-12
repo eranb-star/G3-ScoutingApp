@@ -1,3 +1,4 @@
+import {setActiveEvent} from "../lib/activeEvent";
 import React, { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "../supabase";
@@ -375,7 +376,7 @@ export default function AnalysisPage() {
         <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
           <select
             value={eventId}
-            onChange={(e) => { setEventId(e.target.value); localStorage.setItem("g3_event_id", e.target.value); }}
+            onChange={(e) => { setEventId(e.target.value); setActiveEvent(e.target.value); }}
             style={{ width: 320, padding: 10, borderRadius: 12, border: "1px solid #ccc" }}
           >
             <option value="">Select Event</option>
