@@ -1,5 +1,11 @@
 # Phase 0 and Phase 1 — authoritative delivery record
 
+## Permanent deletion correction — latest web release
+
+The user explicitly requires permanent admin deletion; the earlier archive substitution below did not satisfy that request. Commit `2022c9a3e1dddce7189a40082f0a8fd5da7ba23a` adds an active-admin-only atomic `admin_delete_project_task` RPC and inline Delete permanently / Cancel confirmation. It deletes task review records, artifact checks, override requests, dependency links and task assignments; other tasks and external files remain. Archive is still a separate option. SQL deployed successfully to production and QA. Regression passed non-admin/inactive-admin rejection, complete rollback on a foreign-key failure, reviewed-task deletion, assignment cleanup, surviving tasks and idempotent retry. TypeScript passed.
+
+Production deployment `Dp5QCnECVrEjkvbMzsPKxK7bYcVy` is Ready, rebuilt with production environment. Public `g3-6740.com` bundle `/assets/index-C0FhFbjT.js` verified HTTP 200, production reference, no QA reference, and new RPC/confirmation text. No user's production task was deleted during testing. **APK 2.1.9 predates this correction and does not contain this new UI.** No additional APK was requested or built in this correction. Earlier archive-only behavior/deployment identifiers below are historical.
+
 Updated 2026-09-13. Owner: Eran Bongart. This record supersedes the dated progress notes in PROJECT_HANDOFF, RELEASE_1_CHECKPOINT, the acceptance ledger and baseline README. It distinguishes implemented/deployed work from acceptance that has not been performed. It does not declare the whole V5.2 blueprint complete.
 
 ## Running release
