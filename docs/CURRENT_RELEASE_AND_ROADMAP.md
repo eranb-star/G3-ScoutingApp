@@ -24,3 +24,6 @@ Implemented dedicated fullscreen viewport: hides inspector, headings, metrics an
 Model cache: 80 MiB, serialized writes and least-recently-used eviction; obsolete cache versions removed, quota failures leave online viewing usable. The rendered model remains in memory; robot import is separately capped at 40 MiB. Focused permission and cache tests pass. Fullscreen visually checked.
 
 Phase 2/3 are NOT certified complete: official 2026 Gold Set/Team Update/Q&A acceptance remains open; representative physical device/network/controller and actual team CAD acceptance remain open. These UI/cache changes must not be represented as closing those gates. AI controls remain deferred.
+
+Production update: 5911868 deployed successfully via production rebuild 6WrywGDoJ on 2026-09-13. Permission migration succeeded in production and QA. Dedicated fullscreen, role visibility and bounded cache are live. The phase acceptance items above remain open.
+
