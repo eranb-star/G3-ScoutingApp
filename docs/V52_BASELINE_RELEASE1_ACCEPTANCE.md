@@ -65,3 +65,12 @@ Remaining work is substantive: effective/deployed baseline parity and recovery a
 - Read-only production health: 96 cron SQL runs succeeded in 24 hours, but 24 retained HTTP responses were 503 BOOT_ERROR. Captured deployed scheduler had duplicate source. Restored repository single-copy source through Supabase UI; public-key-only probe now reaches its own 401 guard. Next actual cron result still to verify.
 
 Remaining acceptance is not waived: full recovery/config/object retention, remaining source drift reconciliation, final authenticated preview acceptance, production engineering rollout, and physical-device/network acceptance. No new APK in this batch yet.
+
+### Latest acceptance checkpoint
+
+- QA preview commit 6cb2206 is Ready at https://g3-scouting-app-5qpe-1u5rnukyr-eranbos-projects.vercel.app (Vercel Fd68EAp19ULba5HNPsG8Jh7jBPim). Authenticated synthetic admin successfully opened Home, Work and CAD projects; all team workspaces are accessible from Work.
+- The test account is `release-auditor-20260913@g3-qa.invalid`, isolated QA only. No invitation sent. No credentials committed.
+- Native confirmation stalled browser automation on tab 86. Reviewed-task archive offer was changed to an inline accessible panel; TypeScript and Vite pass. Hosted check of this last UI change remains pending.
+- Scheduled operations recovered: actual cron HTTP 200 at 06:00 UTC after removal of duplicated deployed function source.
+- Backup utility now restores verified nonempty bytes into a new local directory without trusting cloud object names as paths or overwriting existing files. Synthetic encryption/restore/corruption/overwrite tests passed. This is local recovery evidence, not a completed cloud file restore.
+- Automatic backup is NOT configured: the existing API key reveal/copy controls did not provide a usable credential. No backup configuration or persistent secret was saved. Do not claim ongoing backup coverage.

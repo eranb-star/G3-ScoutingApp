@@ -1,7 +1,7 @@
 """Encrypted local Supabase object snapshot. Credentials and plaintext stay in memory.
 Run interactively; --self-test exercises encryption and corruption detection only.
 """
-import argparse, datetime, getpass, hashlib, io, json, os, pathlib, secrets, sys, urllib.request, urllib.parse, zipfile
+import argparse, datetime, getpass, hashlib, io, json, os, pathlib, secrets, sys, tempfile, urllib.request, urllib.parse, zipfile
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
 
@@ -24,6 +24,8 @@ def decrypt(blob, password):
 
 def verify(raw):
     with zipfile.ZipFile(io.BytesIO(raw)) as z:
+        if sum(i.file_size for i in z.infolist()) > 512*1024*1024:
+            raise ValueError('Restore exceeds memory limit')
         manifest = json.loads(z.read('manifest.json'))
         for obj in manifest['objects']:
             content = z.read(obj['entry'])
@@ -31,10 +33,30 @@ def verify(raw):
                 raise ValueError('Object integrity mismatch')
         return len(manifest['objects'])
 
+def restore_local(raw, destination):
+    """Restore verified bytes to a NEW local directory; never overwrite a source."""
+    count = verify(raw)
+    destination.mkdir(parents=False, exist_ok=False)
+    with zipfile.ZipFile(io.BytesIO(raw)) as z:
+        manifest = json.loads(z.read('manifest.json'))
+        (destination/'objects').mkdir()
+        for index, obj in enumerate(manifest['objects']):
+            # Remote object names are metadata, never local extraction paths.
+            entry = f'objects/{index:08d}'
+            (destination/entry).write_bytes(z.read(obj['entry']))
+            obj['entry'] = entry
+        (destination/'manifest.json').write_text(json.dumps(manifest, indent=2), encoding='utf-8')
+    for obj in manifest['objects']:
+        if hashlib.sha256((destination/obj['entry']).read_bytes()).hexdigest() != obj['sha256']:
+            raise ValueError('Restored object integrity mismatch')
+    return count
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--self-test', action='store_true')
     parser.add_argument('--verify', type=pathlib.Path)
+    parser.add_argument('--restore', type=pathlib.Path)
+    parser.add_argument('--destination', type=pathlib.Path)
     args = parser.parse_args()
     if args.self_test:
         blob = encrypt(b'test object bytes', 'synthetic-test-password')
@@ -45,7 +67,29 @@ def main():
             except Exception:
                 continue
             raise AssertionError('Invalid ciphertext/password accepted')
-        print('PASS encryption round trip, wrong password and tamper rejection')
+        data=b'Nonempty synthetic recovery evidence\x00\xff'
+        archive=io.BytesIO()
+        with zipfile.ZipFile(archive,'w') as z:
+            z.writestr('objects/00000000',data)
+            z.writestr('manifest.json',json.dumps({'project':'synthetic','objects':[{'bucket':'qa','name':'../remote-name-is-metadata','entry':'objects/00000000','bytes':len(data),'sha256':hashlib.sha256(data).hexdigest()}]}))
+        encrypted=encrypt(archive.getvalue(),'synthetic-test-password')
+        with tempfile.TemporaryDirectory() as directory:
+            target=pathlib.Path(directory)/'restored'
+            assert restore_local(decrypt(encrypted,'synthetic-test-password'),target)==1
+            assert (target/'objects/00000000').read_bytes()==data
+            try:
+                restore_local(archive.getvalue(),target)
+            except FileExistsError:
+                pass
+            else:
+                raise AssertionError('Existing restore destination overwritten')
+        print('PASS encryption, tamper rejection, nonempty local restore, exact bytes and overwrite protection')
+        return
+    if args.restore:
+        if not args.destination:
+            raise ValueError('Choose a new destination directory')
+        count=restore_local(decrypt(args.restore.read_bytes(),getpass.getpass('Backup password: ')),args.destination)
+        print(f'Verified local restore: {count} files. No cloud data changed. Destination: {args.destination}')
         return
     if args.verify:
         print('Verified objects:', verify(decrypt(args.verify.read_bytes(), getpass.getpass('Backup password: '))))

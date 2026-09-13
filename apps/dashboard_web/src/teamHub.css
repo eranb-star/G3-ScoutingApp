@@ -1129,3 +1129,5 @@ details.review-evidence-editor[open]>summary{margin-bottom:14px}
 .review-evidence-editor dl>div{display:grid;grid-template-columns:minmax(100px,1fr) minmax(0,2fr);gap:12px}
 .review-evidence-editor dt{font-weight:600;color:#735e6c}.review-evidence-editor dd{margin:0;white-space:pre-wrap}
 @media(max-width:480px){.review-evidence-editor dl>div{grid-template-columns:1fr;gap:4px}.review-evidence-editor form>.hub-button{width:100%}}
+
+.task-archive-offer{grid-column:1/-1;width:100%;box-sizing:border-box;padding:16px;border:1px solid #e8c8dd;border-radius:12px;background:#fff8fc}.task-archive-offer p{margin:8px 0 12px;line-height:1.5}

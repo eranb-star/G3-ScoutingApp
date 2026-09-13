@@ -272,6 +272,6 @@
     "cause": "Deployed source contained two imports and two complete function copies; net HTTP responses reported 503 BOOT_ERROR.",
     "replacement": "backend/supabase/functions/scheduled-operations/index.ts",
     "normalizedSha256": "4bbcf7151575501682ee294606bb164d5ddddf5fc43e937dc5cab1bca2218034",
-    "verification": "Public anon-key request reached function authorization guard and returned 401 {error: Unauthorized}; no cron secret sent, no work triggered. Await next scheduled run for operational result."
+    "verification": "Public-key probe reached function guard (401 Unauthorized), then the actual cron invocation returned HTTP 200 at 2026-09-13 06:00:00.297375 UTC. Previous run at 05:45 returned 503."
   }
 }
