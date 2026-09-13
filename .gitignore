@@ -37,3 +37,5 @@ analytics.settings
 docs/staging/*.local.*
 
 /releases/*.apk
+docs/staging/*.local/
+

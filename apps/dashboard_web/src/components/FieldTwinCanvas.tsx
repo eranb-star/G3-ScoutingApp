@@ -3,15 +3,17 @@ import * as THREE from 'three';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js';
 import {RoomEnvironment} from 'three/examples/jsm/environments/RoomEnvironment.js';
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
+import {FieldSeason} from '../lib/fieldSeasons';
 import {RobotModel} from '../lib/robotModel';
-import {Concept,FIELD,OBSTACLES,Pose} from '../lib/conceptTwin';
+import {Concept,OBSTACLES,Pose} from '../lib/conceptTwin';
 
-type Props={custom?:RobotModel;pose:Pose;concept:Concept;detailed:boolean;kitbot:boolean;view:'orbit'|'top'|'follow';path:Pose[];onStatus:(s:string)=>void;onFps:(fps:number)=>void};
+export type ModelMetrics={length:number;width:number;height:number;triangles:number};
+type Props={onModelMetrics:(m:ModelMetrics|null)=>void;season:FieldSeason;custom?:RobotModel;pose:Pose;concept:Concept;detailed:boolean;kitbot:boolean;view:'orbit'|'top'|'follow';path:Pose[];onStatus:(s:string)=>void;onFps:(fps:number)=>void};
 const CACHE='g3-twin-2026-v3';
 const assets={field:{url:'/twin/2026/field-optimized.glb',bytes:19627748,hash:'088126b167906ca95e7b21a76a430a64199103d1ea184a121b1cf52e984b75e8'},robot:{url:'/twin/2026/robot-optimized.glb',bytes:16177620,hash:'053caf847815cb163632b8f858f5b261e589cb9abae3819b502c016fb57238b8'}};
 export async function clearTwinCache(){if('caches' in window)await Promise.all([caches.delete(CACHE),caches.delete('g3-twin-2026-v2')]);}
-async function assetBuffer(which:keyof typeof assets,signal:AbortSignal){
- const a=assets[which];let cached:Cache|undefined;try{cached=await caches.open(CACHE);}catch{/* Private browsing may disable cache. */}
+async function assetBuffer(which:keyof typeof assets,signal:AbortSignal,season:FieldSeason){
+ const a=which==='field'?season:assets.robot;let cached:Cache|undefined;try{cached=await caches.open(CACHE);}catch{/* Private browsing may disable cache. */}
  let response=await cached?.match(a.url);if(!response){response=await fetch(a.url,{signal});if(!response.ok)throw Error('Asset download failed');}
  const data=await response.arrayBuffer();if(data.byteLength!==a.bytes)throw Error('Model size mismatch');
  const hash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',data))).map(x=>x.toString(16).padStart(2,'0')).join('');
@@ -22,11 +24,11 @@ async function assetBuffer(which:keyof typeof assets,signal:AbortSignal){
 export default function FieldTwinCanvas(props:Props){
  const host=useRef<HTMLDivElement>(null),latest=useRef(props);latest.current=props;
  useEffect(()=>{
-  const element=host.current!;let disposed=false,frame=0,frames=0,last=performance.now();const abort=new AbortController();
+  const season=props.season;const field={length:season.length,width:season.width};const element=host.current!;let disposed=false,frame=0,frames=0,last=performance.now();const abort=new AbortController();
   let renderer:THREE.WebGLRenderer;
   try{renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});}catch{latest.current.onStatus('WebGL unavailable — use the 2D view below.');return;}
   renderer.setPixelRatio(Math.min(devicePixelRatio,1));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.3;
-  element.appendChild(renderer.domElement);renderer.domElement.setAttribute('aria-label','2026 field and robot 3D view; orbit by dragging, zoom with scroll. Driving controls are below.');
+  element.appendChild(renderer.domElement);renderer.domElement.setAttribute('aria-label',`${season.year} field and robot 3D view; rotate by dragging, zoom with scroll.`);
   const scene=new THREE.Scene();scene.background=new THREE.Color('#111b2b');
   const studio=new RoomEnvironment(),pmrem=new THREE.PMREMGenerator(renderer),environment=pmrem.fromScene(studio,.04);scene.environment=environment.texture;studio.dispose();pmrem.dispose();
   let resolution=1,slowWindows=0;
@@ -36,9 +38,9 @@ export default function FieldTwinCanvas(props:Props){
   const ground=new THREE.Mesh(new THREE.PlaneGeometry(40,30),new THREE.MeshStandardMaterial({color:0x162336,roughness:1}));ground.position.z=-.06;scene.add(ground);
   const simplified=new THREE.Group();scene.add(simplified);
   const box=(x:number,y:number,z:number,w:number,d:number,h:number,color:number,parent:THREE.Object3D)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(w,d,h),new THREE.MeshStandardMaterial({color,roughness:.75}));m.position.set(x,y,z);parent.add(m);return m;};
-  box(0,0,-.02,FIELD.length,FIELD.width,.04,0x596773,simplified);
-  [-1,1].forEach(side=>{box(side*(FIELD.length/2),0,.25,.06,FIELD.width,.5,side<0?0x2581df:0xe65662,simplified);box(0,side*FIELD.width/2,.25,FIELD.length,.06,.5,0xa7b9c9,simplified);});
-  OBSTACLES.forEach((o,i)=>box(o.x,o.y,.65,o.w,o.h,1.3,i%2?0xc93951:0x176daf,simplified));
+  box(0,0,-.02,field.length,field.width,.04,0x596773,simplified);
+  [-1,1].forEach(side=>{box(side*(field.length/2),0,.25,.06,field.width,.5,side<0?0x2581df:0xe65662,simplified);box(0,side*field.width/2,.25,field.length,.06,.5,0xa7b9c9,simplified);});
+  (season.year===2026?OBSTACLES:[]).forEach((o,i)=>box(o.x,o.y,.65,o.w,o.h,1.3,i%2?0xc93951:0x176daf,simplified));
   const robot=new THREE.Group(),concept=new THREE.Group(),kit=new THREE.Group();robot.add(concept,kit);scene.add(robot);
   const chassis=box(0,0,.2,1,1,.24,0xe30095,concept),mast=box(0,0,.4,.5,.45,.35,0xdde5ec,concept);
   const arrow=new THREE.ArrowHelper(new THREE.Vector3(1,0,0),new THREE.Vector3(0,0,.8),1,0xffd65b,.18,.13);robot.add(arrow);
@@ -48,16 +50,16 @@ export default function FieldTwinCanvas(props:Props){
   const loader=new GLTFLoader();let fieldStarted=false,robotStarted=false;
   const custom=new THREE.Group();robot.add(custom);let customData:ArrayBuffer|undefined,customGeneration=0;
   function disposeModel(root:THREE.Object3D){root.traverse(o=>{if(o instanceof THREE.Mesh){o.geometry.dispose();for(const m of Array.isArray(o.material)?o.material:[o.material]){Object.values(m).forEach(t=>{if(t instanceof THREE.Texture)t.dispose();});m.dispose();}}});}
-  function loadCustom(data:ArrayBuffer){custom.children.forEach(disposeModel);custom.clear();const generation=++customGeneration;const manager=new THREE.LoadingManager();manager.setURLModifier(url=>{if(!url.startsWith('blob:'))throw Error('External model resources are not supported');return url;});void new GLTFLoader(manager).parseAsync(data,'').then(g=>{if(disposed||generation!==customGeneration){disposeModel(g.scene);return;}custom.children.forEach(disposeModel);custom.clear();const model=g.scene;model.rotation.x=Math.PI/2;model.updateMatrixWorld(true);const bounds=new THREE.Box3().setFromObject(model);if(bounds.isEmpty()){disposeModel(model);throw Error('Empty robot model');}const center=bounds.getCenter(new THREE.Vector3());model.position.set(-center.x,-center.y,-bounds.min.z);custom.add(model);latest.current.onStatus('Robot model loaded. Check scale and orientation, then save on this device.');}).catch(()=>{if(!disposed&&generation===customGeneration)latest.current.onStatus('Robot model could not load. Export an uncompressed, self-contained GLB.');});}
+  function loadCustom(data:ArrayBuffer){latest.current.onModelMetrics(null);custom.children.forEach(disposeModel);custom.clear();const generation=++customGeneration;const manager=new THREE.LoadingManager();manager.setURLModifier(url=>{if(!url.startsWith('blob:'))throw Error('External model resources are not supported');return url;});void new GLTFLoader(manager).parseAsync(data,'').then(g=>{if(disposed||generation!==customGeneration){disposeModel(g.scene);return;}custom.children.forEach(disposeModel);custom.clear();const model=g.scene;model.rotation.x=Math.PI/2;model.updateMatrixWorld(true);const bounds=new THREE.Box3().setFromObject(model);if(bounds.isEmpty()){disposeModel(model);throw Error('Empty robot model');}const center=bounds.getCenter(new THREE.Vector3());model.position.set(-center.x,-center.y,-bounds.min.z);custom.add(model);const size=bounds.getSize(new THREE.Vector3());let triangles=0;model.traverse(o=>{if(o instanceof THREE.Mesh)triangles+=(o.geometry.index?.count??o.geometry.getAttribute('position')?.count??0)/3;});latest.current.onModelMetrics({length:size.x,width:size.y,height:size.z,triangles:Math.round(triangles)});latest.current.onStatus('Robot model loaded. Check scale and orientation, then save on this device.');}).catch(()=>{if(!disposed&&generation===customGeneration)latest.current.onStatus('Robot model could not load. Export an uncompressed, self-contained GLB.');});}
 
   function load(which:'field'|'robot'){
-   latest.current.onStatus(which==='field'?'Loading detailed field · 19.6 MB…':'Loading KitBot · 16.2 MB…');
-   void assetBuffer(which,abort.signal).then(data=>loader.parseAsync(data,'')).then(gltf=>{
+   latest.current.onStatus(which==='field'?`Loading ${season.year} field · ${(season.bytes/1e6).toFixed(1)} MB…`:'Loading KitBot · 16.2 MB…');
+   void assetBuffer(which,abort.signal,season).then(data=>loader.parseAsync(data,'')).then(gltf=>{
     if(disposed){gltf.scene.traverse(o=>{if(o instanceof THREE.Mesh)o.geometry.dispose();});return;}
-    const model=gltf.scene;model.rotateOnWorldAxis(new THREE.Vector3(1,0,0),Math.PI/2);
+    const model=gltf.scene;for(const r of which==='field'?season.rotations:[{axis:'x',degrees:90}])model.rotateOnWorldAxis(new THREE.Vector3(r.axis==='x'?1:0,r.axis==='y'?1:0,r.axis==='z'?1:0),r.degrees*Math.PI/180);
     if(which==='field'){model.name='detailed-field';scene.add(model);simplified.visible=false;}
     else{model.rotateOnWorldAxis(new THREE.Vector3(0,0,1),Math.PI/2);model.position.set(-.3,0,.05);kit.add(model);}
-    latest.current.onStatus(which==='field'?'2026 field model loaded · checksum verified':'2026 KitBot loaded · checksum verified');
+    latest.current.onStatus(which==='field'?`${season.year} field model loaded · checksum verified`:'2026 KitBot loaded · checksum verified');
    }).catch(error=>{if(!disposed&&error.name!=='AbortError')latest.current.onStatus('Detailed model unavailable. Simplified view remains usable; check connection and reopen 3D to retry.');});
   }
   const resize=()=>{const w=element.clientWidth,h=element.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/Math.max(h,1);camera.position.set(-12,-15,15).multiplyScalar(Math.max(1,1.15/camera.aspect));camera.updateProjectionMatrix();};const observer=new ResizeObserver(resize);observer.observe(element);resize();
@@ -80,7 +82,7 @@ export default function FieldTwinCanvas(props:Props){
   };frame=requestAnimationFrame(render);
   const lost=(e:Event)=>{e.preventDefault();latest.current.onStatus('Graphics context lost. Switch to 2D or reopen 3D.');};renderer.domElement.addEventListener('webglcontextlost',lost);
   return()=>{disposed=true;abort.abort();cancelAnimationFrame(frame);observer.disconnect();controls.dispose();scene.traverse(o=>{if(o instanceof THREE.Mesh||o instanceof THREE.Line){o.geometry.dispose();const materials=Array.isArray(o.material)?o.material:[o.material];materials.forEach(m=>{Object.values(m).forEach(v=>{if(v instanceof THREE.Texture)v.dispose();});m.dispose();});}});environment.dispose();renderer.dispose();renderer.domElement.remove();};
- },[]);
+ },[props.season.year]);
  return <div className="twin-canvas" ref={host}/>;
 }
 

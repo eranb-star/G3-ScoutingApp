@@ -52,3 +52,9 @@ Remaining: deeper verified 2026/Gold Set coverage; historical field assets and g
 ## Production promotion confirmed
 846e515 promoted by production rebuild FKB4vVTTs on 2026-09-13. Vercel Ready, g3-6740.com assigned. Both incremental knowledge SQL files applied successfully to production. HTTP 200; index-B8WmLcCc.js contains production Supabase reference and no QA reference. Optimized assets and ten-season Knowledge selector are now production features; historical 3D fields remain unimplemented. No new APK built.
 
+## Historical viewing and rule expansion — 2026-09-13
+Added 12 TU22 rule/navigation summaries (48 references total; 19 for 2026). Focused database/RLS tests pass. Source conditions remain authoritative; this is not exhaustive rule certification.
+
+Added checksum-pinned, optimized 2021–2025 AdvantageScope fields alongside 2026. Historical assets use their distributed rotation/dimension metadata. The 2021 model is not relabelled as 2020. 2017–2020 3D assets are not installed. Selecting a historical season disables driving and hides replay controls, avoiding use of 2026 obstacles on another field. 2021 and 2025 rendered with recognizable geometry; 2025 observed 60 FPS locally. License remains at public/twin/2026/LICENSE.txt and is linked in the viewer; exact sources/hashes are in HISTORICAL_FIELD_MANIFEST.json. Reproduction scripts are in apps/dashboard_web/scripts.
+
+CAD import now reports measured bounds and triangle count, aiding scale selection. Gamepad mode reports connection state. Replay cannot start while driving. Actual team CAD and physical gamepad/device acceptance remain external checks, not claimed complete. Historical driving physics, missing early field assets and exhaustive knowledge coverage remain outstanding. AI controls stay deferred and no paid processing was enabled.

@@ -1,0 +1,89 @@
+[
+  {
+    "year": 2021,
+    "url": "/twin/2021/field-optimized.glb",
+    "bytes": 24198960,
+    "hash": "5555ca63c55a07003abcb882e97bf4866b511447e4989e6607023e72ea2ab513",
+    "rotations": [
+      {
+        "axis": "x",
+        "degrees": 90
+      },
+      {
+        "axis": "z",
+        "degrees": 90
+      }
+    ],
+    "length": 15.982949999999999,
+    "width": 8.21055,
+    "source": "https://github.com/Mechanical-Advantage/AdvantageScopeAssets/releases/download/archive-v1/Field3d_2021FieldV2.zip"
+  },
+  {
+    "year": 2022,
+    "url": "/twin/2022/field-optimized.glb",
+    "bytes": 14259764,
+    "hash": "032afa6af78cb424eb37c081efd8d109ed700038a9eb9c6ef3e7e6c81fe007a8",
+    "rotations": [
+      {
+        "axis": "x",
+        "degrees": 90
+      },
+      {
+        "axis": "z",
+        "degrees": 180
+      }
+    ],
+    "length": 16.4592,
+    "width": 8.2296,
+    "source": "https://github.com/Mechanical-Advantage/AdvantageScopeAssets/releases/download/archive-v1/Field3d_2022FRCFieldV4.zip"
+  },
+  {
+    "year": 2023,
+    "url": "/twin/2023/field-optimized.glb",
+    "bytes": 24620940,
+    "hash": "0d3a2100429f4f583273de460512a0eb7405a4727dc294895b0a5794f86284e2",
+    "rotations": [
+      {
+        "axis": "x",
+        "degrees": 90
+      }
+    ],
+    "length": 16.54175,
+    "width": 8.0137,
+    "source": "https://github.com/Mechanical-Advantage/AdvantageScopeAssets/releases/download/archive-v1/Field3d_2023FRCFieldV5.zip"
+  },
+  {
+    "year": 2024,
+    "url": "/twin/2024/field-optimized.glb",
+    "bytes": 17149700,
+    "hash": "76f4ea675c5dcd7cc841dd75bfbf16a60de5bfece1c4831e040a1071c8c17147",
+    "rotations": [
+      {
+        "axis": "x",
+        "degrees": 90
+      }
+    ],
+    "length": 16.54175,
+    "width": 8.21055,
+    "source": "https://github.com/Mechanical-Advantage/AdvantageScopeAssets/releases/download/archive-v1/Field3d_2024FRCFieldV4.zip"
+  },
+  {
+    "year": 2025,
+    "url": "/twin/2025/field-optimized.glb",
+    "bytes": 12750372,
+    "hash": "337d4c17ef7cc6e403349bd2a62f8275d950fe78de9ccedab7a0dd950b7bfb39",
+    "rotations": [
+      {
+        "axis": "x",
+        "degrees": 90
+      },
+      {
+        "axis": "z",
+        "degrees": 180
+      }
+    ],
+    "length": 17.548225,
+    "width": 8.0518,
+    "source": "https://github.com/Mechanical-Advantage/AdvantageScopeAssets/releases/download/archive-v1/Field3d_2025FRCFieldWeldedV3.zip"
+  }
+]
