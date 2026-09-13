@@ -27,3 +27,7 @@ Phase 2/3 are NOT certified complete: official 2026 Gold Set/Team Update/Q&A acc
 
 Production update: 5911868 deployed successfully via production rebuild 6WrywGDoJ on 2026-09-13. Permission migration succeeded in production and QA. Dedicated fullscreen, role visibility and bounded cache are live. The phase acceptance items above remain open.
 
+
+## Simulator extension - Phase 3A
+Reference physical driving implemented: gravity, suspension, hub/boundary collisions, bump pitch/height and trench clearance. See SIMULATOR_BASELINE_PHASE_3A.md for assumptions, focused acceptance and remaining calibration. Production deployment pending. Balls/intake/shooting and physical replay are later milestones. No APK or SQL change.
+
