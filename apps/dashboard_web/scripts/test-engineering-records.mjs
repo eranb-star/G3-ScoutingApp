@@ -154,4 +154,30 @@ await db.exec('reset role');assert.equal((await db.query('select project_review_
 await as(admin);const currentRecord=(await db.query('select current_revision from project_engineering_records where id=$1',[a])).rows[0];
 await save(a,currentRecord.current_revision,'requirement',{...content,acceptance:'Changed after release'});
 assert.ok((await db.query('select task_change_impact() data')).rows[0].data.some(row=>row.task_id===task),'Stale root approval must appear in the source impact list');
+// Permanent admin deletion: real reviewed fixture, rollback on failure, no orphan assignments.
+await db.exec('reset role');
+await db.exec(fs.readFileSync(new URL('../../../backend/supabase/admin_delete_project_task_20260913.sql',import.meta.url),'utf8'));
+const survivingTasks=(await db.query('select id,status from project_tasks where id<>$1 order by id',[task])).rows;
+const submittedBefore=(await db.query('select count(*)::int n from project_review_submissions where task_id=$1',[task])).rows[0].n;
+assert.ok(submittedBefore>0);
+await as(student);await assert.rejects(()=>db.query('select admin_delete_project_task($1)',[task]),/administrator/);
+await db.exec('reset role');await db.query('update team_members set active=false where id=$1',[admin]);
+await as(admin);await assert.rejects(()=>db.query('select admin_delete_project_task($1)',[task]),/administrator/);
+await db.exec('reset role');await db.query('update team_members set active=true where id=$1',[admin]);
+await db.exec('create table delete_failure_fixture(task_id uuid references project_tasks(id))');
+await db.query('insert into delete_failure_fixture values($1)',[task]);
+await as(admin);await assert.rejects(()=>db.query('select admin_delete_project_task($1)',[task]),/foreign key/);
+await db.exec('reset role');
+assert.equal((await db.query('select count(*)::int n from project_review_submissions where task_id=$1',[task])).rows[0].n,submittedBefore);
+await db.exec('drop table delete_failure_fixture');
+await as(admin);await db.query('select admin_delete_project_task($1)',[task]);await db.query('select admin_delete_project_task($1)',[task]);
+await db.exec('reset role');
+for(const table of ['project_tasks','project_review_gates','project_review_submissions','project_review_audit']) {
+ const column=table==='project_tasks'?'id':'task_id';
+ assert.equal((await db.query(`select count(*)::int n from ${table} where ${column}=$1`,[task])).rows[0].n,0,table);
+}
+assert.equal((await db.query("select count(*)::int n from team_actions where source_table='project_tasks' and source_id=$1",[task])).rows[0].n,0);
+assert.equal((await db.query('select count(*)::int n from project_task_dependencies where task_id=$1 or prerequisite_id=$1',[task])).rows[0].n,0);
+assert.deepEqual((await db.query('select id,status from project_tasks order by id')).rows,survivingTasks);
+console.log('PASS permanent deletion: active admin only, transaction rollback, review records and assignments removed, other tasks retained, repeat safe');
 await db.close();console.log('PASS engineering records, lineage, permissions, two-person exceptions, pause, conflicts, artifacts, assets, sequential reviews and numeric ranges');
