@@ -1,0 +1,605 @@
+# Current handoff — 2026-09-13
+
+Read [PHASE_0_1_STATUS_20260913.md](docs/PHASE_0_1_STATUS_20260913.md) FIRST. Production now runs 4bd440f with all thirteen engineering migrations. Signed APK 2.1.9/code23 is in releases. Scheduled encrypted local backup installed and successfully run/restored. Latest release CI 34742388037 passed. Preserve the two user Android .idea edits. The current record explicitly lists outstanding acceptance; do not claim both phases fully accepted or repeat completed deployments/backups.
+
+Everything below is historical and is superseded by the current record where it conflicts.
+
+## Baseline 0 started — Blueprint V5.2 (2026-09-12)
+
+LATEST CONTINUOUS WORK: Added recursive upstream enforcement + change impact panel; immutable project robot configuration snapshots; multi-reviewer consensus (1–5) and finding-change vote invalidation. Focused tests and build pass. ALL SIX new migrations rehearsed successfully on recovery ooqwgylckjvfpkshhexm (combined release-1-rehearsal.sql). No production migration. New UI narrow Hebrew/desktop component checks done; integrated hosted preview/user acceptance still pending. Synthetic combined preview port4207 (session61253); no production writes. Preserve .idea changes. Do not repeat prior backup work or request authorization for local continuation. See current docs/RELEASE_1_CHECKPOINT.md; earlier unfinished-feature notes are superseded only for the listed implementation, not release acceptance.
+
+2026-09-13 ACTIVE RELEASE 1: User authorized all five steps as one continuous workflow. Added requirement snapshots, per-requirement evidence findings, pass/fail/expiring admin waiver, exact configuration text for tests, final release guards and expired-waiver dependency waiting. See project_review_results_20260913.sql (third undeployed migration), ReviewResults.tsx, updated requirements migration and component. Focused tests pass; desktop English and narrow Hebrew synthetic component preview inspected and styled. Integrated visual/role acceptance, managed physical configuration records, full transitive change impact and multi-reviewer stage policy remain unfinished. Do not claim full Release 1 or promote/build APK. Keep continuing authorized work; no fresh permission needed for local slices. Local preview script preview-review-results.mjs port4206, synthetic only. Preserve .idea edits.
+
+CURRENT CHECKPOINT: docs/RELEASE_1_CHECKPOINT.md consolidates completed recovery evidence, local undeployed evidence/structured-criteria implementation, tests, pending baseline work and ordered next phases. Use this checkpoint to resume; do not repeat completed backups or ask user to authorize each local slice again.
+
+STRUCTURED CRITERIA LOCAL: Added project_review_requirements_20260913.sql (not deployed), ReviewRequirements.tsx and ProjectTaskReview integration. New checkpoints default to guided requirement/acceptance/verification rows; existing criteria remain editable without conversion. Server validates 1–10 rows, lengths/methods, serializes to existing human-readable criteria snapshot through existing configure RPC (authorization/audit/invalidation retained). This is structured AUTHORING, not separate requirement entities or per-criterion evidence/results; those remain future work. Focused review suite passed including bad input, permissions, immutable criteria, change invalidation and downstream completion blocking. TypeScript passed. Test initially tried a no-op done→done transition and was corrected to exercise in_progress→done. No production/clone deployment, commit/push or APK. Visual QA still pending. Both new migrations must precede any UI release; do not push current UI alone.
+
+RELEASE 1 LOCAL FOUNDATION: User authorized proceeding. Added project_review_evidence_20260913.sql (NOT deployed): extends existing submissions with evidence_items and authenticated RPC, preserves old RPC/link compatibility, uses existing authorization/synchronization and transaction lock, rejects stale expected submission and invalid evidence. ProjectTaskReview now has ReviewEvidence editor/links for up to 12 titled versioned artifacts and captures expected submission when opening draft. Added focused tests to existing review-gate suite; passed. TypeScript/Vite passed before final small expected-submission state correction; TypeScript rechecked afterward. No production/clone migration replay for this new feature, no APK, no commit/push. This is only first local Release 1 foundation; structured requirements, multi-reviewer policy, physical configuration/test coverage, full change impact and visual QA remain. Do NOT claim full Release 1 or Baseline acceptance complete.
+
+Legacy function inspection: hyper-responder deployed source starts with sync_tba_matches implementation; is_admin is a separate deployed endpoint. Preserved both; complete source/version parity not verified. Recovery has real data, so not sanitized QA staging. Local synthetic PGlite suite used for development; no real-member actions performed.
+
+EMPTY BACKUP RESOLVED: User screenshot confirms encryption verified 0 files/0 bytes. Independently queried PRODUCTION storage.objects read-only: total 0. Per-bucket counts also 0 for feedback-attachments, finance-receipts, robot-issues, team-media. Thus the empty snapshot matches actual current Supabase Storage; no files missing from those buckets at check time. No need ask user to rerun or re-enter credentials for this snapshot. Snapshot is manual, not automatic future file protection, and does not cover external links. Current empty-storage recovery concern closed; remaining baseline items should proceed without repeating this check.
+
+LOCAL BACKUP FOLLOW-UP: User reports command done. Filesystem confirms Documents/G3-Backups/g3-storage-20260912T203314Z-44aa74.g3backup exists, 553 bytes. Actual decrypted contents/file count and final verification output have not been observed by agent. This is small and may represent an empty object inventory; do not claim uploaded attachments are protected without the terminal's verified file count. No password requested or decrypted by agent.
+
+LOCAL FILE BACKUP: Owner chose encrypted backup on computer first. Prepared docs/baseline-0/backup-storage.py and PowerShell launcher. AES-256-GCM with scrypt password derivation; plaintext only in memory, paginated Storage inventory, consistency recheck, checksums, encrypted disk read-back verification. Output Documents/G3-Backups, never Git. Synthetic encryption/wrong-password/tamper tests passed. ACTUAL BACKUP NOT RUN: requires private interactive service key and backup password entry. No production download or file restore claimed. This is manual first snapshot, not scheduled backup or protection against loss of the computer. API integration/actual capture remains unverified.
+
+MIGRATION REPLAY VERIFIED: Applied purchase_quantity_approvals_20260912.sql then qa_test_sessions_20260912.sql to recovery ooqwgylckjvfpkshhexm ONLY. Both successful; recovery-after-replay.json matches all ten production baseline category fingerprints exactly. No need rerun these migrations/checks without new changes. Backup data remains at backup time; schema parity is not data freshness or full application recovery. Asked owner for uploaded-file backup destination (existing private storage vs local encrypted backup first); answer pending. Never put file contents, signed URLs or keys in Git.
+
+RESTORE COMPLETED: Supabase marked ooqwgylckjvfpkshhexm COMPLETED. Verified SQL accessible; restored cron job 1 was active, disabled it in clone ONLY and verified false. Captured recovery-catalog.json. Backup predates recent changes: 133 vs 136 relations, three QA tables absent, seven newer routines absent. Do not use clone as current-release staging without reconciling/replaying appropriate migrations and sanitizing. No claim full recovery passed; uploaded bytes still not backed up/restored. See restore-rehearsal.md. Production unchanged by this restore workflow.
+
+RESTORE STARTED: Owner explicitly approved half a dollar/month. Rechecked Supabase total $0.50 on both forms, then launched Restore to NEW project at 2026-09-12 20:12:25 UTC from backup 2026-09-12 01:15:59 UTC. Recovery project name G3 Recovery Baseline 2026-09-12, ID ooqwgylckjvfpkshhexm. Source production hnqwhuuxlqfyawqymaaz untouched. Dashboard currently RESTORING; do not create a duplicate or claim validation passed. Supabase generated password was not stored in repo/chat. Next: wait until ready, inspect and disable cloned outbound schedules before any workflow testing, compare catalog, validate recovery. No app connected to clone; real restored data is not suitable for ordinary QA without sanitization.
+
+RECOVERY UPDATE: User upgraded Supabase to Pro. Verified organization PRO and scheduled backup list in authenticated dashboard, latest 2026-09-12 01:15:59 UTC. Earlier Free-plan backup-choice question is superseded; do not repeat. Storage objects explicitly excluded from database backups; separate recovery coverage and isolated restore rehearsal remain open. No restore/production mutation performed.
+
+Follow-up: actual Vercel production verified at dpl_CUKpN9E8LnkZFMbUYvLC2QL9dmPR / SHA 72e849a7534d68c87d03b7f712328c9a99a55f5a / g3-6740.com. Diff to baseline HEAD contains only Android build.gradle and handoff. Captured 15 deployed function names; hyper-responder and is_admin are absent from the 13-source repository inventory. One active cron job g3-scheduled-operations runs every 15 minutes; command hash recorded without command contents. Supabase backup dashboard explicitly says Free plan has no project backups. Asked owner to choose off-site encrypted backups on current plan versus reviewing paid options; answer pending. No plan upgrade authorized. See docs/baseline-0/deployment-verification.md. Remaining source parity, recovery and staging gates are not complete.
+
+User approved starting Baseline 0 and confirmed Eran Bongart as initial accountable owner for engineering/review and platform/recovery decisions. See docs/baseline-0/README.md and release-1-contract.md. Repository pinned to 29c1ec84cedf2985b6be3115fe30c069b1d11059. Local inventories and live Supabase catalog captured; SQL was read-only and retrieved metadata only. All 10 category counts matched parsed results. 25 local scripts: 24 passed, 1 failed due to CRLF-sensitive source assertion (normalized expression passes; no behavioral race guarantee). TypeScript/Vite build passed with bundle-size warning. No product code, migrations, deployments or APK changes. Preserve existing two Android .idea modifications.
+
+Baseline is NOT yet accepted: production web SHA, deployed Edge parity, scheduled/config identity, staging isolation and approved/tested recovery remain open. Release 1 contract is proposed, not implemented. Do not restart evidence collection or rerun passing tests without a reason. Continue remaining baseline items, then owner acceptance before Release 1 engineering-loop implementation. No commit/push performed.
+
+## Latest APK — signed 2.1.7 complete (2026-09-12)
+
+Owner confirmed web production deployment. Built from commit 72e849a plus Android version bump to 2.1.7 / versionCode 21 using existing G3 release signing configuration. Artifact: apps/dashboard_web/android/app/build/outputs/apk/release/app-release.apk (4,683,596 bytes). SHA256: b15d2055f61ffb21b9fe45f812c8c6980a89177b0fff409762af20cf91736ebd. TypeScript/Vite, Capacitor copy, signed release build, apksigner and all 19 actual APK web-file comparisons passed. QA switching, mentor review and quantity approval UI present; no remote preview URL; normal release crash-test button disabled. Final assembleRelease included successful Crashlytics mapping upload in the SAME invocation, so package and uploaded mapping match. Earlier offline/skipped-mapping attempts are superseded by this final successful build. Phone installation and live QA switching/review acceptance remain pending. No additional SQL or Edge Function deployment needed.
+
+Commit only PROJECT_HANDOFF.md and apps/dashboard_web/android/app/build.gradle as Prepare Android 2.1.7 release. Preserve/exclude the two existing Android .idea modifications. No commit or push performed by agent.
+
+## Deployment update — QA Edge Function (2026-09-12)
+
+Owner confirmed qa_test_sessions_20260912.sql succeeded. Agent deployed qa-test-session through the signed-in Supabase dashboard to project hnqwhuuxlqfyawqymaaz (verified against VITE_SUPABASE_URL). Dashboard displayed Successfully deployed edge function and the matching endpoint. Legacy JWT verification remains ON. No commit/push or web production promotion performed. NEXT: owner commits/pushes pending feature files excluding the two Android .idea files, opens the new preview, then live QA switch/return acceptance. Do not ask owner to redeploy the function or rerun SQL.
+
+## Latest implementation — QA-only test sessions (2026-09-12)
+
+Owner chose QA ACCOUNTS ONLY. Implemented exact-email QA Student/Mentor/Team Leader switching from Settings, real Supabase permissions, separate tab session/offline database, persistent Return to admin banner, server start/end audit and scoped database change audit. Includes the previous compact mentor-review layout fix. No passwords/emails changed, no real-member impersonation, no promotion and no APK.
+
+NEXT: run backend/supabase/qa_test_sessions_20260912.sql, deploy supabase/functions/qa-test-session/index.ts as qa-test-session in the SAME Supabase project, then commit/push preview. Detailed steps, safeguards and acceptance: docs/QA_ACCOUNT_SWITCHING_20260912.md. Commit: Add QA-only account switching and fix review status layout. Exclude existing android/.idea/deploymentTargetSelector.xml and misc.xml. SQL/Edge Function have NOT been applied/deployed by this agent. Focused SQL and actual-handler mock tests passed, TypeScript/Vite build passed, phone-width account controls visually verified. Live switch/return acceptance remains pending. Do not claim full live QA passed.
+
+# G3 Scouting App — Authoritative Handoff
+
+Last updated: 2026-09-10 (Asia/Jerusalem)
+
+
+## Latest correction — compact review status / QA account switching scope
+
+Owner supplied screenshot of reviewer explanation squeezed into a tall narrow column. Fixed review-task-action to a single-column grid at all widths, removed nested explanation border/padding and shortened explanation. Synthetic mobile screenshot verified readable full-width status and explanation. No business logic/SQL changes; commit THREE files (handoff, ProjectTaskReview.tsx, teamHub.css), excluding two preserved .idea files. Suggested commit: Fix compact mentor review status layout.
+
+Owner also requests admin impersonation for testing (QA member, QA Mentor, QA Team Leader examples). Current auth loads profile by real Supabase session user ID, so cosmetic role changes are insufficient. Asked whether scope is only explicitly designated QA accounts (recommended) or includes real team members; answer pending. Do not claim switching implemented. Proposed real QA-account session with conspicuous testing banner, return-to-admin, backend authorization and audit of initiating administrator/target. Need enforce QA allowlist, preserve real RLS and avoid merely changing role/session labels. Avoid touching real accounts until scope is answered. No credentials accessed or sessions switched.
+
+## Latest follow-up — event refresh and action clarity (2026-09-12)
+
+Owner reported static Active event placeholder, absent submission and ambiguous purchasing Approve. Confirmed code bug: ContextBackBar fetched selected event only on route change, missing same-page initial selection/event changes. Added activeEvent helper; Competition overview, Analysis, Picklist and Pit scouting writes notify current-tab subscribers; header refreshes on same-tab change, cross-tab storage and focus, ignores stale fetch responses, distinguishes missing selection/loading/unavailable event, and opens Overview when clicked. Purchase first button renamed Review quantity & approve…; it only opens the existing quantity dialog. Final Approve N in dialog saves. Checkpoint submission now explains unavailable state visibly (logged-in reviewer cannot self-submit, absent gate requires configuration, unauthorized/archived cases) rather than silently hiding controls. Existing self-approval protections unchanged.
+
+No SQL change. Prior combined commit ffa5b77 is present locally. Connected browser still exposes old fbhchg1e2; owner may be testing externally. Requested actual preview URL asynchronously; not yet received. Do not assert their deployment is stale based solely on ambient URL. No live task inspected/reassigned/submitted and no purchase approved. New local follow-up needs commit/push 11 files excluding the two preserved .idea files, message Fix active event refresh and clarify approval actions. Focused event-change tests and TypeScript passed. New full preview/phone acceptance remains pending. Avoid repeating broad tests.
+
+## Latest implementation — combined workflow corrections (2026-09-12)
+
+Owner authorized ALL ten reported purchasing/review/Settings/UI improvements. Implemented locally; new SQL NOT applied, not committed/pushed/promoted and no new APK prepared. Preserve/exclude two existing Android .idea files. Existing signed 2.1.6 does not include this batch. ONE combined preview next.
+
+Run ONLY backend/supabase/purchase_quantity_approvals_20260912.sql (requires the prior mentor gate and purchasing migrations). This includes additive all-pending Home counts (old aged-list field retained for older clients), quantity approval/remainder governance, actual received product-history quantities, scoped task-owner reassignment and planned mentor reviews. No paid Firebase service or new edge-function deployment. Existing partial-approval push delivery uses the existing send-purchase-push function.
+
+Home purchasing shows all pending plus overdue count; opening Inbox does not approve requests. Projects now explicitly selects the task owner when creating a task, and authorized managers can change the owner. Prior creation always assigned the creator, explaining why mentor-created student work could be a mentor Home assignment; the specific live reported task has not been inspected or changed. Existing ownership is NEVER bulk-reassigned. Ordinary Home project items are labelled Assigned task; mentor selection alone is not an actionable review. Planned reviews appear in Work only. Submitted revisions appear in Home review queue. Source task status remains completed only on approval; regular tasks retain completion. Visible Send for approval / Send revised work action opens revision + HTTPS evidence form; configuration remains secondary, evidence link explicitly says Open drawing / design / code. Disabled Completed option for unfinished gated tasks guides users to submission. Server gate enforcement remains intact.
+
+Purchasing: All requests tab provides responsive filtered table, original/approved/deferred quantities and status, scoped by existing source RLS. Approval dialog preserves original quantity, records approved/deferred/declined quantities and reason. Deferred remainder creates at most one linked fresh unapproved request per source; repeated calls return same child. Child can itself be partially approved. No automatic deferred purchasing. Original quantity is immutable; direct client status/decision bypass blocked. Legacy approval RPC still grants full original quantity. Receiving above newly approved quantity rolls back stock/expense work; existing previously received history is not rewritten. Existing receiving remains a single final receipt, not a new multi-delivery ledger. Reduced quantity is not an automatic budget reservation/price estimate. Existing estimate is retained as original estimate, child estimate left unset. No auto-notification for merely planning review; no extra cron.
+
+Feedback includes Closed, Reviewing and Planned filters. Event chip displays full name across own mobile row. Settings has collapsed push preferences and visible account/admin links; admin overview still leads to its existing dashboard, More remains broader navigation. Admin links shown only to admin role matching existing navigation.
+
+Validation: TypeScript/Vite passed (existing large-chunk warning), new PGlite tests passed for pending/overdue counts, reduced/full transition behavior, permission/direct-update denial, atomic receiving rejection without expense leftovers, actual received product history, unique remainder request, declined remainder and rerun. Existing review tests plus new planned-vs-submitted queue and scoped owner assignment passed. Synthetic real-component desktop table, Hebrew 390px table, mobile approval form, student review action/evidence, Settings and long event label inspected; mobile caption wrap and primary/secondary button styling corrected. No live task or purchase changed. True multi-session concurrency and phone/live acceptance remain pending. Do not repeat tests already passed without new changes.
+
+NEXT: owner run SQL, commit/push NINETEEN product/doc files excluding both .idea files, send preview. Commit: Clarify review submission and add quantity-aware purchase approvals. See docs/WORKFLOW_CORRECTIONS_20260912.md for acceptance steps. Keep this latest checkpoint authoritative over historical instructions below.
+
+## Latest APK checkpoint — 2.1.6 built (2026-09-11)
+
+Owner explicitly requested APK now and deferred mentor-review acceptance testing. Preview fbhchg1e2 is deployed; signed-in read-only inspection confirmed mentor setup and reviewer choices load. No live checkpoint created or approved. SQL application not explicitly confirmed by owner in this turn. Built signed release 2.1.6/versionCode 20 using existing signing configuration. Artifact: apps/dashboard_web/android/app/build/outputs/apk/release/app-release.apk. TypeScript/Vite, Capacitor copy, all 19 asset comparisons, Gradle assembleRelease and apksigner verification passed. Normal crash-test control remains disabled. Offline build skipped Crashlytics mapping upload; upload remains pending for deobfuscated native crash reports for this build. No paid service or production promotion performed. Phone installation and mentor workflow acceptance remain pending, at owner's request. Commit only PROJECT_HANDOFF.md and android/app/build.gradle as Prepare Android 2.1.6 combined release; exclude the two pre-existing .idea files. Latest checkpoint overrides historical next steps below.
+
+## Latest implementation — opt-in mentor review checkpoints
+
+Owner authorized implementation after discussing CAD drawing review, mechanical prototype approval and other selected milestone gates. Implemented locally in existing Projects tasks; not deployed or SQL-applied yet. Prior production promotion remains confirmed. ONE consolidated APK remains pending; no Android asset copy/version change in this batch.
+
+NEXT OWNER ACTION: run `backend/supabase/project_review_gates_20260911.sql`, commit/push TWELVE product/documentation files excluding the two Android .idea modifications, then provide the new preview. Commit message: `Add revision-based mentor review gates and enforced stage approvals`. Detailed flow and validation: `docs/PROJECT_REVIEW_GATES_20260911.md`. Do not repeat earlier SQL or assume this gate migration is applied.
+
+Review configuration lives on existing Projects task rows, enabled only by scoped assign_team_work permission. Select active mentor/admin reviewer and criteria. Link downstream tasks using existing Prerequisites before starting them. No existing task is automatically gated. Submission requires a unique revision label, HTTPS revision-specific evidence link and optional test notes; no file uploads or paid services. Assigned mentor can approve/request changes with a reason, never self-approve. Approval completes the checkpoint through existing task synchronization. Admin emergency override requires a reason and is recorded distinctly. Reviewer changes require an audit reason; criteria changes and manual reopening invalidate current release and reopen the checkpoint. New revisions supersede the current release without erasing earlier history.
+
+Database guards prevent direct API completion of an unapproved checkpoint, starting/completing dependent tasks without current approval, bypass by unlinking gated prerequisites, or completing a project with outstanding own review gates. Ordinary ungated dependencies retain advisory behavior. Already-performed downstream work is not automatically undone; subsequent transitions are blocked and prerequisite warning remains visible. Review history prevents task/project hard deletion; archive preserves it. Admin can withdraw a checkpoint only before any submission, with audit reason. Submitted checkpoints and links are deliberately retained; no general gate-removal workflow added.
+
+Home and Work have an assigned-mentor review queue linking directly to the expanded Projects review panel; no duplicate team_actions notification. Current state, revision evidence, criteria, decision, named actors and history are visible. Source RLS preserved for read contexts; mutation RPCs enforce scoped manager/author/assigned active mentor/admin authority. Cross-tab/focus refresh uses existing projectRefresh notifications.
+
+Validation passed: TypeScript/Vite (existing chunk-size warning); PGlite real-function/migration tests for opt-in behavior, configuration permission, active reviewer roles, self-approval prevention, unsafe URL rejection, direct status/table bypass denial, changes requested/resubmission, stale decisions, dependency release, new revision relock, reviewer reassignment, changed criteria, reasoned admin override, project completion gate, manual reopen invalidation, unused withdrawal, source privacy, audit retention and migration rerun. Desktop/Hebrew mobile real-component fixture review panel had no overflow (492px/284px); approval stays disabled until a written reason is entered. Browser fixture writes disabled; no real work submitted or approved. Multi-session lock contention is not exercised by PGlite; advisory/row-lock conflicts can abort for retry without committing a partial release. External evidence must use a fixed revision URL: the app records the reference and cannot freeze an externally editable file.
+
+## Production confirmed; mentor review workflow under discussion
+
+Owner confirmed the combined changes look good and were promoted to production. Do not ask for promotion again. Final consolidated Android sync/version/signed APK and phone acceptance remain pending. Owner now requests feedback (not implementation yet) on selective mentor sign-off for CAD/drawings, mechanical prototypes and other milestone handoffs.
+
+Code inspection: project task prerequisites are advisory; season_milestones has ordinary status/depends_on only. engineering_decisions defaults status to approved on creation; it is not an independent mentor approval workflow. Existing test results do not constitute manufacturing authorization. Proposed next product phase is opt-in milestone review gates, with assigned authorized mentor, revision-specific evidence, submit/changes requested/approve audit history, server-enforced downstream release and reviewed emergency override. Preserve ordinary tasks and existing records; no automatic conversion of existing completed work to pending approval. No workflow code changed in this discussion.
+
+## Latest fix — project source/assignment consistency
+
+Owner reported deleted task still present in Work/Home assignments and requested combined lifecycle consistency. Confirmed cause in unified_responsibility_engine_20260902.sql: project_task_to_action handled INSERT/UPDATE but no DELETE. New `backend/supabase/project_action_consistency_20260911.sql` handles delete/cascade delete, reconciles project name/status changes, updates task title/due/priority/assignee/status/archive, cancels old orphan assignments, and repairs existing task actions. Stable source action ID avoids duplicates. Reopen/reassignment clears the current assignee's old dismissal/snooze so responsibility is visible again. Other action types untouched. Completing a project does not silently complete its unfinished tasks; task status remains authoritative. Existing dependency deletion restrictions remain.
+
+Frontend: all Projects mutations and dependency/checklist changes notify same-origin tabs. Home priorities/counts, Work summaries, Projects/dependencies, Updates feed and event preparation refresh on local change, tab return/focus and cross-tab storage notifications. Home readiness already refreshes periodically/on focus; storage refresh added. This is not guaranteed instantaneous push to another device: other-device edits appear on navigation/focus (and existing readiness interval). No new polling, Realtime publication or paid services. Mutation success now verifies affected rows for archive/delete/project update, preventing a no-op permission denial from appearing successful.
+
+Validation: focused PGlite actual-function/migration tests passed title/due/priority, project rename, complete/reopen, archive/restore, reassign/unassign, task deletion, project cascade deletion, orphan repair, stable action identity and denied direct reconciliation calls. TypeScript/Vite passed. No real tasks deleted or edited for testing.
+
+NEXT: run ONLY project_action_consistency_20260911.sql, then commit/push TWELVE files (exclude the two Android .idea changes). Suggested commit: `Synchronize project task lifecycle across Home Work and Updates`. Combined preview/release still pending, no APK yet. Current inventory-category changes were already committed in working-tree baseline; do not repeat that commit or earlier SQL. Do not claim owner has applied this new consistency SQL until confirmed.
+
+## Latest follow-up — inventory forms, admin categories and project discovery
+
+Owner accepted the operations-batch deployment step and supplied preview `https://g3-scouting-app-5qpe-ekdvpb0xx-eranbos-projects.vercel.app/home`. Read-only check found Home loaded, project Open task visible, no horizontal overflow. Owner then reported oversized inventory checkboxes, missing Software category and unclear project creation route.
+
+Implemented follow-up: Add part/equipment have explicit headings, two-column desktop/one-column mobile fields, 20px checkbox controls and Save/Cancel footer. Inventory → Parts & stock / Tools & equipment → Manage categories (admin only) supports add, rename, disable/re-enable; category names stay text-compatible, renames atomically update existing items, disable preserves records, legacy categories are imported, Software seeded for both scopes. Historical finance/purchase snapshots unchanged. Administrator RPC checks active membership and is_admin; direct category writes revoked. Existing category lists remain fallback until migration; management shows setup error if unavailable. Renamed default categories do not reappear on migration rerun.
+
+Project analysis: Projects already supports all FRC teams; Business & Outreach is one workspace, not a required entry point. Work now has prominent Team projects link above responsibilities; follows the member's team when available, otherwise the all-workspace picker. Selected workspace shows create form only with existing scoped manage_team_projects permission; read-only users receive a clear explanation. No project reassignment or permission broadening.
+
+NEXT: run only `backend/supabase/inventory_categories_20260911.sql`, then commit/push NINE follow-up files excluding both Android .idea modifications (11 total Git entries). Commit message: `Improve inventory forms, admin categories and team project navigation`. Nine files: handoff; category SQL; InventoryCategories.tsx; ToolsInventoryPage.tsx; FrcWorkPage.tsx; ProjectsPage.tsx; teamHub.css; preview-home-readiness.mjs; test-inventory-categories.mjs. Existing operations SQL does not need repeating. Keep same combined preview/release plan, no Android copy/version/build now.
+
+Validation: TypeScript/Vite passed (existing chunk warning); PGlite category tests passed admin-only writes, duplicates, legacy import, rename propagation/scope, disable preservation and migration rerun. Real-component fixture verified equipment form at desktop width (two equal columns, 20px checkbox, no overflow), Hebrew mobile stock form (20px checkbox, no overflow). No live category/item changes made. Owner preview validation remains pending; do not claim comprehensive role/live mutation acceptance.
+
+## Latest checkpoint — September 11: combined operations batch IMPLEMENTED
+
+This checkpoint supersedes all earlier pending-step instructions. Owner authorized maintenance readiness, event-specific robot checks and inventory planning together, plus the Home task-button correction. All are now locally implemented. Do not ask again whether to proceed with these phases. Keep preview only until owner accepts; ONE final APK after promotion, no intermediate Android copy/version bump. Two Android .idea modifications are preserved and excluded.
+
+NEXT OWNER ACTION: run ONLY `backend/supabase/operations_readiness_batch_20260911.sql` in Supabase SQL Editor. After SQL success, commit/push the combined product files (exclude both .idea files), then review the new Vercel preview. See `docs/OPERATIONS_BATCH_20260911.md` for exact controls and focused acceptance steps. No previous SQL needs repeating. No paid Firebase service, cron or push notification was enabled. Live records were not changed in this implementation turn.
+
+Implemented: editable per-component service owner/interval/first due date, atomic serviced-event record and baseline update, shared Home/maintenance due calculation; event-linked required existing test plans with tester/deadline, source RLS and assigned-tester/scoped-manager enforcement, latest event-specific result, retest after plan changes, upcoming-30-day Home summary; optional inventory replenishment target, aggregate pending/approved/ordered quantities, suggested reviewed purchase draft; Home task navigation and reminder controls separated with source-only completion unchanged.
+
+Validation: TypeScript/Vite passed; operations date/quantity rules and expanded PGlite SQL passed, including RLS denial, event privacy, unrelated-pass exclusion, latest fail, changed-plan retest, service status preservation, aggregate quantities and migration rerun. Real-component fixture checked event form desktop/Hebrew mobile, mobile service settings and inventory draft quantity 7 with no overflow. Fixture blocks writes; live SQL/preview validation remains owner work. Build has existing large-chunk advisory. Preserve all existing source permission policies.
+
+## Current work — 2026-09-10 Home competition readiness
+
+Latest requested correction: project task completion belongs only in Projects, not Home/Work reminder controls. HomeActionInbox now replaces Complete with Open task for project_tasks, labels snooze Remind tomorrow and explains source-only status; handler also refuses completed state for project_tasks. Existing overdue tasks keep source-only resolution. Shared visibility and Updates now retain active project tasks previously marked completed in reminder state; treated as already read in Updates, preserving unread counts. Actual completed source tasks remain excluded by existing cancelled-action RLS/queries. Other responsibility types unchanged. TypeScript and focused visibility tests passed. Pending SIX files: this handoff, HomeActionInbox.tsx, responsibilityVisibility.ts, ProductivityHomePage.tsx, UpdatesPage.tsx, test-readiness-priorities.mjs. No SQL. Message `Keep project task completion in Projects only`. Exclude .idea; still preview only, no production/APK.
+
+Latest dependency UX correction: owner applied SQL/pushed and tested CAD→Mechanical using QA projects/tasks. Screenshot confirms CAD prerequisite reports Complete after source completion, but heading Prerequisites (1) and static waiting explanation were confusing. Changed completed prerequisite heading to All prerequisites complete, ready explanation (explicitly distinguishes Mechanical task completion), green ✓ Completed badge. Waiting/unavailable remains amber; no links show No prerequisites linked. TypeScript/diff checks passed. No SQL. Pending THREE-file commit: TaskDependencies.tsx, teamHub.css, handoff; exclude .idea. Message `Clarify completed prerequisites and ready-to-proceed state`. Completion path owner-confirmed; reopening behavior remains unconfirmed. Keep preview only per owner, no promotion/APK until accepted.
+
+CURRENT PHASE September 11 — cross-team task dependencies. Owner explicitly confirmed site NOT promoted; keep all current work in preview until this phase is accepted. Prior latest Home banner accepted. Implemented new project_task_dependencies graph (existing season_milestones.depends_on untouched). Projects task rows have expandable Prerequisites, cross-project candidate selector, explicit Save dependency and Unlink. Scoped assign_team_work on downstream project permits management; prerequisite only needs source visibility. Multiple edges allowed; self/duplicate/recursive cycles rejected server-side; graph inserts serialized with table lock (concurrent lock upgrades may return retryable deadlock). Prerequisite delete restricted until links removed; unlink never deletes tasks. Archived/unavailable prerequisites stay waiting, not silently cleared. Source completion resolves direct waiting; reopening restores it. Dependency status is advisory: does not automatically rewrite task status or prevent a deliberate completion; completed downstream tasks with reopened prerequisites show review warning. No transitive scheduling/automatic due-date shifts or cascading status changes.
+
+Home includes one entry per waiting upstream task with impacted visible-task count, owner/team and overdue indicator. Home query scoped to downstream assignee or authorized team risk/assignment viewer; unauthorized source details remain null and flagged unavailable, not leaked. No notifications generated; existing responsibilities unchanged. Waiting and overdue labels are distinct. Existing source RLS retained. Added additive task_dependencies to Home RPC. No paid service/cron/Android copy/version change.
+
+Validation passed: TypeScript/Vite; PGlite graph tests for chains, cycles/self/duplicate rejection, source complete/reopen/archive, hidden source privacy, denied writes, deletion restriction/unlink preservation, migration rerun and downstream scope with cross-team upstream. Concurrency lock behavior not exercised with parallel DB sessions. Mobile real-component fixture expanded dependency controls had no overflow (277px). No live tasks/links changed. NEXT OWNER ACTION: run ONLY `backend/supabase/cross_team_task_dependencies_20260911.sql`, then commit/push TEN files: handoff, SQL, TaskDependencies.tsx, HomeDependencyBlockers.tsx, ProjectsPage.tsx, ProductivityHomePage.tsx, readiness.ts, teamHub.css, test-home-readiness-sql.mjs, preview-home-readiness.mjs. Message `Add cross-team task prerequisites and waiting status`. Exclude two .idea files. Preview-test CAD→Mechanical linking and source completion/reopen; no promotion until owner accepts phase, one final combined APK afterward. Maintenance/required robot checks remain future scope.
+
+Latest small layout request: owner wants Competition center prominent at bottom. Moved it outside the Home sidebar/workspace into a full-width bottom banner, with responsive 140px desktop/128px mobile minimum height and larger heading. Other Home columns unchanged. Pending three-file commit: ProductivityHomePage.tsx, teamHub.css, this handoff; exclude .idea. Message `Place Competition center in a full-width Home banner`. No SQL or Android changes; continue current batch preview/release rather than new engineering phase.
+
+LATEST HOME REPAIR (September 11): owner rejected full-width CSS patch and supplied desktop screenshots with blank grid positions and oversized panels, with only 7% usage remaining. Replaced implicit main grid with explicit home-workspace structure: priorities in main column, approvals/readiness/competition link in compact sidebar, mobile single column. Scoped styles reduce headings/padding and retain purchase-search improvements. TypeScript passed; real-component isolated browser verified 1366px desktop two columns (692/420px) with no workspace overflow, mobile one column with no overflow. Preview fixture now supports ?desktop=1 and approval empty-state data. No SQL/data/business-rule change. Pending FOUR-file commit: ProductivityHomePage.tsx, teamHub.css, preview-home-readiness.mjs, PROJECT_HANDOFF.md. Message `Give Home an explicit responsive dashboard layout`. Exclude .idea. User must inspect deployed desktop preview before promotion; do not claim production acceptance. Same combined release; no APK yet.
+
+Latest presentation correction: owner confirmed approval-aging SQL/commit/push, reported unbalanced Home columns and poor purchase reuse layout. CSS-only fix makes Home priorities/approvals/readiness/competition sections each span the full grid with zero outer margins and consistent padding; four metric buttons remain unchanged. Purchase reuse now has full-width heading, two balanced search/category columns, inset padding, team-colored mode buttons and a single-column mobile layout. Local browser confirmed all four Home sections equal width/full-grid; purchase search card visually checked at mobile width. No business logic/SQL changes, no broad retest. Pending commit TWO files: teamHub.css and this handoff, excluding .idea. Suggested `Align Home sections and polish purchase history layout`. Keep same combined release/APK; preview acceptance and promotion pending.
+
+LATEST BATCH — purchasing approval aging: owner confirmed overdue SQL and commit/push, explicitly requested continuing so multiple changes share a release. Added `purchase_approval_aging_20260910.sql`, default 72 elapsed hours, admin-editable 1–8760 hours via Home Purchasing approvals → Approval aging settings → Save threshold. Only status requested qualifies; approved/rejected/ordered/received disappear automatically at refresh. Same is_admin authority as existing transition_purchase_request; security-invoker/source RLS preserved. Returns up to 100 oldest requests, no costs/reasons/person details, no extra notifications or cron. Existing Home RPC extended additively; no client-side financial-table query. No paid services. Focused database tests passed for admin-only read/settings writes, threshold validation/effect, clearing approved requests and rerun. No live SQL or data changes by agent. No Android copy/version bump yet.
+
+Next owner action: run ONLY purchase_approval_aging_20260910.sql, then commit/push SIX files (handoff, SQL, PurchaseApprovalAging.tsx, ProductivityHomePage.tsx, readiness.ts, test-home-readiness-sql.mjs), excluding two .idea changes. Message `Add configurable purchase approval aging for administrators`. Review overdue tasks and purchase aging together on ONE preview; after acceptance promote and prepare ONE APK. Prior 2.1.5 release was reported done. Do not repeat owner validation or launch another feature phase before this batch acceptance.
+
+CURRENT PHASE — overdue project tasks: owner reported prior final release steps “done,” then authorized next phase. Only two pre-existing .idea changes remained at start. Implemented first slice (purchasing approval aging/configuration is NEXT, not implemented). New `overdue_project_tasks_20260910.sql` adds an indexed, read-only security-invoker query to existing Home RPC: oldest 100 visible overdue unfinished tasks in nonarchived/noncompleted projects, active-member gate, own assignment or view_team_risks plus project-scoped assign_team_work. Existing source RLS still applies. Computed on read so crossing a deadline needs no mutation, scheduler or paid service; no new notifications or stored signal-history transitions. Jerusalem calendar-day count with Overdue today for same-day lateness. Own tasks merge into existing Home priorities once (including Inbox-dismissed/snoozed tasks while source remains overdue); task source is authoritative. Other permitted tasks are grouped under Team readiness. Complete or reschedule in Projects to clear. Existing unread counts are not expanded. Older clients ignore additive RPC field.
+
+Focused validation passed: TypeScript/Vite, PostgreSQL-compatible tests for due date/source completion/visibility/archive and Home response, pure deduplication/restoration/ownership tests. No live data changed, SQL not applied, no Android asset copy/version change. NEXT: owner run this one new SQL, commit/push eight files (handoff, SQL, HomeActionInbox.tsx, HomeReadiness.tsx, ProductivityHomePage.tsx, readiness.ts, test-home-readiness-sql.mjs, test-readiness-priorities.mjs), exclude .idea, test preview. Suggested message `Surface overdue project tasks without duplicate responsibilities`. Batch purchasing approval work into this next release; no intermediate APK. User requests minimal tests and token use; do not revalidate owner-confirmed actions.
+
+RELEASE CHECKPOINT: owner confirmed production promotion after final task Save correction; product HEAD `98bdc05 Clarify task creation and add explicit task status saving`. Prepared ONE combined Android release **2.1.5 / versionCode 19**, replacing the earlier uncommitted 2.1.4 preparation, so it upgrades either installed version. TypeScript/Vite and Capacitor copy passed; all 19 dist files match Android assets byte-for-byte. Index SHA256 `2141b0ce08791034854235b8fd66f7892edbee6d56ffff396849234a92699866`. Local Firebase artifact verification passed (FCM preserved, release telemetry enabled, debug telemetry disabled). Normal release crash-test flag remains false. No paid Firebase change. Signed APK has NOT been built or installed by owner yet.
+
+Next: owner Android Studio → Build → Generate Signed App Bundle or APK → APK → existing g3-upload keystore → release → Create. Install 2.1.5 over current app. Commit ONLY this handoff and android/app/build.gradle as `Prepare Android 2.1.5 combined release`, excluding both .idea files; push. No new SQL or web promotion needed for this version/documentation commit. Preserve token preference: no repeated acceptance checks or new phases before install confirmation.
+
+Latest owner acceptance/fix: owner created Business & Outreach project and preparation task successfully, then completed it; screenshot confirms Task updated and 1/1 tasks complete. Do not repeat their checks (explicit token-saving request). Owner disliked automatic task-status save. ProjectsPage now stages task status with explicit Save, Unsaved change, pending disable and error retention; successful save dispatches g3-actions-changed. TypeScript passed. Task date in screenshot is October 27; Home normal-priority filter is next seven days, so its earlier absence from What needs you while present in Updates is expected, not lost data. No Home filtering change. Pending commit now FOUR files: PROJECT_HANDOFF.md, CompetitionChecklist.tsx (empty-project UX), ProjectsPage.tsx, teamHub.css. No SQL. Exclude three Android files. Suggested message: `Clarify task creation and add explicit task status saving`. Push final correction preview, accept/promote, then ONE final Android bundle/APK; do not start more phases.
+
+Latest usability fix: owner reached empty required Project selector while entering a task. CompetitionChecklist now blocks task entry when no assignable project exists and explains Projects → choose team workspace → create project, with Open Projects navigation. Empty existing-task selector likewise replaced by an actionable empty state. No SQL or live project created. Two-file follow-up commit: this handoff and CompetitionChecklist.tsx; exclude preserved Android files. Owner can already create a project in the current preview, choosing a workspace first, then return to the event. Earlier instructions omitted the required workspace selection. Keep one final APK plan.
+
+CURRENT FOLLOW-UP: owner confirmed checklist SQL success and supplied preview `https://g3-scouting-app-5qpe-2mv39wypv-eranbos-projects.vercel.app/home`. Read-only authenticated admin inspection confirmed two featured countdowns, but both festival and kickoff were Team event, so competition-only checklist was hidden. Owner clarified festival is an event and kickoff is a meeting, then authorized checklists for all event types. Prepared `backend/supabase/event_checklists_all_types_20260910.sql`: changes only read/insert checklist policies to remove event-type restriction; retains cancellation, source RLS and scoped management permissions. Calendar now renders checklist for all types, heading Event preparation. No live records or classifications changed. Tests pass across all seven types, unauthorized access and cancelled-event denial. NEXT: owner runs this new small SQL; then commit/push FIVE files (this handoff, new SQL, test-home-readiness-sql.mjs, CompetitionChecklist.tsx, UnifiedCalendarPage.tsx), excluding the three Android files. Suggested message: `Allow preparation checklists for every calendar event`. New preview acceptance remains required; one final APK after combined acceptance, no intermediate APK.
+
+LATEST CHECKPOINT — competition preparation checklist: owner accepted the multiple-countdown preview (“seems ok”) and authorized the next phase (“Lets go”). Local implementation complete; new migration `backend/supabase/competition_checklists_20260910.sql` has NOT been applied live. Existing competition Calendar details now include a checklist, linking existing project tasks or creating a task atomically in an existing project with required owner/deadline. Open a task to change its status in Projects; Inbox dismissal is not source completion. Unlink removes only the association. Unique event/task pairs prevent duplicates. Existing project-task notification trigger remains unchanged; linking creates no new responsibility. Home countdowns include visible checklist completed/total and overdue counts. These counts do not imply robot/stock readiness.
+
+Permissions: reads require Calendar and task/project RLS visibility; management requires manage_team_calendar for the event audience scope and assign_team_work for the project's subteam. Thus team leaders cannot manage whole-team checklists without the existing appropriate authority; admin/mentor can subject to configured permissions. Summaries count only visible, unarchived source tasks. Existing task assignee/creator permissions continue to govern source edits. Task due dates are absolute timestamps entered in the browser's local time; event rescheduling does not silently move task deadlines.
+
+Validation: TypeScript/Vite passed; PGlite tests passed for completion/overdue, Home summary, source visibility, unauthorized writes, duplicates, atomic rollback on forbidden event, unlink preserving task, and migration rerun. Existing readiness/countdown SQL regression tests passed. Isolated mobile browser checked checklist and task form without horizontal overflow (313px dialog); no live test tasks created. Real preview writes and source-notification behavior still require acceptance testing. No APK or production promotion performed.
+
+NEXT OWNER ACTION: run ONLY competition_checklists_20260910.sql and report success. Then commit/push nine feature files: this handoff, migration, CompetitionChecklist.tsx, UnifiedCalendarPage.tsx, HomeReadiness.tsx, readiness.ts, teamHub.css, test-home-readiness-sql.mjs and preview-home-readiness.mjs. Exclude the three preserved Android files. Suggested commit: `Add competition preparation checklists using project tasks`. Test combined preview, promote once after acceptance, then prepare ONE final APK. Do not build intermediate APKs or repeat earlier SQL.
+
+Latest follow-up: owner authorized multiple featured countdowns and explicitly requested one combined release/APK and lower token overhead. Implemented primary countdown plus an initially expanded, collapsible list of all other eligible events. New additive migration `backend/supabase/home_readiness_countdowns_20260910.sql` returns ordered `events` while retaining `event` for older clients; new UI falls back to `event` until SQL is applied. Audience/date/window rules remain unchanged. SQL tests passed for multiple events, ongoing competition precedence, legacy field compatibility, audience filtering and rerun. NEXT: owner runs this small new SQL, then commit/push six files (handoff, migration, test-home-readiness-sql.mjs, readiness.ts, HomeReadiness.tsx, teamHub.css), excluding preserved Android files. Combined preview acceptance, promotion and ONE final APK remain pending. Do not start subsequent phases or build intermediate APKs. Previous UI correction is already committed in the working tree baseline.
+
+UI follow-up: owner committed/pushed all 18 feature files as `759c9f0` (remote tracking was synced), then reported poor Team readiness and Calendar editor presentation. Prepared a presentation-only correction in HomeReadiness.tsx, UnifiedCalendarPage.tsx and teamHub.css: readable event types, two-column desktop/one-column mobile form, correctly sized checkboxes, grouped Home settings, collapsed optional competition link and compact readiness typography/cards. No new SQL. Browser mobile check confirmed 20px checkboxes and no horizontal overflow; deployed preview acceptance remains pending. Include this handoff with the three UI files in the follow-up commit, excluding the three preserved Android files. Do not promote until owner accepts the corrected preview.
+
+This checkpoint supersedes older next-action statements below. Owner authorized implementation with “ok, let's start,” then “continue.” Phase 1 is locally implemented: editable existing Calendar competition metadata/Home countdown, opt-in per-item stock thresholds, critical issue and stock signals with source RLS, and nonduplicated personal critical priorities. Read `docs/HOME_READINESS_PHASE1_20260910.md` for scope, tests, limitations, exact 18-file commit list and release order.
+
+Owner confirmed **SQL success** for `backend/supabase/home_readiness_phase1_20260910.sql`. Do not repeat it. NEXT OWNER ACTION: commit the 18 feature/documentation files on `web-portal-preview`, excluding the three Android files, then push and provide the new Vercel preview URL. Commit/push, authenticated preview acceptance, production promotion and Android asset copy remain pending. Do not build an APK from this phase yet. Prior 2.1.4 preparation remains uncommitted and its installation is unconfirmed.
+
+All four original modified files were preserved: this handoff, Android app/build.gradle and two Android .idea files. Feature commit excludes those three Android files. No paid Firebase services. Phase 3 learning QA remains paused. Do not restart Firebase setup or repeat already completed feedback/purchase migrations.
+
+## Historical release — 2026-09-10 feedback notifications and purchase reuse
+
+### Production promotion and Android 2.1.4 preparation
+
+Release manifest verification (`:app:processReleaseMainManifest`, Java 21) passed outside the sandbox after its Android user-directory access limitation. This validates manifest generation; it is not a completed signed APK build.
+
+Owner confirmed both SQL migrations succeeded, cleanup returned 1 archived announcement / 0 cancelled legacy actions, and Inbox duplication is gone. Owner accepted preview and explicitly confirmed **Promoted to production**. Git HEAD is `2c18c01 Archive duplicate legacy feedback announcements`, following `33706b7 Notify admins about feedback and add reusable purchase history`. Do not repeat these SQL migrations or request promotion again.
+
+Prepared Android **2.1.4 / versionCode 18** in `apps/dashboard_web/android/app/build.gradle`. TypeScript/Vite passed; Capacitor copy completed and all 19 bundled web files matched dist byte-for-byte. Index SHA-256: `8d226c4351d3d73c277cbab1c848424240ac2f1256dd0ed4cf6d0a97ba2f7b8b`; entry `assets/index-C5xyeIJq.js`. Normal release retains `CRASHLYTICS_TEST_BUILD=false`. No signed 2.1.4 APK built or installed yet: owner must build normal signed release in Android Studio with the existing keystore, then install over 2.1.3. Save these two release files (handoff and build.gradle) with commit message `Prepare Android 2.1.4 release`, excluding the same two `.idea` files. No further web promotion is required for this version/documentation-only commit. This checkpoint supersedes pending SQL/preview/promotion statements below.
+
+### Follow-up: duplicate legacy feedback notification
+
+Owner confirmed both feature SQL migrations succeeded and committed/pushed the 12 files (working tree had only the two `.idea` changes at the next turn). Owner says preview overall looks okay, but screenshot shows BOTH `Review feedback: היסטוריית קנייה` and the legacy `New improvement idea: היסטוריית קנייה`. Cause: the migration deliberately preserved historical announcements while backfilling review actions. Prepared `backend/supabase/feedback_legacy_announcement_cleanup_20260910.sql`: archives only unambiguous legacy announcements matched by exact transaction timestamp, submitter, generated title and message suffix, with an active replacement review. Also cancels linked legacy announcement actions; no feedback or announcement records deleted. Extended PostgreSQL test verifies exact match archived, different timestamp/manual message preserved, rerun safe. Local tests passed. Owner still needs to run this ONE cleanup SQL and report its returned count, then refresh Inbox/Home. No preview rebuild/APK needed for this data correction. Follow-up commit has 3 files: this handoff, cleanup SQL, and `apps/dashboard_web/scripts/test-feedback-purchase-sql.mjs`. Promotion/new APK still unconfirmed.
+
+Owner authorized BOTH changes after reviewing the proposal. Implementation and local checks are complete; SQL application, commit/push, authenticated deployment preview, promotion and new APK remain pending. Read `docs/FEEDBACK_PURCHASE_REUSE_20260910.md` for exact behavior, limitations, tests, 12-file commit list and activation order. Next owner action: run the two new SQL migrations in the existing Supabase project, feedback first then purchase history. No SQL was run against live Supabase in this task. No paid Firebase services enabled.
+
+The two pre-existing Android `.idea` changes remain preserved and excluded. At task start these were the only uncommitted files; the earlier September 8 documentation was already committed. Do not restart prior Firebase work or repeat old migrations. Phase 3 learning QA below remains paused while these owner-requested fixes are prepared.
+
+Separate September 8–10 connectivity diagnosis: work laptop presented **Fortiguard SDNS Blocked Page** certificate from Fortinet, proving DNS-filter redirection rather than the site's certificate being shown. Public HTTPS and www/HTTP redirects passed from our connection. Owner was given FortiGuard Education review wording; submission/outcome not confirmed. No site/security configuration changed. School cause not independently confirmed.
+
+This is the single source of truth for resuming development. Read this file before changing the app. Do not reconstruct the roadmap from chat memory.
+
+## Exact current state — authoritative resume checkpoint, 2026-09-08
+
+This section supersedes all older pending/next-action statements in the historical release sections below. We stopped for the day during Phase 3. Do not restart Firebase setup, repeat migrations, recreate QA accounts, or rebuild already-installed releases.
+
+### First action tomorrow
+
+The browser was last signed in as **QA Student**, on Updates/Inbox. The last instruction to the owner was **Full navigation → Sign out → sign in with your administrator account → tell me “admin in.”** That administrator sign-in has NOT yet been confirmed. First inspect available browser tabs/session; if still QA Student, ask the owner to complete that sign-in. Never assume an old tab ID remains valid.
+
+Once administrator sign-in is confirmed, prepare clearly named QA learning content: a single-answer question, a multiple-answer question, and a written/manual-review response. The intended recipient is **QA Student only**, not the whole team. Show the exact test contents and recipient before publishing/creating notifications. No such content or assignment has been created yet. Then test student submission, server scoring, answer-key privacy, attempt limits, instructor review and Home/Updates behavior. Continue with mentor/team-leader boundaries afterward.
+
+### Phase 3 state and QA access
+
+- Detailed evidence and execution order: `docs/PHASE3_ACCEPTANCE_20260908.md`. Original learning checklist: `RELEASE_ACCEPTANCE_20260906.md`. Phase 3 is STARTED, not complete.
+- Owner authorized password resets for ONLY QA Student, QA Mentor and QA Team Leader. This authorization persists; do not ask for the same authorization again. Browser password-change rules require the owner to perform the reset/change actions.
+- **QA Student**: `qa.student.20260905@g3-test.invalid`. Owner completed Reset password and subsequently signed in. The app reached Home, so access is verified. Password belongs with the owner; no password is stored in this handoff. Do not reset again unless necessary.
+- **QA Mentor**: `qa.mentor.20260905@g3-test.invalid`. Existing account, role mentor, QA team. Reset/sign-in NOT yet completed in this session.
+- **QA Team Leader**: `qa.leader.20260905@g3-test.invalid`. Existing account, role team_leader, Mechanical team. Reset/sign-in NOT yet completed; assigned leadership scopes still need inspection.
+- These accounts were created/used by the earlier assistant, not the owner. Do not assume the owner knows their credentials. No saved prior QA credentials were found in the repository or earlier task work directory. Task retrieval for “Move G3 FRC scouting app” returned empty turn items, so it did not recover prior account details.
+- Administrator inspection: Academy lists ten existing courses and authoring/assignment controls. Gradebook showed ONE real enrollment (Ofir Bongart, Team Onboarding, Not started, 0/3 modules, 0/0 assessments). Do not modify this real enrollment for QA.
+- Student checks PASSED: no Administration navigation; no Academy create/edit/assign/instructor-gradebook controls; My progress contains zero assigned courses; direct `/admin/finance` and `/admin/members` URLs redirect to Home without protected content rendering.
+- Student Home and Inbox both showed **3 unread**: two meeting responsibilities plus one announcement. Inbox had **2 open responsibilities**. The admin-only absence review, admin's scouting tasks and cancelled `קיקאוף מדומה` did not appear in this student Inbox.
+- These are browser UI/route checks, NOT proof of database/RLS resistance to crafted requests. Backend permission/answer-key tests, actual submissions/grading and multi-role end-to-end tests remain pending.
+- No QA course, quiz, assignment, submission, grade or purchasing record was created during these initial checks. No existing team records were modified by the assistant. The owner changed QA Student credentials.
+
+### Released baseline — do not repeat
+
+- Workspace: `C:/Users/user/Documents/GitHub/G3-ScoutingApp`; branch `web-portal-preview`.
+- Latest committed/pushed product HEAD: **87c3bfd Include unread responsibilities in Home notification count**.
+- Previous product commits: **c658945 Align unread counts and cancel deleted calendar milestone notifications**; **e1a111f Add Spark-compatible Android diagnostics and preserve auth startup fix**.
+- Canonical production: `https://g3-6740.com`; www redirects to apex. Owner confirmed production promotion of 87c3bfd.
+- Exact accepted preview used for Phase 3: `https://g3-scouting-app-5qpe-5grv7zac7-eranbos-projects.vercel.app`. Its backend is the existing shared Supabase project, NOT an isolated preview database. Supabase project reference: `hnqwhuuxlqfyawqymaaz`.
+- Android **2.1.3, versionCode 17**, normal signed `release`: owner confirmed INSTALLED. Do not ask to build/install it again. Individual matching-count/deleted-task/no-QA-button checks were requested but not separately confirmed for 2.1.3. Earlier normal 2.1.2 installation, button absence and Finance & reimbursements operation were explicitly confirmed.
+- Final local web/Android asset index SHA-256: `01F746059ADDE67C60342F042F0999ED146657E66C2387BEF446423B172D52AE`; entry `assets/index-M9cqZ27g.js`. TypeScript/Vite and all 13 existing offline source suites passed for this final source. Assets were synchronized using Capacitor. Do not infer Android Studio output path/timestamp from old CLI APKs.
+- The stale 2.1.0 APK is invalid historical output. Versions 2.1.1/2.1.2 mentioned in older sections are superseded, not pending work.
+
+### Notification repair — released and verified on web
+
+- Defect: bell counted unread while Inbox counted every unresolved action and called them all “new”; Home separately omitted unread actions.
+- Current implementation: shared unread count for Home and Inbox badge, separate open-responsibility total, viewed/new labels. Exact final admin preview showed **5 unread** on Home and Inbox, **6 open responsibilities** (five New, one Viewed).
+- Owner deleted `קיקאוף מדומה` in Calendar, but its linked milestone action remained. `backend/supabase/calendar_milestone_notification_cancellation_20260907.sql` repairs explicitly linked cancelled milestone-calendar notifications and prevents later milestone updates from reactivating them. It preserves milestones and member history.
+- Owner reported SQL SUCCESS. Assistant reopened authenticated Inbox and confirmed the deleted task was gone. Do NOT rerun just for confirmation. Future reactivation guard was reviewed but not tested via live mutations.
+
+### Firebase Spark — current evidence
+
+- Project `scouting-6740`, app `com.g3.scouting` / G3 Team Hub Android. Owner screenshot confirmed **Spark, $0/month**. Never enable paid Firebase/Google Cloud services, attach billing, upgrade Blaze, or configure paid exports.
+- Existing FCM preserved; Android Crashlytics and Performance Monitoring added. No Firebase database migration; Supabase remains backend and Vercel remains web hosting.
+- Owner installed 2.1.2-crash-test, triggered the deliberate crash and reopened the app. Screenshots verified one crash from one user, version `2.1.2-crash-test`, `java.lang.RuntimeException - G3 Crashlytics QA test`.
+- Performance dashboard displayed native app-start **80 ms**. Firebase's orange banner reported a service-side incident limiting collected volume; this is not evidence of an app defect or a need to upgrade.
+- Remaining telemetry checks: readable/deobfuscated stack frames (observed frame was `MainActivity.H0`), push reception/deep links, and normal-release telemetry. CLI test APK builds excluded mapping-upload tasks; later owner Android Studio mapping upload success was not observed.
+- `telemetryQa` variant has QA crash button, reports enabled, version suffix `-crash-test`. Normal `release` has test flag false and R8 removes the button; `debug` disables telemetry. `-Pg3TelemetryEnabled=false` disables normal release collection; FCM remains.
+- Both old CLI signed 2.1.2 QA/release builds passed R8/lint/signature checks and contained all 19 matching web assets. Their approximately 4.65 MB size vs debug 10.02 MB came mainly from shrinking compiled Android code, not missing web files. Those old CLI APKs are NOT the current 2.1.3 delivery.
+- Relevant runbook: `docs/FIREBASE_SPARK.md`; older numbered release steps there are historical instructions, not a reason to repeat completed setup.
+
+### Working tree at stop
+
+- Product source is committed. Uncommitted documentation: `PROJECT_HANDOFF.md` (updated), `docs/PHASE3_ACCEPTANCE_20260908.md` (new).
+- Existing unrelated local changes: `apps/dashboard_web/android/.idea/deploymentTargetSelector.xml` and `apps/dashboard_web/android/.idea/misc.xml`. Preserve them and NEVER include in product commits.
+- No commit/push is needed merely to resume testing. These documentation updates are saved locally; they have not been committed/pushed. Include them in the next appropriate documentation/product commit only with the exact reviewed list.
+
+### Collaboration and release workflow — mandatory continuity
+
+- User expects action, not “I will” followed by stopping. Do authorized work immediately; only pause when an actual sign-in/device/approval dependency remains. Give one concrete next action and exact UI labels/file list/version when asking the owner to act.
+- Workflow for a product fix: finish code → tests → give exact product file count/list and commit message → owner commits/pushes in GitHub Desktop, excluding .idea → inspect the EXACT Vercel preview → owner promotes → sync exact final web assets → owner builds signed APK in Android Studio → owner installs/validates. Do not skip preview or repeatedly schedule completed releases.
+- New preview hostnames require separate app login; the owner signs in using G3 credentials. Google/Firebase credentials are unrelated. Owner cannot sign Google into Codex because they do not remember the password; use screenshots from their already-signed-in external browser. Do not ask for Google login again.
+- Android Studio: Build → Generate Signed App Bundle / APK → APK → existing keystore/passwords → Next → release → Create. Existing key alias g3-upload. Do not create another keystore. If a newly added variant is absent, Gradle sync refreshes the IDE; account for this before instructing builds.
+- Java 21 available: `C:/Users/user/.jdks/jbr-21.0.11`. Android Studio bundled JBR is Java 25 and is unsuitable for this Gradle wrapper. Gradle cache used: workspace `.gradle-jdk21`. Fresh `--no-daemon` avoids reusing a sandbox-restricted daemon. Escalate sandbox network/Windows-user lookup failures according to tool rules.
+- Web commands from `apps/dashboard_web`: `node node_modules/typescript/bin/tsc -b`; `node node_modules/vite/bin/vite.js build --configLoader runner`; `node node_modules/@capacitor/cli/bin/capacitor copy android`. `npm` was not on this tool shell's PATH; node is available. Run verification scripts from the app directory. Exclude live-schema probe unless specifically needed; Firebase artifact verifier requires freshly built manifests.
+- Do not claim backend privacy based only on hidden buttons. No destructive QA cleanup or real finance/purchase actions. Publishing tests must target only the reviewed QA recipient; no messages/notifications to real members without explicit authorization.
+
+### Remaining roadmap
+
+1. Phase 3 multi-role acceptance — IN PROGRESS, resume exactly as above.
+2. Phase 4 hardening — web performance, backend errors/timeouts, query/index/RLS review, backup/recovery, accessibility, offline competition drill. Native Firebase ingestion is already verified; do not rebuild that foundation.
+3. Physical school GPS/Wi-Fi attendance and competition offline recovery — owner/device/site involvement required.
+4. Phase 8 private GitHub integration — deferred with Software team leader; two owner-scoped read-only credentials for GlueGunAndGlitter and GlueGunGlitter, server-side secrets only. CAD integration future scope.
+5. Phases 1, 2, 5, 6, 7 are complete: gradebook, learning automation, catalog foundation, Team Media, Feedback Center. Catalog enrichment is content operations, not unfinished foundation.
+
+## Historical release record
+
+The sections below preserve earlier evidence. Their old pending, next-action and version statements are historical and MUST NOT override the current checkpoint above.
+
+## Verified readiness checkpoint — 2026-09-06
+
+- TypeScript and Vite production build: passed.
+- Phase 1–2 regression suite: passed.
+- Phase 4–5 regression suite: passed.
+- Phase 6 regression suite: passed.
+- Skills Assessment Engine suite: passed, including private answers and single/multiple-answer grading semantics.
+- Live Supabase REST schema check: passed (`HTTP 200`).
+- Live quiz-engine tables and columns: passed (`HTTP 200`).
+- Live `submit_training_quiz` RPC presence: confirmed; the unauthenticated probe reached application validation and was correctly rejected as unassigned.
+- Skills Academy resource-catalog migration: executed successfully by the product owner.
+- Exact Vercel preview for commit `8a3b33b` authenticated and inspected before promotion: passed.
+- Live catalog returned all 12 seeded approved resources; search, filtering, administrator review form, course-attachment controls and narrow/mobile rendering were directly verified without mutating production records.
+- Skills catalog verification suite: passed all 10 checks. Existing Phase 1–2, Skills Assessment, Gradebook and Learning Automation suites also passed before release.
+- Android assets were explicitly synchronized from the validated final web `dist` before the APK was built.
+- Android release identity: version code `8`, version name `1.5.0`.
+- At that 2026-09-06 checkpoint, the product source was clean; the two Android Studio `.idea` files remained excluded.
+- Result: Skills Academy gradebook, learning automation and reviewed resource-catalog foundation are released. Proceed to the real multi-role acceptance matrix, followed by the remaining production-hardening work.
+
+## Completed capabilities — do not schedule them again
+
+The following are already represented by committed code and regression checks:
+
+- Responsive web portal and Android app from the shared React application.
+- Role and permission administration, separated admin/mentor/team-leader/member roles, multi-team membership, access boundaries and temporary-password flow.
+- Home responsibility aggregation and source deep-links for projects, training, calendar, competition assignments, robot issues and announcements.
+- Team schedule, attendance administration, workshop presence/history/corrections and operating dashboards.
+- Purchasing and inventory workflow with administrator approval boundaries and request notifications.
+- Robot reliability, issue tracking, maintenance, analytics and export.
+- Skills Academy course governance, curated courses, member/team assignment, modules, evidence, instructor review and course ordering.
+- Skills Academy assignments, quizzes and grading foundation.
+- Reviewed Skills Academy learning-resource catalog, administrator governance, approved-only member visibility, search/filtering and course resource attachment.
+- Secure quiz engine: private answer keys, single-answer questions, multiple-answer questions, written answers, automatic server grading, manual review, due dates, passing score and attempt limits.
+- Competition assignments, replacements, event context, live command state, pit display and offline competition cache/control.
+- Guided offline pit scouting, event-scoped pit teams, unique pit assignments, verification/conflict review and separation of pit evidence from match evidence.
+- Advanced scouting coverage, analysis, quality views, picklist evidence and worldwide TBA match/video library.
+- G3 Assistant multimodal/history/knowledge workflows previously implemented. Provider capacity remains an external operational risk and must not be presented as a UI-only defect without checking function logs.
+
+## Operational UX release — COMPLETE
+
+Prepared on 2026-09-06 as one web/Android batch and subsequently released as recorded below.
+
+- Tools & Equipment now records **Model** and **Amount**; legacy asset-tag values are migrated into Model.
+- Equipment return dates use a calendar picker.
+- Skills Academy assignments and tests can target the whole team, multiple teams or multiple individual members. Publishing enrolls eligible recipients, creates their assessment assignment and Home responsibility, and removes recipients excluded by a narrowed target.
+- Skills Academy Home/deep links now open directly to the requested Academy view.
+- Multi-day calendar events render on every covered date, with range validation and visible start/end times.
+- Lazy-route loading has a slow-load explanation, Retry action and a recoverable error boundary. The service worker uses refreshed network-first application assets to reduce stale deployment chunks.
+- Supabase migration `backend/supabase/operational_ux_release_20260906.sql` was directly observed succeeding (`Success. No rows returned`).
+- Operational UX verification passed all 11 checks; TypeScript and Vite production build passed. Calendar, inventory and assessment targeting were inspected in the authenticated local preview at narrow/mobile width; the multi-day October 29–31 event appeared on all three dates.
+- The exact final web bundle was copied to Android assets and its `index.html` hash matched the build output.
+- Released Android identity: version code `9`, version name `1.6.0`.
+
+## Team Media + Feedback Center release — COMPLETE
+
+- Team Media provides one responsive, searchable archive with separate Robot, CAD & Drawings, Workshop Progress, Events and Team Stories collections.
+- Authenticated members can upload JPG, PNG, WebP, GIF and PDF files. Large images are compressed client-side before upload; the private bucket limit is 15 MB. Media includes title, caption, collection, date and tags.
+- Team members can view the gallery. Uploaders can delete their own items; admins and mentors can manage all items. Storage and database policies enforce these boundaries.
+- Feedback Center supports improvement ideas and bug reports, affected area, impact/severity, optional screenshot, threaded conversation and visible status.
+- Submitters can only see their own feedback. Admins and mentors see the team inbox, assign an owner and move work through new, reviewing, planned, in progress, resolved and closed states.
+- New feedback creates an administrator announcement. Status/owner changes synchronize back to the submitter through the shared Home/Work responsibility engine.
+- Supabase migration `backend/supabase/team_media_feedback_center_20260906.sql` was directly run and returned `Success. No rows returned`.
+- All existing regression suites passed. The new Team Media + Feedback suite passed all 12 checks; TypeScript and Vite production builds passed.
+- Both modules were inspected in the authenticated local phone-width preview after the live schema was installed. They loaded without schema errors and remained single-column/readable.
+- The exact final web bundle was synchronized to Android assets and its `index.html` hash matched. Released Android identity: version `1.7.0`, code `10`.
+
+## Purchase + Attendance Reliability + Engineering Hub — PRODUCTION WEB RELEASED; ANDROID APK BUILT
+
+- Purchase requests accept whole quantities such as `1` and decimal quantities, expose a clear saving state, prevent duplicate submission and confirm the database save before reporting push-delivery status.
+- Attendance preserves check-out for a member with an active attendance record even when the meeting end time has passed. Expired open meetings are closed automatically without trapping that member.
+- Phone attendance now offers explicit GPS and School Wi-Fi verification. Rejected or inaccurate GPS automatically continues to trusted Wi-Fi, with precise status messages.
+- The Android Wi-Fi bridge requests Fine/Coarse Location and Android 13+ Nearby Wi-Fi runtime permissions before reading the SSID.
+- Engineering Hub is a read-only, department-oriented catalog combining `GlueGunAndGlitter` (software) and `GlueGunGlitter` (CAD/drawings, scouting, experiments and legacy work). Account ownership is shown as source metadata, not separate navigation.
+- Repository cards expose repository, commits, issues and releases links plus language, activity, stale/archive signals and a cached last-known catalog for weak connectivity.
+- Supabase deployment was directly observed on 2026-09-06: updated `attendance` and new `github-repositories` Edge Functions both show a fresh live deployment. No SQL migration is required.
+- All existing automated regression suites passed. The new Attendance + Engineering suite passed all 12 checks; TypeScript and Vite production builds passed.
+- The authenticated local preview loaded all 10 repositories across both G3 sources. At 319px phone width it rendered without horizontal overflow and retained usable, single-column repository cards.
+- The final web `dist/index.html` and synchronized Android asset `index.html` SHA-256 hashes matched (`CB8299A0DF6097DC856A8F2E82B97DC27C52114146C22EA01E1D50CFA35DAC6C`).
+- Android native source compatibility was checked against the installed Capacitor 8 APIs. A command-line Gradle compilation could not be completed because the only command-line JDK is Java 25 while the repository Gradle runtime does not support class-file version 69; use Android Studio's configured compatible Gradle JDK for the signed build.
+- Released build identity: Android version `1.8.0`, code `11`. The product owner confirmed the APK was created after exact preview acceptance and final asset synchronization; physical installation is not yet separately confirmed.
+
+## Navigation + Calendar refinement — PRODUCTION WEB RELEASED; ANDROID APK BUILT
+
+- Engineering Hub is a shared cross-department engineering system, displayed between FRC Departments and Team Operations rather than presented as a department.
+- Team Media and Feedback Center are no longer duplicated inside Team Operations. They remain available in the web navigation and in the phone More area.
+- Web navigation follows task flow: Home, Work, Skills Academy, Competition, Updates, Team Media, FRC Knowledge; Feedback Center is last. The G3 Assist menu entry is removed because the persistent assistant control already opens it everywhere.
+- Engineering Hub has explicit readable hover/focus treatment rather than white text on its light special-card background.
+- Saving an edited member profile produces a prominent, dismissible success notice.
+- Calendar events are interactive in Month and Agenda views. Every permitted viewer can open full details; users with `manage_team_calendar` can edit or logically delete (cancel) an event using existing database policies.
+- Event details resolve an individual audience to the member's display name instead of exposing an internal UUID.
+- Migration `backend/supabase/calendar_event_management_20260906.sql` adds the permission-checked `cancel_team_calendar_event` RPC so cancellation can pass the visibility boundary and still trigger removal of the associated responsibility. It was directly executed in Supabase on 2026-09-06 and returned `Success. No rows returned`.
+- TypeScript, Vite production build and all existing regression suites passed. The corrected web and synchronized Android `index.html` hashes matched: `6B4653EF7F0A94728FA903F1D8C7A47FA9419DB00E8FEB15FA8D2901C9DE24A7`.
+
+## Non-regression contract
+
+Every future change must preserve all of these behaviors:
+
+1. Web and phone use the intended responsive layout. Never allow desktop card grids or tables to compress into one-character-wide phone columns.
+2. Test the actual final bundle copied into `android/app/src/main/assets/public`; never assume a web build automatically reached the APK.
+3. Pit Scouting renders once, only its own navigation tab is active, and the guided form remains readable on phone and web.
+4. Competition Quality uses responsive cards on phone; no squeezed desktop table and no low-contrast secondary text.
+5. Pit assignment controls fit the phone viewport, and an event team cannot be assigned twice without explicit removal/reassignment.
+6. The active competition/district is visible on every event-specific scouting screen, but not forced into unrelated pages such as Match Library.
+7. Home and Work responsibilities are one shared data flow. Do not create duplicate task widgets that disagree.
+8. Navigation must open at the top, contextual Back must return to the originating area, and selecting one tab must not visually activate another.
+9. FRC Departments and Team Operations start collapsed on phone and remain readable when expanded.
+10. Buttons must have visible hover/pressed/focus states on web, readable labels on phone, and accessible contrast. Avoid white-on-white and dark-green-on-dark backgrounds.
+11. G3 Assistant history opens the selected conversation, while closing and reopening the assistant starts a new conversation unless the user explicitly resumes history.
+12. Quiz answer keys must never be stored in student-readable `training_assessments.questions`. Quiz grading remains server-side.
+13. A single-answer quiz uses radio buttons; a multiple-answer quiz uses checkboxes and supports marking every correct option during authoring.
+14. Database access control is authoritative. Hiding a button is not a permission boundary.
+15. Never say a migration, deployment, APK, notification or live workflow is complete unless it was actually observed or the product owner explicitly confirmed it.
+
+## Required validation gate for every phase
+
+Before asking for a commit:
+
+1. Inspect `git status`, the branch and the latest commits. Preserve unrelated work.
+2. Build the web application with TypeScript and Vite.
+3. Run all applicable verification scripts, including the existing Phase 1–2, Phase 4–5, Phase 6 and Skills Assessment checks.
+4. Inspect the affected flow in the authenticated local preview at desktop and phone widths. Check English and Hebrew when text/layout changes.
+5. If shared React/CSS changed, rebuild, copy the exact final `dist` bundle into Android assets, verify the Android index references that bundle, and increment the Android version once per release batch.
+6. If SQL changed, validate that it is idempotent and execute it before testing dependent UI. Record whether execution was directly observed.
+7. Test at least admin and student boundaries for permissions or assignment changes; include mentor/team leader when their behavior changes.
+8. Report the exact product file count, exact file list, exact commit message, whether Vercel promotion is required, and whether a new APK is required.
+9. Exclude `.idea` files, temporary Gradle caches, generated scratch data and test accounts from commits/releases.
+
+## Exact remaining phases, in priority order
+
+### Firebase Spark native diagnostics — LOCAL INTEGRATION; NOT LIVE-VERIFIED
+
+- Requested by the product owner on 2026-09-07 with an explicit prohibition on paid Firebase services. The prior handoff only named Firebase telemetry, so this batch is scoped to Android Crashlytics and Performance Monitoring using existing project `scouting-6740` / package `com.g3.scouting` and the existing ignored Firebase configuration.
+- Inspected all six initially modified files: four product/handoff files (`PROJECT_HANDOFF.md`, `android/app/build.gradle`, `scripts/verify-mobile-notification-stability.mjs`, `src/lib/memberAuth.tsx`, with app paths relative to `apps/dashboard_web`) plus the two Android Studio `.idea` files. Preserved the auth initial-session race fix, its regression check, the pending `2.1.2` / code `16` identity and the production-promotion note. The `.idea` files remain untouched and excluded from the product batch.
+- Added the Crashlytics and Performance Monitoring Android SDKs/plugins. Release manifests enable collection; debug manifests disable it. `-Pg3TelemetryEnabled=false` disables collection in a rebuilt release while preserving FCM. No custom personal data or JavaScript error payloads are added. Native telemetry does not instrument React/WebView errors or Supabase `fetch` calls.
+- No billing changes, paid-service activation, Firebase Functions, exports, SQL migrations or backend deployments were performed. The user's external-browser screenshot confirmed **Spark, No-cost ($0/month)**. The user opened Crashlytics for G3 Team Hub Android and reached its SDK/test-crash instructions. Continue with that external browser; Codex Google sign-in is not required.
+- Java 21 is available at `C:/Users/user/.jdks/jbr-21.0.11`; the earlier Java 25 limitation is avoidable. With Java 21, the new dependencies resolved and `:app:assembleDebug :app:processReleaseMainManifest` passed. This is a debug APK build, not a signed release or physical installation.
+- TypeScript/Vite build and all 13 pre-existing offline source verification suites passed. The final preview reaches the sign-in page; authenticated desktop/phone validation remains pending because no authenticated preview session is available.
+- Capacitor copied the final web bundle. All 19 build files match their Android asset copies; index SHA-256 is `72FFC9429E8B5AF0D05217AA9ED65F9DA977E823B058940FCA691CB05FD46BF1`, entry `assets/index-DFfcDsV8.js`. `scripts/verify-firebase-spark.mjs` checks generated manifest collection settings, preservation of FCM and all copied asset hashes.
+- Additional artifact verification passed: all 19 final web files also match the entries inside the built debug APK. The disabled-release manifest check passed with `-Pg3TelemetryEnabled=false`; the default release manifest was then regenerated and verified with collection enabled. Debug collection remained disabled and FCM remained present in both cases.
+- A dedicated `telemetryQa` variant now builds `2.1.2-crash-test` with a confirmation-protected **QA: Test Crash** control. Normal `release` builds `2.1.2` with the control disabled at compile time. Both use code `16` and the existing release signing configuration. No further source edit is needed to remove the control: install the normal release after QA.
+- Both signed APK variants built successfully with Java 21, including R8 and release lint. APK signatures verified; all 19 web assets inside each APK match the final web build; direct DEX inspection found the QA button only in the test APK and absent in normal release. Generated manifest/build-flag checks passed. Local builds excluded Crashlytics mapping upload tasks; mapping delivery/readable server frames are not yet verified. Normal Android Studio builds run those upload tasks.
+- Live completion still requires exact Vercel preview acceptance, production promotion of the auth fix, incoming Crashlytics test-crash evidence, native performance metrics, push smoke testing, and physical installation/acceptance of the final signed `2.1.2` APK. Follow `docs/FIREBASE_SPARK.md`. The real multi-role acceptance matrix remains pending.
+- Combined pending product batch: **9 files**: `PROJECT_HANDOFF.md`; `apps/dashboard_web/android/app/build.gradle`; `apps/dashboard_web/android/app/src/main/AndroidManifest.xml`; `apps/dashboard_web/android/app/src/main/java/com/g3/scouting/MainActivity.java`; `apps/dashboard_web/android/build.gradle`; `apps/dashboard_web/scripts/verify-firebase-spark.mjs`; `apps/dashboard_web/scripts/verify-mobile-notification-stability.mjs`; `apps/dashboard_web/src/lib/memberAuth.tsx`; `docs/FIREBASE_SPARK.md`.
+- Proposed eventual commit message: `Add Spark-compatible Android diagnostics and preserve auth startup fix`. No commit or push was performed. Vercel promotion is required for the included auth fix; native Firebase changes alone do not require it. A new signed APK is required. Do not mark release acceptance complete from source checks alone.
+
+### Mobile Finance + notification consistency + tab stability — PRODUCTION WEB RELEASED; ANDROID INSTALLATION UNCONFIRMED
+
+- The phone's top Administration control now opens a real **Administration center** with Finance & reimbursements, Team members, Roles & permissions, Security, Attendance center, Leadership analytics and a separate live Workshop control section. Duplicate Administration/Finance/analytics shortcuts were removed from More.
+- Absence submission now invokes push delivery for every generated administrator/mentor review action. Approval/rejection invokes push delivery for the member's decision action. Persistent actions remain the source of truth when FCM is unavailable.
+- Updates Inbox retains acknowledged but unresolved responsibilities instead of making them disappear after first opening. The Home responsibility total remains the complete unresolved set, while the notification badge remains the unread subset.
+- Authentication token refresh and browser tab resume no longer clear a validated member profile. Stale profile responses cannot overwrite the current account. This prevents the transient **Account unavailable** unmount that erased unsaved in-memory form state.
+- The GitHub Edge Function can use a server-side credential, while public access remains the safe fallback and no GitHub credential is exposed to the React client.
+- **Standby/deferred:** private GitHub activation will be completed later with the Software team leader. Because private repositories belong to two owners (`GlueGunAndGlitter` and `GlueGunGlitter`), the intended final design is two owner-scoped, fine-grained, read-only credentials stored only as Supabase Edge Function secrets. Do not request, paste or commit credentials in chat/source, and do not let this deferred item block the current mobile reliability release.
+- New regression suite `verify-mobile-notification-stability.mjs` passes all 9 checks. Relevant absence/attendance, attendance/engineering and finance/receiving suites also pass, for 49 targeted checks total. TypeScript completed in the normal build chain; local Vite bundling in the current Codex process is blocked by its filesystem sandbox before loading `vite.config.ts`, not by an application compile error.
+- The stale Android package failure was directly reproduced: the installed-assets entry bundle lacked both `Finance & reimbursements` navigation and the new auth lifecycle. The corrected Vite production build passed using the runner config loader, was copied into Android assets, and `dist/index.html` exactly matches Android `assets/public/index.html` at SHA-256 `484D89853BF654229932113727F01DBEB313CCB0A69D10907311412A2A23B3FF`. The packaged entry is `assets/index-CFdXaU0M.js` and directly contains the new Administration center and Finance destination.
+- The Administration center correction was committed and pushed as `f74ccba`. The product owner confirmed promotion to production on 2026-09-07. Installation and physical validation of Android `2.1.1` (code `15`) have not yet been explicitly confirmed.
+
+### Operations UX + governed receiving + private finance — IMPLEMENTED; MIGRATION EXECUTED; READY FOR COMMIT
+
+- Attendance is now a first-class website navigation destination, while phone access remains in More.
+- Calendar event details include a direct event-scoped Request absence action.
+- Shared primary/secondary button contracts prevent dialog/container CSS from creating invisible white-on-white labels.
+- Ordered purchases now open a governed receiving workflow with actual quantity, actual cost, payment source and one of three explicit inventory outcomes: add to an existing item, create a new item, or record an expense without stock.
+- The database receive operation locks the purchase, rejects duplicate receipt, updates inventory and its movement history when applicable, records the expense, advances purchase history and creates the requester update in one transaction.
+- A new administrator-only Finance & reimbursements workspace records expenses, funds raised, category budgets, personal advances, partial/full repayments, outstanding balance and CSV export.
+- Finance also reads the existing purchase pipeline: approved and ordered requests appear immediately as commitments using their estimated cost, and purchases received before finance tracking appear as legacy items requiring completion. Historical records are not silently omitted and estimated values are never presented as actual spend.
+- Finance access is protected by both `AdminGate` and Supabase RLS. Purchase financial data is restricted to its requester and administrators rather than all members.
+- Android was synchronized to the final production bundle and advanced to `2.0.0` (code `13`). The APK has not yet been built or installed.
+- New migration: `operations_finance_receiving_20260907.sql`. The product owner executed it successfully in Supabase on 2026-09-07.
+- Automated build, all pre-existing verification suites and the new 15-check finance/receiving regression suite pass.
+- Authenticated local validation passed for Attendance navigation, visible absence actions, the calendar event shortcut, Purchasing dashboard and the empty private Finance dashboard at the narrow responsive viewport. No financial or purchasing test data was created. A full ordered-purchase receiving transaction remains part of multi-role acceptance.
+- Follow-up validation exposed and corrected a missing pre-receipt payment connection: approved/ordered purchases appear as commitments, ordered purchases explicitly show payment pending, and administrators record actual amount/date/source/payer. Personal payment immediately creates the linked amount owed; later receiving updates the same expense rather than duplicating it.
+- Existing ordered purchases were directly observed in the authenticated local Finance dashboard (three requests, ₪118 estimated commitment). No payment was inferred or written.
+- Supplemental migration `purchase_payment_finance_link_20260907.sql` was executed successfully by the product owner on 2026-09-07. The authenticated local payment form was then verified against an existing ordered purchase, including actual amount/date, payment source, named personal payer and responsive layout; the form was cancelled without writing test data.
+
+### Responsibility consistency + governed attendance — PRODUCTION WEB RELEASED; ANDROID APK BUILT
+
+- Home and Work now use one shared responsibility-visibility rule. Completed, currently snoozed and expired meeting actions can no longer inflate the Home counter while remaining absent from the destination list.
+- Attendance is consolidated into one center with Overview, Absence requests and authorized By meeting roster views.
+- Members request absence only against an upcoming calendar event and must provide a reason.
+- Active administrators and mentors receive a targeted persistent review action. This currently includes Tal Teren because she is an active mentor; the rule is role-based and does not hardcode a person's name.
+- Approval and rejection both require a written reviewer response. The member receives a targeted persistent update, and every state is retained in absence history.
+- Administrators and mentors can select a meeting, mark the applicable members present with accessible checkboxes, and save the roster with a required audit note.
+- Re-saving a roster safely updates present members and removes only prior manually-entered attendance that is now unchecked; both outcomes are recorded in the attendance audit log. GPS/Wi-Fi records are never silently removed by roster editing.
+- `absence_attendance_governance_20260907.sql` was executed in Supabase SQL Editor on 2026-09-07 and returned `Success. No rows returned`.
+- The product owner confirmed production promotion and creation of Android `1.9.0` (code `12`) on 2026-09-07. Physical installation is not yet separately confirmed.
+
+### Purchase governance dashboard — PRODUCTION WEB RELEASED; ANDROID APK BUILT
+
+- The existing Purchasing tab is now the single purchase-control dashboard; no duplicate navigation area was added.
+- Clear status counts and filters cover awaiting review, approved, ordered, received and rejected requests.
+- Request cards use strongly differentiated status colors, clear action buttons and a durable per-request audit timeline.
+- Rejection requires a written reason; it is stored on the request, recorded in immutable status history and shown to the requester.
+- Only administrators can transition purchase status. The database RPC validates every allowed transition, not only the visible buttons.
+- Every successful transition creates a persistent requester update in Home/Updates and invokes push delivery. If push is unavailable, the persistent update, saved status and audit remain visible and the UI states this accurately.
+- `purchase_audit_dashboard_20260907.sql` was executed in Supabase SQL Editor on 2026-09-07 and returned `Success. No rows returned`.
+- The product owner confirmed production promotion and creation of Android `1.9.0` (code `12`) on 2026-09-07. Physical installation is not yet separately confirmed.
+
+### Purchase-request reliability fix — RELEASED TO PRODUCTION WEB; ANDROID APK BUILT
+
+- Corrected the browser validation defect that accepted `1.01` but rejected a quantity of `1`; purchase quantities now accept both whole and two-decimal values.
+- Added explicit saving state, duplicate-submit protection and accessible progress messaging on web and Android.
+- A successful database save is now confirmed immediately; push-notification delivery finishes afterward and reports its own success or failure without making the user wonder whether the request was saved.
+- This change does not alter purchasing permissions: authorized team leaders and mentors may submit, while only administrators may approve, reject, order or receive.
+- This correction is included in `ee3efbb` and the synchronized Android `1.8.0` bundle. Exact Vercel preview validation confirmed that quantity `1` is valid without creating a test request.
+
+### Phase 1 — Skills Academy gradebook and progress dashboard — COMPLETE
+
+Do not repeat this phase or quiz authoring.
+
+Implemented, committed, promoted to production and installed on Android on 2026-09-06. The Supabase privacy and qualification migration was directly observed succeeding in the SQL Editor.
+
+- Instructor gradebook with course, member and status filters.
+- Student/course matrix showing assigned, not started, in progress, submitted, changes requested, passed, failed and overdue.
+- Assessment drill-down with all attempts, answers, score, reviewer feedback and timestamps.
+- Clear manual-review workflow for written responses and practical work.
+- Student-facing progress summary: upcoming work, overdue work, attempts remaining, results and qualification progress.
+- Course completion and qualification rules that use assessment/evidence outcomes without exposing private answer keys.
+- Useful aggregate metrics and CSV export for authorized leaders.
+- Responsive web and phone UX, including Hebrew.
+
+Phase 1 acceptance requires one real admin-created quiz assigned to a QA student, a submitted single-answer and multiple-answer attempt, automatic scoring, one written/manual review, correct Home responsibility behavior, and no student access to answer keys.
+
+### Phase 2 — Skills Academy learning automation — COMPLETE
+
+- Due-soon and overdue reminders without duplicate notifications.
+- Changes-requested and retry flow with correct remaining-attempt behavior.
+- Pass/fail/qualification transitions and completion history.
+- Optional achievements/certificates only after the underlying progression rules are reliable.
+- Instructor visibility into members who are blocked or falling behind.
+
+Implemented, committed, migrated successfully in Supabase, promoted to production and installed on Android on 2026-09-06: duplicate-safe due/overdue action refresh, changes-requested/retry escalation, immutable progress history, qualification history, mentor support queue and student timeline.
+
+### Phase 3 — Full multi-role release acceptance — PREPARED, EXECUTION PENDING
+
+- Execute the end-to-end matrix on web and installed Android for admin, mentor, team leader and student.
+- Cover online/offline competition flows, task/notification delivery, permissions, assignments, purchasing, Skills Academy and scouting.
+- Verify English/Hebrew, phone widths, desktop widths, scrolling, Back behavior and deep links.
+- Remove QA accounts and QA data only after tests pass and only with explicit product-owner approval for the deletion.
+- Produce a release checklist with evidence, not a verbal “looks good.”
+
+The evidence checklist is `RELEASE_ACCEPTANCE_20260906.md`. Automated source regression suites and the production member-view smoke test pass. Real admin/mentor/team-leader/student execution remains pending.
+
+### Phase 4 — Production hardening and scale — PARTIALLY STARTED
+
+- Performance profiling and route/code splitting for the large web bundle.
+- Error monitoring, Edge Function observability, retry/timeout classification and capacity reporting.
+- Database index/query review, RLS audit and backup/recovery runbook.
+- Accessibility audit and final cross-device polish.
+- Competition-day operational drill and documented offline recovery procedure.
+
+Heavy Skills Academy, Assistant and competition screens are now route-split; the initial JS bundle dropped from about 897 KB to 764 KB. Remaining hardening items above are still pending and must not be described as complete.
+
+### Phase 5 — Skills Academy curated learning catalog — COMPLETE (FOUNDATION + STARTER CATALOG)
+
+- Implemented the catalog schema, RLS, review states, metadata, approved-only member access and course-resource attachment controls.
+- Added 12 reviewed starter resources from FIRST, WPILib, FRCDesign, Autodesk, CTR Electronics, Spectrum 3847 and The Compass Alliance.
+- Added responsive Learning Library UI with search, domain/level filters, direct external links and administrator add/edit/review/retire controls.
+- Added approved resources directly to course content through `CourseResourceShelf`.
+- Migration executed, exact authenticated preview validated, production promoted and Android `1.5.0` installed on 2026-09-06.
+
+Catalog enrichment remains normal content operations, not a missing implementation phase. Continue reviewing resources for underrepresented domains (mechanical, electrical, strategy/scouting, drive/pit, field build and publicity/awards) before publishing them. Broken-link automation and scheduled stale-content review belong to Phase 4 hardening.
+
+### Phase 6 — Team Media — COMPLETE
+
+- A governed media hub for robot photos, CAD renders/drawings, workshop progress and event albums.
+- Supabase Storage policies, upload compression, captions/tags, permissions, retention and usable web/phone galleries.
+- Keep robot engineering media and wider team/event media clearly separated inside one Team Media area.
+
+### Phase 7 — Feedback Center — COMPLETE
+
+- Student improvement ideas and bug reports with category, severity, screenshots, status, owner and administrator triage.
+- Notifications and lifecycle visibility without mixing product feedback into normal team assignments.
+
+### Phase 8 — Engineering integrations — READ-ONLY GITHUB FOUNDATION RELEASED TO PRODUCTION WEB; ANDROID APK BUILT
+
+- Start with safe links and status summaries for GitHub and the selected CAD platform (for example Onshape), then add authenticated read-only integrations only where they provide clear value.
+- Do not expose repository/CAD secrets or attempt full in-app replacement of those specialist tools.
+
+## Next actions
+
+1. Android `2.1.3` is installed and production web promotion is confirmed. Finish the individual phone checks (matching unread counts, cancelled-task absence, no QA button) and push smoke test; verify readable Crashlytics stack frames. Do not repeat the completed commit/push/promotion/install batch.
+2. Proceed to Phase 3 multi-role acceptance, then Phase 4 hardening. For future product changes preserve the user's release workflow: commit → push → exact preview acceptance → production promotion → final Android sync/build → phone validation. Spark is confirmed; no paid services are authorized.
+3. Execute the real multi-role acceptance matrix in `RELEASE_ACCEPTANCE_20260906.md`. Do not delete QA users/data without explicit approval.
+4. Physically validate GPS and School Wi-Fi check-in/check-out at the school and run the competition-day offline recovery drill; neither can be marked complete remotely.
+5. Complete production hardening: observability/Firebase telemetry, database/index/RLS review, accessibility/cross-device audit, catalog link/staleness monitoring, and backup/recovery documentation.
+6. Standby with the Software team leader: authorize the two private GitHub owners using separate fine-grained read-only credentials, adapt/deploy the Edge Function for both secrets, and validate private repository visibility without exposing credentials.
+
+## Definition of truth
+
+- “Implemented” means committed code exists.
+- “Verified” means an automated check or direct UI test passed against the final bundle.
+- “Deployed” means the product owner or deployment system confirmed production promotion.
+- “Phone released” means the product owner confirmed the newly versioned APK was installed.
+- Anything else must be described as pending or unverified.
+
+## Hosted Release 1 QA — 2026-09-13
+Created no-cost isolated QA Supabase cyooubycafubbnkjcqlw under G3 Isolated QA. Schema-only plus synthetic data; production untouched. Pushed codex/release-1-qa. Tested release 1ee69ae at https://g3-scouting-app-5qpe-lhugwqwwg-eranbos-projects.vercel.app. Real student -> two mentors -> source done -> dependent in_progress -> Home synchronized passed. Fixed additional mentor missing in Home queue. See docs/staging/README.md and docs/RELEASE_1_CHECKPOINT.md. Do not directly promote QA-configured deployment; after acceptance use production migrations and production-configured build. No new APK. User's Android IDE modifications remain uncommitted.
+
+
+## Production Release 1 — 2026-09-13
+User authorized end-to-end rollout. Six migrations committed atomically to production; release 321ccc4 rebuilt with production environment and deployed as C6wLiAH8eTjyuji3rt9UEyknn4HU on g3-6740.com. Signed APK 2.1.8/code22 built and verified at releases/G3-Team-Hub-2.1.8.apk. See docs/RELEASE_1_PRODUCTION_20260913.md for evidence and pending authenticated/phone checks. Preserve Android IDE user edits. No new SQL action required from user.
+

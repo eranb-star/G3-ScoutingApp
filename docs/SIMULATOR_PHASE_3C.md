@@ -1,3 +1,5 @@
+> Current status: simulator 3A/3B/3C is deployed in production at **17a542f / D339AMxE7**. Read [the current handover](PAUSE_HANDOVER_20260913.md) for remaining work. Earlier preview/pending statements below are historical.
+
 # Phase 3C - shooting and continuous ball lifecycle
 
 Review implementation, engine g3-physical-v3; production promotion pending.

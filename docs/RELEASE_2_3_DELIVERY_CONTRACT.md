@@ -1,3 +1,5 @@
+> Current status: simulator 3A/3B/3C is deployed in production at **17a542f / D339AMxE7**. Read [the current handover](PAUSE_HANDOVER_20260913.md) for remaining work. Earlier preview/pending statements below are historical.
+
 # Release 2/3 bounded delivery — 2026-09-13
 
 User authorized a live 2026 knowledge release with a bounded historical pilot, followed by the Field & Concept Twin. Comprehensive 2017–2026 depth remains later expansion. Reuse shared knowledge, Projects and review gates. No new APK unless requested; no new paid provider or autonomous CAD writes.
