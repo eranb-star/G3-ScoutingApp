@@ -1,3 +1,4 @@
+import {FUEL_RADIUS,FUEL_COUNT,IntakeConfig} from '../lib/intake';
 import {TWIN_CACHE,storeModel} from '../lib/twinCache';
 import {useEffect,useRef} from 'react';
 import * as THREE from 'three';
@@ -9,7 +10,7 @@ import {RobotModel} from '../lib/robotModel';
 import {Concept,OBSTACLES,Pose} from '../lib/conceptTwin';
 
 export type ModelMetrics={length:number;width:number;height:number;triangles:number};
-type Props={onModelMetrics:(m:ModelMetrics|null)=>void;season:FieldSeason;custom?:RobotModel;pose:Pose;concept:Concept;detailed:boolean;kitbot:boolean;view:'orbit'|'top'|'follow';path:Pose[];onStatus:(s:string)=>void;onFps:(fps:number)=>void};
+type Props={intake:IntakeConfig;onModelMetrics:(m:ModelMetrics|null)=>void;season:FieldSeason;custom?:RobotModel;pose:Pose;concept:Concept;detailed:boolean;kitbot:boolean;view:'orbit'|'top'|'follow';path:Pose[];onStatus:(s:string)=>void;onFps:(fps:number)=>void};
 const CACHE=TWIN_CACHE;
 const assets={field:{url:'/twin/2026/field-optimized.glb',bytes:19627748,hash:'088126b167906ca95e7b21a76a430a64199103d1ea184a121b1cf52e984b75e8'},robot:{url:'/twin/2026/robot-optimized.glb',bytes:16177620,hash:'053caf847815cb163632b8f858f5b261e589cb9abae3819b502c016fb57238b8'}};
 export async function clearTwinCache(){if('caches' in window)await Promise.all([caches.delete(CACHE),caches.delete('g3-twin-2026-v2'),caches.delete('g3-twin-2026-v3')]);}
@@ -42,7 +43,9 @@ export default function FieldTwinCanvas(props:Props){
   box(0,0,-.02,field.length,field.width,.04,0x596773,simplified);
   [-1,1].forEach(side=>{box(side*(field.length/2),0,.25,.06,field.width,.5,side<0?0x2581df:0xe65662,simplified);box(0,side*field.width/2,.25,field.length,.06,.5,0xa7b9c9,simplified);});
   (season.year===2026?OBSTACLES:[]).forEach((o,i)=>box(o.x,o.y,.65,o.w,o.h,1.3,i%2?0xc93951:0x176daf,simplified));
+  const fuel=new THREE.InstancedMesh(new THREE.SphereGeometry(FUEL_RADIUS,12,8),new THREE.MeshStandardMaterial({color:0xffcf18,roughness:0.85}),FUEL_COUNT);fuel.instanceMatrix.setUsage(THREE.DynamicDrawUsage);fuel.frustumCulled=false;scene.add(fuel);const ballMatrix=new THREE.Matrix4();
   const robot=new THREE.Group(),concept=new THREE.Group(),kit=new THREE.Group();robot.add(concept,kit);scene.add(robot);
+  const captureZone=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({color:0x45e2aa,transparent:true,opacity:0.25,side:THREE.DoubleSide,depthWrite:false}));robot.add(captureZone);
   const chassis=box(0,0,.2,1,1,.24,0xe30095,concept),mast=box(0,0,.4,.5,.45,.35,0xdde5ec,concept);
   // Team-number plates sit just outside the reference bumper faces.
   function bumperNumbers(parent:THREE.Group,length:number,width:number,cx=0,cy=0,z=.18){
@@ -85,6 +88,8 @@ export default function FieldTwinCanvas(props:Props){
    conceptNumbers.scale.set(p.concept.length,p.concept.width,1);chassis.scale.set(p.concept.length,p.concept.width,1);mast.scale.z=p.concept.height/.65;
    robot.position.set(p.pose.x,p.pose.y,p.pose.z??0);if(p.pose.rotation)robot.quaternion.set(p.pose.rotation.x,p.pose.rotation.y,p.pose.rotation.z,p.pose.rotation.w);else robot.rotation.set(0,0,p.pose.heading);
    arrow.position.z=p.concept.height+.12;
+   captureZone.visible=season.year===2026&&p.intake.on;captureZone.scale.set(p.intake.reach,p.intake.width,1);captureZone.position.set(p.concept.length/2+p.intake.reach/2,0,0.025);
+   const balls=season.year===2026?(p.pose.balls??[]):[];fuel.count=balls.length;balls.forEach((b,i)=>fuel.setMatrixAt(i,ballMatrix.makeTranslation(b.x,b.y,b.z)));fuel.instanceMatrix.needsUpdate=true;
    if(previousPath!==p.path){previousPath=p.path;pathGeometry.setFromPoints(p.path.map(point=>new THREE.Vector3(point.x,point.y,.08)));}
    if(p.view==='top'){camera.position.set(0,-.01,Math.max(23,24/ camera.aspect));controls.target.set(0,0,0);controls.enableRotate=false;}
    else if(p.view==='follow'){camera.position.lerp(new THREE.Vector3(p.pose.x-4,p.pose.y-5,4.5),.08);controls.target.set(p.pose.x,p.pose.y,.35);controls.enableRotate=false;}

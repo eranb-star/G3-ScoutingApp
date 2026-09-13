@@ -1,11 +1,14 @@
+import {FuelPhysics} from './fuelPhysics';
+import {DEFAULT_INTAKE,IntakeConfig} from './intake';
 import R from '@dimforge/rapier3d-compat';
 import {Command,Concept,DT,FIELD,Pose,START} from './conceptTwin';
-export const PHYSICAL_ENGINE='g3-physical-v1';
+export const PHYSICAL_ENGINE='g3-physical-v2';
 export type PhysicalPose=Pose&{z:number;rotation:{x:number;y:number;z:number;w:number};contacts:number;speed:number};
 let initialized:Promise<void>|undefined;
 export async function createPhysicalDrive(config:Concept){await(initialized??=R.init());return new PhysicalDrive(config);}
 export class PhysicalDrive{
  world=new R.World({x:0,y:0,z:-9.81});body:R.RigidBody;tick=0;distance=0;collisions=0;contacts=0;
+ fuel=new FuelPhysics(this.world);
  constructor(public config:Concept){
  this.world.timestep=DT;
  const box=(x:number,y:number,z:number,w:number,d:number,h:number)=>this.world.createCollider(R.ColliderDesc.cuboid(w/2,d/2,h/2).setTranslation(x,y,z).setFriction(.8));
@@ -22,7 +25,8 @@ export class PhysicalDrive{
  this.world.createCollider(R.ColliderDesc.cuboid(config.length/2,config.width/2,(config.height-.08)/2).setTranslation(0,0,(config.height+.08)/2-.3).setMass(50).setFriction(.35).setRestitution(0),this.body);
  this.world.step();
  }
- step(command:Command):PhysicalPose{
+ step(command:Command,intake:IntakeConfig=DEFAULT_INTAKE):PhysicalPose{
+ this.fuel.capture(this.body,this.config.length,this.tick,intake);
  const before=this.body.translation(),q=this.body.rotation();this.body.resetForces(true);this.body.resetTorques(true);this.contacts=0;
  const rotate=(x:number,y:number,z:number)=>{const tx=2*(q.y*z-q.z*y),ty=2*(q.z*x-q.x*z),tz=2*(q.x*y-q.y*x);return {x:x+q.w*tx+q.y*tz-q.z*ty,y:y+q.w*ty+q.z*tx-q.x*tz,z:z+q.w*tz+q.x*ty-q.y*tx};};
  for(const x of [-this.config.length*.38,this.config.length*.38])for(const y of [-this.config.width*.38,this.config.width*.38]){
@@ -33,7 +37,7 @@ export class PhysicalDrive{
  let fx=(targetX-v.x)*100,fy=(targetY-v.y)*100;const limit=Math.min(50*3/4,support*1.1),m=Math.max(1,Math.hypot(fx,fy)/Math.max(limit,.001));fx/=m;fy/=m;this.body.addForceAtPoint({x:fx,y:fy,z:0},origin,true);
  }}
  this.world.step();this.tick++;const p=this.body.translation(),r=this.body.rotation(),v=this.body.linvel();this.distance+=Math.hypot(p.x-before.x,p.y-before.y);if(Math.hypot(command.vx,command.vy)>.2&&Math.hypot(v.x,v.y)<.05)this.collisions++;
- return {x:p.x,y:p.y,z:p.z-.3,rotation:{...r},heading:Math.atan2(2*(r.w*r.z+r.x*r.y),1-2*(r.y*r.y+r.z*r.z)),tick:this.tick,distance:this.distance,collisions:this.collisions,contacts:this.contacts,speed:Math.hypot(v.x,v.y)};
+ return {balls:this.fuel.snapshot(),collected:this.fuel.collected,x:p.x,y:p.y,z:p.z-.3,rotation:{...r},heading:Math.atan2(2*(r.w*r.z+r.x*r.y),1-2*(r.y*r.y+r.z*r.z)),tick:this.tick,distance:this.distance,collisions:this.collisions,contacts:this.contacts,speed:Math.hypot(v.x,v.y)};
  }
  reset(x=START.x,y=START.y){this.body.setTranslation({x,y,z:.31},true);this.body.setRotation({x:0,y:0,z:0,w:1},true);this.body.setLinvel({x:0,y:0,z:0},true);this.body.setAngvel({x:0,y:0,z:0},true);this.tick=0;this.distance=0;this.collisions=0;}
  dispose(){this.world.free();}

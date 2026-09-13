@@ -34,3 +34,7 @@ Reference physical driving implemented: gravity, suspension, hub/boundary collis
 
 Production update: Phase 3A commit e5bec43 deployed by production rebuild GmhT4EkDQ, Ready on 2026-09-13. https://g3-6740.com live bundle index-BY-zgMiY.js verified HTTP 200, production Supabase (no QA reference), g3-physical-v1 and trench practice controls. Next simulator milestone is Phase 3B: balls, scattering/contact, intake capture rate/zone and configured capacity; shooting follows in 3C.
 
+
+## Phase 3B review implementation
+Balls and intake implemented in g3-physical-v2: bounded 64-ball physics, scattering, configurable capture zone/rate/capacity, full indicator and reset. See SIMULATOR_PHASE_3B.md. Preview release; production promotion pending. Next simulator milestone: Phase 3C shooting and scoring.
+
