@@ -12,7 +12,7 @@ User authorized a live 2026 knowledge release with a bounded historical pilot, f
 
 - Engine identity `g3-concept-v1`, SI metres/radians/seconds. Scene uses right-handed Z-up; simulation origin at field centre, +X toward red wall, +Y toward the left when viewed from blue. FIRST blue-wall coordinates convert by adding half field length/width.
 - Fixed step 1/60 second; ordered normalized commands, no wall-clock input inside the transition function. Deterministic scripted waypoint policy `patrol-v1`; no randomness in this profile.
-- Record configuration, engine/model/asset identity, initial state, ordered commands and checkpoints every 60 ticks. Numeric pose tolerance 0.00001 m/radian; tick, collision and waypoint counters exact. Maximum recording 7200 ticks. Version mismatch or divergence is reported as REPRODUCIBILITY_FAILURE; no cross-browser determinism guarantee.
+- Record configuration, engine/model/asset identity, initial state, ordered commands and checkpoints every 60 ticks. Numeric pose tolerance 0.00001 m/radian; checkpoint tick and collision counters exact. Replay consumes recorded commands, not waypoint-policy state. Maximum recording 7200 ticks. Version mismatch is rejected; checkpoint divergence is reported as REPRODUCIBILITY_FAILURE; no cross-browser determinism guarantee.
 - Same-input A/B uses the same command sequence with two explicitly labelled concept geometries; not a claim of fair strategic performance.
 - Hardware/network acceptance remains actual-device evidence. Browser benchmark reports observed rendering/loading values only, never an invented school-device pass.
 
@@ -22,4 +22,13 @@ Knowledge source authority/season isolation/conflict exclusion and access contro
 
 ## Status
 
-Implementation in progress. This is a delivery contract, not a completed-release claim. Full V5.2 Release 2 also requires transactional multi-provider AI budgets, provider security acceptance and expanded knowledge Gold Set validation; these must not be silently claimed by deterministic pilot search.
+Live review pilot deployed from `c8b32a3` on 2026-09-13. Vercel deployment `8kniSjFoW8QdsdyABMfkEo4LANL5` is Ready:
+https://g3-scouting-app-5qpe-iuk8prg5c-eranbos-projects.vercel.app/field-twin
+
+Knowledge route: `/knowledge`. Both routes require an active member session. The deployment opened successfully at login; authenticated hosted acceptance has not been claimed. Preview uses the isolated QA environment. Production was not promoted.
+
+QA migration and seed executed successfully. Five published seed references span 2026 (three), 2024 (one), and 2022 (one). This is a small evidence pilot, not a complete 2026 Gold Set or a ten-year corpus. Source documents are linked, not hosted.
+
+Validation completed: TypeScript compilation, Vite build, focused pure-engine/retrieval tests, focused PGlite migration/RLS/curation tests. Actual field and KitBot both loaded with verified hashes in the local browser harness. Observed rendering approximately 60 FPS field-only and 32 FPS with KitBot in the narrow app browser; this is not a representative school-laptop/network benchmark. Initial narrow-screen camera framing corrected. No physical gamepad was available for hardware acceptance.
+
+Full V5.2 Release 2 still requires transactional multi-provider AI budgets, provider security acceptance and expanded knowledge Gold Set validation. Release 3 formal acceptance still needs representative-device/network and physical gamepad checks. These are not silently claimed by this live concept pilot. Full dynamics, match scoring, G3-specific CAD and engineering validation are not implemented by the planar concept model.
