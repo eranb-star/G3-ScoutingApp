@@ -1,6 +1,7 @@
 import {useEffect,useRef} from 'react';
 import * as THREE from 'three';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js';
+import {RoomEnvironment} from 'three/examples/jsm/environments/RoomEnvironment.js';
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
 import {Concept,FIELD,OBSTACLES,Pose} from '../lib/conceptTwin';
 
@@ -22,10 +23,12 @@ export default function FieldTwinCanvas(props:Props){
  useEffect(()=>{
   const element=host.current!;let disposed=false,frame=0,frames=0,last=performance.now();const abort=new AbortController();
   let renderer:THREE.WebGLRenderer;
-  try{renderer=new THREE.WebGLRenderer({antialias:false,powerPreference:'high-performance'});}catch{latest.current.onStatus('WebGL unavailable — use the 2D view below.');return;}
+  try{renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});}catch{latest.current.onStatus('WebGL unavailable — use the 2D view below.');return;}
   renderer.setPixelRatio(Math.min(devicePixelRatio,1));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.3;
   element.appendChild(renderer.domElement);renderer.domElement.setAttribute('aria-label','2026 field and robot 3D view; orbit by dragging, zoom with scroll. Driving controls are below.');
   const scene=new THREE.Scene();scene.background=new THREE.Color('#111b2b');
+  const studio=new RoomEnvironment(),pmrem=new THREE.PMREMGenerator(renderer),environment=pmrem.fromScene(studio,.04);scene.environment=environment.texture;studio.dispose();pmrem.dispose();
+  let resolution=1,slowWindows=0;
   const camera=new THREE.PerspectiveCamera(43,1,.05,150);camera.up.set(0,0,1);camera.position.set(-12,-15,15);
   const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.maxPolarAngle=Math.PI/2-.03;controls.minDistance=2;controls.maxDistance=80;
   scene.add(new THREE.HemisphereLight(0xe6f1ff,0x747483,3));const sun=new THREE.DirectionalLight(0xffffff,3);sun.position.set(-4,-6,15);scene.add(sun);
@@ -65,11 +68,11 @@ export default function FieldTwinCanvas(props:Props){
    if(p.view==='top'){camera.position.set(0,-.01,Math.max(23,24/ camera.aspect));controls.target.set(0,0,0);controls.enableRotate=false;}
    else if(p.view==='follow'){camera.position.lerp(new THREE.Vector3(p.pose.x-4,p.pose.y-5,4.5),.08);controls.target.set(p.pose.x,p.pose.y,.35);controls.enableRotate=false;}
    else controls.enableRotate=true;
-   controls.update();renderer.render(scene,camera);frames++;const now=performance.now();if(now-last>=1500){p.onFps(Math.round(frames*1000/(now-last)));frames=0;last=now;}
+   controls.update();renderer.render(scene,camera);frames++;const now=performance.now();if(now-last>=1500){const measured=Math.round(frames*1000/(now-last));p.onFps(measured);slowWindows=measured<20?slowWindows+1:0;if(slowWindows>=2&&resolution>.65){resolution=Math.max(.65,resolution-.15);renderer.setPixelRatio(Math.min(devicePixelRatio,1)*resolution);slowWindows=0;p.onStatus('Rendering resolution reduced to keep the selected detailed models. Model selections are unchanged.');}frames=0;last=now;}
    frame=requestAnimationFrame(render);
   };frame=requestAnimationFrame(render);
   const lost=(e:Event)=>{e.preventDefault();latest.current.onStatus('Graphics context lost. Switch to 2D or reopen 3D.');};renderer.domElement.addEventListener('webglcontextlost',lost);
-  return()=>{disposed=true;abort.abort();cancelAnimationFrame(frame);observer.disconnect();controls.dispose();scene.traverse(o=>{if(o instanceof THREE.Mesh||o instanceof THREE.Line){o.geometry.dispose();const materials=Array.isArray(o.material)?o.material:[o.material];materials.forEach(m=>{Object.values(m).forEach(v=>{if(v instanceof THREE.Texture)v.dispose();});m.dispose();});}});renderer.dispose();renderer.domElement.remove();};
+  return()=>{disposed=true;abort.abort();cancelAnimationFrame(frame);observer.disconnect();controls.dispose();scene.traverse(o=>{if(o instanceof THREE.Mesh||o instanceof THREE.Line){o.geometry.dispose();const materials=Array.isArray(o.material)?o.material:[o.material];materials.forEach(m=>{Object.values(m).forEach(v=>{if(v instanceof THREE.Texture)v.dispose();});m.dispose();});}});environment.dispose();renderer.dispose();renderer.domElement.remove();};
  },[]);
  return <div className="twin-canvas" ref={host}/>;
 }

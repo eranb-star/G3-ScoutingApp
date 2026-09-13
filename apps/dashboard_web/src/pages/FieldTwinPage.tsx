@@ -7,15 +7,15 @@ const Canvas=lazy(()=>import('../components/FieldTwinCanvas'));
 export default function FieldTwinPage(){
  const {pick}=useLocalization();const [pose,setPose]=useState<Pose>({...START}),[config,setConfig]=useState<Concept>({...DEFAULT_CONCEPT});
  const [enabled,setEnabled]=useState(false),[mode,setMode]=useState<'manual'|'auto'|'replay'>('manual'),[input,setInput]=useState<'keyboard'|'gamepad'>('keyboard');
- const [threeD,setThreeD]=useState(false),[detailed,setDetailed]=useState(true),[kitbot,setKitbot]=useState(false),[view,setView]=useState<'orbit'|'top'|'follow'>('orbit');
+ const [threeD,setThreeD]=useState(false),[detailed,setDetailed]=useState(true),[kitbot,setKitbot]=useState(true),[view,setView]=useState<'orbit'|'top'|'follow'>('orbit');
  const [status,setStatus]=useState(''),[fps,setFps]=useState(0),[recording,setRecording]=useState(false),[saved,setSaved]=useState<Recording|null>(null),[path,setPath]=useState<Pose[]>([]);
  const [deadband,setDeadband]=useState(.12),[xAxis,setXAxis]=useState(0),[yAxis,setYAxis]=useState(1),[turnAxis,setTurnAxis]=useState(2),[invertY,setInvertY]=useState(true);
  const keys=useRef(new Set<string>()),touch=useRef<Command>({vx:0,vy:0,omega:0}),physics=useRef<Pose>({...START}),record=useRef<Recording|null>(null),waypoint=useRef(0),playIndex=useRef(0);
  const latest=useRef({enabled,mode,input,config,recording,saved,deadband,xAxis,yAxis,turnAxis,invertY});latest.current={enabled,mode,input,config,recording,saved,deadband,xAxis,yAxis,turnAxis,invertY};
- const page=useRef<HTMLElement>(null),lowFrames=useRef(0);const [expanded,setExpanded]=useState(false);
+ const page=useRef<HTMLElement>(null);const [expanded,setExpanded]=useState(false);
  async function fullscreen(){if(expanded){if(document.fullscreenElement)await document.exitFullscreen();setExpanded(false);return;}setExpanded(true);try{await page.current?.requestFullscreen();}catch{/* Embedded browsers use the expanded layout. */}}
  useEffect(()=>{const changed=()=>{if(!document.fullscreenElement)setExpanded(false);};const escape=(e:KeyboardEvent)=>{if(e.key==='Escape')setExpanded(false);};document.addEventListener('fullscreenchange',changed);window.addEventListener('keydown',escape);return()=>{document.removeEventListener('fullscreenchange',changed);window.removeEventListener('keydown',escape);};},[]);
- function reportFps(value:number){setFps(value);lowFrames.current=value<15?lowFrames.current+1:0;if(lowFrames.current>=2&&(detailed||kitbot)){setDetailed(false);setKitbot(false);lowFrames.current=0;setStatus('Switched to lightweight 3D because rendering was slow. Detailed models can be restored in Robot concept.');}}
+ function reportFps(value:number){setFps(value);}
  const stop=()=>{latest.current.enabled=false;setEnabled(false);keys.current.clear();touch.current={vx:0,vy:0,omega:0};};
  useEffect(()=>{
   const down=(e:KeyboardEvent)=>{if((e.target as HTMLElement).closest('input,select,textarea,[contenteditable]'))return;if(e.code==='Space'&&latest.current.enabled){e.preventDefault();stop();return;}if(['KeyW','KeyA','KeyS','KeyD','KeyQ','KeyE','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)){e.preventDefault();keys.current.add(e.code);}};
