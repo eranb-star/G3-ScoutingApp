@@ -1,3 +1,4 @@
+import {removeStaticFuel} from '../lib/fieldFuelVisuals';
 import {FUEL_RADIUS,FUEL_COUNT,IntakeConfig} from '../lib/intake';
 import {TWIN_CACHE,storeModel} from '../lib/twinCache';
 import {useEffect,useRef} from 'react';
@@ -72,7 +73,7 @@ export default function FieldTwinCanvas(props:Props){
    void assetBuffer(which,abort.signal,season).then(data=>loader.parseAsync(data,'')).then(gltf=>{
     if(disposed){gltf.scene.traverse(o=>{if(o instanceof THREE.Mesh)o.geometry.dispose();});return;}
     const model=gltf.scene;for(const r of which==='field'?season.rotations:[{axis:'x',degrees:90}])model.rotateOnWorldAxis(new THREE.Vector3(r.axis==='x'?1:0,r.axis==='y'?1:0,r.axis==='z'?1:0),r.degrees*Math.PI/180);
-    if(which==='field'){model.name='detailed-field';scene.add(model);simplified.visible=false;}
+    if(which==='field'){for(const decoration of removeStaticFuel(model,season.year)??[])disposeModel(decoration);model.name='detailed-field';scene.add(model);simplified.visible=false;}
     else{model.rotateOnWorldAxis(new THREE.Vector3(0,0,1),Math.PI/2);model.position.set(-.3,0,.05);kit.add(model);kit.updateWorldMatrix(true,true);const b=new THREE.Box3().setFromObject(model).applyMatrix4(kit.matrixWorld.clone().invert()),size=b.getSize(new THREE.Vector3()),center=b.getCenter(new THREE.Vector3());bumperNumbers(kit,size.x,size.y,center.x,center.y,b.min.z+.25);}
     latest.current.onStatus(which==='field'?`${season.year} field model loaded · checksum verified`:'2026 KitBot loaded · checksum verified');
    }).catch(error=>{if(!disposed&&error.name!=='AbortError')latest.current.onStatus('Detailed model unavailable. Simplified view remains usable; check connection and reopen 3D to retry.');});

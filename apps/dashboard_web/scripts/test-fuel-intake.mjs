@@ -8,7 +8,10 @@ const result=await build({stdin:{contents:`
 import assert from 'node:assert/strict';
 import {createPhysicalDrive} from './src/lib/physicalDrive';
 import {DEFAULT_CONCEPT} from './src/lib/conceptTwin';
+import {Group,Mesh} from 'three';
+import {removeStaticFuel} from './src/lib/fieldFuelVisuals';
 import {DEFAULT_INTAKE} from './src/lib/intake';
+const model=new Group(),staticFuel=new Mesh(),field=new Mesh();staticFuel.name='GE-26900Fuel';model.add(staticFuel,field);removeStaticFuel(model,2026);assert.equal(model.children.length,1);assert.equal(model.children[0],field);
 const idle={vx:0,vy:0,omega:0}, intake={...DEFAULT_INTAKE,on:true,capacity:1,rate:2};
 const d=await createPhysicalDrive(DEFAULT_CONCEPT);d.reset(0,0);
 d.fuel.reset([{x:.62,y:-.13},{x:.62,y:.13},{x:-.62,y:0},{x:.62,y:.6}]);
@@ -31,6 +34,7 @@ assert.equal(d.fuel.collected,1,'capture follows rotated robot front');
 d.reset(-6,2.7);d.fuel.reset([{x:0,y:0},{x:.4,y:0}]);d.fuel.balls.get(0).setLinvel({x:2,y:0,z:0},true);
 for(let i=0;i<60;i++)d.step(idle);assert.ok(d.fuel.balls.get(1).translation().x>.45,'balls scatter each other');
 d.fuel.reset();assert.equal(d.fuel.collected,0);assert.equal(d.fuel.balls.size,64);
+const initial=d.fuel.snapshot();assert.ok(Math.max(...initial.map(b=>b.x))-Math.min(...initial.map(b=>b.x))<1.13,'compact starting layout');d.reset(-1.8,0);for(let i=0;i<180;i++){d.step({vx:1,vy:0,omega:0},intake);assert.equal(d.fuel.balls.size+d.fuel.collected,64,'balls are conserved');}assert.ok(d.fuel.snapshot().some(b=>Math.hypot(b.x-initial[b.id].x,b.y-initial[b.id].y)>.15),'balls leave their starting positions');
 assert.ok(d.fuel.snapshot().every(b=>Number.isFinite(b.z)));
 d.dispose();console.log('PASS: intake off, capture zone, capacity, rate, scatter and reset');
 `,resolveDir:process.cwd(),loader:'ts'},bundle:true,platform:'node',format:'esm',write:false,logLevel:'silent'});

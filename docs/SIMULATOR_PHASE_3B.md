@@ -17,3 +17,5 @@ Next: Phase 3C shooter/feed, trajectories and scoring. No shooting or scoring is
 
 Tower/depot correction: both towers now have conservative solid driving envelopes, aligned with the original distributed GLB; climbing/under-rung clearance is not simulated. Depot front/side rails are 28.575 mm high at the CAD positions (manual approximate height with hook fastener: 28.6 mm). Focused traversal test observed 16.6 mm maximum chassis rise. Tower approach blocks at x=-6.677 m. Fullscreen retains compact Start/Reset, six direction controls and rendering FPS; inspector remains hidden.
 
+
+Duplicate-ball correction: remove the 2026 CAD GE-26900 decorative fuel mesh after model load; physical state is the sole source of visible balls. Start the 64 practice balls in a compact 8x8 grid at 0.16 m spacing. This remains a bounded practice layout, not a full official match setup. Focused tests cover decorative-mesh removal, compact layout, movement away from starting positions and field-plus-storage conservation across a drive-through. Top-view visual check confirmed the static field balls are absent.

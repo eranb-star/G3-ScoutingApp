@@ -9,7 +9,7 @@ export class FuelPhysics {
   private nextCapture = 0;
   constructor(private world:R.World) {}
 
-  reset(points = Array.from({length:64},(_,i)=>({x:-1.5+(i%8)*0.4,y:-1.4+Math.floor(i/8)*0.4}))) {
+  reset(points = Array.from({length:64},(_,i)=>({x:-0.56+(i%8)*0.16,y:-0.56+Math.floor(i/8)*0.16}))) {
     for(const body of this.balls.values()) this.world.removeRigidBody(body);
     this.balls.clear();this.collected=0;this.nextCapture=0;
     points.slice(0,64).forEach((p,id)=>{
