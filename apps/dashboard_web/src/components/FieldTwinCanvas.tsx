@@ -7,9 +7,9 @@ import {RobotModel} from '../lib/robotModel';
 import {Concept,FIELD,OBSTACLES,Pose} from '../lib/conceptTwin';
 
 type Props={custom?:RobotModel;pose:Pose;concept:Concept;detailed:boolean;kitbot:boolean;view:'orbit'|'top'|'follow';path:Pose[];onStatus:(s:string)=>void;onFps:(fps:number)=>void};
-const CACHE='g3-twin-2026-v2';
-const assets={field:{url:'/twin/2026/field-model.glb',bytes:18182328,hash:'bad4af9f7b5ef951780001321549652c05dfcd61ce24b7efa12757a8afe533b1'},robot:{url:'/twin/2026/robot-model.glb',bytes:21270876,hash:'e6761e663e5b062d23b85f60d5a2ec913d7ea125a15a9c16eab23f7c84f2b67b'}};
-export async function clearTwinCache(){if('caches' in window)await caches.delete(CACHE);}
+const CACHE='g3-twin-2026-v3';
+const assets={field:{url:'/twin/2026/field-optimized.glb',bytes:19627748,hash:'088126b167906ca95e7b21a76a430a64199103d1ea184a121b1cf52e984b75e8'},robot:{url:'/twin/2026/robot-optimized.glb',bytes:16177620,hash:'053caf847815cb163632b8f858f5b261e589cb9abae3819b502c016fb57238b8'}};
+export async function clearTwinCache(){if('caches' in window)await Promise.all([caches.delete(CACHE),caches.delete('g3-twin-2026-v2')]);}
 async function assetBuffer(which:keyof typeof assets,signal:AbortSignal){
  const a=assets[which];let cached:Cache|undefined;try{cached=await caches.open(CACHE);}catch{/* Private browsing may disable cache. */}
  let response=await cached?.match(a.url);if(!response){response=await fetch(a.url,{signal});if(!response.ok)throw Error('Asset download failed');}
@@ -48,10 +48,10 @@ export default function FieldTwinCanvas(props:Props){
   const loader=new GLTFLoader();let fieldStarted=false,robotStarted=false;
   const custom=new THREE.Group();robot.add(custom);let customData:ArrayBuffer|undefined,customGeneration=0;
   function disposeModel(root:THREE.Object3D){root.traverse(o=>{if(o instanceof THREE.Mesh){o.geometry.dispose();for(const m of Array.isArray(o.material)?o.material:[o.material]){Object.values(m).forEach(t=>{if(t instanceof THREE.Texture)t.dispose();});m.dispose();}}});}
-  function loadCustom(data:ArrayBuffer){const generation=++customGeneration;const manager=new THREE.LoadingManager();manager.setURLModifier(url=>{if(!url.startsWith('blob:'))throw Error('External model resources are not supported');return url;});void new GLTFLoader(manager).parseAsync(data,'').then(g=>{if(disposed||generation!==customGeneration){disposeModel(g.scene);return;}custom.children.forEach(disposeModel);custom.clear();const model=g.scene;model.rotation.x=Math.PI/2;model.updateMatrixWorld(true);const bounds=new THREE.Box3().setFromObject(model);if(bounds.isEmpty()){disposeModel(model);throw Error('Empty robot model');}const center=bounds.getCenter(new THREE.Vector3());model.position.set(-center.x,-center.y,-bounds.min.z);custom.add(model);latest.current.onStatus('Robot model loaded. Check scale and orientation, then save on this device.');}).catch(()=>{if(!disposed&&generation===customGeneration)latest.current.onStatus('Robot model could not load. Export an uncompressed, self-contained GLB.');});}
+  function loadCustom(data:ArrayBuffer){custom.children.forEach(disposeModel);custom.clear();const generation=++customGeneration;const manager=new THREE.LoadingManager();manager.setURLModifier(url=>{if(!url.startsWith('blob:'))throw Error('External model resources are not supported');return url;});void new GLTFLoader(manager).parseAsync(data,'').then(g=>{if(disposed||generation!==customGeneration){disposeModel(g.scene);return;}custom.children.forEach(disposeModel);custom.clear();const model=g.scene;model.rotation.x=Math.PI/2;model.updateMatrixWorld(true);const bounds=new THREE.Box3().setFromObject(model);if(bounds.isEmpty()){disposeModel(model);throw Error('Empty robot model');}const center=bounds.getCenter(new THREE.Vector3());model.position.set(-center.x,-center.y,-bounds.min.z);custom.add(model);latest.current.onStatus('Robot model loaded. Check scale and orientation, then save on this device.');}).catch(()=>{if(!disposed&&generation===customGeneration)latest.current.onStatus('Robot model could not load. Export an uncompressed, self-contained GLB.');});}
 
   function load(which:'field'|'robot'){
-   latest.current.onStatus(which==='field'?'Loading detailed field · 18.2 MB…':'Loading KitBot · 21.3 MB…');
+   latest.current.onStatus(which==='field'?'Loading detailed field · 19.6 MB…':'Loading KitBot · 16.2 MB…');
    void assetBuffer(which,abort.signal).then(data=>loader.parseAsync(data,'')).then(gltf=>{
     if(disposed){gltf.scene.traverse(o=>{if(o instanceof THREE.Mesh)o.geometry.dispose();});return;}
     const model=gltf.scene;model.rotateOnWorldAxis(new THREE.Vector3(1,0,0),Math.PI/2);

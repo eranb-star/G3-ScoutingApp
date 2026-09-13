@@ -40,3 +40,11 @@ GLB upload (self-contained, uncompressed, maximum 40 MB), metre scale adjustment
 ## Production and next scope — 2026-09-13
 0158b67 promoted with production rebuild. Production evidence migration succeeded. g3-6740.com returns HTTP 200; bundle index-O-XWx9eP.js contains production Supabase ref and no QA ref. Next increment starts the 2017–2026 source directory and adds 2026 references. This directory is not full historical ingestion. User approved deferring new paid-AI budget/security work until after Phase 3; no new paid AI processing may be enabled first. Historical field selector needs licensed optimized assets and per-season geometry, separately from the knowledge directory.
 
+## Ten-season and optimized-model increment — 2026-09-13
+QA SQL applied successfully: 36 curated published references across 2017–2026, including seven for 2026. Official manual hashes and page counts are recorded in KNOWLEDGE_SOURCE_MANIFEST.json. This is overview coverage, not exhaustive ten-year rules coverage or a completed Gold Set. The knowledge selector spans all ten years; the 3D field remains 2026 only.
+
+Derived AdvantageScope assets retain the existing BSD license and credits. Reproducible script: apps/dashboard_web/scripts/optimize-twin-assets.mjs. Field reduced from 4,276,594 to 734,041 triangles and 2,929 to 27 meshes; KitBot from 3,637,362 to 621,527 triangles and 623 to 42 meshes. Hashes are pinned in FieldTwinCanvas.tsx. Original assets are retained. Both detailed models remained selected and rendered at approximately 60 FPS in the local browser check; this is not a guarantee on other devices.
+
+TypeScript and focused knowledge database tests passed, including ten-season/36-reference assertions. An isolated valid-GLB fixture restored from IndexedDB; changing orientation to 180 degrees through the UI and reloading preserved it. Native file chooser acceptance with the team's actual CAD remains pending. No physical gamepad or representative school device was available.
+
+Remaining: deeper verified 2026/Gold Set coverage; historical field assets and geometry/selector; actual CAD and hardware acceptance; then deferred AI budget/security controls before enabling new paid AI. No APK or additional production promotion in this increment.

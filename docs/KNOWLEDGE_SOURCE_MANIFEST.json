@@ -1,0 +1,72 @@
+[
+  {
+    "year": 2017,
+    "url": "https://firstfrc.blob.core.windows.net/frc2017/Manual/2017FRCGameSeasonManual.pdf",
+    "sha256": "80042839c16f60b405a4b686fb8d4823c79f8558c4565337cac729dee9ca6105",
+    "pages": 135,
+    "overviewPage": 13
+  },
+  {
+    "year": 2018,
+    "url": "https://firstfrc.blob.core.windows.net/frc2018/Manual/2018FRCGameSeasonManual.pdf",
+    "sha256": "e1dac45e5d2277f0e88222330458ebb3fdf2579700444218279e4a56235035c7",
+    "pages": 133,
+    "overviewPage": 13
+  },
+  {
+    "year": 2019,
+    "url": "https://firstfrc.blob.core.windows.net/frc2019/Manual/2019FRCGameSeasonManual.pdf",
+    "sha256": "5fbf42414e55df6afe995df61c288813504c5da157a8dee379ee4f13c3442c6e",
+    "pages": 133,
+    "overviewPage": 41
+  },
+  {
+    "year": 2020,
+    "url": "https://firstfrc.blob.core.windows.net/frc2020/Manual/2020FRCGameSeasonManual.pdf",
+    "sha256": "8f18b8f3fa258326eb9803190c393ecb4b2d50cbd0c6fa3094a9a5405d48ab7e",
+    "pages": 135,
+    "overviewPage": 13
+  },
+  {
+    "year": 2021,
+    "url": "https://firstfrc.blob.core.windows.net/frc2021/Manual/2021FRCGameManual.pdf",
+    "sha256": "9a76f2cb79eb86fc66b9f516994fe1ceb14487b07556a3e1eecba032a248fb80",
+    "pages": 123,
+    "overviewPage": 13
+  },
+  {
+    "year": 2022,
+    "url": "https://firstfrc.blob.core.windows.net/frc2022/Manual/2022FRCGameManual.pdf",
+    "sha256": "44edf74d18d561f397eba1eef4a804ef51b6d97eecb0e9113ed1ffe88920ddad",
+    "pages": 136,
+    "overviewPage": 17
+  },
+  {
+    "year": 2023,
+    "url": "https://firstfrc.blob.core.windows.net/frc2023/Manual/2023FRCGameManual.pdf",
+    "sha256": "b97e41fc77db8f67bd7f3c77c6f859825f58df92b08699a4bd6d192a1997fcc8",
+    "pages": 142,
+    "overviewPage": 16
+  },
+  {
+    "year": 2024,
+    "url": "https://firstfrc.blob.core.windows.net/frc2024/Manual/2024GameManual.pdf",
+    "sha256": "1b7e1dc3fe1b1bd64d97a482d7e78eb419ec77d611a15226a16b0c7011069b94",
+    "pages": 153,
+    "overviewPage": 19
+  },
+  {
+    "year": 2025,
+    "url": "https://firstfrc.blob.core.windows.net/frc2025/Manual/2025GameManual.pdf",
+    "sha256": "dc6aa9ddbeba25c679c58bae746bde14dba2af79a61a65d8c5f575ca6cdfd523",
+    "pages": 164,
+    "overviewPage": 17
+  },
+  {
+    "year": 2026,
+    "url": "https://firstfrc.blob.core.windows.net/frc2026/Manual/2026GameManual.pdf",
+    "sha256": "5c67300fc412a1eed8ca9dc37fb6644aee05795a2befed1f69736643cbf95139",
+    "pages": 166,
+    "overviewPage": 15
+  }
+]
