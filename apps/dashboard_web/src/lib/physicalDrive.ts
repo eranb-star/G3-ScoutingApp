@@ -13,6 +13,14 @@ export class PhysicalDrive{
  this.world.timestep=DT;
  const box=(x:number,y:number,z:number,w:number,d:number,h:number)=>this.world.createCollider(R.ColliderDesc.cuboid(w/2,d/2,h/2).setTranslation(x,y,z).setFriction(.8));
  box(0,0,-.1,FIELD.length,FIELD.width,.2);for(const sign of [-1,1]){box(sign*FIELD.length/2,0,.6,.1,FIELD.width,1.2);box(0,sign*FIELD.width/2,.6,FIELD.length,.1,1.2);}
+ // Tower envelope and depot rails aligned to the distributed 2026 CAD.
+ // Tower is deliberately a solid driving envelope; climbing is not simulated.
+ for(const side of [-1,1]){
+ box(side*7.7,side*.288925,.915,1.148,.9906,1.83);
+ const depotY=-side*1.9304;
+ box(side*7.622825,depotY,.0142875,.0762,1.0668,.028575);
+ for(const edge of [-1,1])box(side*7.965725,depotY+edge*.4953,.0142875,.6096,.0762,.028575);
+ }
  for(const x of [-3.644,3.644]){
  box(x,0,1.2,1.194,1.194,2.4);
  for(const side of [-1,1]){

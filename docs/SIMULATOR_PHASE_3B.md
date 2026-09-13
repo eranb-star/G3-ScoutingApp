@@ -14,3 +14,6 @@ Fuel dimensions from the locally reviewed FIRST 2026 manual: 15 cm diameter, 0.2
 Validation: focused engine tests cover off/on, front/side/rear exclusion, rate, capacity, rotated capture, robot pushing, ball-to-ball scattering and reset. Phase 3A regression scenarios pass. TypeScript/build and fullscreen visual checks accompany the release. Physical school device and actual mechanism calibration remain outstanding.
 
 Next: Phase 3C shooter/feed, trajectories and scoring. No shooting or scoring is included here. No SQL or APK changes.
+
+Tower/depot correction: both towers now have conservative solid driving envelopes, aligned with the original distributed GLB; climbing/under-rung clearance is not simulated. Depot front/side rails are 28.575 mm high at the CAD positions (manual approximate height with hook fastener: 28.6 mm). Focused traversal test observed 16.6 mm maximum chassis rise. Tower approach blocks at x=-6.677 m. Fullscreen retains compact Start/Reset, six direction controls and rendering FPS; inspector remains hidden.
+
