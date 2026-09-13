@@ -1,8 +1,9 @@
+import {DEFAULT_SHOOTER,ShooterConfig,HUB_APOTHEM} from './shooter';
 import {FuelPhysics} from './fuelPhysics';
 import {DEFAULT_INTAKE,IntakeConfig} from './intake';
 import R from '@dimforge/rapier3d-compat';
 import {Command,Concept,DT,FIELD,Pose,START} from './conceptTwin';
-export const PHYSICAL_ENGINE='g3-physical-v2';
+export const PHYSICAL_ENGINE='g3-physical-v3';
 export type PhysicalPose=Pose&{z:number;rotation:{x:number;y:number;z:number;w:number};contacts:number;speed:number};
 let initialized:Promise<void>|undefined;
 export async function createPhysicalDrive(config:Concept){await(initialized??=R.init());return new PhysicalDrive(config);}
@@ -22,7 +23,12 @@ export class PhysicalDrive{
  for(const edge of [-1,1])box(side*7.965725,depotY+edge*.4953,.0142875,.6096,.0762,.028575);
  }
  for(const x of [-3.644,3.644]){
- box(x,0,1.2,1.194,1.194,2.4);
+ // Robot envelope remains solid; balls encounter an open hexagonal receiver.
+ this.world.createCollider(R.ColliderDesc.cuboid(.597,.597,1.2).setTranslation(x,0,1.2).setCollisionGroups((4<<16)|1));
+ box(x,0,.68,1.194,1.194,1.36);
+ for(let i=0;i<6;i++){const a=i*Math.PI/3;this.world.createCollider(R.ColliderDesc.cuboid(.035,.33,.235).setTranslation(x+(HUB_APOTHEM+.035)*Math.cos(a),(HUB_APOTHEM+.035)*Math.sin(a),1.595).setRotation({x:0,y:0,z:Math.sin(a/2),w:Math.cos(a/2)}).setRestitution(.3));}
+ // Back net faces neutral and can deflect shots from the prohibited side.
+ box(x-Math.sign(x)*.65,0,2.2,.035,1.25,.8);
  for(const side of [-1,1]){
  const y=side*1.524,half=.564,depth=.927,height=.1654;
  const vertices=new Float32Array([-half,-depth,0,half,-depth,0,0,-depth,height,-half,depth,0,half,depth,0,0,depth,height]);
@@ -30,10 +36,11 @@ export class PhysicalDrive{
  const ty=side*3.24;box(x,ty,.6652,1.194,1.668,.2);for(const edge of [-1,1])box(x,ty+edge*.73675,.2826,1.194,.1945,.5652);
  }}
  this.body=this.world.createRigidBody(R.RigidBodyDesc.dynamic().setTranslation(START.x,START.y,.31).setCcdEnabled(true).setAngularDamping(2));
- this.world.createCollider(R.ColliderDesc.cuboid(config.length/2,config.width/2,(config.height-.08)/2).setTranslation(0,0,(config.height+.08)/2-.3).setMass(50).setFriction(.35).setRestitution(0),this.body);
+ this.world.createCollider(R.ColliderDesc.cuboid(config.length/2,config.width/2,(config.height-.08)/2).setTranslation(0,0,(config.height+.08)/2-.3).setMass(50).setCollisionGroups((1<<16)|6).setFriction(.35).setRestitution(0),this.body);
  this.world.step();
  }
- step(command:Command,intake:IntakeConfig=DEFAULT_INTAKE):PhysicalPose{
+ step(command:Command,intake:IntakeConfig=DEFAULT_INTAKE,shooter:ShooterConfig=DEFAULT_SHOOTER):PhysicalPose{
+ this.fuel.shoot(this.body,this.config.length,this.tick,shooter);
  this.fuel.capture(this.body,this.config.length,this.tick,intake);
  const before=this.body.translation(),q=this.body.rotation();this.body.resetForces(true);this.body.resetTorques(true);this.contacts=0;
  const rotate=(x:number,y:number,z:number)=>{const tx=2*(q.y*z-q.z*y),ty=2*(q.z*x-q.x*z),tz=2*(q.x*y-q.y*x);return {x:x+q.w*tx+q.y*tz-q.z*ty,y:y+q.w*ty+q.z*tx-q.x*tz,z:z+q.w*tz+q.x*ty-q.y*tx};};
@@ -44,8 +51,8 @@ export class PhysicalDrive{
  const norm=Math.max(1,Math.hypot(command.vx,command.vy)),targetX=command.vx/norm*this.config.speed-command.omega*this.config.turn*offset.y,targetY=command.vy/norm*this.config.speed+command.omega*this.config.turn*offset.x;
  let fx=(targetX-v.x)*100,fy=(targetY-v.y)*100;const limit=Math.min(50*3/4,support*1.1),m=Math.max(1,Math.hypot(fx,fy)/Math.max(limit,.001));fx/=m;fy/=m;this.body.addForceAtPoint({x:fx,y:fy,z:0},origin,true);
  }}
- this.world.step();this.tick++;const p=this.body.translation(),r=this.body.rotation(),v=this.body.linvel();this.distance+=Math.hypot(p.x-before.x,p.y-before.y);if(Math.hypot(command.vx,command.vy)>.2&&Math.hypot(v.x,v.y)<.05)this.collisions++;
- return {balls:this.fuel.snapshot(),collected:this.fuel.collected,x:p.x,y:p.y,z:p.z-.3,rotation:{...r},heading:Math.atan2(2*(r.w*r.z+r.x*r.y),1-2*(r.y*r.y+r.z*r.z)),tick:this.tick,distance:this.distance,collisions:this.collisions,contacts:this.contacts,speed:Math.hypot(v.x,v.y)};
+ this.world.step();this.tick++;this.fuel.afterStep(this.tick);const p=this.body.translation(),r=this.body.rotation(),v=this.body.linvel();this.distance+=Math.hypot(p.x-before.x,p.y-before.y);if(Math.hypot(command.vx,command.vy)>.2&&Math.hypot(v.x,v.y)<.05)this.collisions++;
+ return {ledger:this.fuel.ledger(),scores:[...this.fuel.scores],shots:this.fuel.shots,balls:this.fuel.snapshot(),collected:this.fuel.collected,x:p.x,y:p.y,z:p.z-.3,rotation:{...r},heading:Math.atan2(2*(r.w*r.z+r.x*r.y),1-2*(r.y*r.y+r.z*r.z)),tick:this.tick,distance:this.distance,collisions:this.collisions,contacts:this.contacts,speed:Math.hypot(v.x,v.y)};
  }
  reset(x=START.x,y=START.y){this.body.setTranslation({x,y,z:.31},true);this.body.setRotation({x:0,y:0,z:0,w:1},true);this.body.setLinvel({x:0,y:0,z:0},true);this.body.setAngvel({x:0,y:0,z:0},true);this.tick=0;this.distance=0;this.collisions=0;}
  dispose(){this.world.free();}

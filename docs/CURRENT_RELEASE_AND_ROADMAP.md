@@ -38,3 +38,7 @@ Production update: Phase 3A commit e5bec43 deployed by production rebuild GmhT4E
 ## Phase 3B review implementation
 Balls and intake implemented in g3-physical-v2: bounded 64-ball physics, scattering, configurable capture zone/rate/capacity, full indicator and reset. See SIMULATOR_PHASE_3B.md. Preview release; production promotion pending. Next simulator milestone: Phase 3C shooting and scoring.
 
+
+## Phase 3C review implementation
+Engine g3-physical-v3 adds 504-ball single-robot staging, stable ball inventory, configurable shooting, physical misses, hub goals and neutral-zone return. Practice scoring only; exact geometry/outlet/mechanism calibration remains. See SIMULATOR_PHASE_3C.md. Production promotion pending.
+
