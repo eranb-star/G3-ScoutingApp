@@ -1,6 +1,6 @@
 # Simulator baseline and Phase 3A - physical driving
 
-Status: implemented reference model; production deployment pending. This extends the Field & Concept Twin and does not close every V5.2 Release 2/3 acceptance item.
+Status: reference model deployed to production on 2026-09-13: e5bec43, Vercel GmhT4EkDQ, Ready. Live bundle index-BY-zgMiY.js verified HTTP 200, production Supabase, physical engine and practice controls. This extends the Field & Concept Twin and does not close every V5.2 Release 2/3 acceptance item.
 
 ## Scope and acceptance
 - 2026 physical driving only; other seasons remain viewers.

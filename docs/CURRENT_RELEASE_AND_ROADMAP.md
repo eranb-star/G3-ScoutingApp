@@ -31,3 +31,6 @@ Production update: 5911868 deployed successfully via production rebuild 6WrywGDo
 ## Simulator extension - Phase 3A
 Reference physical driving implemented: gravity, suspension, hub/boundary collisions, bump pitch/height and trench clearance. See SIMULATOR_BASELINE_PHASE_3A.md for assumptions, focused acceptance and remaining calibration. Production deployment pending. Balls/intake/shooting and physical replay are later milestones. No APK or SQL change.
 
+
+Production update: Phase 3A commit e5bec43 deployed by production rebuild GmhT4EkDQ, Ready on 2026-09-13. https://g3-6740.com live bundle index-BY-zgMiY.js verified HTTP 200, production Supabase (no QA reference), g3-physical-v1 and trench practice controls. Next simulator milestone is Phase 3B: balls, scattering/contact, intake capture rate/zone and configured capacity; shooting follows in 3C.
+
