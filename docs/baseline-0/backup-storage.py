@@ -1,5 +1,5 @@
 """Encrypted local Supabase object snapshot. Credentials and plaintext stay in memory.
-Run interactively; --self-test exercises encryption and corruption detection only.
+Run interactively or through the Windows managed runner; --self-test includes local recovery.
 """
 import argparse, datetime, getpass, hashlib, io, json, os, pathlib, secrets, sys, tempfile, urllib.request, urllib.parse, zipfile
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
@@ -57,6 +57,7 @@ def main():
     parser.add_argument('--verify', type=pathlib.Path)
     parser.add_argument('--restore', type=pathlib.Path)
     parser.add_argument('--destination', type=pathlib.Path)
+    parser.add_argument('--managed', action='store_true', help='Read Windows-decrypted configuration from stdin')
     args = parser.parse_args()
     if args.self_test:
         blob = encrypt(b'test object bytes', 'synthetic-test-password')
@@ -85,20 +86,30 @@ def main():
                 raise AssertionError('Existing restore destination overwritten')
         print('PASS encryption, tamper rejection, nonempty local restore, exact bytes and overwrite protection')
         return
+    configuration = None
+    if args.managed:
+        configuration=json.load(sys.stdin)
+        if configuration.get('project') != PROJECT or len(configuration.get('password','')) < 16 or not configuration.get('token'):
+            raise ValueError('Invalid managed configuration')
     if args.restore:
         if not args.destination:
             raise ValueError('Choose a new destination directory')
-        count=restore_local(decrypt(args.restore.read_bytes(),getpass.getpass('Backup password: ')),args.destination)
+        password = configuration['password'] if configuration else getpass.getpass('Backup password: ')
+        count=restore_local(decrypt(args.restore.read_bytes(),password),args.destination)
         print(f'Verified local restore: {count} files. No cloud data changed. Destination: {args.destination}')
         return
     if args.verify:
-        print('Verified objects:', verify(decrypt(args.verify.read_bytes(), getpass.getpass('Backup password: '))))
+        password = configuration['password'] if configuration else getpass.getpass('Backup password: ')
+        print('Verified objects:', verify(decrypt(args.verify.read_bytes(), password)))
         return
     print('G3 uploaded-file backup. Reads production storage only. Does not modify Supabase.')
-    token = getpass.getpass('Supabase service_role or secret API key (hidden; not saved): ').strip()
-    password = getpass.getpass('Choose backup password (at least 16 characters): ')
-    if len(password) < 16 or password != getpass.getpass('Repeat backup password: '):
-        raise ValueError('Password too short or confirmation mismatch')
+    if args.managed:
+        token=configuration['token'];password=configuration['password']
+    else:
+        token = getpass.getpass('Supabase service_role or secret API key (hidden; not saved): ').strip()
+        password = getpass.getpass('Choose backup password (at least 16 characters): ')
+        if len(password) < 16 or password != getpass.getpass('Repeat backup password: '):
+            raise ValueError('Password too short or confirmation mismatch')
 
     def request(path, body=None):
         headers = {'apikey': token, 'Authorization': 'Bearer '+token, 'Content-Type': 'application/json'}
@@ -158,7 +169,11 @@ def main():
         out.write(encrypted)
     assert verify(decrypt(target.read_bytes(), password)) == len(before)
     print(f'Encrypted backup verified: {len(before)} files, {total} source bytes.\nSaved: {target}')
-    print('Keep the password in your password manager. Losing it makes this backup unrecoverable.')
+    status={'verified_at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'project':PROJECT,'file':str(target),'objects':len(before),'source_bytes':total,'sha256':hashlib.sha256(target.read_bytes()).hexdigest()}
+    status_temp=destination/'latest-storage-backup.tmp'
+    status_temp.write_text(json.dumps(status,indent=2),encoding='utf-8')
+    status_temp.replace(destination/'latest-storage-backup.json')
+    print('The managed key is protected by this Windows profile.' if args.managed else 'Keep the password in your password manager. Losing it makes this backup unrecoverable.')
 
 if __name__ == '__main__':
     try:

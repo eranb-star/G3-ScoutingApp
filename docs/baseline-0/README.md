@@ -1,5 +1,7 @@
 # Baseline 0 — V5.2 engineering platform
 
+**Current status:** see [Phase 0/1 delivery record](../PHASE_0_1_STATUS_20260913.md). This original inventory below is historical. Scheduled encrypted local backup is now installed and verified, database restoration/replay is recorded, production engineering is deployed, and APK 2.1.9 is built. Full disaster-recovery and physical-device acceptance must not be inferred from the successful component checks.
+
 Captured 2026-09-12. Status: evidence collection and Release 1 contract drafted; baseline acceptance remains open. No application code, database structure, production data or deployments changed.
 
 ## Accountable owner

@@ -1,5 +1,7 @@
 # V5.2 Baseline 0 and Release 1 acceptance ledger
 
+**Current authoritative status:** [Phase 0/1 delivery and acceptance record](PHASE_0_1_STATUS_20260913.md). Production migrations, web rollout, APK 2.1.9 and scheduled local backups are now delivered. The remaining acceptance is explicitly listed there. The entries below are historical snapshots, not the current deployment state.
+
 This ledger supersedes statements implying the September 13 deployment completed all of V5.2 Release 1. A deployed subset is not a completed phase. Scope: V5.2 sections 5–7, 16–17, 82–92, 100–104 and the Release 1 entries in the 32-item decision register.
 
 | Area | Evidence / existing implementation | Outstanding acceptance |

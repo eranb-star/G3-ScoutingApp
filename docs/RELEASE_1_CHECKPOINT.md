@@ -1,5 +1,7 @@
 # Release 1 checkpoint — 2026-09-12
 
+**Superseded checkpoint:** read [current Phase 0/1 record](PHASE_0_1_STATUS_20260913.md). Production rollout and APK 2.1.9 are delivered. The dated continuation notes below are historical and must not trigger repeated migrations/builds.
+
 ## Latest continuation — 2026-09-13
 
 Implemented locally: recursive upstream enforcement and change-impact list; saved immutable project robot/prototype configuration revisions and finding snapshots; 1–5 required stage reviewers with all-reviewer consensus and vote invalidation when findings change. Expanded SQL tests pass across these cases. TypeScript and Vite build passed (existing bundle-size warning). Narrow Hebrew combined form fixture inspected; desktop form inspection previously completed. These component fixtures are NOT the hosted integrated preview or physical-phone acceptance.

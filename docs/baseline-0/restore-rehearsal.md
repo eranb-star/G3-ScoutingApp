@@ -8,6 +8,10 @@ The confirmation creates a separate project in the existing organization and reg
 
 Transferred: database schema, all data/indexes, database roles/permissions/users. Manual configuration required: Storage objects/settings, Edge Functions, Auth settings/API keys, extensions/settings and replicas. This clone contains real data and is a restricted recovery target, NOT an immediately usable QA environment.
 
+## September 13 follow-up — supersedes earlier pending backup notes
+
+All thirteen current engineering migrations replayed successfully in recovery `ooqwgylckjvfpkshhexm` (`recovery_engineering_13`). Its production scheduler remains disabled. Windows daily/sign-in encrypted Storage backup is installed; an actual scheduled run returned 0 and its encrypted snapshot restored to a new local directory. Nonempty synthetic byte restoration, corruption and overwrite protections also passed. Current production has zero Storage objects. No end-to-end cloud object/application/configuration recovery or measured RTO is claimed. See [current delivery record](../PHASE_0_1_STATUS_20260913.md) for exact identities and remaining acceptance. Earlier unconfigured-backup statements below are historical.
+
 ## Rehearsal sequence
 
 ### Observed result

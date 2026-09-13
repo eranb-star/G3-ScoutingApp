@@ -1,3 +1,9 @@
+# Current handoff — 2026-09-13
+
+Read [PHASE_0_1_STATUS_20260913.md](docs/PHASE_0_1_STATUS_20260913.md) FIRST. Production now runs 4bd440f with all thirteen engineering migrations. Signed APK 2.1.9/code23 is in releases. Scheduled encrypted local backup installed and successfully run/restored. Latest release CI 34742388037 passed. Preserve the two user Android .idea edits. The current record explicitly lists outstanding acceptance; do not claim both phases fully accepted or repeat completed deployments/backups.
+
+Everything below is historical and is superseded by the current record where it conflicts.
+
 ## Baseline 0 started — Blueprint V5.2 (2026-09-12)
 
 LATEST CONTINUOUS WORK: Added recursive upstream enforcement + change impact panel; immutable project robot configuration snapshots; multi-reviewer consensus (1–5) and finding-change vote invalidation. Focused tests and build pass. ALL SIX new migrations rehearsed successfully on recovery ooqwgylckjvfpkshhexm (combined release-1-rehearsal.sql). No production migration. New UI narrow Hebrew/desktop component checks done; integrated hosted preview/user acceptance still pending. Synthetic combined preview port4207 (session61253); no production writes. Preserve .idea changes. Do not repeat prior backup work or request authorization for local continuation. See current docs/RELEASE_1_CHECKPOINT.md; earlier unfinished-feature notes are superseded only for the listed implementation, not release acceptance.
