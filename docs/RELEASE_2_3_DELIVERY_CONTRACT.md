@@ -48,3 +48,7 @@ Derived AdvantageScope assets retain the existing BSD license and credits. Repro
 TypeScript and focused knowledge database tests passed, including ten-season/36-reference assertions. An isolated valid-GLB fixture restored from IndexedDB; changing orientation to 180 degrees through the UI and reloading preserved it. Native file chooser acceptance with the team's actual CAD remains pending. No physical gamepad or representative school device was available.
 
 Remaining: deeper verified 2026/Gold Set coverage; historical field assets and geometry/selector; actual CAD and hardware acceptance; then deferred AI budget/security controls before enabling new paid AI. No APK or additional production promotion in this increment.
+
+## Production promotion confirmed
+846e515 promoted by production rebuild FKB4vVTTs on 2026-09-13. Vercel Ready, g3-6740.com assigned. Both incremental knowledge SQL files applied successfully to production. HTTP 200; index-B8WmLcCc.js contains production Supabase reference and no QA reference. Optimized assets and ten-season Knowledge selector are now production features; historical 3D fields remain unimplemented. No new APK built.
+
