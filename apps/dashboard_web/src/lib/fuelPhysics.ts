@@ -30,13 +30,12 @@ export class FuelPhysics {
     // One robot has eight preloads. The absent five robots' unused preloads
     // are placed in neutral, as specified by the match staging rule.
     let id=0;const neutral=total-104;
-    // Two packed blocks separated by the centre divider. Additional balls form
-    // a staggered second layer; never spawn overlapping spheres.
+    // Single layer: no unsupported balls falling when driving is enabled.
     for(let i=0;i<neutral;i++){
-      const side=i%2===0?-1:1,j=Math.floor(i/2),layer=Math.floor(j/170),k=j%170;
-      this.spawn(id++,{x:side*(0.102+(k%5)*0.153+layer*0.07),y:-2.525+Math.floor(k/5)*0.153+layer*0.02,z:0.075+layer*0.15});
+      const side=i%2===0?-1:1,j=Math.floor(i/2);
+      this.spawn(id++,{x:side*(0.101+(j%6)*0.151),y:-2.49+Math.floor(j/6)*0.151,z:FUEL_RADIUS}).sleep();
     }
-    for(const side of [-1,1])for(let i=0;i<24;i++)this.spawn(id++,{x:side*(7.80+(i%3)*0.153),y:-side*1.9304+(Math.floor(i/3)%6-2.5)*0.153,z:.075+Math.floor(i/18)*.153});
+    for(const side of [-1,1])for(let i=0;i<24;i++)this.spawn(id++,{x:side*(7.80+(i%3)*0.153),y:-side*1.9304+(Math.floor(i/3)%6-2.5)*0.153,z:.075+Math.floor(i/18)*.15}).sleep();
     for(let i=0;i<8;i++)this.stored.push(id++);
     for(let h=0;h<2;h++)for(let i=0;i<24;i++)this.outposts[h].push(id++);
   }

@@ -11,3 +11,5 @@
 
 /* Compact driving console remains accessible in fullscreen. */
 .twin-expanded .twin-metrics{flex:none;padding:6px 10px}.twin-expanded .twin-metrics strong{font-size:15px}.twin-expanded .twin-metrics div{gap:2px}.twin-expanded .twin-drive{flex:none;padding:6px 12px;justify-content:center}.twin-expanded .twin-touch{flex:none;grid-template-columns:repeat(6,44px);padding:4px 8px 8px}.twin-expanded .twin-touch button{min-height:44px;padding:4px}.twin-expanded .twin-drive button{min-height:40px;padding:6px 12px}
+
+.twin-scoreboard{display:grid;grid-template-columns:1fr 1fr;gap:2px 10px;min-width:146px;padding:5px 10px;border:1px solid #52627b;border-radius:9px;background:#0d1728;color:#fff}.twin-scoreboard>span{font-size:10px;font-weight:800;display:flex;align-items:center;gap:8px}.twin-scoreboard strong{font:800 23px ui-monospace,monospace;font-variant-numeric:tabular-nums}.twin-score-blue{color:#91caff}.twin-score-red{color:#ff9da8}.twin-scoreboard small{grid-column:1/-1;font-size:8px;letter-spacing:.08em;text-align:center;color:#c3ccda}
