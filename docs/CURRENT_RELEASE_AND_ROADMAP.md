@@ -42,3 +42,7 @@ Balls and intake implemented in g3-physical-v2: bounded 64-ball physics, scatter
 ## Phase 3C review implementation
 Engine g3-physical-v3 adds 504-ball single-robot staging, stable ball inventory, configurable shooting, physical misses, hub goals and neutral-zone return. Practice scoring only; exact geometry/outlet/mechanism calibration remains. See SIMULATOR_PHASE_3C.md. Production promotion pending.
 
+
+## Production - simulator 3B/3C and alliance correction
+17a542f deployed via D339AMxE7, Ready. Live https://g3-6740.com bundle index-Cbu_3RvN.js verified HTTP 200, production Supabase and g3-physical-v3 with Shooting at red hub. Includes 504-ball inventory, collection/shooting/hub returns, stable start, tower/depot collisions, fullscreen controls and red reference bumpers. Browser test: eight shots into red hub counted Red 8, Blue 0. Documentation supersedes prior preview-pending entries. No APK built.
+
