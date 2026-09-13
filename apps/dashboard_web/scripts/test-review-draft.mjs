@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {parseReviewDraft,reviewDraftKey} from '../src/lib/reviewDraft.ts';
+const draft={revision:'B',items:[{title:'CAD',revision:'fixed-version',url:'https://example.com/version'}],notes:'Check fit',expectedSubmission:'previous-id'};
+assert.deepEqual(parseReviewDraft(JSON.stringify(draft)),draft);
+assert.equal(parseReviewDraft('{'),null);
+assert.equal(parseReviewDraft(JSON.stringify({...draft,items:[null]})),null);
+assert.notEqual(reviewDraftKey('student','task'),reviewDraftKey('mentor','task'));
+assert.notEqual(reviewDraftKey('student','task'),reviewDraftKey('student','other-task'));
+assert.equal(parseReviewDraft(JSON.stringify(draft)).expectedSubmission,'previous-id');
+console.log('PASS draft identity isolation, invalid storage tolerance and retained stale-revision token');

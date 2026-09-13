@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 const root=path.resolve(import.meta.dirname,"../../..");
-const read=file=>fs.readFileSync(path.join(root,file),"utf8");
+const read=file=>fs.readFileSync(path.join(root,file),"utf8").replace(/\r\n/g,"\n");
 const auth=read("apps/dashboard_web/src/lib/memberAuth.tsx");
 const more=read("apps/dashboard_web/src/pages/TeamHubPages.tsx");
 const admin=read("apps/dashboard_web/src/pages/AdminDashboardPage.tsx");

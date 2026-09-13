@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {projectInView,taskInView} from '../src/lib/projectArchive.ts';
+const active={id:'a',status:'active'},archived={id:'a',status:'archived'},task={project_id:'a',archived:true};
+assert.equal(projectInView(active,[task],true),true);
+assert.equal(projectInView(active,[],true),false);
+assert.equal(taskInView(active,task,true),true);
+assert.equal(taskInView(active,task,false),false);
+assert.equal(taskInView(archived,{archived:false},true),true);
+assert.equal(projectInView(archived,[task],false),false);
+assert.equal(taskInView(active,{archived:false},false),true);
+console.log('PASS archived tasks remain discoverable in active projects; archived projects expose all retained tasks');

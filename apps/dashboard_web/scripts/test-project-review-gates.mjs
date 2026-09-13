@@ -179,6 +179,30 @@ assert.ok((await rows('select task_change_impact() data'))[0].data.some(r=>r.tas
 await as(other);await assert.rejects(async()=>db.query('select submit_project_review_evidence($1,$2,$3::jsonb,$4,$5)',[task,'Self-M',evidence,(await context()).submission.id,'Own submission']));
 console.log('PASS saved immutable configuration, multi-reviewer consensus and transitive change impact');
 
+await db.exec('reset role');
+await db.exec(fs.readFileSync(new URL('../../../backend/supabase/project_structured_findings_20260913.sql',import.meta.url),'utf8'));
+await as(mentor);
+const physical=(await context()).submission;
+const measured={value:150,unit:'N',samples:3,instrument:'Load cell A',calibration:'Reference 2026-09-01',conditions:'30 seconds at room temperature',asset:'Prototype intake A'};
+const recordMeasured=m=>db.query('select record_structured_requirement_result($1,$2,$3,$4,$5,$6,$7,$8)',[physical.id,physical.requirements[0].id,'passed',1,'Measured three samples',config,null,m]);
+await assert.rejects(()=>recordMeasured(null),/Record measured/);
+await assert.rejects(()=>recordMeasured({...measured,samples:0}),/Sample count/);
+await assert.rejects(()=>recordMeasured({...measured,samples:1.5}),/Sample count/);
+await as(student);await assert.rejects(()=>recordMeasured(measured));
+await as(mentor);await recordMeasured(measured);
+assert.equal((await context()).submission.requirement_results[physical.requirements[0].id].measurement.samples,3);
+assert.equal((await context()).submission.requirement_results[physical.requirements[0].id].measurement.evidence_class,'physical');
+console.log('PASS structured physical measurements, required metadata, sample validation and permission enforcement');
+
+await db.exec('reset role');
+const historyCount=(await rows(`select count(*)::int n from project_review_submissions where task_id='${task}'`))[0].n;
+await db.exec(`update project_tasks set archived=true where id='${task}'`);
+assert.equal((await rows(`select cancelled from team_actions where source_id='${task}'`))[0].cancelled,true);
+assert.equal((await rows(`select task_upstream_blocked('${child}') blocked`))[0].blocked,true);
+assert.equal((await rows(`select count(*)::int n from project_review_submissions where task_id='${task}'`))[0].n,historyCount);
+await db.exec(`update project_tasks set archived=false where id='${task}'`);
+console.log('PASS reviewed task archive cancels responsibility, preserves history and blocks dependent work');
+
 await as(admin);
 await db.query('select configure_project_review($1,$2,$3,$4)',[task,other,'Updated release acceptance criterion','Reassign primary reviewer']);
 assert.equal((await context()).submission,null);

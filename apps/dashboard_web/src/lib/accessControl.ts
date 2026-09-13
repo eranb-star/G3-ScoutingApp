@@ -3,7 +3,7 @@ import { useMemberAuth, type TeamRole } from "./memberAuth";
 import { supabase } from "../supabase";
 import { frcTeams, teamMatches } from "./frcTeams";
 
-export type PermissionKey="view_team_risks"|"view_team_data"|"manage_team_projects"|"assign_team_work"|"manage_robot_reliability"|"manage_training"|"validate_training"|"manage_team_calendar"|"create_announcements"|"manage_inventory"|"submit_purchase_requests"|"operate_competition"|"view_team_reports"|"correct_attendance"|"manage_members"|"manage_permissions"|"view_security_audit";
+export type PermissionKey="submit_engineering_review"|"decide_engineering_review"|"reopen_engineering_review"|"authorize_engineering_override"|"view_team_risks"|"view_team_data"|"manage_team_projects"|"assign_team_work"|"manage_robot_reliability"|"manage_training"|"validate_training"|"manage_team_calendar"|"create_announcements"|"manage_inventory"|"submit_purchase_requests"|"operate_competition"|"view_team_reports"|"correct_attendance"|"manage_members"|"manage_permissions"|"view_security_audit";
 
 const defaults:Record<TeamRole,PermissionKey[]>={
   member:["view_team_data","operate_competition"],
