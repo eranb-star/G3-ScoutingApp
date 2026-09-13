@@ -36,3 +36,7 @@ Full V5.2 Release 2 still requires transactional multi-provider AI budgets, prov
 ## Robot import increment
 GLB upload (self-contained, uncompressed, maximum 40 MB), metre scale adjustment, forward orientation and browser-local IndexedDB persistence added. No native STEP/SolidWorks conversion or direct Onshape integration. No shared model library. Imported visual geometry does not redefine collision dimensions or add mechanism physics. TypeScript and valid/invalid GLB checks passed; full user-file/browser persistence acceptance remains open.
 
+
+## Production and next scope — 2026-09-13
+0158b67 promoted with production rebuild. Production evidence migration succeeded. g3-6740.com returns HTTP 200; bundle index-O-XWx9eP.js contains production Supabase ref and no QA ref. Next increment starts the 2017–2026 source directory and adds 2026 references. This directory is not full historical ingestion. User approved deferring new paid-AI budget/security work until after Phase 3; no new paid AI processing may be enabled first. Historical field selector needs licensed optimized assets and per-season geometry, separately from the knowledge directory.
+
