@@ -58,3 +58,7 @@ Added 12 TU22 rule/navigation summaries (48 references total; 19 for 2026). Focu
 Added checksum-pinned, optimized 2021–2025 AdvantageScope fields alongside 2026. Historical assets use their distributed rotation/dimension metadata. The 2021 model is not relabelled as 2020. 2017–2020 3D assets are not installed. Selecting a historical season disables driving and hides replay controls, avoiding use of 2026 obstacles on another field. 2021 and 2025 rendered with recognizable geometry; 2025 observed 60 FPS locally. License remains at public/twin/2026/LICENSE.txt and is linked in the viewer; exact sources/hashes are in HISTORICAL_FIELD_MANIFEST.json. Reproduction scripts are in apps/dashboard_web/scripts.
 
 CAD import now reports measured bounds and triangle count, aiding scale selection. Gamepad mode reports connection state. Replay cannot start while driving. Actual team CAD and physical gamepad/device acceptance remain external checks, not claimed complete. Historical driving physics, missing early field assets and exhaustive knowledge coverage remain outstanding. AI controls stay deferred and no paid processing was enabled.
+
+## Latest production — supersedes earlier deployment status
+297aef8 is live at g3-6740.com via production rebuild 44yGDyBh4. Remaining rule SQL succeeded. HTTP 200 / index-D2ov6YxD.js / production ref verified, QA ref absent. Includes historical fields and 6740 bumper labels. See CURRENT_RELEASE_AND_ROADMAP.md for the current V5.2 release sequence and explicit open acceptance criteria.
+
