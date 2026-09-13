@@ -1,0 +1,12 @@
+import fs from 'node:fs';import assert from 'node:assert/strict';import {pathToFileURL} from 'node:url';
+const {PGlite}=await import(pathToFileURL(process.env.PGLITE_MODULE).href),db=new PGlite();
+const admin='00000000-0000-4000-8000-000000000001',member='00000000-0000-4000-8000-000000000002';
+await db.exec(`create role anon;create role authenticated;create schema auth;create function auth.uid()returns uuid language sql stable as $$select nullif(current_setting('test.uid',true),'')::uuid$$;create function is_admin()returns boolean language sql stable as $$select auth.uid()='${admin}'::uuid$$;create table team_members(id uuid primary key,active boolean);insert into team_members values('${admin}',true),('${member}',true);create table frc_knowledge_articles(id uuid primary key);grant usage on schema auth to authenticated;grant select on team_members to authenticated;`);
+for(const file of ['knowledge_evidence_pilot_20260913.sql','knowledge_evidence_seed_20260913.sql'])await db.exec(fs.readFileSync(new URL('../../../backend/supabase/'+file,import.meta.url),'utf8'));
+await db.exec(`set role authenticated;set test.uid='${member}'`);assert.equal((await db.query('select * from frc_evidence_claims')).rows.length,5);
+const save=(id=null,rev=0)=>db.query("select curate_frc_evidence($1,$2,'manual-2026-tu22','Draft example','Example evidence','Page 18','fact','draft','Curator test') id",[id,rev]);
+await assert.rejects(()=>save(),/administrator/);await assert.rejects(()=>db.query("update frc_evidence_claims set status='draft'"),/permission denied/);
+await db.exec(`set test.uid='${admin}'`);const id=(await save()).rows[0].id;await save(id,1);await assert.rejects(()=>save(id,1),/changed/);
+await db.exec(`set test.uid='${member}'`);assert.equal((await db.query('select * from frc_evidence_claims where id=$1',[id])).rows.length,0);
+await db.exec(`reset role;update team_members set active=false where id='${admin}';set role authenticated;set test.uid='${admin}'`);await assert.rejects(()=>save(),/administrator/);
+await db.close();console.log('PASS: evidence migration, seed, member visibility, admin-only curation, immutable direct writes, revision conflict, inactive admin.');

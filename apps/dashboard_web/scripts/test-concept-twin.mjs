@@ -1,0 +1,8 @@
+import fs from 'node:fs/promises';import ts from 'typescript';import assert from 'node:assert/strict';
+async function mod(name){const code=ts.transpileModule(await fs.readFile(new URL('../src/lib/'+name+'.ts',import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText;return import('data:text/javascript;base64,'+Buffer.from(code).toString('base64'));}
+const t=await mod('conceptTwin');let p={...t.START};const r={engine:t.ENGINE,asset:'2026-field-v2',config:t.DEFAULT_CONCEPT,initial:{...p},commands:[],checkpoints:[]};
+for(let i=0;i<600;i++){const c={vx:1,vy:0,omega:0};r.commands.push(c);p=t.step(p,c,r.config);if(p.tick%60===0)r.checkpoints.push({...p});}
+assert.deepEqual(t.replay(t.parseRecording(JSON.stringify(r))).pose,p);assert.equal(t.replay(r).failure,null);assert.ok(p.collisions>0);assert.ok(p.x<t.FIELD.length/2);
+const bad=structuredClone(r);bad.checkpoints[0].x+=.1;assert.equal(t.replay(bad).failure,60);assert.throws(()=>t.parseRecording(JSON.stringify({...r,engine:'other'})));assert.throws(()=>t.parseRecording(JSON.stringify({...r,commands:[{vx:2,vy:0,omega:0}]})));
+const k=await mod('knowledgeEvidence');const sources=[{id:'a',season:2026,current:true},{id:'b',season:2024,current:true},{id:'c',season:2026,current:false}];const claims=sources.map(s=>({source_id:s.id,status:'published',title:'Field',body:'geometry'}));claims.push({source_id:'a',status:'conflicted',title:'Field',body:'geometry'});assert.equal(k.findEvidence(claims,sources,2026,'field').length,1);assert.equal(k.findEvidence(claims,sources,2026,'unknown').length,0);
+console.log('PASS: deterministic replay, tamper detection, collision boundary, invalid input, season and authority-state isolation.');

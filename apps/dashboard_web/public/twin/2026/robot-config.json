@@ -1,0 +1,77 @@
+{
+  "name": "2026 KitBot",
+  "locales": {
+    "en-US": "2026 KitBot",
+    "es-419": "KitBot 2026",
+    "fr": "KitBot 2026",
+    "nl": "KitBot 2026",
+    "pt-BR": "KitBot 2026",
+    "ro": "KitBot 2026",
+    "tr": "2026 KitBot",
+    "ru": "KitBot 2026",
+    "kk": "2026 KitBot",
+    "he": "KitBot 2026",
+    "ar": "KitBot 2026",
+    "hi": "2026 KitBot",
+    "zh-CN": "2026 KitBot",
+    "zh-TW": "2026 KitBot"
+  },
+  "isFTC": false,
+  "rotations": [
+    {
+      "axis": "x",
+      "degrees": 90
+    },
+    {
+      "axis": "z",
+      "degrees": 90
+    }
+  ],
+  "position": [
+    -0.3,
+    0,
+    0.05
+  ],
+  "cameras": [
+    {
+      "name": "Camera",
+      "locales": {
+        "en-US": "Camera",
+        "es-419": "C\u00e1mara",
+        "fr": "Cam\u00e9ra",
+        "nl": "Camera",
+        "pt-BR": "C\u00e2mera",
+        "ro": "Camer\u0103",
+        "tr": "Kamera",
+        "ru": "\u041a\u0430\u043c\u0435\u0440\u0430",
+        "kk": "\u041a\u0430\u043c\u0435\u0440\u0430",
+        "he": "\u05de\u05e6\u05dc\u05de\u05d4",
+        "ar": "\u0643\u0627\u0645\u064a\u0631\u0627",
+        "hi": "\u0915\u0948\u092e\u0930\u093e",
+        "zh-CN": "\u76f8\u673a",
+        "zh-TW": "\u651d\u5f71\u6a5f"
+      },
+      "rotations": [
+        {
+          "axis": "y",
+          "degrees": -25
+        },
+        {
+          "axis": "z",
+          "degrees": 180
+        }
+      ],
+      "position": [
+        0.35,
+        0,
+        0.5
+      ],
+      "resolution": [
+        960,
+        720
+      ],
+      "fov": 90
+    }
+  ],
+  "components": []
+}
