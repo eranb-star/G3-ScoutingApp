@@ -28,7 +28,7 @@ begin
  if tg_table_name='project_review_submissions' then
   if new.decision_type='legacy_review' then return new;end if;
   if tg_op='UPDATE' then
-   if new.status is distinct from old.status and not coalesce((select allow_decisions from public.engineering_controls where id),false) then raise exception 'Engineering decisions are paused by an administrator; history remains available';end if;
+   if (new.status is distinct from old.status or new.reviewer_decisions is distinct from old.reviewer_decisions) and not coalesce((select allow_decisions from public.engineering_controls where id),false) then raise exception 'Engineering decisions are paused by an administrator; history remains available';end if;
    return new;
   end if;
  end if;

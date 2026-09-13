@@ -1118,3 +1118,14 @@ main.productivity-home{display:flex!important;flex-direction:column;gap:16px;max
 .review-evidence-editor{border:1px solid #efc9e1;border-radius:14px;padding:16px;min-width:0;grid-column:1/-1}.review-evidence-editor legend{font-weight:700;padding-inline:6px}.review-evidence-item{display:grid;gap:12px;padding-block:16px;border-bottom:1px solid #efc9e1;margin-bottom:16px;min-width:0}.review-evidence-item label{display:grid;gap:6px;min-width:0}.review-evidence-item input{box-sizing:border-box;width:100%;min-width:0}.review-evidence-links{padding-inline-start:20px;overflow-wrap:anywhere}.review-evidence-links li{margin-block:10px}.review-evidence-links small{display:block}
 
 .review-evidence-item form{display:grid;gap:14px;min-width:0}.review-evidence-editor input,.review-evidence-editor select,.review-evidence-editor textarea{font:inherit;color:inherit;background:#fff;border:1px solid #decbd8;border-radius:10px;padding:11px 12px;width:100%;box-sizing:border-box;min-height:44px;min-width:0}.review-evidence-editor textarea{resize:vertical}.review-evidence-editor input:focus,.review-evidence-editor select:focus,.review-evidence-editor textarea:focus{outline:3px solid #f8b7e0;outline-offset:2px}.review-evidence-editor p{margin:0;line-height:1.5}.review-evidence-editor .review-buttons{display:flex;flex-wrap:wrap;gap:10px}.review-evidence-editor .review-buttons button{min-height:44px;padding:10px 16px;border-radius:10px;border:1px solid #decbd8;cursor:pointer}.review-evidence-editor .review-buttons button:not(.hub-button){background:#fff;color:#78355c}.review-evidence-editor h4{margin:0 0 12px}.review-evidence-item{gap:10px}@media(max-width:480px){.review-evidence-editor{padding:12px}.review-evidence-editor .review-buttons button{flex:1}}
+.review-evidence-editor summary{cursor:pointer;font-weight:700;line-height:1.5;overflow-wrap:anywhere}
+details.review-evidence-editor[open]>summary{margin-bottom:14px}
+.review-evidence-editor form,.review-evidence-editor form>fieldset{display:grid;gap:14px;min-width:0}
+.review-evidence-editor form>fieldset{margin:0;padding:0;border:0}
+.review-evidence-editor label{display:grid;gap:6px;min-width:0;font-weight:600}
+.review-evidence-editor form+form,.review-evidence-editor section+details{margin-top:18px;padding-top:18px;border-top:1px solid #efc9e1}
+.review-evidence-editor small,.review-evidence-editor dd{overflow-wrap:anywhere}
+.review-evidence-editor dl{display:grid;gap:10px;margin:12px 0}
+.review-evidence-editor dl>div{display:grid;grid-template-columns:minmax(100px,1fr) minmax(0,2fr);gap:12px}
+.review-evidence-editor dt{font-weight:600;color:#735e6c}.review-evidence-editor dd{margin:0;white-space:pre-wrap}
+@media(max-width:480px){.review-evidence-editor dl>div{grid-template-columns:1fr;gap:4px}.review-evidence-editor form>.hub-button{width:100%}}

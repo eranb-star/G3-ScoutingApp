@@ -51,3 +51,17 @@ These are implementation/test facts, not evidence that Baseline 0 or all Release
 - Three principal migrations plus impact context: structured_findings, engineering_records, engineering_impact, review_stages. None applied to hosted QA or production. No new APK created. Do not deploy frontend before matching migrations.
 
 Remaining work is substantive: effective/deployed baseline parity and recovery acceptance; complete requirements/conflict/lineage model; exact artifact identity/access validity; complete approval policy and scoped override; controlled physical-asset/configuration identity; feature disable semantics; integrated UX/role/offline checks. Neither phase is complete.
+
+## 2026-09-13 follow-up evidence
+
+- All thirteen engineering migrations applied atomically to isolated QA: `engineering_batch_13_20260913`. Production engineering schema is unchanged.
+- Hosted synthetic actor transaction passed again after the thirteen migrations, including stale root impact visibility; all fixture writes rolled back.
+- Numeric canonical-unit/range/tolerance validation, immutable two-person critical-exception policy, revoked proposer rejection, intermediate-vote pause enforcement, and root release invalidation passed local SQL tests.
+- Home and Work now include the same source impact view as Projects; engineering changes refresh other tabs; checkpoint coverage and read-only relationship visibility added.
+- Project restore uses the actual `planning` status. Protected deletion remains archive with immutable evidence retained.
+- TypeScript and Vite passed. The existing large main-bundle warning remains.
+- GitHub CI run 34739838593 passed for 75b81f0. Later changes are not covered by that run.
+- Baseline source capture contains all fifteen deployed main files, including two dashboard-only functions. Encrypted DPAPI archive is local and Windows-profile-bound; it is not portable disaster recovery.
+- Read-only production health: 96 cron SQL runs succeeded in 24 hours, but 24 retained HTTP responses were 503 BOOT_ERROR. Captured deployed scheduler had duplicate source. Restored repository single-copy source through Supabase UI; public-key-only probe now reaches its own 401 guard. Next actual cron result still to verify.
+
+Remaining acceptance is not waived: full recovery/config/object retention, remaining source drift reconciliation, final authenticated preview acceptance, production engineering rollout, and physical-device/network acceptance. No new APK in this batch yet.

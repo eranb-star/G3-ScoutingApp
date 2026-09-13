@@ -10,5 +10,5 @@ export default function ProjectChangeImpact(){
  if(error)return <p role="status">{pick('Upstream status could not be checked. Refresh before progressing work.','לא ניתן לבדוק את מצב המשימות המקדימות. רעננו לפני התקדמות בעבודה.')}</p>;
  const impacted=rows.filter(r=>r.status==='done'||r.status==='in_progress');
  if(!impacted.length)return null;
- return <section className="hub-card"><h2>{pick('Upstream work needs attention','נדרשת התייחסות לעבודה מקדימה')}</h2><p>{pick('These tasks have unfinished or unapproved upstream work. Completed work is retained; review its prerequisites before continuing.','למשימות אלה עבודה מקדימה שלא הושלמה או לא אושרה. העבודה שהושלמה נשמרת; בדקו את המשימות המקדימות לפני המשך העבודה.')}</p><ul>{impacted.map(r=><li key={r.task_id}><Link to={r.href}>{r.title}</Link></li>)}</ul></section>;
+ return <section className="hub-card"><h2>{pick('Engineering release needs attention','נדרשת בדיקת שחרור הנדסי')}</h2><p>{pick('These tasks or their prerequisites need a current review. Historical completion is retained; open the task and resolve the review before continuing.','משימות אלה או המשימות המקדימות שלהן דורשות ביקורת עדכנית. ההשלמה ההיסטורית נשמרת; פתחו את המשימה וטפלו בביקורת לפני המשך העבודה.')}</p><ul>{impacted.map(r=><li key={r.task_id}><Link to={r.href}>{r.title}</Link></li>)}</ul></section>;
 }

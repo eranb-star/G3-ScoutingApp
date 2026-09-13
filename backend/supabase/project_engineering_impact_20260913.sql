@@ -20,6 +20,7 @@ create or replace function public.task_change_impact() returns jsonb
 language sql stable security invoker set search_path=public as $$
  with recursive paths(task_id,upstream_id) as (
  select task_id,prerequisite_id from public.project_task_dependencies
+ union select task_id,task_id from public.project_review_gates where enabled
  union select p.task_id,d.prerequisite_id from paths p join public.project_task_dependencies d on d.task_id=p.upstream_id
  ) select coalesce(jsonb_agg(to_jsonb(x)),'[]'::jsonb) from (
  select distinct t.id as task_id,t.title,t.status,t.project_id,

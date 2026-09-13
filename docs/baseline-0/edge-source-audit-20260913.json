@@ -1,0 +1,277 @@
+{
+  "project": "hnqwhuuxlqfyawqymaaz",
+  "capturedAt": "2026-09-13T05:21:27.420Z",
+  "normalization": "CRLF to LF; outer whitespace trimmed",
+  "functions": [
+    {
+      "name": "hyper-responder",
+      "characters": 7215,
+      "deployedSha256": "73dc78937ba85a77764d00cbfa4e4614516166525c8915fd68ca1c311de02775",
+      "localPath": null,
+      "localSha256": null,
+      "matches": false,
+      "hardcodedJwtDetected": false,
+      "environmentNames": [
+        "SUPABASE_URL",
+        "SUPABASE_ANON_KEY",
+        "SB_ANON_KEY",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SB_SERVICE_ROLE_KEY",
+        "TBA_AUTH_KEY",
+        "TBA_BASE_URL"
+      ],
+      "deployedRuntimeFingerprint": "bd53da04ef98dee1d3e04489ee5590e7526813c1da08726e84d678c1ba843896"
+    },
+    {
+      "name": "is_admin",
+      "characters": 2186,
+      "deployedSha256": "9ca4ba6268a0b545ff052d4fe91371dc5868e1fbd308787ac4641c732c41171d",
+      "localPath": null,
+      "localSha256": null,
+      "matches": false,
+      "hardcodedJwtDetected": false,
+      "environmentNames": [
+        "SUPABASE_URL",
+        "SUPABASE_ANON_KEY",
+        "SB_ANON_KEY",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SB_SERVICE_ROLE_KEY"
+      ],
+      "deployedRuntimeFingerprint": "9327acaf7418225c692635543a292a3d7c857bfa121745ea8d020f7a100fedb9"
+    },
+    {
+      "name": "attendance",
+      "characters": 6657,
+      "deployedSha256": "df18006760111b9c0d6e89054ccac25ac126945a2770c1884966251a2bbc7159",
+      "localPath": "supabase/functions/attendance/index.ts",
+      "localSha256": "4b648e9c116a3d0a0655dc7a78a763ef327f1ba351c177070b9b478f284d9b1e",
+      "matches": false,
+      "hardcodedJwtDetected": false,
+      "environmentNames": [
+        "SUPABASE_URL",
+        "SUPABASE_ANON_KEY",
+        "SUPABASE_SERVICE_ROLE_KEY"
+      ],
+      "deployedRuntimeFingerprint": "ab8456132acca4253e39f6cf019f693265111264c6f2079ab5fec4d091328bc3",
+      "localRuntimeFingerprint": "4422cad0b7466fd803aa033341c2bf5e0cd126a669bc6f1fd05df77f0346de5b",
+      "runtimeTokensMatch": false
+    },
+    {
+      "name": "chief-delphi-feed",
+      "characters": 4076,
+      "deployedSha256": "31d3cf1c3cdfd3cbc1910a78a686d883e77a1344f01c4734c9efda5b523db727",
+      "localPath": "backend/supabase/functions/chief-delphi-feed/index.ts",
+      "localSha256": "31d3cf1c3cdfd3cbc1910a78a686d883e77a1344f01c4734c9efda5b523db727",
+      "matches": true,
+      "hardcodedJwtDetected": false,
+      "environmentNames": [],
+      "deployedRuntimeFingerprint": "805286ee7803574dfce4825cc922b078d7356e805d1be0a58cb04f5e2d6abaf9",
+      "localRuntimeFingerprint": "805286ee7803574dfce4825cc922b078d7356e805d1be0a58cb04f5e2d6abaf9",
+      "runtimeTokensMatch": true
+    },
+    {
+      "name": "frc-assistant",
+      "characters": 14976,
+      "deployedSha256": "07debd86372ad28ffb010bf7a089e6d1c898bbe01d768b5641f113669bcc8690",
+      "localPath": "backend/supabase/functions/frc-assistant/index.ts",
+      "localSha256": "d28f477aac0e7a89f71efe63fea18fe30102b8f3859b9a600c8c7beab83c546a",
+      "matches": false,
+      "hardcodedJwtDetected": false,
+      "environmentNames": [
+        "GEMINI_MODEL",
+        "SUPABASE_URL",
+        "SUPABASE_ANON_KEY",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "GEMINI_API_KEY"
+      ],
+      "deployedRuntimeFingerprint": "df6d2126b23b54ea473ef9c1b101acd24086aa4bcc3ff633cdba689b2240ea59",
+      "localRuntimeFingerprint": "b7258adfa9f73883faad08ff18dc806802313d2c81d671f47d5f5145cadb9a2a",
+      "runtimeTokensMatch": false
+    },
+    {
+      "name": "github-repositories",
+      "characters": 2850,
+      "deployedSha256": "6d349398d1dfb365b078bc52e48a55e382de3d4983f1c124200a14f8a3a8e2a2",
+      "localPath": "supabase/functions/github-repositories/index.ts",
+      "localSha256": "8439d9ecf63c74c6aa13c51ea252c00718f641608a98912d4460fa908d6c6811",
+      "matches": false,
+      "hardcodedJwtDetected": false,
+      "environmentNames": [
+        "SUPABASE_URL",
+        "SUPABASE_ANON_KEY",
+        "GITHUB_TOKEN"
+      ],
+      "deployedRuntimeFingerprint": "82711347ee849ef036c928a1c367c039c6e2dc9d4536b356203ca5a173c9717c",
+      "localRuntimeFingerprint": "3a47e3964c271b5b19bd56092040bf537083eccc0caa1f7633125a7e0977e58b",
+      "runtimeTokensMatch": false
+    },
+    {
+      "name": "manage-member",
+      "characters": 23580,
+      "deployedSha256": "3bce7b78a7202f27f3643408c1ad3b5014984845f12f53642520546e9f135681",
+      "localPath": "supabase/functions/manage-member/index.ts",
+      "localSha256": "00d767e2609234dbf5235835a0fbaae2a6cd2b2ec4ff0a36a5c1ef90903c7810",
+      "matches": false,
+      "hardcodedJwtDetected": false,
+      "environmentNames": [
+        "SUPABASE_URL",
+        "SUPABASE_ANON_KEY",
+        "SUPABASE_SERVICE_ROLE_KEY"
+      ],
+      "deployedRuntimeFingerprint": "4b9fa0824fc3d284ab5afe200ffa71bc712c046144381197583b88c0b4333f4d",
+      "localRuntimeFingerprint": "4b9fa0824fc3d284ab5afe200ffa71bc712c046144381197583b88c0b4333f4d",
+      "runtimeTokensMatch": true
+    },
+    {
+      "name": "qa-test-session",
+      "characters": 5052,
+      "deployedSha256": "eb6faa9d8c3bab8fa38173f12748c56df0a08cd59c83a4295e905e3a710e9703",
+      "localPath": "supabase/functions/qa-test-session/index.ts",
+      "localSha256": "eb6faa9d8c3bab8fa38173f12748c56df0a08cd59c83a4295e905e3a710e9703",
+      "matches": true,
+      "hardcodedJwtDetected": false,
+      "environmentNames": [
+        "SUPABASE_URL",
+        "SUPABASE_ANON_KEY",
+        "SUPABASE_SERVICE_ROLE_KEY"
+      ],
+      "deployedRuntimeFingerprint": "819b4f18a786140efa0c12d0d4cfd5cfe6ef3f346f5b47968af988f99c3223ee",
+      "localRuntimeFingerprint": "819b4f18a786140efa0c12d0d4cfd5cfe6ef3f346f5b47968af988f99c3223ee",
+      "runtimeTokensMatch": true
+    },
+    {
+      "name": "scheduled-operations",
+      "characters": 8352,
+      "deployedSha256": "5d6034161342dc2c0c815db9da7edd26519548d7a1f73179b49b28b5e4ee9756",
+      "localPath": "backend/supabase/functions/scheduled-operations/index.ts",
+      "localSha256": "4bbcf7151575501682ee294606bb164d5ddddf5fc43e937dc5cab1bca2218034",
+      "matches": false,
+      "hardcodedJwtDetected": false,
+      "environmentNames": [
+        "CRON_SECRET",
+        "SUPABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY"
+      ],
+      "deployedRuntimeFingerprint": "82b5bcd75d2203fd0b003b38e499a757db8ffae7b0d89d996c3abc97d528d2c9",
+      "localRuntimeFingerprint": "9e480d31523d8b25d4325744bc8a189e7c3c61fe41fed1bc4d179a4b898b20ae",
+      "runtimeTokensMatch": false
+    },
+    {
+      "name": "send-action-push",
+      "characters": 7314,
+      "deployedSha256": "44283614467b20885eca3e57a586a3688df7b40dd31497591320fabfd4c62691",
+      "localPath": "supabase/functions/send-action-push/index.ts",
+      "localSha256": "841102e92a74174201963f024d626d9cf81a78cb19b6e193441b71970d5f2a3b",
+      "matches": false,
+      "hardcodedJwtDetected": false,
+      "environmentNames": [
+        "SUPABASE_URL",
+        "SUPABASE_ANON_KEY",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "FIREBASE_SERVICE_ACCOUNT"
+      ],
+      "deployedRuntimeFingerprint": "0d587b9ad70082feb2e9785401a55e51e6fe710739b67c84d1b28b593be7e929",
+      "localRuntimeFingerprint": "0d587b9ad70082feb2e9785401a55e51e6fe710739b67c84d1b28b593be7e929",
+      "runtimeTokensMatch": true
+    },
+    {
+      "name": "send-channel-push",
+      "characters": 7960,
+      "deployedSha256": "9b7565a78284d9958cb6aaa4eea67254f34f8b09a7e186fcb61938948f82b02f",
+      "localPath": "backend/supabase/functions/send-channel-push/index.ts",
+      "localSha256": "39ae5cf11aef6d6c682b64edca4872a93a0b0f1bcfe1256fc9ef87614324ed66",
+      "matches": false,
+      "hardcodedJwtDetected": false,
+      "environmentNames": [
+        "SUPABASE_URL",
+        "SUPABASE_ANON_KEY",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "FIREBASE_SERVICE_ACCOUNT"
+      ],
+      "deployedRuntimeFingerprint": "3badaf85ed02214dfd9ac010c527b5d5861069c9a9801c6aae04cfaeb4dbba80",
+      "localRuntimeFingerprint": "3badaf85ed02214dfd9ac010c527b5d5861069c9a9801c6aae04cfaeb4dbba80",
+      "runtimeTokensMatch": true
+    },
+    {
+      "name": "send-purchase-push",
+      "characters": 5144,
+      "deployedSha256": "544dea29e7a12a18371c376daf7fd4ab36b6c3d0e60087f02dc4ad61dd4733e0",
+      "localPath": "supabase/functions/send-purchase-push/index.ts",
+      "localSha256": "544dea29e7a12a18371c376daf7fd4ab36b6c3d0e60087f02dc4ad61dd4733e0",
+      "matches": true,
+      "hardcodedJwtDetected": false,
+      "environmentNames": [
+        "SUPABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SUPABASE_ANON_KEY",
+        "FIREBASE_SERVICE_ACCOUNT"
+      ],
+      "deployedRuntimeFingerprint": "2ea7455e3638c1470a8a07143c9eb8e1ee6e00ec02a0de6cac00ac1935c26548",
+      "localRuntimeFingerprint": "2ea7455e3638c1470a8a07143c9eb8e1ee6e00ec02a0de6cac00ac1935c26548",
+      "runtimeTokensMatch": true
+    },
+    {
+      "name": "send-push",
+      "characters": 50235,
+      "deployedSha256": "e856d7ae9056710c8d3d19b441817e7506cab22696ad54760e669ca820d6380a",
+      "localPath": "backend/supabase/functions/send-push/index.ts",
+      "localSha256": "d5b6d052bff240ba32328a64705e3b454d1e8444e48e00fab1e64fbc8e36e8d9",
+      "matches": false,
+      "hardcodedJwtDetected": false,
+      "environmentNames": [
+        "CRON_SECRET",
+        "SUPABASE_URL",
+        "SUPABASE_ANON_KEY",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "FIREBASE_SERVICE_ACCOUNT"
+      ],
+      "deployedRuntimeFingerprint": "768aeb9b1eaaca49a9465990e4f55d469e21badc9e03c09a3c6d678386c058fa",
+      "localRuntimeFingerprint": "768aeb9b1eaaca49a9465990e4f55d469e21badc9e03c09a3c6d678386c058fa",
+      "runtimeTokensMatch": true
+    },
+    {
+      "name": "sync_tba_matches",
+      "characters": 6861,
+      "deployedSha256": "b905e70678db6ab6f4f554a5289117c3968c6965a0f8d0d701f179d2d95196b6",
+      "localPath": "backend/supabase/functions/sync_tba_matches/index.ts",
+      "localSha256": "b905e70678db6ab6f4f554a5289117c3968c6965a0f8d0d701f179d2d95196b6",
+      "matches": true,
+      "hardcodedJwtDetected": false,
+      "environmentNames": [
+        "SUPABASE_URL",
+        "SUPABASE_ANON_KEY",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "TBA_AUTH_KEY"
+      ],
+      "deployedRuntimeFingerprint": "b74801fcd6ac5a9598f2ef98faab98975820418e3307cad917fa94d24d1087e7",
+      "localRuntimeFingerprint": "b74801fcd6ac5a9598f2ef98faab98975820418e3307cad917fa94d24d1087e7",
+      "runtimeTokensMatch": true
+    },
+    {
+      "name": "tba_library",
+      "characters": 2653,
+      "deployedSha256": "dac6ac51cb3d911daf7a9dd75dfbd0e1da34df2ec71a752621681d877c19510b",
+      "localPath": "backend/supabase/functions/tba_library/index.ts",
+      "localSha256": "dac6ac51cb3d911daf7a9dd75dfbd0e1da34df2ec71a752621681d877c19510b",
+      "matches": true,
+      "hardcodedJwtDetected": false,
+      "environmentNames": [
+        "SUPABASE_URL",
+        "SUPABASE_ANON_KEY",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "TBA_AUTH_KEY"
+      ],
+      "deployedRuntimeFingerprint": "c366f54b4112844bfda77a3adb5a241eb4f3587dfeea8f8172e2e5fc7b5e8d00",
+      "localRuntimeFingerprint": "c366f54b4112844bfda77a3adb5a241eb4f3587dfeea8f8172e2e5fc7b5e8d00",
+      "runtimeTokensMatch": true
+    }
+  ],
+  "runtimeComparison": "TypeScript ESNext transpilation with comments removed, then scanner token kinds and values; not a proof of complete runtime/dependency equivalence.",
+  "schedulerRepair": {
+    "deployedOn": "2026-09-13",
+    "cause": "Deployed source contained two imports and two complete function copies; net HTTP responses reported 503 BOOT_ERROR.",
+    "replacement": "backend/supabase/functions/scheduled-operations/index.ts",
+    "normalizedSha256": "4bbcf7151575501682ee294606bb164d5ddddf5fc43e937dc5cab1bca2218034",
+    "verification": "Public anon-key request reached function authorization guard and returned 401 {error: Unauthorized}; no cron secret sent, no work triggered. Await next scheduled run for operational result."
+  }
+}
