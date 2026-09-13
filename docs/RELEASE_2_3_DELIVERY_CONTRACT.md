@@ -32,3 +32,7 @@ QA migration and seed executed successfully. Five published seed references span
 Validation completed: TypeScript compilation, Vite build, focused pure-engine/retrieval tests, focused PGlite migration/RLS/curation tests. Actual field and KitBot both loaded with verified hashes in the local browser harness. Observed rendering approximately 60 FPS field-only and 32 FPS with KitBot in the narrow app browser; this is not a representative school-laptop/network benchmark. Initial narrow-screen camera framing corrected. No physical gamepad was available for hardware acceptance.
 
 Full V5.2 Release 2 still requires transactional multi-provider AI budgets, provider security acceptance and expanded knowledge Gold Set validation. Release 3 formal acceptance still needs representative-device/network and physical gamepad checks. These are not silently claimed by this live concept pilot. Full dynamics, match scoring, G3-specific CAD and engineering validation are not implemented by the planar concept model.
+
+## Robot import increment
+GLB upload (self-contained, uncompressed, maximum 40 MB), metre scale adjustment, forward orientation and browser-local IndexedDB persistence added. No native STEP/SolidWorks conversion or direct Onshape integration. No shared model library. Imported visual geometry does not redefine collision dimensions or add mechanism physics. TypeScript and valid/invalid GLB checks passed; full user-file/browser persistence acceptance remains open.
+

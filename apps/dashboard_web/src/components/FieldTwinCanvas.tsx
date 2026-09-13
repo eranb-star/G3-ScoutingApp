@@ -3,9 +3,10 @@ import * as THREE from 'three';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js';
 import {RoomEnvironment} from 'three/examples/jsm/environments/RoomEnvironment.js';
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
+import {RobotModel} from '../lib/robotModel';
 import {Concept,FIELD,OBSTACLES,Pose} from '../lib/conceptTwin';
 
-type Props={pose:Pose;concept:Concept;detailed:boolean;kitbot:boolean;view:'orbit'|'top'|'follow';path:Pose[];onStatus:(s:string)=>void;onFps:(fps:number)=>void};
+type Props={custom?:RobotModel;pose:Pose;concept:Concept;detailed:boolean;kitbot:boolean;view:'orbit'|'top'|'follow';path:Pose[];onStatus:(s:string)=>void;onFps:(fps:number)=>void};
 const CACHE='g3-twin-2026-v2';
 const assets={field:{url:'/twin/2026/field-model.glb',bytes:18182328,hash:'bad4af9f7b5ef951780001321549652c05dfcd61ce24b7efa12757a8afe533b1'},robot:{url:'/twin/2026/robot-model.glb',bytes:21270876,hash:'e6761e663e5b062d23b85f60d5a2ec913d7ea125a15a9c16eab23f7c84f2b67b'}};
 export async function clearTwinCache(){if('caches' in window)await caches.delete(CACHE);}
@@ -45,6 +46,10 @@ export default function FieldTwinCanvas(props:Props){
   for(const x of [-.35,.35])for(const y of [-.32,.32]){const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.1,.1,.1,14),wheelMat);wheel.rotation.x=Math.PI/2;wheel.position.set(x,y,.1);concept.add(wheel);}
   const pathGeometry=new THREE.BufferGeometry(),pathMaterial=new THREE.LineBasicMaterial({color:0x5be1cf});const line=new THREE.Line(pathGeometry,pathMaterial);scene.add(line);let previousPath:Pose[]|null=null;
   const loader=new GLTFLoader();let fieldStarted=false,robotStarted=false;
+  const custom=new THREE.Group();robot.add(custom);let customData:ArrayBuffer|undefined,customGeneration=0;
+  function disposeModel(root:THREE.Object3D){root.traverse(o=>{if(o instanceof THREE.Mesh){o.geometry.dispose();for(const m of Array.isArray(o.material)?o.material:[o.material]){Object.values(m).forEach(t=>{if(t instanceof THREE.Texture)t.dispose();});m.dispose();}}});}
+  function loadCustom(data:ArrayBuffer){const generation=++customGeneration;const manager=new THREE.LoadingManager();manager.setURLModifier(url=>{if(!url.startsWith('blob:'))throw Error('External model resources are not supported');return url;});void new GLTFLoader(manager).parseAsync(data,'').then(g=>{if(disposed||generation!==customGeneration){disposeModel(g.scene);return;}custom.children.forEach(disposeModel);custom.clear();const model=g.scene;model.rotation.x=Math.PI/2;model.updateMatrixWorld(true);const bounds=new THREE.Box3().setFromObject(model);if(bounds.isEmpty()){disposeModel(model);throw Error('Empty robot model');}const center=bounds.getCenter(new THREE.Vector3());model.position.set(-center.x,-center.y,-bounds.min.z);custom.add(model);latest.current.onStatus('Robot model loaded. Check scale and orientation, then save on this device.');}).catch(()=>{if(!disposed&&generation===customGeneration)latest.current.onStatus('Robot model could not load. Export an uncompressed, self-contained GLB.');});}
+
   function load(which:'field'|'robot'){
    latest.current.onStatus(which==='field'?'Loading detailed field · 18.2 MB…':'Loading KitBot · 21.3 MB…');
    void assetBuffer(which,abort.signal).then(data=>loader.parseAsync(data,'')).then(gltf=>{
@@ -60,7 +65,9 @@ export default function FieldTwinCanvas(props:Props){
    if(disposed)return;const p=latest.current;
    if(p.detailed&&!fieldStarted){fieldStarted=true;load('field');}if(p.kitbot&&!robotStarted){robotStarted=true;load('robot');}
    const detail=scene.getObjectByName('detailed-field');if(detail){detail.visible=p.detailed;simplified.visible=!p.detailed;}
-   concept.visible=!p.kitbot||kit.children.length===0;kit.visible=p.kitbot;
+   if(p.custom?.data!==customData){customData=p.custom?.data;if(customData)loadCustom(customData);else{customGeneration++;custom.children.forEach(disposeModel);custom.clear();}}
+   custom.visible=!!p.custom&&custom.children.length>0;custom.scale.setScalar(p.custom?.scale??1);custom.rotation.z=(p.custom?.rotation??0)*Math.PI/180;
+   concept.visible=!custom.visible&&(!p.kitbot||kit.children.length===0);kit.visible=!custom.visible&&p.kitbot;
    chassis.scale.set(p.concept.length,p.concept.width,1);mast.scale.z=p.concept.height/.65;
    robot.position.set(p.pose.x,p.pose.y,0);robot.rotation.z=p.pose.heading;
    arrow.position.z=p.concept.height+.12;
@@ -76,3 +83,4 @@ export default function FieldTwinCanvas(props:Props){
  },[]);
  return <div className="twin-canvas" ref={host}/>;
 }
+
