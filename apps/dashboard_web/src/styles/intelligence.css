@@ -2,3 +2,5 @@
 
 .intel-page{background:#f5f4f8;min-height:100vh;box-sizing:border-box}.knowledge-controls label:last-child{flex:1;min-width:180px}.intel-tabs a{padding:10px 14px;border:1px solid #ddd6e3;border-radius:9px;background:white;color:#8d146b;font-size:13px;text-decoration:none}.evidence-card>a{color:#980071;font-size:13px}
 
+
+.twin-toolbar>div{flex-wrap:wrap}.twin-expanded{position:fixed;inset:0;z-index:10000;max-width:none!important;width:100%;height:100%;overflow:auto}.twin-expanded .twin-canvas{height:clamp(300px,58vh,900px)}.twin-expanded .intel-heading{margin-bottom:12px}.twin-hint{line-height:1.65;max-width:680px;margin:10px auto 18px;padding:0 16px}.twin-expanded:fullscreen{background:#f5f4f8}

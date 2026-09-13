@@ -22,8 +22,8 @@ export default function FieldTwinCanvas(props:Props){
  useEffect(()=>{
   const element=host.current!;let disposed=false,frame=0,frames=0,last=performance.now();const abort=new AbortController();
   let renderer:THREE.WebGLRenderer;
-  try{renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});}catch{latest.current.onStatus('WebGL unavailable — use the 2D view below.');return;}
-  renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.3;
+  try{renderer=new THREE.WebGLRenderer({antialias:false,powerPreference:'high-performance'});}catch{latest.current.onStatus('WebGL unavailable — use the 2D view below.');return;}
+  renderer.setPixelRatio(Math.min(devicePixelRatio,1));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.3;
   element.appendChild(renderer.domElement);renderer.domElement.setAttribute('aria-label','2026 field and robot 3D view; orbit by dragging, zoom with scroll. Driving controls are below.');
   const scene=new THREE.Scene();scene.background=new THREE.Color('#111b2b');
   const camera=new THREE.PerspectiveCamera(43,1,.05,150);camera.up.set(0,0,1);camera.position.set(-12,-15,15);
