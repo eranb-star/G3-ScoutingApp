@@ -1,5 +1,7 @@
 export type ShooterConfig={on:boolean;speed:number;elevation:number;rate:number;height:number};
 export const DEFAULT_SHOOTER:ShooterConfig={on:false,speed:5.6,elevation:65,rate:2,height:0.8};
+// The distributed 2026 field has RED at negative X and BLUE at positive X.
+export const HUB_ALLIANCES=['red','blue'] as const;
 export const HUB_X=[-3.644,3.644];
 export const HUB_ENTRY_Z=1.83;
 export const HUB_APOTHEM=0.53;

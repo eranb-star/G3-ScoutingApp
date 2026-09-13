@@ -42,16 +42,16 @@ export default function FieldTwinCanvas(props:Props){
   const simplified=new THREE.Group();scene.add(simplified);
   const box=(x:number,y:number,z:number,w:number,d:number,h:number,color:number,parent:THREE.Object3D)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(w,d,h),new THREE.MeshStandardMaterial({color,roughness:.75}));m.position.set(x,y,z);parent.add(m);return m;};
   box(0,0,-.02,field.length,field.width,.04,0x596773,simplified);
-  [-1,1].forEach(side=>{box(side*(field.length/2),0,.25,.06,field.width,.5,side<0?0x2581df:0xe65662,simplified);box(0,side*field.width/2,.25,field.length,.06,.5,0xa7b9c9,simplified);});
-  (season.year===2026?OBSTACLES:[]).forEach((o,i)=>box(o.x,o.y,.65,o.w,o.h,1.3,i%2?0xc93951:0x176daf,simplified));
+  [-1,1].forEach(side=>{box(side*(field.length/2),0,.25,.06,field.width,.5,side<0?0xe65662:0x2581df,simplified);box(0,side*field.width/2,.25,field.length,.06,.5,0xa7b9c9,simplified);});
+  (season.year===2026?OBSTACLES:[]).forEach(o=>box(o.x,o.y,.65,o.w,o.h,1.3,o.x<0?0xc93951:0x176daf,simplified));
   const fuel=new THREE.InstancedMesh(new THREE.SphereGeometry(FUEL_RADIUS,12,8),new THREE.MeshStandardMaterial({color:0xffcf18,roughness:0.85}),FUEL_COUNT);fuel.instanceMatrix.setUsage(THREE.DynamicDrawUsage);fuel.frustumCulled=false;scene.add(fuel);const ballMatrix=new THREE.Matrix4();
   const robot=new THREE.Group(),concept=new THREE.Group(),kit=new THREE.Group();robot.add(concept,kit);scene.add(robot);
   const captureZone=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({color:0x45e2aa,transparent:true,opacity:0.25,side:THREE.DoubleSide,depthWrite:false}));robot.add(captureZone);
-  const chassis=box(0,0,.2,1,1,.24,0xe30095,concept),mast=box(0,0,.4,.5,.45,.35,0xdde5ec,concept);
+  const chassis=box(0,0,.2,1,1,.24,0xc72235,concept),mast=box(0,0,.4,.5,.45,.35,0xdde5ec,concept);
   // Team-number plates sit just outside the reference bumper faces.
   function bumperNumbers(parent:THREE.Group,length:number,width:number,cx=0,cy=0,z=.18){
    const canvas=document.createElement('canvas');canvas.width=512;canvas.height=160;
-   const ctx=canvas.getContext('2d')!;ctx.fillStyle='#164bc6';ctx.fillRect(0,0,512,160);ctx.fillStyle='white';ctx.font='bold 126px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('6740',256,86);
+   const ctx=canvas.getContext('2d')!;ctx.fillStyle='#c72235';ctx.fillRect(0,0,512,160);ctx.fillStyle='white';ctx.font='bold 126px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('6740',256,86);
    const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;
    const material=new THREE.MeshBasicMaterial({map:texture});const group=new THREE.Group();parent.add(group);
    for(const [x,y,angle,span] of [[length/2+.004,0,Math.PI/2,width],[-length/2-.004,0,-Math.PI/2,width],[0,width/2+.004,Math.PI,length],[0,-width/2-.004,0,length]]){
@@ -74,7 +74,7 @@ export default function FieldTwinCanvas(props:Props){
     if(disposed){gltf.scene.traverse(o=>{if(o instanceof THREE.Mesh)o.geometry.dispose();});return;}
     const model=gltf.scene;for(const r of which==='field'?season.rotations:[{axis:'x',degrees:90}])model.rotateOnWorldAxis(new THREE.Vector3(r.axis==='x'?1:0,r.axis==='y'?1:0,r.axis==='z'?1:0),r.degrees*Math.PI/180);
     if(which==='field'){for(const decoration of removeStaticFuel(model,season.year)??[])disposeModel(decoration);model.name='detailed-field';scene.add(model);simplified.visible=false;}
-    else{model.rotateOnWorldAxis(new THREE.Vector3(0,0,1),Math.PI/2);model.position.set(-.3,0,.05);kit.add(model);kit.updateWorldMatrix(true,true);const b=new THREE.Box3().setFromObject(model).applyMatrix4(kit.matrixWorld.clone().invert()),size=b.getSize(new THREE.Vector3()),center=b.getCenter(new THREE.Vector3());bumperNumbers(kit,size.x,size.y,center.x,center.y,b.min.z+.25);}
+    else{model.traverse(o=>{if(o instanceof THREE.Mesh)for(const material of Array.isArray(o.material)?o.material:[o.material])if(material.name==='mat_6'&&material instanceof THREE.MeshStandardMaterial)material.color.set('#c72235');});model.rotateOnWorldAxis(new THREE.Vector3(0,0,1),Math.PI/2);model.position.set(-.3,0,.05);kit.add(model);kit.updateWorldMatrix(true,true);const b=new THREE.Box3().setFromObject(model).applyMatrix4(kit.matrixWorld.clone().invert()),size=b.getSize(new THREE.Vector3()),center=b.getCenter(new THREE.Vector3());bumperNumbers(kit,size.x,size.y,center.x,center.y,b.min.z+.25);}
     latest.current.onStatus(which==='field'?`${season.year} field model loaded · checksum verified`:'2026 KitBot loaded · checksum verified');
    }).catch(error=>{if(!disposed&&error.name!=='AbortError')latest.current.onStatus('Detailed model unavailable. Simplified view remains usable; check connection and reopen 3D to retry.');});
   }
