@@ -1,3 +1,4 @@
+import {TWIN_CACHE,storeModel} from '../lib/twinCache';
 import {useEffect,useRef} from 'react';
 import * as THREE from 'three';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js';
@@ -9,16 +10,16 @@ import {Concept,OBSTACLES,Pose} from '../lib/conceptTwin';
 
 export type ModelMetrics={length:number;width:number;height:number;triangles:number};
 type Props={onModelMetrics:(m:ModelMetrics|null)=>void;season:FieldSeason;custom?:RobotModel;pose:Pose;concept:Concept;detailed:boolean;kitbot:boolean;view:'orbit'|'top'|'follow';path:Pose[];onStatus:(s:string)=>void;onFps:(fps:number)=>void};
-const CACHE='g3-twin-2026-v3';
+const CACHE=TWIN_CACHE;
 const assets={field:{url:'/twin/2026/field-optimized.glb',bytes:19627748,hash:'088126b167906ca95e7b21a76a430a64199103d1ea184a121b1cf52e984b75e8'},robot:{url:'/twin/2026/robot-optimized.glb',bytes:16177620,hash:'053caf847815cb163632b8f858f5b261e589cb9abae3819b502c016fb57238b8'}};
-export async function clearTwinCache(){if('caches' in window)await Promise.all([caches.delete(CACHE),caches.delete('g3-twin-2026-v2')]);}
+export async function clearTwinCache(){if('caches' in window)await Promise.all([caches.delete(CACHE),caches.delete('g3-twin-2026-v2'),caches.delete('g3-twin-2026-v3')]);}
 async function assetBuffer(which:keyof typeof assets,signal:AbortSignal,season:FieldSeason){
- const a=which==='field'?season:assets.robot;let cached:Cache|undefined;try{cached=await caches.open(CACHE);}catch{/* Private browsing may disable cache. */}
+ const a=which==='field'?season:assets.robot;let cached:Cache|undefined;try{await Promise.all([caches.delete('g3-twin-2026-v2'),caches.delete('g3-twin-2026-v3')]);cached=await caches.open(CACHE);}catch{/* Private browsing may disable cache. */}
  let response=await cached?.match(a.url);if(!response){response=await fetch(a.url,{signal});if(!response.ok)throw Error('Asset download failed');}
  const data=await response.arrayBuffer();if(data.byteLength!==a.bytes)throw Error('Model size mismatch');
  const hash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',data))).map(x=>x.toString(16).padStart(2,'0')).join('');
  if(hash!==a.hash){await cached?.delete(a.url);throw Error('Model integrity check failed');}
- if(!signal.aborted)try{await cached?.put(a.url,new Response(data,{headers:{'Content-Type':'model/gltf-binary'}}));}catch{/* Cache quota failure never blocks the viewer. */}
+ if(!signal.aborted)try{if(cached)await storeModel(cached,a.url,data);}catch{/* Cache quota failure never blocks the viewer. */}
  return data;
 }
 export default function FieldTwinCanvas(props:Props){

@@ -4,7 +4,7 @@ import { useLocalization } from "../lib/localization";
 import { useMemberAuth } from "../lib/memberAuth";
 import { useAdminStatus } from "../lib/useAdminStatus";
 import "./webPortal.css";
-import { memberTeams } from "../lib/accessControl";
+import { memberTeams, useAccessControl } from "../lib/accessControl";
 import { supabase } from "../supabase";
 
 const links = [
@@ -19,6 +19,7 @@ const links = [
 
 export default function WebPortalShell({children}:{children:ReactNode}) {
   const {profile}=useMemberAuth();
+ const {can}=useAccessControl();
   const {pick}=useLocalization();
   const isAdmin=useAdminStatus();
   const location=useLocation();
@@ -38,8 +39,8 @@ export default function WebPortalShell({children}:{children:ReactNode}) {
       <nav id="web-navigation" aria-label={pick("Team navigation","ניווט הקבוצה")}>
         {links.map(([path,en,he])=><div key={path}>{item(path,en,he)}</div>)}
         <div>{item("/updates?view=knowledge","FRC knowledge","ידע FRC")}</div>
-        <div>{item("/knowledge","Evidence search","חיפוש מקורות")}</div>
-        <div>{item("/field-twin","Field & robot twin","מודל מגרש ורובוט")}</div>
+        {can("view_evidence_search")&&<div>{item("/knowledge","Evidence search","חיפוש מקורות")}</div>}
+        {can("view_field_twin")&&<div>{item("/field-twin","Field & robot twin","מודל מגרש ורובוט")}</div>}
         {isAdmin?<section className="web-admin-nav"><small>{pick("ADMINISTRATION","ניהול")}</small>{item("/admin","Workshop dashboard","לוח הסדנה")}{item("/admin/finance","Finance & reimbursements","כספים והחזרים")}{item("/admin/contributions","Leadership analytics","ניתוח ניהולי")}{item("/admin/members","Team members","חברי הקבוצה")}{item("/admin/permissions","Roles & permissions","תפקידים והרשאות")}{item("/admin/security","Security","אבטחה")}</section>:null}
         <div className="web-feedback-link">{item("/feedback","Feedback Center","מרכז משוב")}</div>
       </nav>

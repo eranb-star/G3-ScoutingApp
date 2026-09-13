@@ -17,3 +17,10 @@ This is the current deployment summary. Older deployment entries in other docume
 Historical expansion alongside this sequence: obtain and validate 2017–2020 field assets, deepen ten-year knowledge, and implement per-season driving geometry if historical driving is required. Six field viewers do not constitute ten historical physics simulations. Season-specific KitBots are not installed.
 
 Baseline 0 / Release 1 implementation and acceptance evidence remain in PHASE_0_1_STATUS_20260913.md; this update does not recertify or alter those records. Existing Android 2.1.9 predates the recent web work. Produce one updated APK when the desired web milestone is accepted and an APK is requested.
+
+## Fullscreen, access and cache correction
+Implemented dedicated fullscreen viewport: hides inspector, headings, metrics and editor controls, retaining view/exit controls. Added view_evidence_search and view_field_twin to the existing permission matrix, default admin-only; navigation, cross-links and direct routes respect the grants. Evidence SELECT RLS enforces the grant. Public field assets are not confidential data and remain public URLs. Roles & permissions > Engineering lab controls these two screens; refresh existing sessions after permission changes.
+
+Model cache: 80 MiB, serialized writes and least-recently-used eviction; obsolete cache versions removed, quota failures leave online viewing usable. The rendered model remains in memory; robot import is separately capped at 40 MiB. Focused permission and cache tests pass. Fullscreen visually checked.
+
+Phase 2/3 are NOT certified complete: official 2026 Gold Set/Team Update/Q&A acceptance remains open; representative physical device/network/controller and actual team CAD acceptance remain open. These UI/cache changes must not be represented as closing those gates. AI controls remain deferred.

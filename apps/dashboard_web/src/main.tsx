@@ -1,3 +1,4 @@
+import LabScreenGate from './components/LabScreenGate';
 import React, { createContext, lazy, Suspense, useContext, useEffect, useMemo, useRef, useState } from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, NavLink, Route, Routes, Navigate, useLocation, useNavigate } from "react-router-dom";
@@ -848,8 +849,8 @@ function AppShell() {
         <Route path="/media" element={<MemberGate><TeamMediaPage /></MemberGate>} />
         <Route path="/feedback" element={<MemberGate><FeedbackCenterPage /></MemberGate>} />
         <Route path="/engineering" element={<MemberGate><EngineeringHubPage /></MemberGate>} />
-        <Route path="/field-twin" element={<MemberGate><FieldTwinPage /></MemberGate>} />
-        <Route path="/knowledge" element={<MemberGate><KnowledgeEvidencePage /></MemberGate>} />
+        <Route path="/field-twin" element={<MemberGate><LabScreenGate permission="view_field_twin"><FieldTwinPage /></LabScreenGate></MemberGate>} />
+        <Route path="/knowledge" element={<MemberGate><LabScreenGate permission="view_evidence_search"><KnowledgeEvidencePage /></LabScreenGate></MemberGate>} />
         <Route path="/season-planning" element={<MemberGate><SeasonPlanningPage /></MemberGate>} />
         <Route path="/admin/members" element={<AdminGate><MembersAdminPage /></AdminGate>} />
         <Route path="/admin" element={<AdminGate><AdminDashboardPage /></AdminGate>} />
