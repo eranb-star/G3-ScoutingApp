@@ -1,3 +1,5 @@
+> Follow-up: Driving is now the default; Software testing is opt-in and exposes a compact four-reading strip, with More data for the rest. Turning Software testing off stops recording and preserves captured samples for export after re-opening. FPS stays in the toolbar. An illustrative front (+robot X) roller intake lowers/folds with ON/OFF; configured reach/width match the capture zone. It is visual only, does not modify uploaded CAD or add mechanism collisions, and capture still follows the existing toggle immediately during the brief animation. Main range is shooter-exit-to-hub-centre horizontal distance; 3D line connects the corresponding elevated points. TypeScript and browser fullscreen ON/OFF/compact checks passed. Not promoted to production.
+
 # Live geometry, telemetry export and simulator settings — 2026-09-14
 
 Implemented for the 2026 physical simulator. Local TypeScript/build, focused geometry/key tests and shooting regression pass. Browser checked recording, 430-sample JSON download with ordered ticks/time, remapped shooting, fullscreen and 390px settings layout. No SQL, provider calls or APK changes. Not yet promoted to production.

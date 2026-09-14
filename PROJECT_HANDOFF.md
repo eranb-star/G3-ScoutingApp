@@ -1,3 +1,5 @@
+> Latest UI follow-up: default driving mode hides telemetry; Software testing toggles compact/full diagnostics. Front intake has a folding roller illustration. See the telemetry handover for semantics and verification. Production unchanged.
+
 # Latest increment — 2026-09-14
 
 Read [live geometry and recording handover](docs/SIMULATOR_TELEMETRY_20260914.md) for the latest implementation, verification and usage. Live geometry, 60 Hz CSV/JSON export, full-width settings tabs and configurable keyboard bindings are implemented. No new production deployment or APK in this increment. Full physical replay, software/controller integration and real-robot calibration remain explicitly outstanding. The pause is superseded by the owner’s request for this increment.

@@ -36,3 +36,10 @@
 .intel-page .twin-settings-tabs button[aria-pressed=true]{background:#a90072!important;color:#fff!important;border-color:#a90072!important}.twin-inspector .intel-kicker{display:block}
 
 .intel-page .twin-toolbar select{width:auto;min-width:160px}.twin-toolbar>div{justify-content:flex-end;align-items:center}.twin-expanded .twin-toolbar{padding:6px 12px}.twin-expanded .twin-toolbar select{min-width:130px}
+
+/* Driving owns the viewport; diagnostics are deliberately opt-in. */
+.twin-telemetry[hidden]{display:none!important}.twin-driving .twin-metrics{display:none}.twin-render-badge{color:#bdd0e6;font:12px ui-monospace,monospace;white-space:nowrap;padding:5px}
+.twin-telemetry-compact dl>div:nth-child(n+5),.twin-telemetry-compact details,.twin-telemetry-compact .twin-record-note{display:none!important}.twin-telemetry-compact dl{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+.twin-expanded .twin-software{min-height:0}.twin-expanded .twin-telemetry-more{max-height:32vh;overflow:auto}.twin-expanded .twin-telemetry-more details{display:block}.twin-expanded .twin-telemetry-more dl>div{display:block!important}.twin-expanded .twin-metrics{display:none}
+.twin-driving .twin-canvas{height:clamp(420px,65vh,900px)}.twin-intake-plan rect,.twin-intake-plan line{transition:all .25s ease}
+@media(max-width:600px){.twin-telemetry-compact dl{grid-template-columns:repeat(2,minmax(0,1fr))!important}.twin-driving .twin-canvas{height:55vh;min-height:300px}.twin-expanded .twin-telemetry{max-height:32vh;overflow:auto}}

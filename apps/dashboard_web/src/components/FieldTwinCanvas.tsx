@@ -48,6 +48,12 @@ export default function FieldTwinCanvas(props:Props){
   const fuel=new THREE.InstancedMesh(new THREE.SphereGeometry(FUEL_RADIUS,12,8),new THREE.MeshStandardMaterial({color:0xffcf18,roughness:0.85}),FUEL_COUNT);fuel.instanceMatrix.setUsage(THREE.DynamicDrawUsage);fuel.frustumCulled=false;scene.add(fuel);const ballMatrix=new THREE.Matrix4();
   const robot=new THREE.Group(),concept=new THREE.Group(),kit=new THREE.Group();robot.add(concept,kit);scene.add(robot);
   const captureZone=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({color:0x45e2aa,transparent:true,opacity:0.25,side:THREE.DoubleSide,depthWrite:false}));robot.add(captureZone);
+  // Lightweight illustrative front intake. Shared reach/width with the capture zone.
+  const intakePivot=new THREE.Group();robot.add(intakePivot);
+  const intakeArms=[-1,1].map(()=>box(0,0,0,1,.035,.04,0x8497ad,intakePivot));
+  const roller=new THREE.Mesh(new THREE.CylinderGeometry(.065,.065,1,12),new THREE.MeshStandardMaterial({color:0xffd54a,roughness:.7}));intakePivot.add(roller);
+  const rollerStripe=box(.065,0,0,.015,1,.025,0x243343,roller);
+  let intakeAngle=-Math.PI/2,intakeTime=performance.now();
   const chassis=box(0,0,.2,1,1,.24,0xc72235,concept),mast=box(0,0,.4,.5,.45,.35,0xdde5ec,concept);
   // Team-number plates sit just outside the reference bumper faces.
   function bumperNumbers(parent:THREE.Group,length:number,width:number,cx=0,cy=0,z=.18){
@@ -95,6 +101,10 @@ export default function FieldTwinCanvas(props:Props){
    conceptNumbers.scale.set(p.concept.length,p.concept.width,1);chassis.scale.set(p.concept.length,p.concept.width,1);mast.scale.z=p.concept.height/.65;
    robot.position.set(p.pose.x,p.pose.y,p.pose.z??0);if(p.pose.rotation)robot.quaternion.set(p.pose.rotation.x,p.pose.rotation.y,p.pose.rotation.z,p.pose.rotation.w);else robot.rotation.set(0,0,p.pose.heading);
    arrow.position.z=p.concept.height+.12;
+   const intakeNow=performance.now(),intakeDt=Math.min(.1,(intakeNow-intakeTime)/1000);intakeTime=intakeNow;
+   const span=Math.hypot(p.intake.reach,.26),desired=p.intake.on?Math.atan2(.26,p.intake.reach):-Math.PI/2;
+   intakeAngle+=(desired-intakeAngle)*(1-Math.exp(-9*intakeDt));intakePivot.visible=season.year===2026;intakePivot.position.set(p.concept.length/2,0,.35);intakePivot.rotation.y=intakeAngle;
+   intakeArms.forEach((arm,i)=>{arm.position.set(span/2,(i?1:-1)*p.intake.width/2,0);arm.scale.x=span;});roller.position.set(span,0,0);roller.scale.y=p.intake.width;if(p.intake.on)roller.rotation.y-=intakeDt*8;rollerStripe.visible=true;
    captureZone.visible=season.year===2026&&p.intake.on;captureZone.scale.set(p.intake.reach,p.intake.width,1);captureZone.position.set(p.concept.length/2+p.intake.reach/2,0,0.025);
    const balls=season.year===2026?(p.pose.balls??[]):[];fuel.count=balls.length;balls.forEach((b,i)=>fuel.setMatrixAt(i,ballMatrix.makeTranslation(b.x,b.y,b.z)));fuel.instanceMatrix.needsUpdate=true;
    if(previousPath!==p.path){previousPath=p.path;pathGeometry.setFromPoints(p.path.map(point=>new THREE.Vector3(point.x,point.y,.08)));}
