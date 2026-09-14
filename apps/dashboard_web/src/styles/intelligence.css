@@ -13,3 +13,26 @@
 .twin-expanded .twin-metrics{flex:none;padding:6px 10px}.twin-expanded .twin-metrics strong{font-size:15px}.twin-expanded .twin-metrics div{gap:2px}.twin-expanded .twin-drive{flex:none;padding:6px 12px;justify-content:center}.twin-expanded .twin-touch{flex:none;grid-template-columns:repeat(6,44px);padding:4px 8px 8px}.twin-expanded .twin-touch button{min-height:44px;padding:4px}.twin-expanded .twin-drive button{min-height:40px;padding:6px 12px}
 
 .twin-scoreboard{display:grid;grid-template-columns:1fr 1fr;gap:2px 10px;min-width:146px;padding:5px 10px;border:1px solid #52627b;border-radius:9px;background:#0d1728;color:#fff}.twin-scoreboard>span{font-size:10px;font-weight:800;display:flex;align-items:center;gap:8px}.twin-scoreboard strong{font:800 23px ui-monospace,monospace;font-variant-numeric:tabular-nums}.twin-score-blue{color:#91caff}.twin-score-red{color:#ff9da8}.twin-scoreboard small{grid-column:1/-1;font-size:8px;letter-spacing:.08em;text-align:center;color:#c3ccda}
+
+/* Simulator workbench: full-width field, one focused settings panel. */
+.twin-layout{grid-template-columns:minmax(0,1fr)}
+.twin-inspector{display:block}.twin-inspector>section{display:none;border:0;padding:24px;max-width:none}
+.twin-inspector[data-panel=shooting]>section:nth-of-type(1),.twin-inspector[data-panel=intake]>section:nth-of-type(2),.twin-inspector[data-panel=model]>section:nth-of-type(3),.twin-inspector[data-panel=concept]>section:nth-of-type(4),.twin-inspector[data-panel=driving]>section:nth-of-type(5),.twin-inspector[data-panel=sources]>section:nth-of-type(6){display:block}
+.twin-inspector>section[hidden]{display:none!important}
+.twin-settings-tabs{display:flex;flex-wrap:wrap;gap:6px;padding:14px;border-bottom:1px solid #e2dce5;background:#faf8fb}
+.twin-settings-tabs button[aria-pressed=true]{background:#ca0088;color:#fff;border-color:#ca0088}
+.twin-inspector>section>label{display:inline-block;vertical-align:top;width:calc(25% - 18px);margin:12px 18px 12px 0;min-width:170px}
+.twin-inspector>section>label.intel-toggle{display:flex;width:auto}
+.twin-key-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 20px}
+.twin-telemetry{color:#e9f2ff;background:#142336;padding:14px 18px;border-top:1px solid #34465d}
+.twin-telemetry-top{display:flex;flex-wrap:wrap;align-items:center;gap:14px}.twin-telemetry-top strong{font-size:12px;letter-spacing:.06em}.twin-telemetry-top small{display:block;font-size:10px;font-weight:400;letter-spacing:0;color:#b8c9dc;margin-top:5px}
+.twin-telemetry-top label{display:flex;align-items:center;gap:10px;margin:0!important}.twin-telemetry-top select{width:auto!important;margin:0!important}
+.twin-telemetry dl{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px 20px;margin:14px 0}.twin-telemetry dt{font-size:11px;color:#a9c2db}.twin-telemetry dd{font:600 17px ui-monospace,monospace;margin:5px 0 0;color:#f4fbff}
+.intel-page .twin-telemetry summary{color:#9ee6d9}.twin-telemetry details p{font-size:12px;line-height:1.6;max-width:850px}.twin-record-controls{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:12px}.twin-record-controls span{font-size:12px}.twin-record-note{display:block;color:#b0c6dd;font-size:11px;line-height:1.6;margin-top:9px}
+.twin-expanded .twin-telemetry{flex:none;padding:6px 14px}.twin-expanded .twin-telemetry details,.twin-expanded .twin-record-note{display:none}.twin-expanded .twin-telemetry dl{grid-template-columns:repeat(8,minmax(0,1fr));gap:8px;margin:8px 0}.twin-expanded .twin-telemetry dd{font-size:13px}.twin-expanded .twin-record-controls{margin-top:5px}.twin-expanded .twin-telemetry button{min-height:32px;padding:5px 9px;font-size:12px}
+@media(max-width:800px){.twin-key-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.twin-inspector>section>label{width:calc(50% - 18px);min-width:0}.twin-expanded .twin-telemetry dl{grid-template-columns:repeat(4,minmax(0,1fr))}.twin-expanded .twin-telemetry dl>div:nth-child(n+5){display:none}}
+@media(max-width:500px){.twin-telemetry dl{grid-template-columns:repeat(2,minmax(0,1fr))}.twin-telemetry{padding:12px}.twin-inspector>section{padding:16px}.twin-key-grid{grid-template-columns:1fr}.twin-settings-tabs button{flex:1 0 40%}.twin-expanded .twin-telemetry-top strong{display:none}}
+
+.intel-page .twin-settings-tabs button[aria-pressed=true]{background:#a90072!important;color:#fff!important;border-color:#a90072!important}.twin-inspector .intel-kicker{display:block}
+
+.intel-page .twin-toolbar select{width:auto;min-width:160px}.twin-toolbar>div{justify-content:flex-end;align-items:center}.twin-expanded .twin-toolbar{padding:6px 12px}.twin-expanded .twin-toolbar select{min-width:130px}

@@ -1,3 +1,5 @@
+> 2026-09-14 update: owner resumed for live geometry + recording/export + settings/keyboard improvements. See [the delivered increment](SIMULATOR_TELEMETRY_20260914.md). Those features are implemented locally; full physical replay remains next and controller integration/calibration remain later. The pause instruction below is historical; the programme inventory remains applicable.
+
 # Pause handover and complete remaining programme
 
 Checkpoint: 2026-09-13. This file is the current resumption authority. V5.2 section 82 defines releases; sections 81–105 correct earlier sections. Simulator 3A/3B/3C are additions within the Field & Concept Twin work, not replacements for Releases 4–7. Historical notes are evidence, not current instructions.

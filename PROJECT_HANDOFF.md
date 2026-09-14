@@ -1,3 +1,7 @@
+# Latest increment — 2026-09-14
+
+Read [live geometry and recording handover](docs/SIMULATOR_TELEMETRY_20260914.md) for the latest implementation, verification and usage. Live geometry, 60 Hz CSV/JSON export, full-width settings tabs and configurable keyboard bindings are implemented. No new production deployment or APK in this increment. Full physical replay, software/controller integration and real-robot calibration remain explicitly outstanding. The pause is superseded by the owner’s request for this increment.
+
 # Current handover — 2026-09-13
 
 Read [the pause handover and complete remaining programme](docs/PAUSE_HANDOVER_20260913.md) FIRST.

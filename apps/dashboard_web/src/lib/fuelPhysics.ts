@@ -1,3 +1,4 @@
+import {muzzleOffset,rotateVector} from './shooter';
 import R from '@dimforge/rapier3d-compat';
 import {DT} from './conceptTwin';
 import {HUB_X,HUB_ENTRY_Z,insideHub,ShooterConfig} from './shooter';
@@ -44,8 +45,8 @@ export class FuelPhysics {
     if(!shooter.on||!this.stored.length||tick<this.nextShot)return;
     if(![shooter.speed,shooter.elevation,shooter.rate,shooter.height].every(Number.isFinite)||shooter.rate<=0)return;
     const p=robot.translation(),q=robot.rotation();
-    const rotate=(x:number,y:number,z:number)=>{const tx=2*(q.y*z-q.z*y),ty=2*(q.z*x-q.x*z),tz=2*(q.x*y-q.y*x);return {x:x+q.w*tx+q.y*tz-q.z*ty,y:y+q.w*ty+q.z*tx-q.x*tz,z:z+q.w*tz+q.x*ty-q.y*tx};};
-    const muzzle=rotate(length/2+.09,0,Math.max(.3,Math.min(1.5,shooter.height))-.3);
+    const rotate=(x:number,y:number,z:number)=>rotateVector(q,x,y,z);
+    const muzzle=muzzleOffset(q,length,shooter.height);
     const angle=Math.max(15,Math.min(80,shooter.elevation))*Math.PI/180,speed=Math.max(2,Math.min(18,shooter.speed)),v=rotate(speed*Math.cos(angle),0,speed*Math.sin(angle)),rv=robot.velocityAtPoint({x:p.x+muzzle.x,y:p.y+muzzle.y,z:p.z+muzzle.z});
     this.spawn(this.stored.shift()!,{x:p.x+muzzle.x,y:p.y+muzzle.y,z:p.z+muzzle.z},{x:v.x+rv.x,y:v.y+rv.y,z:v.z+rv.z});
     this.shots++;this.nextShot=tick+Math.ceil(1/(Math.min(8,shooter.rate)*DT));

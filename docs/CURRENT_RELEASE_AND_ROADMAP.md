@@ -1,3 +1,5 @@
+> Latest development: [2026-09-14 telemetry and settings increment](SIMULATOR_TELEMETRY_20260914.md). Implemented/tested; not yet promoted. Production identity below is unchanged.
+
 # Current release and roadmap — 2026-09-13
 
 The single current source is [Pause handover and complete remaining programme](PAUSE_HANDOVER_20260913.md). It includes a coverage index for all 105 V5.2 sections.

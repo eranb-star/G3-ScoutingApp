@@ -1,3 +1,4 @@
+import type {Telemetry} from '../lib/twinTelemetry';
 import {removeStaticFuel} from '../lib/fieldFuelVisuals';
 import {FUEL_RADIUS,FUEL_COUNT,IntakeConfig} from '../lib/intake';
 import {TWIN_CACHE,storeModel} from '../lib/twinCache';
@@ -11,7 +12,7 @@ import {RobotModel} from '../lib/robotModel';
 import {Concept,OBSTACLES,Pose} from '../lib/conceptTwin';
 
 export type ModelMetrics={length:number;width:number;height:number;triangles:number};
-type Props={intake:IntakeConfig;onModelMetrics:(m:ModelMetrics|null)=>void;season:FieldSeason;custom?:RobotModel;pose:Pose;concept:Concept;detailed:boolean;kitbot:boolean;view:'orbit'|'top'|'follow';path:Pose[];onStatus:(s:string)=>void;onFps:(fps:number)=>void};
+type Props={telemetry?:Telemetry;intake:IntakeConfig;onModelMetrics:(m:ModelMetrics|null)=>void;season:FieldSeason;custom?:RobotModel;pose:Pose;concept:Concept;detailed:boolean;kitbot:boolean;view:'orbit'|'top'|'follow';path:Pose[];onStatus:(s:string)=>void;onFps:(fps:number)=>void};
 const CACHE=TWIN_CACHE;
 const assets={field:{url:'/twin/2026/field-optimized.glb',bytes:19627748,hash:'088126b167906ca95e7b21a76a430a64199103d1ea184a121b1cf52e984b75e8'},robot:{url:'/twin/2026/robot-optimized.glb',bytes:16177620,hash:'053caf847815cb163632b8f858f5b261e589cb9abae3819b502c016fb57238b8'}};
 export async function clearTwinCache(){if('caches' in window)await Promise.all([caches.delete(CACHE),caches.delete('g3-twin-2026-v2'),caches.delete('g3-twin-2026-v3')]);}
@@ -63,6 +64,11 @@ export default function FieldTwinCanvas(props:Props){
   const wheelMat=new THREE.MeshStandardMaterial({color:0x151b25});
   for(const x of [-.35,.35])for(const y of [-.32,.32]){const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.1,.1,.1,14),wheelMat);wheel.rotation.x=Math.PI/2;wheel.position.set(x,y,.1);concept.add(wheel);}
   const pathGeometry=new THREE.BufferGeometry(),pathMaterial=new THREE.LineBasicMaterial({color:0x5be1cf});const line=new THREE.Line(pathGeometry,pathMaterial);scene.add(line);let previousPath:Pose[]|null=null;
+  const targetGeometry=new THREE.BufferGeometry(),targetMaterial=new THREE.LineBasicMaterial({color:0x4ff4d4,depthTest:false});
+  const targetLine=new THREE.Line(targetGeometry,targetMaterial);targetLine.renderOrder=10;scene.add(targetLine);
+  const headingLine=new THREE.ArrowHelper(new THREE.Vector3(1,0,0),new THREE.Vector3(),1,0xffd65b,.2,.1);scene.add(headingLine);
+  const labelCanvas=document.createElement('canvas');labelCanvas.width=512;labelCanvas.height=80;const labelContext=labelCanvas.getContext('2d')!;
+  const labelTexture=new THREE.CanvasTexture(labelCanvas),labelMaterial=new THREE.SpriteMaterial({map:labelTexture,depthTest:false});const targetLabel=new THREE.Sprite(labelMaterial);targetLabel.scale.set(2,.3125,1);targetLabel.renderOrder=11;scene.add(targetLabel);let labelText='';
   const loader=new GLTFLoader();let fieldStarted=false,robotStarted=false;
   const custom=new THREE.Group();robot.add(custom);let customData:ArrayBuffer|undefined,customGeneration=0;
   function disposeModel(root:THREE.Object3D){root.traverse(o=>{if(o instanceof THREE.Mesh){o.geometry.dispose();for(const m of Array.isArray(o.material)?o.material:[o.material]){Object.values(m).forEach(t=>{if(t instanceof THREE.Texture)t.dispose();});m.dispose();}}});}
@@ -92,6 +98,8 @@ export default function FieldTwinCanvas(props:Props){
    captureZone.visible=season.year===2026&&p.intake.on;captureZone.scale.set(p.intake.reach,p.intake.width,1);captureZone.position.set(p.concept.length/2+p.intake.reach/2,0,0.025);
    const balls=season.year===2026?(p.pose.balls??[]):[];fuel.count=balls.length;balls.forEach((b,i)=>fuel.setMatrixAt(i,ballMatrix.makeTranslation(b.x,b.y,b.z)));fuel.instanceMatrix.needsUpdate=true;
    if(previousPath!==p.path){previousPath=p.path;pathGeometry.setFromPoints(p.path.map(point=>new THREE.Vector3(point.x,point.y,.08)));}
+   const t=p.telemetry;targetLine.visible=headingLine.visible=targetLabel.visible=!!t;
+   if(t){targetGeometry.setFromPoints([new THREE.Vector3(t.muzzleX,t.muzzleY,t.muzzleZ),new THREE.Vector3(t.targetX,t.targetY,t.targetZ)]);headingLine.position.set(p.pose.x,p.pose.y,(p.pose.z??0)+p.concept.height+.15);headingLine.setDirection(new THREE.Vector3(Math.cos(p.pose.heading),Math.sin(p.pose.heading),0));targetLabel.position.set((t.muzzleX+t.targetX)/2,(t.muzzleY+t.targetY)/2,Math.max(t.muzzleZ,t.targetZ)+.3);const text=`${t.rangeM.toFixed(2)} m · ${t.aimErrorDeg===null?'—':t.aimErrorDeg.toFixed(1)+'°'}`;if(text!==labelText){labelText=text;labelContext.clearRect(0,0,512,80);labelContext.fillStyle='#102636';labelContext.fillRect(0,0,512,80);labelContext.fillStyle='#8bffe8';labelContext.font='bold 40px monospace';labelContext.textAlign='center';labelContext.fillText(text,256,55);labelTexture.needsUpdate=true;}}
    if(p.view==='top'){camera.position.set(0,-.01,Math.max(23,24/ camera.aspect));controls.target.set(0,0,0);controls.enableRotate=false;}
    else if(p.view==='follow'){camera.position.lerp(new THREE.Vector3(p.pose.x-4,p.pose.y-5,4.5),.08);controls.target.set(p.pose.x,p.pose.y,.35);controls.enableRotate=false;}
    else controls.enableRotate=true;
@@ -99,7 +107,7 @@ export default function FieldTwinCanvas(props:Props){
    frame=requestAnimationFrame(render);
   };frame=requestAnimationFrame(render);
   const lost=(e:Event)=>{e.preventDefault();latest.current.onStatus('Graphics context lost. Switch to 2D or reopen 3D.');};renderer.domElement.addEventListener('webglcontextlost',lost);
-  return()=>{disposed=true;abort.abort();cancelAnimationFrame(frame);observer.disconnect();controls.dispose();scene.traverse(o=>{if(o instanceof THREE.Mesh||o instanceof THREE.Line){o.geometry.dispose();const materials=Array.isArray(o.material)?o.material:[o.material];materials.forEach(m=>{Object.values(m).forEach(v=>{if(v instanceof THREE.Texture)v.dispose();});m.dispose();});}});environment.dispose();renderer.dispose();renderer.domElement.remove();};
+  return()=>{disposed=true;abort.abort();cancelAnimationFrame(frame);observer.disconnect();controls.dispose();scene.traverse(o=>{if(o instanceof THREE.Mesh||o instanceof THREE.Line){o.geometry.dispose();const materials=Array.isArray(o.material)?o.material:[o.material];materials.forEach(m=>{Object.values(m).forEach(v=>{if(v instanceof THREE.Texture)v.dispose();});m.dispose();});}});labelTexture.dispose();labelMaterial.dispose();environment.dispose();renderer.dispose();renderer.domElement.remove();};
  },[props.season.year]);
  return <div className="twin-canvas" ref={host}/>;
 }

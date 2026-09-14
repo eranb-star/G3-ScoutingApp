@@ -51,8 +51,11 @@ export class PhysicalDrive{
  const norm=Math.max(1,Math.hypot(command.vx,command.vy)),targetX=command.vx/norm*this.config.speed-command.omega*this.config.turn*offset.y,targetY=command.vy/norm*this.config.speed+command.omega*this.config.turn*offset.x;
  let fx=(targetX-v.x)*100,fy=(targetY-v.y)*100;const limit=Math.min(50*3/4,support*1.1),m=Math.max(1,Math.hypot(fx,fy)/Math.max(limit,.001));fx/=m;fy/=m;this.body.addForceAtPoint({x:fx,y:fy,z:0},origin,true);
  }}
- this.world.step();this.tick++;this.fuel.afterStep(this.tick);const p=this.body.translation(),r=this.body.rotation(),v=this.body.linvel();this.distance+=Math.hypot(p.x-before.x,p.y-before.y);if(Math.hypot(command.vx,command.vy)>.2&&Math.hypot(v.x,v.y)<.05)this.collisions++;
- return {ledger:this.fuel.ledger(),scores:[...this.fuel.scores],shots:this.fuel.shots,balls:this.fuel.snapshot(),collected:this.fuel.collected,x:p.x,y:p.y,z:p.z-.3,rotation:{...r},heading:Math.atan2(2*(r.w*r.z+r.x*r.y),1-2*(r.y*r.y+r.z*r.z)),tick:this.tick,distance:this.distance,collisions:this.collisions,contacts:this.contacts,speed:Math.hypot(v.x,v.y)};
+ this.world.step();this.tick++;this.fuel.afterStep(this.tick);const p=this.body.translation(),v=this.body.linvel();this.distance+=Math.hypot(p.x-before.x,p.y-before.y);if(Math.hypot(command.vx,command.vy)>.2&&Math.hypot(v.x,v.y)<.05)this.collisions++;
+ return this.snapshot();
+ }
+ snapshot():PhysicalPose{const p=this.body.translation(),r=this.body.rotation(),v=this.body.linvel();
+ return {velocity:{...v},angularVelocity:{...this.body.angvel()},ledger:this.fuel.ledger(),scores:[...this.fuel.scores],shots:this.fuel.shots,balls:this.fuel.snapshot(),collected:this.fuel.collected,x:p.x,y:p.y,z:p.z-.3,rotation:{...r},heading:Math.atan2(2*(r.w*r.z+r.x*r.y),1-2*(r.y*r.y+r.z*r.z)),tick:this.tick,distance:this.distance,collisions:this.collisions,contacts:this.contacts,speed:Math.hypot(v.x,v.y)};
  }
  reset(x=START.x,y=START.y){this.body.setTranslation({x,y,z:.31},true);this.body.setRotation({x:0,y:0,z:0,w:1},true);this.body.setLinvel({x:0,y:0,z:0},true);this.body.setAngvel({x:0,y:0,z:0},true);this.body.resetForces(true);this.body.resetTorques(true);this.contacts=0;this.tick=0;this.distance=0;this.collisions=0;}
  dispose(){this.world.free();}
