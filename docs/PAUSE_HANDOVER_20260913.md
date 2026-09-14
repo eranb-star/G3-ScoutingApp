@@ -1,13 +1,11 @@
-> 2026-09-14 update: owner resumed for live geometry + recording/export + settings/keyboard improvements. See [the delivered increment](SIMULATOR_TELEMETRY_20260914.md). Those features are implemented locally; full physical replay remains next and controller integration/calibration remain later. The pause instruction below is historical; the programme inventory remains applicable.
-
 # Pause handover and complete remaining programme
 
-Checkpoint: 2026-09-13. This file is the current resumption authority. V5.2 section 82 defines releases; sections 81–105 correct earlier sections. Simulator 3A/3B/3C are additions within the Field & Concept Twin work, not replacements for Releases 4–7. Historical notes are evidence, not current instructions.
+Checkpoint updated: 2026-09-14. This file is the current resumption authority. V5.2 section 82 defines releases; sections 81–105 correct earlier sections. Simulator 3A/3B/3C are additions within the Field & Concept Twin work, not replacements for Releases 4–7. Historical notes are evidence, not current instructions.
 
 ## What is saved and live
 
-- Branch: `codex/release-1-qa`. Application commit **17a542f**, documentation commit **98c92bd**, both already matched the remote before this handover commit.
-- Production: https://g3-6740.com/field-twin ; Vercel production rebuild **D339AMxE7**, Ready. Recorded verification: HTTP 200, bundle `index-Cbu_3RvN.js`, production Supabase `hnqwhuuxlqfyawqymaaz`, no QA reference, engine `g3-physical-v3`. No production redeployment is needed for this documentation change.
+- Branch: `codex/release-1-qa`. Application commit **8012578**, including telemetry commit **48af302**. Both pushed to the remote.
+- Production: https://g3-6740.com/field-twin ; Vercel production rebuild **GkL8yAM2T8DxgfPtpFrxz7cwvQxH**, Ready. Recorded verification: HTTP 200, bundle `index-CHTo76HR.js`, production Supabase `hnqwhuuxlqfyawqymaaz`, no QA reference, engine `g3-physical-v3`. No production redeployment is needed for this documentation change.
 - Latest correction is live: reference robot has red 6740 bumpers; negative-X hub counts RED, positive-X hub BLUE. Browser verification: eight shots at red hub → Red 8 / Blue 0. Uploaded user CAD appearance is preserved.
 - Simulator 3A implemented: gravity/suspension, acceleration/braking, bump tilt, hub/boundary/tower blocking, trench clearance and depot rail rise.
 - Simulator 3B implemented: individual moving balls, scattering, configured intake zone/rate/capacity, capture removes the same ball from the field; no duplicate static CAD balls.
@@ -21,7 +19,7 @@ Checkpoint: 2026-09-13. This file is the current resumption authority. V5.2 sect
 
 ## Exact resumption point
 
-The user is pausing. Do not start work, monitoring, paid jobs or deployment during the pause. On return, read this file and inspect git status once. Preserve the two personal Android `.idea` changes. Do not rebuild/redeploy the unchanged application or rerun passing test suites just to establish activity.
+The user resumed and authorized the telemetry/UI increment and its production deployment. On the next development session, read this file and inspect git status once. Preserve the two personal Android `.idea` changes. Do not rebuild/redeploy the unchanged application or rerun passing test suites just to establish activity.
 
 Recommended first bounded engineering increment: **restore recording/replay and comparison for the physical simulator**, with a new versioned tolerance profile covering ball inventory, intake, shooting, return queues and reset. The earlier planar replay does not prove physical-engine replay. Then close the remaining Release 2 Gold Set and Release 3 acceptance items below. School CAD/device checks remain scheduled for when the user has those resources; continue independent work without repeatedly asking for them. AI governance follows Release 3 as requested, before enabling new paid processing. This is an ordered remaining plan, not a claim these increments already exist.
 
@@ -54,6 +52,14 @@ Implemented foundations include requirements/interfaces/decisions, versioned evi
 5. AI spending/security requirements in sections 96–97 remain deferred by the user until after Release 3. Therefore do not call the full associated governance complete or enable new paid AI first.
 
 ### 3 — Field & Concept Twin and physical simulator closure
+
+Delivered 2026-09-14: live geometry from the actual simulated shooter exit, 60 Hz CSV/JSON telemetry export, configurable keyboard bindings, full-width settings, driving-first/opt-in Software testing view and animated reference front intake. These additions close telemetry capture/UI work only. The following remaining work is combined with the original programme:
+
+- Geometry extensions: calibrated shot trajectory and target-plane error; per-obstacle clearance and rule-versioned zones. Current wall clearance and hub aim line are not a full navigation/ballistic model.
+- Recording completeness: full physical initial-state/ball/return-queue capture, external events and pinned asset/runtime identity needed for replay; telemetry samples alone cannot restore a physics session. Persistent recording library/session recovery and analysis are later extensions, not current browser-memory export.
+- Intake illustration is not a CAD-derived articulated mechanism: future calibration must bind real pivot/roller geometry, deployment timing and capture behavior. Current capture follows ON/OFF immediately while the brief visual folding animation runs.
+- Validate performance and layout on the actual school/work Mac and mobile devices. Chrome on the owner's Mac required graphics acceleration enabled; a clear renderer failure/fallback remains a UX improvement. Local 60 FPS is not a device guarantee.
+
 
 1. Physical-engine record/replay: capture runtime/model/assets/configuration, initial state, ordered commands, seed, all lifecycle queues and checkpoints; define exact/numeric tolerances, reject version mismatch and display divergent tick/state. Prove pinned-runtime replay; do not claim cross-device determinism.
 2. Restore/integrate Auto Play, ghost and comparison for the physical engine. Label same-input, same-objective and same-driver comparisons separately. Earlier planar functionality is not proof of the current physical integration.

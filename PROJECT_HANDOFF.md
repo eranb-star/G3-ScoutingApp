@@ -1,15 +1,9 @@
-> Latest UI follow-up: default driving mode hides telemetry; Software testing toggles compact/full diagnostics. Front intake has a folding roller illustration. See the telemetry handover for semantics and verification. Production unchanged.
+# Current handover — 2026-09-14
 
-# Latest increment — 2026-09-14
+Start with [the current release and roadmap](docs/CURRENT_RELEASE_AND_ROADMAP.md), then [the complete remaining programme](docs/PAUSE_HANDOVER_20260913.md). These are the current authorities; old logs are historical.
 
-Read [live geometry and recording handover](docs/SIMULATOR_TELEMETRY_20260914.md) for the latest implementation, verification and usage. Live geometry, 60 Hz CSV/JSON export, full-width settings tabs and configurable keyboard bindings are implemented. No new production deployment or APK in this increment. Full physical replay, software/controller integration and real-robot calibration remain explicitly outstanding. The pause is superseded by the owner’s request for this increment.
+Latest application: **8012578**, production rebuild **GkL8yAM2T8DxgfPtpFrxz7cwvQxH**, https://g3-6740.com/field-twin. Telemetry, export, configurable keys, driving-first layout and animated front intake are included. No APK or SQL change.
 
-# Current handover — 2026-09-13
+New remaining geometry/replay/intake-validation items are merged into Phase 3; controller integration and real-robot calibration are retained in Phase 4. Existing Phase 0–7 acceptance, historical expansion, AI controls and Android acceptance remain tracked. Exact next development item: physical replay/ghost/comparison, not another telemetry implementation.
 
-Read [the pause handover and complete remaining programme](docs/PAUSE_HANDOVER_20260913.md) FIRST.
-
-Production application: **17a542f**, Vercel **D339AMxE7**, https://g3-6740.com/field-twin. Physical driving, balls/intake, shooting/returns and red 6740 reference bumpers/scoring are live. No new APK. Do not redeploy unchanged code.
-
-The handover contains all remaining V5.2 releases, the simulator additions, outstanding acceptance and exact resumption instructions. Preserve the two user Android `.idea` changes. User is pausing; do not start background work.
-
-[Older handover history](docs/HANDOFF_HISTORY_THROUGH_20260913.md) is archived and superseded for current state. It must not be used to rerun completed SQL/backups or select an obsolete deployment.
+Preserve the two personal Android `.idea` modifications. Do not rerun unchanged passing checks, completed migrations or backups. Distinguish implementation, deployment and real-device acceptance. See [increment evidence](docs/SIMULATOR_TELEMETRY_20260914.md). Previous handover is preserved in [history](docs/HANDOFF_HISTORY_THROUGH_20260913.md).
