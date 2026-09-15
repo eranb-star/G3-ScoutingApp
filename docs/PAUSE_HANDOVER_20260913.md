@@ -1,11 +1,11 @@
 # Pause handover and complete remaining programme
 
-Checkpoint updated: 2026-09-14. This file is the current resumption authority. V5.2 section 82 defines releases; sections 81–105 correct earlier sections. Simulator 3A/3B/3C are additions within the Field & Concept Twin work, not replacements for Releases 4–7. Historical notes are evidence, not current instructions.
+Checkpoint updated: 2026-09-15. This file is the current resumption authority. V5.2 section 82 defines releases; sections 81–105 correct earlier sections. Simulator 3A/3B/3C are additions within the Field & Concept Twin work, not replacements for Releases 4–7. Historical notes are evidence, not current instructions.
 
 ## What is saved and live
 
-- Branch: `codex/release-1-qa`. Application commit **8012578**, including telemetry commit **48af302**. Both pushed to the remote.
-- Production: https://g3-6740.com/field-twin ; Vercel production rebuild **GkL8yAM2T8DxgfPtpFrxz7cwvQxH**, Ready. Recorded verification: HTTP 200, bundle `index-CHTo76HR.js`, production Supabase `hnqwhuuxlqfyawqymaaz`, no QA reference, engine `g3-physical-v3`. No production redeployment is needed for this documentation change.
+- Branch: `codex/release-1-qa`. Application commit **b00a306**, including prior simulator **8012578** and telemetry **48af302**. Pushed to remote. Browser GPS attendance is now enabled; installed APK and backend unchanged. See [attendance release and onsite acceptance checklist](MOBILE_BROWSER_ATTENDANCE_20260915.md). Physical phone/workshop acceptance remains pending today.
+- Production: https://g3-6740.com/field-twin ; Vercel production rebuild **9YWxx9ADuCDGxWdXW2gxB5xxtUac**, Ready. Recorded verification: HTTP 200, bundle `index-C4w-CvZj.js`, production Supabase `hnqwhuuxlqfyawqymaaz`, no QA reference, engine `g3-physical-v3`. No production redeployment is needed for this documentation change.
 - Latest correction is live: reference robot has red 6740 bumpers; negative-X hub counts RED, positive-X hub BLUE. Browser verification: eight shots at red hub → Red 8 / Blue 0. Uploaded user CAD appearance is preserved.
 - Simulator 3A implemented: gravity/suspension, acceleration/braking, bump tilt, hub/boundary/tower blocking, trench clearance and depot rail rise.
 - Simulator 3B implemented: individual moving balls, scattering, configured intake zone/rate/capacity, capture removes the same ball from the field; no duplicate static CAD balls.

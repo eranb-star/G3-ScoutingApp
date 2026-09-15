@@ -24,4 +24,4 @@ Installed Android APK/native code remains unchanged. Native GPS and school Wi-Fi
 If indoor GPS cannot obtain an acceptable fix, try at the entrance within the radius or use the existing installed app's Wi-Fi option. Do not enlarge the radius for the trial. Browser attendance requires connectivity and foreground permission; no background tracking.
 
 ## Release record
-Web release pending production deployment verification. Record exact application commit and deployment after publication. All wider simulator/V5.2 remaining work continues in PAUSE_HANDOVER_20260913.md; this release does not close those phases.
+Published application commit **b00a306**, Vercel production rebuild **9YWxx9ADuCDGxWdXW2gxB5xxtUac**. Verified https://g3-6740.com/check-in returns HTTP 200 and bundle **index-C4w-CvZj.js** contains browser GPS flow/navigation, no old browser blocker, production Supabase reference and no QA reference. All wider simulator/V5.2 remaining work continues in PAUSE_HANDOVER_20260913.md; this release does not close those phases.
