@@ -25,3 +25,10 @@ If indoor GPS cannot obtain an acceptable fix, try at the entrance within the ra
 
 ## Release record
 Published application commit **b00a306**, Vercel production rebuild **9YWxx9ADuCDGxWdXW2gxB5xxtUac**. Verified https://g3-6740.com/check-in returns HTTP 200 and bundle **index-C4w-CvZj.js** contains browser GPS flow/navigation, no old browser blocker, production Supabase reference and no QA reference. All wider simulator/V5.2 remaining work continues in PAUSE_HANDOVER_20260913.md; this release does not close those phases.
+
+## Follow-up decision — laptop visibility
+The user observed check-in/out in Chrome on a laptop. This is expected in the shipped implementation: **all browsers**, including laptops/desktops, can see the action. No phone-only detection or visibility restriction has been implemented. The same membership and server location checks apply; laptop location readings may be less reliable.
+
+The original desired experience was phone-browser attendance alongside the installed app. A future UX option is to show check-in/out on phones and retain history on laptops. This is **deferred for review, not an approved implementation in this update**. Device detection would control presentation only, never replace server-side verification. Keep the current production behavior until that follow-up is requested.
+
+The latest user request is documentation/knowledge preservation only. Onsite acceptance above remains unconfirmed; do not mark it passed without actual device results. Native Wi-Fi security follow-up and the wider remaining programme are still open. Documentation release e26cd50 recorded the deployment before this clarification; no additional application deployment is required for this note.
