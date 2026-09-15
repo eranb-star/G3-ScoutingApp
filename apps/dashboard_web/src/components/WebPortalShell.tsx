@@ -13,7 +13,8 @@ const links = [
   ["/growth", "Skills Academy", "אקדמיית מיומנויות"],
   ["/competition", "Competition", "תחרות"],
   ["/updates", "Updates", "עדכונים"],
-  ["/attendance", "Attendance", "נוכחות"],
+  ["/check-in", "Check in / out", "כניסה / יציאה"],
+  ["/attendance", "Attendance history", "היסטוריית נוכחות"],
   ["/media", "Team Media", "מדיה קבוצתית"],
 ] as const;
 
@@ -54,4 +55,3 @@ export default function WebPortalShell({children}:{children:ReactNode}) {
   </div>;
 }
 
-export function WebCheckInNotice(){const {pick}=useLocalization();return <main className="hub-page"><section className="hub-card"><h1>{pick("Check in using the G3 phone app","כניסה באמצעות אפליקציית G3 בטלפון")}</h1><p>{pick("Workshop check-in and check-out require the phone app. Your schedule and authorized attendance-management tools remain available here.","כניסה ויציאה מהסדנה מתבצעות באפליקציית הטלפון. לוח הזמנים וכלי ניהול הנוכחות המורשים זמינים כאן.")}</p><NavLink to="/home">{pick("Back to Home","חזרה לבית")}</NavLink></section></main>;}

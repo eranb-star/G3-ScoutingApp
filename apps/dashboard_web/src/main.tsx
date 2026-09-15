@@ -45,7 +45,7 @@ import UnifiedCalendarPage from "./pages/UnifiedCalendarPage";
 import ContextBackBar from "./components/ContextBackBar";
 import { getUnreadUpdateCounts } from "./lib/unreadUpdates";
 import { Capacitor } from "@capacitor/core";
-import WebPortalShell, { WebCheckInNotice } from "./components/WebPortalShell";
+import WebPortalShell from "./components/WebPortalShell";
 import PermissionsAdminPage from "./pages/PermissionsAdminPage";
 import FinanceAdminPage from "./pages/FinanceAdminPage";
 const FrcAssistantPage=lazy(()=>import("./pages/FrcAssistantPage"));
@@ -831,9 +831,9 @@ function AppShell() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/change-password" element={<ChangePasswordPage />} />
         <Route path="/" element={<Navigate to="/home" replace />} />
-        <Route path="/home" element={<MemberGate><ProductivityHomePage isAdmin={isAdmin} allowCheckIn={nativeApp} /></MemberGate>} />
+        <Route path="/home" element={<MemberGate><ProductivityHomePage isAdmin={isAdmin} allowCheckIn={true} /></MemberGate>} />
         <Route path="/schedule" element={<MemberGate><UnifiedCalendarPage /></MemberGate>} />
-        <Route path="/check-in" element={<MemberGate>{nativeApp ? <CheckInPage /> : <WebCheckInNotice />}</MemberGate>} />
+        <Route path="/check-in" element={<MemberGate><CheckInPage /></MemberGate>} />
         <Route path="/work" element={<MemberGate><FrcWorkPage /></MemberGate>} />
         <Route path="/updates" element={<MemberGate><UpdatesPage /></MemberGate>} />
         <Route path="/messages" element={<Navigate to="/updates?view=announcements" replace />} />
