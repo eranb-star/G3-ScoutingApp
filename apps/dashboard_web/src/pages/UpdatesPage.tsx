@@ -102,7 +102,7 @@ export default function UpdatesPage() {
     ]);
     const states=new Map(((stateResult.data??[]) as ActionState[]).map(item=>[item.action_id,item]));
     const now=Date.now();
-    setActions(((actionResult.data??[]) as Omit<TeamAction,"viewed">[]).filter(item=>{const state=states.get(item.id);if(state?.status==="completed"&&item.source_table!=="project_tasks")return false;if(state?.status==="snoozed"&&state.snoozed_until&&new Date(state.snoozed_until).getTime()>now)return false;return true;}).map(item=>({...item,viewed:["acknowledged","completed"].includes(states.get(item.id)?.status??"")})));
+    setActions(((actionResult.data??[]) as Omit<TeamAction,"viewed">[]).filter(item=>{const state=states.get(item.id);if(state?.status==="completed"&&!['project_tasks','project_task_collaborators'].includes(item.source_table??''))return false;if(state?.status==="snoozed"&&state.snoozed_until&&new Date(state.snoozed_until).getTime()>now)return false;return true;}).map(item=>({...item,viewed:["acknowledged","completed"].includes(states.get(item.id)?.status??"")})));
   }
 
   useEffect(() => { void loadCore(); }, [profile?.id, isAdmin, showArchived]);

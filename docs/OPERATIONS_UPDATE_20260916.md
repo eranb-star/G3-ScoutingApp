@@ -1,0 +1,18 @@
+# Inventory, repayments and task collaborators — 16 September 2026
+
+## Delivered scope
+- Inventory Parts & stock: administrator-only **Delete part** with explicit permanent-delete confirmation. Existing database RLS enforces admin access. Stock movements cascade; purchase references become null and purchase/finance records remain. No real inventory was deleted during verification.
+- Finance: **Repay from team funds** on each outstanding personal expense. Partial/full repayment, date, method, source/event name and note; preview remaining personal debt and recorded team funds. Repayment history shows recipient, expense, amount, source/method, recorder and note. Per-person outstanding balances and recorded ILS funds remaining are visible. Reimbursement reduces debt and cash; it does not create another expense or initiate a bank transfer.
+- Finance uses pooled recorded ILS funds, not segregated bank/event accounts. Source/event is a traceable description, not a restricted fund allocation. Cash calculation: recorded ILS income minus team-account/cash expenses minus ILS reimbursements. Budgets are not cash. Negative historical balance means the ledger needs reconciliation. The new RPC serializes repayments, validates available recorded funds/outstanding personal balance, and accepts a retry ID to prevent duplicate recording. Existing APIs/native binaries remain compatible.
+- Projects: one accountable owner plus optional multiple collaborators, selectable at creation or edited afterward. Creation and contributor assignment are transactional and require active membership plus the existing scoped assign-team-work permission. Collaborators do not gain owner/status/mentor-review permissions. Active-member choices are deduplicated; owner is excluded.
+- Each collaborator gets a linked Home/Work reminder. Task completion/archive/owner change and project archive refresh these reminders. Removal/task deletion clears the linked action. Home does not offer task completion for these reminders.
+
+## Verification and rollout
+- TypeScript and production build passed; existing bundle-size warnings remain.
+- In-memory PostgreSQL test `scripts/test-operations-collaborators.mjs` passed: repeatable migration, authorization, contributor deduplication, task/project action lifecycle, deletion cleanup, partial/full repayment, retry deduplication, outstanding/funds limits, admin-only part deletion and purchase preservation.
+- Real-component read-only browser fixture checked finance values (1,000 income, 600 personal expense, 200 repayment => 400 owed, 800 funds), repayment form/history and Projects collaborator display. No real financial transactions or inventory deletions were performed.
+- Production SQL migration `backend/supabase/operations_collaborators_20260916.sql` applied successfully in project hnqwhuuxlqfyawqymaaz. SQL editor reported Success, no rows returned. It adds a collaborator table/triggers/RPCs and reimbursement request ID; no existing business rows are intentionally changed.
+- Application commit and production deployment: pending release verification below.
+
+## Remaining acceptance
+Validate using designated QA records: leader creates a task with owner plus students; students see linked Work reminders; remove one/reassign/complete and verify updates. Admin records an actual repayment only after money has changed hands, reconciles starting funds and confirms amounts/history. Use the new delete action only for a part the administrator intends to remove permanently. Existing wider roadmap and pending attendance device acceptance remain open; this increment does not close simulator/V5.2 phases.

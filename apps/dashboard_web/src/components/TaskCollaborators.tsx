@@ -1,0 +1,15 @@
+import {useEffect,useState} from 'react';
+import {supabase} from '../supabase';
+import {useLocalization} from '../lib/localization';
+import {notifyProjectChange} from '../lib/projectRefresh';
+type Person={id:string;display_name:string};
+export function CollaboratorPicker({people,ownerId,selected,onChange}:{people:Person[];ownerId:string|null;selected:string[];onChange:(ids:string[])=>void}){
+ const {pick}=useLocalization();
+ return <fieldset className="task-collaborators"><legend>{pick('Working with the owner','עובדים עם האחראי/ת')}</legend><small>{pick('Optional. The owner remains accountable for status and submission.','רשות. האחראי/ת נשאר/ת אחראי/ת לסטטוס ולהגשה.')}</small><div>{people.filter(p=>p.id!==ownerId).map(p=><label key={p.id}><input type="checkbox" checked={selected.includes(p.id)} onChange={e=>onChange(e.target.checked?[...selected,p.id]:selected.filter(id=>id!==p.id))}/><span>{p.display_name}</span></label>)}</div></fieldset>;
+}
+export default function TaskCollaborators({taskId,ownerId,people,canManage}:{taskId:string;ownerId:string|null;people:Person[];canManage:boolean}){
+ const {pick}=useLocalization(),[ids,setIds]=useState<string[]>([]),[draft,setDraft]=useState<string[]>([]),[editing,setEditing]=useState(false),[busy,setBusy]=useState(false),[loaded,setLoaded]=useState(false),[message,setMessage]=useState('');
+ useEffect(()=>{let live=true;setLoaded(false);supabase.from('project_task_collaborators').select('member_id').eq('task_id',taskId).then(({data,error})=>{if(!live)return;if(error){setMessage(error.message);return;}const members=(data??[]).map(x=>x.member_id).filter(id=>id!==ownerId);setIds(members);setDraft(members);setLoaded(true);});return()=>{live=false;};},[taskId,ownerId]);
+ async function save(){if(busy)return;setBusy(true);try{const {error}=await supabase.rpc('set_task_collaborators',{p_task:taskId,p_members:draft.filter(id=>id!==ownerId)});if(error)throw error;setIds(draft.filter(id=>id!==ownerId));setEditing(false);setMessage(pick('Collaborators saved.','המשתתפים נשמרו.'));notifyProjectChange();}catch(e){setMessage((e as Error).message);}finally{setBusy(false);}}
+ return <section className="task-collaborator-summary"><strong>{pick('Collaborators','משתתפים')}</strong><p>{ids.length?ids.map(id=>people.find(p=>p.id===id)?.display_name??pick('Inactive member','חבר/ה לא פעיל/ה')).join(' · '):pick('No additional members','אין משתתפים נוספים')}</p>{canManage&&loaded&&!editing?<button className="hub-button secondary" onClick={()=>{setDraft(ids);setEditing(true);}}>{pick('Edit collaborators','עריכת משתתפים')}</button>:null}{editing?<><CollaboratorPicker people={people} ownerId={ownerId} selected={draft} onChange={setDraft}/><button className="hub-button" disabled={busy} onClick={()=>void save()}>{pick('Save collaborators','שמירת משתתפים')}</button> <button className="hub-button secondary" disabled={busy} onClick={()=>setEditing(false)}>{pick('Cancel','ביטול')}</button></>:null}{message?<p role="status">{message}</p>:null}</section>;
+}

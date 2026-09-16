@@ -1131,3 +1131,11 @@ details.review-evidence-editor[open]>summary{margin-bottom:14px}
 @media(max-width:480px){.review-evidence-editor dl>div{grid-template-columns:1fr;gap:4px}.review-evidence-editor form>.hub-button{width:100%}}
 
 .task-archive-offer{grid-column:1/-1;width:100%;box-sizing:border-box;padding:16px;border:1px solid #e8c8dd;border-radius:12px;background:#fff8fc}.task-archive-offer p{margin:8px 0 12px;line-height:1.5}
+
+/* Compact collaborator selection and auditable repayment history. */
+.task-collaborator-summary{grid-column:1/-1;width:100%;border-top:1px solid #eadde6;padding-top:12px}
+.task-collaborators{min-width:0;border:1px solid #eadde6;border-radius:12px;padding:12px;grid-column:1/-1}
+.task-collaborators>div{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;max-height:220px;overflow:auto;margin-top:10px}
+.task-collaborators label{display:flex!important;align-items:center;gap:8px;margin:0!important;padding:6px}
+.task-collaborators input[type=checkbox]{width:18px!important;height:18px!important;min-height:18px!important;flex:0 0 18px;margin:0;accent-color:#db008c}
+.finance-history{overflow-x:auto}.finance-history table{width:100%;border-collapse:collapse;text-align:start}.finance-history th,.finance-history td{padding:12px;text-align:start;border-bottom:1px solid #eadde6;vertical-align:top}.finance-history small{display:block;color:#6b6170;margin-top:4px}
