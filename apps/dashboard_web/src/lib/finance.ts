@@ -1,0 +1,11 @@
+export type Expense={id:string;purchase_id:string|null;expense_date:string;category:string;vendor:string|null;description:string;amount:number;currency:string;paid_by:string|null;payment_source:string;reimbursement_status:string;reimbursed_amount:number;notes:string|null};
+export type Repayment={id:string;expense_id:string;amount:number;reimbursed_on:string;payment_method:string;funding_source:string;notes:string|null;recorded_by:string;batch_id?:string|null};
+export type RepaymentBatch={id:string;recipient_id:string;recipient_name:string;amount:number;paid_on:string;method:string;funding_source:string;notes:string|null;recorded_by:string;recipient_balance_before:number;recipient_balance_after:number;funds_after:number};
+export type Income={id:string;received_on:string;source_type:string;source_name:string|null;amount:number;currency:string;notes:string|null};
+export const cents=(amount:number|string)=>Math.round(Number(amount)*100);
+export const money=(amount:number,currency='ILS')=>new Intl.NumberFormat('en-IL',{style:'currency',currency}).format(amount);
+export const outstanding=(e:Expense)=>e.payment_source==='personal'?Math.max(0,cents(e.amount)-cents(e.reimbursed_amount)):0;
+export const recipientExpenses=(expenses:Expense[],recipient:string)=>expenses.filter(e=>e.paid_by===recipient&&e.currency==='ILS'&&outstanding(e)>0).sort((a,b)=>a.expense_date.localeCompare(b.expense_date)||a.id.localeCompare(b.id));
+export const recipientBalance=(expenses:Expense[],recipient:string)=>recipientExpenses(expenses,recipient).reduce((sum,e)=>sum+outstanding(e),0);
+export function allocateOldest(expenses:Expense[],amount:number){let remaining=amount;return expenses.flatMap(e=>{const value=Math.min(remaining,outstanding(e));remaining-=value;return value>0?[{expense_id:e.id,amount:value/100}]:[];});}
+export function fundsCents(expenses:Expense[],income:Income[],repayments:Repayment[]){return income.filter(i=>i.currency==='ILS').reduce((s,i)=>s+cents(i.amount),0)-expenses.filter(e=>e.currency==='ILS'&&['team_account','cash'].includes(e.payment_source)).reduce((s,e)=>s+cents(e.amount),0)-repayments.filter(r=>expenses.find(e=>e.id===r.expense_id)?.currency==='ILS').reduce((s,r)=>s+cents(r.amount),0);}
