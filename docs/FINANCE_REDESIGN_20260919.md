@@ -17,7 +17,7 @@
 - `scripts/test-recipient-repayment.mjs`: isolated PGlite PostgreSQL checks for exact example, another recipient, multi-expense/partial payment, rollback, overpayment, funds limits, stale balances, duplicate allocation/request, changed request payload, administrator/RLS guards and migration rerun.
 - TypeScript build passed. Vite production build passed (existing large simulator bundle warning).
 - Real React components reviewed with synthetic records on desktop and phone widths, including Hebrew; action footer visible and example balances correct. Fixture writes disabled.
-- Production web deployment details are recorded in the pause handover after promotion.
+- Production commit `fe200ef`; rebuild `3tAfGCv8ZL1juCEUwNo5qD1NKfJt` Ready on g3-6740.com. Verified HTTP 200 and bundle `index-JQQXD4GR.js` contains the new finance features and production Supabase reference, without the QA reference. Unauthenticated `/admin/finance` redirects to login.
 
 ## Scope and remaining acceptance
 
