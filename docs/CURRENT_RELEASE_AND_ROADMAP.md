@@ -1,13 +1,23 @@
-# Current release and roadmap — 2026-09-14
+# Current release and roadmap — 2026-09-20
 
-Production release: **8012578**, Vercel **GkL8yAM2T8DxgfPtpFrxz7cwvQxH**, https://g3-6740.com/field-twin. Includes live geometry, CSV/JSON telemetry, configurable keys, full-width settings, opt-in Software testing and a folding front-intake illustration. Android remains 2.1.9/code 23; no new APK or SQL.
+Start with [the session entry point](START_NEXT_SESSION.md). [The master handover](PAUSE_HANDOVER_20260913.md) is authoritative for detailed scope, all 105 V5.2 section references, evidence, limitations and release identity. This file is a short index, not a second competing status register.
 
-The complete remaining programme is [the consolidated handover](PAUSE_HANDOVER_20260913.md), including all 105 V5.2 section references. New remaining items are integrated into Phase 3; software/controller integration and real-robot calibration remain under Phase 4.
+Production application: **1326629**, Vercel **CK1LewiyZedM7qYaMcHkTjxGbTXQ**, https://g3-6740.com. Workshop, inventory, attendance and Team Stories SQL/functions/web are deployed. Release documentation checkpoint: **72df908**. The subsequent Attendance Center menu rename awaits the next web release. Android remains 2.1.9/code 23.
 
-Next: full physical replay/ghost/comparison, then bounded 2026 Gold Set and outstanding Phase 3 acceptance. School CAD/device checks and the updated APK remain outstanding. Existing Phase 0/1 acceptance is preserved. AI governance follows Phase 3 before new paid processing. Phase 4 Engineering Twin → Phase 5 CAD Intelligence → Phase 6 Manufacturing Intelligence → Phase 7 Autonomous Orchestrator. Historical ten-year depth and missing field assets remain explicitly tracked expansion.
+## Ordered remaining work
 
-Telemetry export is implemented; full physics replay is not. The front intake is an illustration of the current capture zone, not a validated mechanism. Detailed implementation/limitations: [telemetry handover](SIMULATOR_TELEMETRY_20260914.md).
+| Order | Workstream | Remaining outcome |
+|---|---|---|
+| Next bounded development | Phase 3 physical replay | Complete initial state/commands/events/queues, pinned runtime/assets/config, mismatch detection; then ghost/Auto Play/comparison. |
+| Alongside, when resources available | Phase 0/1 closure and operational acceptance | Remaining recovery/offsite/permission evidence, authenticated review/mobile/offline journeys, real workshop/controller/CAD/finance acceptance. Reuse passing evidence. |
+| Then | Phase 2 bounded 2026 knowledge | Reviewed Gold Set, authoritative/versioned ingestion, conflict/staleness/insufficient-evidence handling and evaluation. |
+| Then | Phase 3 closure | Device/performance acceptance, calibrated collisions/balls/shooting, team mechanism profile, geometry/clearance, full-match timing/scoring/multi-robot scope. |
+| Staged expansion | 2017–2026 | Verified per-year corpus; missing 2017–2020 fields, season robot assets and season-specific simulation. Viewer selection does not deliver historical physics. |
+| After Phase 3, before paid execution | AI governance | Cost reservations/caps, cancellation/stop, scoped execution permissions, untrusted-file/prompt isolation and audit. |
+| Phase 4 | Engineering Twin | Mechanical/electrical/software graph, mass/CG/load/interference, calibrated motor/controller/PID/WPILib integration and validated uncertainty. |
+| Phase 5 | CAD Intelligence | Version-pinned Onshape reads, review/conversion, bounded generation/patching, conflict protection and human-approved release. |
+| Phase 6 | Manufacturing Intelligence | BOM/drawings, atomic material reservations, manufacture/QC/install lineage, reviewed CAM and capacity/training. |
+| Phase 7 | Autonomous Orchestrator | Durable permissioned jobs across the above, human gates, budgets/recovery and complete engineering-to-manufacturing journeys. |
+| Cross-cutting release | Mobile and final acceptance | Current Android, official Android/iOS distribution, physical-device tests, operational recovery and end-to-end owner acceptance. |
 
-## Production verification
-
-2026-09-14: Vercel Ready, g3-6740.com assigned. HTTP 200; entry `/assets/index-CHTo76HR.js`; simulator chunk `FieldTwinPage-CnRbBdcn.js`. Production Supabase reference present, QA reference absent. Software testing, Front intake, Export JSON and Driving & keys verified in the served bundle. Authenticated live device acceptance remains distinct from this deployment verification.
+Detailed handover retains finance extensions (reversals, reconciliation, restricted funds, receipts, accounting close) and deferred departure-based checkout. Enhanced game graphics remain proposed optional scope. This checkpoint does not introduce a new effort estimate or completion-date commitment. Existing foundations do not mean every release has passed final acceptance.

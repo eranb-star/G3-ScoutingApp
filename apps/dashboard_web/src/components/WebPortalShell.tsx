@@ -14,7 +14,7 @@ const links = [
   ["/competition", "Competition", "תחרות"],
   ["/updates", "Updates", "עדכונים"],
   ["/check-in", "Check in / out", "כניסה / יציאה"],
-  ["/attendance", "Attendance history", "היסטוריית נוכחות"],
+  ["/attendance", "Attendance Center", "מרכז נוכחות"],
   ["/media", "Team Media", "מדיה קבוצתית"],
 ] as const;
 

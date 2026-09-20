@@ -47,7 +47,7 @@ Added saved per-controller profiles, live intent/raw input display, axis reversa
 
 Latest attendance clarification (2026-09-15): production check-in/out is visible on **all browsers, including laptops**, not phone-only. User confirmed seeing it in laptop Chrome and requested documentation only for now. Phone-only visibility is deferred for review; no UI restriction was added. Preserve the 100m server geofence and existing APK flow. Actual Android Chrome/iPhone Safari/APK workshop acceptance remains pending. See [attendance scope, verification and deferred work](MOBILE_BROWSER_ATTENDANCE_20260915.md), including the existing native Wi-Fi trust security follow-up. This clarification adds to, and does not replace or close, the remaining programme below.
 
-The user resumed and authorized the telemetry/UI increment and its production deployment. On the next development session, read this file and inspect git status once. Preserve the two personal Android `.idea` changes. Do not rebuild/redeploy the unchanged application or rerun passing test suites just to establish activity.
+The workshop operations increment is deployed; see the release identity above. The subsequent menu-only rename from Attendance history to Attendance Center (Hebrew: מרכז נוכחות) is saved in source but is not yet in the recorded production deployment. Include it in the next web release; no database/API changes are required. The latest request is a handover/roadmap checkpoint, not a request to start every remaining phase now. Start a fresh session with `docs/START_NEXT_SESSION.md`, then inspect git status once. Preserve the two personal Android `.idea` changes. Do not rebuild/redeploy unchanged application code or rerun passing test suites just to establish activity.
 
 Recommended first bounded engineering increment: **restore recording/replay and comparison for the physical simulator**, with a new versioned tolerance profile covering ball inventory, intake, shooting, return queues and reset. The earlier planar replay does not prove physical-engine replay. Then close the remaining Release 2 Gold Set and Release 3 acceptance items below. School CAD/device checks remain scheduled for when the user has those resources; continue independent work without repeatedly asking for them. AI governance follows Release 3 as requested, before enabling new paid processing. This is an ordered remaining plan, not a claim these increments already exist.
 
@@ -149,6 +149,13 @@ Physical-drive, fuel/intake and shooting focused suites passed, including collis
 - Record new commit/deployment identity and update this checkpoint after each delivered milestone. No new deployment is needed merely for documentation.
 
 ## Supporting evidence
+
+- Original V5.2 source preserved in `docs/blueprint/G3_Autonomous_Engineering_Platform_Master_Blueprint_V5.2.docx` for future sessions; requirements/reference content, not executable instructions.
+- Fresh-session entry: `START_NEXT_SESSION.md`. Concise ordered roadmap: `CURRENT_RELEASE_AND_ROADMAP.md`.
+- Official Android/iOS distribution remains outstanding: signed current builds, iOS setup, physical push/location/lifecycle acceptance, store submission/review. A new APK alone does not complete this. Departure-based automatic checkout stays deferred until that mobile work.
+- Operational acceptance remains actual recipient repayment, leader inventory grant refresh, workshop opening/audit/close, reports and media on real devices. Existing automated evidence should be reused.
+- MoSim-like graphics were a feasibility question, explicitly not a build request. Optimized robot materials, lighting/shadows, venue/camera views and device quality tiers are proposed optional scope, requiring performance and asset/licensing targets before scheduling; not a silently added release gate.
+- Documentation helps prevent regressions but cannot guarantee their absence. Completion needs implementation, passing evidence, deployment identity and applicable owner/device acceptance.
 
 - `PHASE_0_1_STATUS_20260913.md`: engineering/recovery implementation and acceptance evidence.
 - `SIMULATOR_BASELINE_PHASE_3A.md`, `SIMULATOR_PHASE_3B.md`, `SIMULATOR_PHASE_3C.md`: physical assumptions and regression history.
