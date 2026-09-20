@@ -1,0 +1,14 @@
+import fs from 'node:fs';
+const headers={'User-Agent':'G3-6740-Knowledge-Capacity-Research/1.0'};
+const report={checkedAt:new Date().toISOString()};
+const url='https://www.firstinspires.org/resources/library/frc/archived-games';
+const r=await fetch(url,{headers,signal:AbortSignal.timeout(60000)});
+const html=await r.text();
+fs.writeFileSync(new URL('./archive-inspection.html',import.meta.url),html);
+report.archive={url,status:r.status};
+const treeUrl='https://api.github.com/repos/wpilibsuite/wpilib-docs/git/trees/main?recursive=1';
+const t=await fetch(treeUrl,{headers,signal:AbortSignal.timeout(60000)});
+const tree=await t.json();
+report.wpilib={url:treeUrl,status:t.status,sha:tree.sha,truncated:tree.truncated,paths:(tree.tree||[]).filter(x=>x.type==='blob'&&/^source\/.*\.(rst|md)$/.test(x.path)).map(x=>x.path)};
+fs.writeFileSync(new URL('./document-source-census-20260920.json',import.meta.url),JSON.stringify(report,null,2));
+console.log(JSON.stringify({archiveStatus:r.status,archiveBytes:html.length,wpilibStatus:t.status,wpilibFiles:report.wpilib.paths.length,truncated:tree.truncated}));

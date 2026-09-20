@@ -1,0 +1,8 @@
+[
+ {"urlContains":"LigerBots_Vision_Whitepaper.pdf","title":"A Step by Step Runthrough of FRC Vision Processing","publisherTeam":2877,"documentSeason":null,"scope":"general-engineering","basis":"Cover identifies FRC Team 2877; citing thread season is not publication date"},
+ {"urlContains":"LigerBots_Camera_Latency_Whitepaper.pdf","title":"Measuring Camera Display Latency","publisherTeam":2877,"documentSeason":null,"scope":"general-engineering","basis":"Cover identifies FRC Team 2877"},
+ {"urlContains":"LigerBots_Test_Bench_Whitepaper.pdf","title":"Prototyping Using a Custom, AC-Powered Test Bench","publisherTeam":2877,"documentSeason":null,"scope":"general-engineering","basis":"Cover identifies FRC Team 2877"},
+ {"urlContains":"c4fd84c75983c0cd32572ca0f4ea36f3d4f962e5.pdf","title":"Electric Catapult Design and Optimization","publisherTeam":230,"documentSeason":2016,"scope":"historical-engineering-reference-outside-core-range","basis":"Page 1 explicitly identifies 2016 FIRST Stronghold and Team 230; cited by Team 6328 in 2022"},
+ {"urlContains":"Web-WCP-0199.PDF","title":"WCP Elevator Block drawing","publisherTeam":null,"publisher":"West Coast Products","documentSeason":null,"scope":"vendor-reference","basis":"Drawing title block; release date is not a robot season"},
+ {"urlContains":"qzj4k2LyBs7rLxAem0YajNIlStH.pdf","title":"Swerve Drive Second Order Kinematics","publisherTeam":449,"documentSeason":null,"publicationDate":"2022-11","scope":"general-engineering","basis":"Page 1 identifies Team 449 and November 2022; cited in a 2023 Team 4481 thread"}
+]

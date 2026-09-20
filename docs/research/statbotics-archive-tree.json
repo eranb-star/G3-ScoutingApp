@@ -1,0 +1,403 @@
+{
+  "sha": "02113df5bc7c66655fd0496ead62ad4fc5212283",
+  "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/trees/02113df5bc7c66655fd0496ead62ad4fc5212283",
+  "tree": [
+    {
+      "path": "LICENSE",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d0d0f29cdd29416ab1c82600ed20fb0aa997a102",
+      "size": 1070,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/d0d0f29cdd29416ab1c82600ed20fb0aa997a102"
+    },
+    {
+      "path": "README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "803469f98e82fcfda6ef665831187e7f2c177860",
+      "size": 667,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/803469f98e82fcfda6ef665831187e7f2c177860"
+    },
+    {
+      "path": "elo",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "2dd07d68ad0025f082a39a01eae7178677faa3f1",
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/trees/2dd07d68ad0025f082a39a01eae7178677faa3f1"
+    },
+    {
+      "path": "elo/2002.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e2e8614949df2a17930247f0fa94b80ae034566f",
+      "size": 227521,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/e2e8614949df2a17930247f0fa94b80ae034566f"
+    },
+    {
+      "path": "elo/2003.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bb0da6a6f5678087bb9ee3a73c301fd85ffdd478",
+      "size": 314525,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/bb0da6a6f5678087bb9ee3a73c301fd85ffdd478"
+    },
+    {
+      "path": "elo/2004.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "abef48c051c2ff5bd92b01b05680fb27e3471a83",
+      "size": 333850,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/abef48c051c2ff5bd92b01b05680fb27e3471a83"
+    },
+    {
+      "path": "elo/2005.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "87a64ac2888d67985afc62a1a34197964e5ce1c3",
+      "size": 231797,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/87a64ac2888d67985afc62a1a34197964e5ce1c3"
+    },
+    {
+      "path": "elo/2006.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0ded067445c1c198f5a258b74bf7e2e530623717",
+      "size": 374918,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/0ded067445c1c198f5a258b74bf7e2e530623717"
+    },
+    {
+      "path": "elo/2007.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0ded067445c1c198f5a258b74bf7e2e530623717",
+      "size": 374918,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/0ded067445c1c198f5a258b74bf7e2e530623717"
+    },
+    {
+      "path": "elo/2008.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "53faca8abe1794d0be6d077ff87bd764315551f7",
+      "size": 465985,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/53faca8abe1794d0be6d077ff87bd764315551f7"
+    },
+    {
+      "path": "elo/2009.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e7cf640d59b3434a6abd2a94ede857493b23127a",
+      "size": 562987,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/e7cf640d59b3434a6abd2a94ede857493b23127a"
+    },
+    {
+      "path": "elo/2010.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a7643273a2a51f4bdef3238f3fe0b1c8ef00ef69",
+      "size": 664651,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/a7643273a2a51f4bdef3238f3fe0b1c8ef00ef69"
+    },
+    {
+      "path": "elo/2011.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "48e2342341be707000edb030b43cc2720c65c3dc",
+      "size": 769730,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/48e2342341be707000edb030b43cc2720c65c3dc"
+    },
+    {
+      "path": "elo/2012.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8bf6b94acc714c40da30bded4fc3e0eb367e6ae2",
+      "size": 950039,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/8bf6b94acc714c40da30bded4fc3e0eb367e6ae2"
+    },
+    {
+      "path": "elo/2013.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "53fd4dd3f086beefae43e567d5bb35d9473b15fe",
+      "size": 1046029,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/53fd4dd3f086beefae43e567d5bb35d9473b15fe"
+    },
+    {
+      "path": "elo/2014.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e2570a9bcfe74102b23453cd64365e7fc83114bd",
+      "size": 1388694,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/e2570a9bcfe74102b23453cd64365e7fc83114bd"
+    },
+    {
+      "path": "elo/2015.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8e41f0b369ed28442cfbbeacdd4f17582be8850f",
+      "size": 1500157,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/8e41f0b369ed28442cfbbeacdd4f17582be8850f"
+    },
+    {
+      "path": "elo/2016.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "02459946d4598a477932a999ddff2f530ea319cc",
+      "size": 1705917,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/02459946d4598a477932a999ddff2f530ea319cc"
+    },
+    {
+      "path": "elo/2017.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f5f5779fe5f852f5ffa1a4591845841ec2605b09",
+      "size": 2028282,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/f5f5779fe5f852f5ffa1a4591845841ec2605b09"
+    },
+    {
+      "path": "elo/2018.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "23d2e4e7713f101b1fa8a7a8c6bb58d0bb8776d6",
+      "size": 2670791,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/23d2e4e7713f101b1fa8a7a8c6bb58d0bb8776d6"
+    },
+    {
+      "path": "elo/2019.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4b523a36bd257dcc0fa7f148e67cc38b52f997c9",
+      "size": 2797898,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/4b523a36bd257dcc0fa7f148e67cc38b52f997c9"
+    },
+    {
+      "path": "elo/2020.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "78d05a7d88c971ede3418c70ec151a3939c51e5a",
+      "size": 615476,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/78d05a7d88c971ede3418c70ec151a3939c51e5a"
+    },
+    {
+      "path": "elo/2022.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ef69617f8db586e477b08c4288125a21745e6fc6",
+      "size": 1965898,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/ef69617f8db586e477b08c4288125a21745e6fc6"
+    },
+    {
+      "path": "v1",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "3ad0554f5a6d9767aaf9986cae9e8bad8184837d",
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/trees/3ad0554f5a6d9767aaf9986cae9e8bad8184837d"
+    },
+    {
+      "path": "v1/events.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8950c0bdc042f81d466570cd10753703faf30f0b",
+      "size": 344795,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/8950c0bdc042f81d466570cd10753703faf30f0b"
+    },
+    {
+      "path": "v1/matches.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b77eeb5937462028d96ffb376fb5b86c4ef08ad7",
+      "size": 50663064,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/b77eeb5937462028d96ffb376fb5b86c4ef08ad7"
+    },
+    {
+      "path": "v1/script.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3c000485f19d977551c8aac7d4615f9e3078cf41",
+      "size": 714,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/3c000485f19d977551c8aac7d4615f9e3078cf41"
+    },
+    {
+      "path": "v1/team_events.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "58838a504ad697bf7b8cc91e00d9ca3a861ef483",
+      "size": 16610140,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/58838a504ad697bf7b8cc91e00d9ca3a861ef483"
+    },
+    {
+      "path": "v1/team_matches.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fe36785feac8ffc93266d88604c640b663a34a27",
+      "size": 70833430,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/fe36785feac8ffc93266d88604c640b663a34a27"
+    },
+    {
+      "path": "v1/team_years.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8e5a6deeb2f9836e1c5685c4b8f9b90982bb2940",
+      "size": 7209081,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/8e5a6deeb2f9836e1c5685c4b8f9b90982bb2940"
+    },
+    {
+      "path": "v1/teams.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "52d88122ee3102e7ae03e38936d074ef32857c54",
+      "size": 517380,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/52d88122ee3102e7ae03e38936d074ef32857c54"
+    },
+    {
+      "path": "v1/years.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a730807bf7a598f56a6d96cce6a960ead8368056",
+      "size": 4805,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/a730807bf7a598f56a6d96cce6a960ead8368056"
+    },
+    {
+      "path": "v2",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "250b4de465c7c214db28b86749f498054327dc2c",
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/trees/250b4de465c7c214db28b86749f498054327dc2c"
+    },
+    {
+      "path": "v2/events.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "30ed3f704cc03b45263c7bc15c7e7e1cd26d197b",
+      "size": 453428,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/30ed3f704cc03b45263c7bc15c7e7e1cd26d197b"
+    },
+    {
+      "path": "v2/matches.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e080b2060145298ce644197637a922492107f924",
+      "size": 69465321,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/e080b2060145298ce644197637a922492107f924"
+    },
+    {
+      "path": "v2/script.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7caa3a411ddd3cc0d66004685971b6e38d08bb06",
+      "size": 754,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/7caa3a411ddd3cc0d66004685971b6e38d08bb06"
+    },
+    {
+      "path": "v2/team_events.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "38f23f5223aaca8a49d5621edbde7e729c637353",
+      "size": 30637114,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/38f23f5223aaca8a49d5621edbde7e729c637353"
+    },
+    {
+      "path": "v2/team_matches.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "48aae7faca736dc8c61332341b994a2fdd5717d6",
+      "size": 98564771,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/48aae7faca736dc8c61332341b994a2fdd5717d6"
+    },
+    {
+      "path": "v2/team_years.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "475029ed7ba73c377ac495982a6033da76924b39",
+      "size": 15334554,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/475029ed7ba73c377ac495982a6033da76924b39"
+    },
+    {
+      "path": "v2/teams.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "35c20042de0f1adb512c80e9f3d8e2b34fab3b1e",
+      "size": 704603,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/35c20042de0f1adb512c80e9f3d8e2b34fab3b1e"
+    },
+    {
+      "path": "v2/years.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c44cf75b77b1d78903e43ff7d2fb85e03a9bccf7",
+      "size": 11640,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/c44cf75b77b1d78903e43ff7d2fb85e03a9bccf7"
+    },
+    {
+      "path": "v3",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "484a6a04e7cdcb146113972fcf32f1572799c326",
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/trees/484a6a04e7cdcb146113972fcf32f1572799c326"
+    },
+    {
+      "path": "v3/events.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "23d7694b15bb686d9eb5da1ba76108afa0e52e3f",
+      "size": 787464,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/23d7694b15bb686d9eb5da1ba76108afa0e52e3f"
+    },
+    {
+      "path": "v3/matches.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d124bb6d7a068356061b3951617515e2074a80bc",
+      "size": 84154814,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/d124bb6d7a068356061b3951617515e2074a80bc"
+    },
+    {
+      "path": "v3/script.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a7416b5e51d033d485e28e624b27d60b8eac6205",
+      "size": 760,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/a7416b5e51d033d485e28e624b27d60b8eac6205"
+    },
+    {
+      "path": "v3/team_events.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e53ab6505019cf7f56ed81556e5c3f30b13aedfd",
+      "size": 47093179,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/e53ab6505019cf7f56ed81556e5c3f30b13aedfd"
+    },
+    {
+      "path": "v3/team_matches.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d3b74909000bdf5260ae3870e8e94e3b779dced1",
+      "size": 101307238,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/d3b74909000bdf5260ae3870e8e94e3b779dced1"
+    },
+    {
+      "path": "v3/team_years.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5352169b93efdd16d8b0a675f6117e1d27e1541d",
+      "size": 21706187,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/5352169b93efdd16d8b0a675f6117e1d27e1541d"
+    },
+    {
+      "path": "v3/teams.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5d0e818d45d7efb12eb99e7f529cd4380479d735",
+      "size": 843783,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/5d0e818d45d7efb12eb99e7f529cd4380479d735"
+    },
+    {
+      "path": "v3/years.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3d59d19a5f3fd8472563b27eec75aadeb5aecb31",
+      "size": 18786,
+      "url": "https://api.github.com/repos/avgupta456/statbotics-csvs/git/blobs/3d59d19a5f3fd8472563b27eec75aadeb5aecb31"
+    }
+  ],
+  "truncated": false
+}

@@ -1,0 +1,60 @@
+# Connected knowledge release — production cutover verified
+
+The user authorized the complete connected knowledge release. This extends the production protection release `34d7741`; it is not a second unrelated knowledge application.
+
+## Release content
+
+- One FRC knowledge sidebar entry and connected Search, Robots & mechanisms, Reviewed evidence, Team library, and Documents & updates views. Existing article links through Updates redirect to the library.
+- Authenticated PostgreSQL search over versioned source passages, current topic aliases, all indexed seasons, source class and associated teams. Ten results per page, with source diversity; no model call for search.
+- Relevant saved team articles and resolved issues use caller RLS. Assistant retrieval uses the same bounded service, replacing recent-record context.
+- Up to six selected source passages can be handed to G3 Assist. Selected context is visible/removable; server checks access, active generation and source retirement, and rejects invented citation IDs.
+- Existing assistant role, purpose, budget, recovery and cancellation controls remain. Paid execution remains disabled and monthly policy remains $25; no billing activation or paid test is part of this deployment.
+- Official source discovery/checking, durable leases/retry/cancellation and topic administration are included. **Check now fingerprints documents; automatic PDF extraction into this corpus is still an outstanding design item.** It must not be advertised as automatic searchable ingestion.
+
+## Corpus
+
+Generation `corpus-535d2f0a0f012cdade6e`, bundle SHA256 `535d2f0a0f012cdade6e7e1bdc78a45fac599ac327794a2eb49387d54266b503`.
+
+Expected: 1,716 source versions, 48,797 distinct passages, 50,157 citation occurrences. Citation mapping SHA256 (ordered `id:source:hash:url`, newline separated): `e087bef647185e0b21b3acbd966771c007b4cba5d0e3417b9f53b5632be312aa`.
+
+Source associations do not establish robot mechanisms. Imported passages remain unreviewed. Only topic seed statements were installed; the starter robot/configuration assertions were not automatically published. Coverage is incomplete, not all top-500 teams or all sources for 2017–2026.
+
+The generation stays `loading` until counts reconcile, then switches atomically. Existing active generations can be retained for rollback. Bulk SQL/CSV transports and downloaded corpus are local ignored artifacts, not browser downloads or repository assets.
+
+## Validation completed before cutover
+
+TypeScript and isolated production build passed. Full local corpus queries returned PID 805, elevator 3,150, turret 1,527, drivetrain 1,624, gripper 390 occurrences. Local timings are not production capacity measurements.
+
+Regression tests passed: corpus authorization/filtering/topic semantics/source diversity/atomic activation; team relevance and caller RLS; robot evidence review/retirement/concurrency; actual assistant-handler authorization; official source discovery/leases/retry/cancellation; article revision protections; spending guards. EN/HE desktop and 390px iframe layout inspected. These are layout checks, not physical-device acceptance.
+
+## Deployment checkpoint — verified 2026-09-21
+
+Production website: commit `fee0895f40145d1d066a5d6ca304085ff904a8a6`, Vercel `CssQY5nCPp7VGc8tT7JZVFEfSkFy`, Ready / Production, assigned to https://g3-6740.com. Built using production environment. Public entry `/assets/index-DuQ2wgsb.js` points to the production Supabase project, not QA, and includes the connected workspace. The deployed assistant chunk retains text-only mode, request recovery and selected-evidence controls; image upload is compiled out.
+
+Both QA and production generations are ACTIVE: 1,716 sources, 48,797 passages, 50,157 citations. Every body SHA256 and the full citation mapping digest passed before activation. CSV transfer altered three QA and seven production passage bodies; exact canonical bodies were restored before the integrity gate passed. Production indexed footprint is 137,609,216 bytes (~131.2 MiB); this is the corpus footprint, not total project usage.
+
+Production and QA authenticated SQL-role acceptance passed for PID retrieval (805 occurrences, 10 per page), topic retrieval, citation resolution, private-table denial and team search. QA also passed inactive-caller denial with all temporary changes rolled back. Production did not modify any member. These checks do not replace real signed-in browser acceptance.
+
+Persisted deployed assistant code matches the release bundle in QA and production. Production knowledge-source-check code also matches its bundle. Unauthenticated Edge requests returned 401. Source-check retains its default gateway JWT verification; authenticated invocation remains unverified.
+
+Final production budget policy: enabled=false, activation_approved=false, monthly_limit_microusd=25000000, provider attempts=0. No paid calls or billing changes occurred.
+
+The connected website/search/data release is deployed. The entire long-term design is NOT complete: automatic new-PDF extraction/indexing remains unimplemented; paid provider quality evaluation and activation remain pending; real Mentor/Student sign-in was deferred by the user; restore rehearsal and physical-device acceptance remain outstanding. No passwords were reset. Historical coverage remains partial. Do not represent imported passages as verified robot facts or claim exhaustive top-500 coverage.
+
+## User-authorized production activation — 2026-09-21
+User explicitly requested enabling production for their testing after Tier 1 Prepay verification. Production policy now returns enabled=true, activation_approved=true, monthly_limit_microusd=25000000. Existing role permissions and other spending controls unchanged. No model call performed by this activation step; answer quality and provider execution remain to be tested. This supersedes disabled-state statements above.
+
+
+## Official-season retrieval correction and live acceptance — 2026-09-21
+
+Production test through the signed-in Admin UI submitted exactly: "Based on the 2026 challenge, from strategy perspective, should we build a climbing mechanism?" It completed HTTP 200 at 2026-09-20 22:56:15 UTC. Budget ledger: answer:0 settled, 10,543 microUSD ($0.010543); no scope call for Admin. Answer cited the official 2026 manual scoring criteria, point values and tower sections and correctly used 10/20/30 TELEOP tower points and 50-point TRAVERSAL threshold. It no longer claimed the season was unreleased. This is one live acceptance case, not a broad model-quality guarantee.
+
+Implementation fetches the reviewed FIRST-hosted 2026 HTML manual on demand (3 MB / 8 seconds maximum, redirects denied), hashes exact bytes, respects declared charset, caches in the Edge instance for 15 minutes, and prioritizes official scoring sections before historical evidence. No scheduled polling or arbitrary user URL fetch. Missing configured season/manual retrieval returns an explicit evidence-gap error before a paid answer. Current date and correction of earlier assistant errors are included in context. Output allowance now includes room for model thinking; monetary controls unchanged. Regression tests cover exact-question extraction, failed retrieval, caching, bounds, access, Admin exemption and budget accounting.
+
+Scope limit: reviewed live manual registry currently covers 2026 only, not arbitrary seasons, PDF-only ingestion, live Q&A or all team updates. Current explicit-year/current-season routing is bounded and does not resolve every conversational follow-up. Do not claim universal season coverage. Tests require the local ignored official manual download at docs/staging/manual-2026.local.html; publisher document is not redistributed in Git.
+
+A separate cold-open popup failure (React lazy component outside Suspense) was reproduced while testing. The assistant dialog now has a loading and error boundary; direct /assistant succeeded. Frontend promotion and cold-open verification are recorded in the follow-up below.
+
+Frontend follow-up verified: commit 73dee1d, production Vercel JBcqaNToZxoiQvFXzKwfHBuPFwr4 Ready/Current on g3-6740.com. Fresh home load -> Open G3 Assist showed loading state then full composer without the React crash. Final persisted Edge bundle matched source after source-anchor correction. One paid acceptance question only, 0.010543 USD settled.
+
+History follow-up c754f5d: successful answer was durable in execution ledger but bulk message insert omitted user citations, causing a default/null mismatch. Explicit consistent row columns fixed and deployed; handler regression passed; persisted bundle matched. Restored the acceptance question and answer from the completed execution (2 messages) without another paid call.

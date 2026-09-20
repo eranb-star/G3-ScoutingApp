@@ -1,8 +1,16 @@
+**Current-state notice (2026-09-21):** Read [START_NEXT_SESSION.md](START_NEXT_SESSION.md) and [WORKING_EXPECTATIONS.md](WORKING_EXPECTATIONS.md) first. They supersede older deployment/disabled-state notes in this document; see the connected release record for actual production acceptance.
+
 # Pause handover and complete remaining programme
+
+Latest approved direction: deterministic historical robot/mechanism research is now implemented as a first local increment inside Evidence search. Read [robot research status](ROBOT_RESEARCH_20260920.md) for the 24-topic taxonomy, six real starter configurations, tests, deployment order and the still-open historical ingestion/advanced-filter programme. No production deployment. Continue this approved direction; earlier unselected-work wording is historical.
 
 Checkpoint updated: 2026-09-20. This file is the current resumption authority. V5.2 section 82 defines releases; sections 81–105 correct earlier sections. Simulator 3A/3B/3C are additions within the Field & Concept Twin work, not replacements for Releases 4–7. Historical notes are evidence, not current instructions.
 
 ## What is saved and live
+
+### Subsequent local knowledge increment — not deployed
+
+The user selected Knowledge Intelligence and approved a clear, enterprise-quality admin Check now flow within the existing FRC knowledge/Evidence search. See `KNOWLEDGE_SOURCE_CHECKS_20260920.md` for implementation, checks, source constraints and outstanding acceptance; `KNOWLEDGE_EVOLUTION_PLAN_20260920.md` retains the wider knowledge scope. Five-minute polling is explicitly withdrawn. New local source checks discover official links and fingerprint PDFs; they do not constitute full-text indexing, a reviewed Gold Set or completion of Phase 2. Production remains the workshop release below; deployment has not been authorized. Earlier statements that no increment was selected are historical for this session's opening.
 
 ### Workshop operations increment — 20 September 2026
 

@@ -1,3 +1,4 @@
+import { useG3AssistAccess } from "./lib/useG3AssistAccess";
 import LabScreenGate from './components/LabScreenGate';
 import React, { createContext, lazy, Suspense, useContext, useEffect, useMemo, useRef, useState } from "react";
 import ReactDOM from "react-dom/client";
@@ -61,7 +62,7 @@ const TeamMediaPage=lazy(()=>import("./pages/TeamMediaPage"));
 const FeedbackCenterPage=lazy(()=>import("./pages/FeedbackCenterPage"));
 const EngineeringHubPage=lazy(()=>import("./pages/EngineeringHubPage"));
 const FieldTwinPage=lazy(()=>import("./pages/FieldTwinPage"));
-const KnowledgeEvidencePage=lazy(()=>import("./pages/KnowledgeEvidencePage"));
+const KnowledgeWorkspace=lazy(()=>import("./components/KnowledgeWorkspace"));
 
 function WorkspaceLoading(){const[slow,setSlow]=useState(false);useEffect(()=>{const timer=window.setTimeout(()=>setSlow(true),6000);return()=>window.clearTimeout(timer);},[]);return <section className="workspace-loader" role="status" aria-live="polite"><img src="/g3-assistant.png" alt=""/><div><strong>Opening G3 workspace…</strong><span>{slow?"This connection is taking longer than usual. You can retry safely.":"Loading the latest team data and tools."}</span></div>{slow?<button type="button" onClick={()=>window.location.reload()}>Retry</button>:null}</section>}
 class WorkspaceErrorBoundary extends React.Component<{children:React.ReactNode},{failed:boolean}>{state={failed:false};static getDerivedStateFromError(){return{failed:true}}componentDidCatch(error:unknown){console.error("Workspace route failed to load",error)}render(){return this.state.failed?<section className="workspace-loader is-error" role="alert"><img src="/g3-assistant.png" alt=""/><div><strong>G3 could not open this area</strong><span>Your data is safe. Reload to fetch the latest application version.</span></div><button type="button" onClick={()=>window.location.reload()}>Reload G3</button></section>:this.props.children}}
@@ -811,6 +812,7 @@ function MemberGate({ children }: { children: JSX.Element }) {
 }
 
 function AppShell() {
+  const { allowed: canUseAssist } = useG3AssistAccess();
   const nativeApp = Capacitor.isNativePlatform();
   const [webAssistantOpen,setWebAssistantOpen]=useState(false);
   const { isAdmin } = useAdmin();
@@ -850,7 +852,7 @@ function AppShell() {
         <Route path="/feedback" element={<MemberGate><FeedbackCenterPage /></MemberGate>} />
         <Route path="/engineering" element={<MemberGate><EngineeringHubPage /></MemberGate>} />
         <Route path="/field-twin" element={<MemberGate><LabScreenGate permission="view_field_twin"><FieldTwinPage /></LabScreenGate></MemberGate>} />
-        <Route path="/knowledge" element={<MemberGate><LabScreenGate permission="view_evidence_search"><KnowledgeEvidencePage /></LabScreenGate></MemberGate>} />
+        <Route path="/knowledge" element={<MemberGate><KnowledgeWorkspace /></MemberGate>} />
         <Route path="/season-planning" element={<MemberGate><SeasonPlanningPage /></MemberGate>} />
         <Route path="/admin/members" element={<AdminGate><MembersAdminPage /></AdminGate>} />
         <Route path="/admin" element={<AdminGate><AdminDashboardPage /></AdminGate>} />
@@ -907,8 +909,8 @@ function AppShell() {
         />
         <Route path="*" element={<Navigate to="/home" replace />} />
       </Routes></Suspense></WorkspaceErrorBoundary>
-      {!isAuthScreen && !isDisplayScreen && location.pathname !== "/assistant" ? nativeApp?<NavLink className="assistant-fab" to={assistantPath} aria-label="Open G3 Assist"><img src="/g3-assistant.png" alt="" /></NavLink>:<button className="assistant-fab web-assistant-trigger" type="button" onClick={()=>{sessionStorage.removeItem("g3-assistant-active-conversation");setWebAssistantOpen(true);}} aria-label="Open G3 Assist"><img src="/g3-assistant.png" alt="" /></button> : null}
-      {!nativeApp&&webAssistantOpen?<div className="web-assistant-backdrop" role="presentation" onMouseDown={event=>{if(event.target===event.currentTarget){sessionStorage.removeItem("g3-assistant-active-conversation");setWebAssistantOpen(false);}}}><section className="web-assistant-dialog" role="dialog" aria-modal="true" aria-label="G3 Assist"><button className="web-assistant-close" type="button" onClick={()=>{sessionStorage.removeItem("g3-assistant-active-conversation");setWebAssistantOpen(false);}} aria-label="Close G3 Assist">×</button><FrcAssistantPage/></section></div>:null}
+      {canUseAssist && !isAuthScreen && !isDisplayScreen && location.pathname !== "/assistant" ? nativeApp?<NavLink className="assistant-fab" to={assistantPath} aria-label="Open G3 Assist"><img src="/g3-assistant.png" alt="" /></NavLink>:<button className="assistant-fab web-assistant-trigger" type="button" onClick={()=>{sessionStorage.removeItem("g3-assistant-active-conversation");setWebAssistantOpen(true);}} aria-label="Open G3 Assist"><img src="/g3-assistant.png" alt="" /></button> : null}
+      {canUseAssist&&!nativeApp&&webAssistantOpen?<div className="web-assistant-backdrop" role="presentation" onMouseDown={event=>{if(event.target===event.currentTarget){sessionStorage.removeItem("g3-assistant-active-conversation");setWebAssistantOpen(false);}}}><section className="web-assistant-dialog" role="dialog" aria-modal="true" aria-label="G3 Assist"><button className="web-assistant-close" type="button" onClick={()=>{sessionStorage.removeItem("g3-assistant-active-conversation");setWebAssistantOpen(false);}} aria-label="Close G3 Assist">×</button><WorkspaceErrorBoundary><Suspense fallback={<WorkspaceLoading/>}><FrcAssistantPage/></Suspense></WorkspaceErrorBoundary></section></div>:null}
       {!isAuthScreen && nativeApp ? <MobileNav /> : null}
     </Shell>
   );

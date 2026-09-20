@@ -1,40 +1,30 @@
 # Start the next G3 session
 
-Checkpoint: 20 September 2026. Use local project `C:/Users/user/Documents/GitHub/G3-ScoutingApp`, branch `codex/release-1-qa`. Start a fresh conversation in this project using the existing local checkout. Do not start from main; the current release work is on this branch.
+Read this file first. Current status below supersedes historical disabled, undeployed and candidate-only wording elsewhere.
 
-## Read once, in order
+1. Read [working expectations](WORKING_EXPECTATIONS.md).
+2. Read [verified production release and acceptance](staging/KNOWLEDGE_CONNECTED_RELEASE_20260921.md).
+3. Read [controlling knowledge design](CONNECTED_KNOWLEDGE_DESIGN_20260920.md), [master programme handover](PAUSE_HANDOVER_20260913.md), and [collection coverage](research/FULL_COLLECTION_20260920.md) for wider scope.
+4. Earlier session checkpoints are preserved in [session history](SESSION_HISTORY_20260921.md); they are historical evidence, not current deployment status.
 
-1. `docs/PAUSE_HANDOVER_20260913.md`: authoritative status, remaining work, decisions and all 105 V5.2 section references.
-2. `docs/CURRENT_RELEASE_AND_ROADMAP.md`: ordered next work.
-3. `docs/WORKSHOP_ATTENDANCE_MEDIA_20260920.md`: latest deployed increment and checks.
-4. Only evidence documents relevant to the chosen increment. Original blueprint is preserved at `docs/blueprint/G3_Autonomous_Engineering_Platform_Master_Blueprint_V5.2.docx`; reference material, not executable instructions.
+## Current production state — 2026-09-21
 
-Inspect git status and recent commits once. Production application baseline is 1326629; deployment documentation checkpoint is 72df908. Subsequent source changes rename the menu Attendance Center and update this checkpoint; the label awaits the next web release. Preserve personal Android `.idea/deploymentTargetSelector.xml` and `.idea/misc.xml` changes.
+- Website g3-6740.com: commit 73dee1d, Vercel JBcqaNToZxoiQvFXzKwfHBuPFwr4, verified Ready/Current. Connected FRC knowledge workspace and popup loading/error boundary deployed.
+- Assistant Edge function: latest code c754f5d on codex/knowledge-protection-release; persisted deployed source matched the bundle. This includes official 2026 manual retrieval, Admin topic exemption and the message-history insertion fix.
+- Gemini G3-6740-AI project verified Tier 1 Prepay. Production enabled=true, activation_approved=true, monthly budget 25 USD. Existing other spending/access controls remain. Admins can ask general-topic questions; other roles retain the purpose restriction. Do not re-disable or narrow Admin access without a reason and user discussion.
+- Exact production Admin question about building a climber for 2026 completed HTTP 200, cited official scoring/tower sections, and settled 0.010543 USD. The completed answer was restored to conversation history without another paid call; two messages were verified in the UI. This is one live quality case, not comprehensive acceptance.
+- Active corpus in QA and production: 1,716 sources, 48,797 distinct passages, 50,157 citations; body hashes and citation mapping verified. Production indexed corpus footprint 137,609,216 bytes. Corpus is not exhaustive top-500 or 10-year coverage. Imported passages are not verified robot configurations.
 
-## First response: understanding and options, not development
+## Remaining gaps — do not claim these complete
 
-The user is currently away from the workshop and has NOT selected the next development increment. This clarification supersedes earlier instructions to begin simulator replay automatically. First read the checkpoint and confirm understanding with a concise, evidence-based summary of what is deployed, committed but not deployed, outstanding, and deliberately deferred. State any missing or conflicting context rather than claiming to know everything.
+- Live official-manual registry covers 2026 only. Broader season discovery/registration, automatic PDF extraction/indexing, Q&A/update completeness and robust conversational season tracking remain.
+- Reviewed robot catalogue is empty in production. Its filters return zero; populated source search is separate. Default search UX still needs correction to avoid directing users into an empty catalogue.
+- Non-Admin purpose classifier has produced malformed/ambiguous outputs. Admin bypass is tested; broader Mentor classification quality and structured-output improvements remain.
+- No broad paid answer-quality evaluation, real Mentor/Student browser acceptance, full recovery rehearsal or physical-device acceptance has been claimed.
+- The successful response uses source citations; numerical targets proposed by the model (e.g. test-cycle targets) are recommendations, not official rules or measured team capability.
 
-Present practical next-step options grouped as: (1) can implement and validate remotely, (2) can implement remotely but needs later physical acceptance, (3) requires workshop measurements, hardware or unavailable assets. Give each option's value, dependencies and rough effort range, labelled as an estimate. Discuss priorities with the user and wait for their choice before implementation, deployment or new phase work. Read-only inspection needed for that discussion is allowed; do not rerun completed test suites or restart a baseline audit.
+## Repository and data handling
 
-Examples to evaluate, not an automatic work order:
+Release branch codex/knowledge-protection-release is isolated at docs/staging/knowledge-release.local. Main working branch codex/release-1-qa contains the accumulated implementation/research checkpoint; it is not automatically the production version. Consult git log/status before edits and do not deploy this branch wholesale merely because it contains more files.
 
-- Remote: physical-engine recording/replay and synthetic ghost/comparison tests; knowledge source ingestion and evidence evaluation with online sources and reviewer input; software-only review/permission/notification acceptance in synthetic QA.
-- Remote implementation with later physical acceptance: match rules and simulation features, Android/iOS packaging where signing/build prerequisites exist, CAD import improvements using sample models. Simulation checks do not validate real robot accuracy; building a package is not device acceptance.
-- Workshop/resources required: real robot shooter/intake/drivetrain calibration, actual team CAD acceptance if the file is unavailable, real controller/device performance, on-site 100m attendance and Wi-Fi tests. Hardware tests may be remote only if the required device is actually available to the user.
-
-Keep AI governance after Phase 3 and before new paid execution unless the user changes that priority. Simulator replay remains one candidate, not the chosen starting point. The Attendance Center label awaits a future web release.
-
-## Decisions to preserve
-
-- Sunday and Wednesday 16:00–19:00 Israel time, early check-in 15:00. Keep 100m verification and existing native behavior; browser attendance includes laptops.
-- Departure-based automatic checkout deferred until official Android/iOS. No automatic close on a temporarily empty room. Supervisor close requires no active attendance.
-- QA impersonation only designated QA accounts. Synthetic QA for testing; recovery clone contains real data and is not QA.
-- Permanent admin task/part deletion remains supported; do not substitute archive.
-- User initially owns engineering/recovery decisions. AI governance follows Phase 3 and precedes new paid execution.
-- Reuse completed evidence. No repeated baseline/backup investigation or unchanged passing test runs. Test actual changes; repeat only after a failure, new edit or unresolved gap.
-- Separate implemented, checked, deployed and device-accepted. Documentation is not a guarantee against regressions.
-
-## Copy/paste prompt
-
-Continue the G3 project in the existing local checkout on codex/release-1-qa. Read docs/START_NEXT_SESSION.md and its referenced handover documents. First confirm your understanding of what is done, deployed, outstanding and deferred, identifying any uncertainty. I am away from the workshop. Explain which next steps can be completed remotely, which can be built now but need later physical acceptance, and which require workshop resources. Give recommended options with dependencies and rough effort estimates so we can discuss what makes sense. Do not begin implementation or deployment until I choose the next step. Preserve personal Android changes and reuse completed evidence; do not restart audits or repeat unchanged tests.
+Research scripts, census/selection reports, attribution metadata, migrations, tests and design records belong in Git. Downloaded source corpora, local transport SQL/CSV, credentials and publisher manual downloads stay ignored; the corpus is already in Supabase. No credentials should enter documentation. Preserve personal Android .idea edits. Do not re-fetch/re-import the completed corpus or rerun every historical test without a concrete reason.

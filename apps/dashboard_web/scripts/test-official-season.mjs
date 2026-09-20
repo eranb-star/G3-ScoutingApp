@@ -1,0 +1,18 @@
+import fs from 'node:fs';import ts from 'typescript';import assert from 'node:assert/strict';
+const code=ts.transpileModule(fs.readFileSync(new URL('../../../backend/supabase/functions/frc-assistant/official-season.ts',import.meta.url),'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText;
+const {seasonForQuestion,officialSeasonEvidence,selectManualEvidence}=await import('data:text/javascript;base64,'+Buffer.from(code).toString('base64'));
+const question='Based on the 2026 challenge, from strategy perspective, should we build a climbing mechanism?';
+assert.equal(seasonForQuestion(question),2026);assert.equal(seasonForQuestion('Explain PID'),null);
+assert.equal(seasonForQuestion('What should we prioritize this season?',new Date('2027-01-11')),2027);
+assert.equal((await officialSeasonEvidence('2027 FRC rules')).status,'not_configured');
+assert.equal((await officialSeasonEvidence(question,{fetch:async()=>new Response('',{status:404})})).status,'retrieval_failed');
+const html=new TextDecoder('macintosh').decode(fs.readFileSync(new URL('../../../docs/staging/manual-2026.local.html',import.meta.url)));
+const rows=selectManualEvidence(html,2026,question,'fixture');
+assert.ok(rows.some(r=>/6\.5/.test(r.title)));assert.ok(rows.some(r=>/TOWER/i.test(r.body)));
+assert.ok(rows.some(r=>/RANKING POINT/i.test(r.body)));assert.ok(rows.every(r=>r.url.startsWith('https://firstfrc.blob.core.windows.net/frc2026/')));
+assert.ok(rows.reduce((n,r)=>n+r.body.length,0)<=14500);
+let calls=0;const fetch=async()=>{calls++;return new Response(html,{headers:{'content-type':'text/html'}});};
+assert.equal((await officialSeasonEvidence(question,{fetch})).status,'retrieved');
+await officialSeasonEvidence(question,{fetch});assert.equal(calls,1);
+console.log(JSON.stringify(rows.map(r=>({title:r.title,length:r.body.length,body:r.body.slice(0,180)})),null,2));
+console.log('PASS: exact question retrieves official scoring/tower/RP sections; missing seasons and HTTP failures fail closed; bounded output and cached publisher fetch.');

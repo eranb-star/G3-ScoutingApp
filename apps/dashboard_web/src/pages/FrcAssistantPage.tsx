@@ -1,3 +1,4 @@
+import { useG3AssistAccess } from "../lib/useG3AssistAccess";
 import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useLocalization } from "../lib/localization";
@@ -12,6 +13,7 @@ type PendingImage = { name: string; mimeType: string; data: string; preview: str
 
 const ACTIVE_CONVERSATION_KEY = "g3-assistant-active-conversation";
 const MESSAGE_PAGE_SIZE = 30;
+const BUDGET_PILOT = import.meta.env.VITE_G3_ASSIST_EXECUTION_MODE === 'budgeted-text-v1';
 const suggestions = [
   ["Help diagnose a robot problem", "עזרו לי לאבחן תקלה ברובוט"],
   ["Review a WPILib error", "בדקו שגיאת WPILib"],
@@ -22,7 +24,10 @@ const suggestions = [
 
 export default function FrcAssistantPage() {
   const navigate = useNavigate();
-  const [params]=useSearchParams();
+  const { allowed: canUseAssist, loading: accessLoading } = useG3AssistAccess();
+  const [params,setParams]=useSearchParams();
+  const selectedEvidence=params.get('evidence')?.split(',').filter(Boolean)??[];
+  function clearEvidence(){setParams(current=>{const next=new URLSearchParams(current);next.delete('evidence');next.delete('generation');return next;},{replace:true});}
   const { language, pick } = useLocalization();
   const { profile } = useMemberAuth();
   const [conversationId, setConversationId] = useState<string | null>(null);
@@ -37,7 +42,7 @@ export default function FrcAssistantPage() {
   const [conversationTitle, setConversationTitle] = useState("");
   const [hasEarlier, setHasEarlier] = useState(false);
   const [loadingEarlier, setLoadingEarlier] = useState(false);
-  const [question, setQuestion] = useState("");
+  const [question, setQuestion] = useState(()=>(params.get('question')??'').slice(0,6000));
   const [image, setImage] = useState<PendingImage | null>(null);
   const [attachmentKind, setAttachmentKind] = useState<"screenshot" | "robot_photo">("screenshot");
   const [privacyConfirmed, setPrivacyConfirmed] = useState(false);
@@ -47,6 +52,36 @@ export default function FrcAssistantPage() {
   const [issueContext,setIssueContext]=useState<IssueContext|null>(null);
   const endRef = useRef<HTMLDivElement>(null);
   const questionRef = useRef<HTMLTextAreaElement>(null);
+  const [pendingRequest,setPendingRequest]=useState<string|null>(null);
+  const requestRef=useRef<string|null>(null);
+  const pendingKey=`g3-assist-pending-${profile?.id??'signed-out'}`;
+  useEffect(()=>{const id=BUDGET_PILOT?sessionStorage.getItem(pendingKey):null;setPendingRequest(id);requestRef.current=id;return()=>{requestRef.current=null;};},[pendingKey]);
+  function clearPending(){sessionStorage.removeItem(pendingKey);setPendingRequest(null);requestRef.current=null;}
+  async function recoverRequest(){
+    if(!pendingRequest||!profile)return;
+    const recovering=pendingRequest;
+    const {data,error}=await supabase.from('g3_assist_executions').select('state,result,deadline').eq('member_id',profile.id).eq('request_id',pendingRequest).maybeSingle();
+    if(requestRef.current!==recovering)return;
+    if(error||!data){setStatus(pick('Request status is unavailable. No new generation was started. Please check again.','מצב הבקשה אינו זמין. לא הופעלה יצירה חדשה. נסו לבדוק שוב.'));return;}
+    if(data.state==='running'){setStatus(new Date(data.deadline).getTime()<Date.now()?pick('The request exceeded its time limit. Cancel it before starting another.','הבקשה חרגה מהזמן המותר. בטלו אותה לפני התחלת בקשה חדשה.'):pick('Your request is still running. Check again shortly.','הבקשה עדיין פעילה. בדקו שוב בקרוב.'));return;}
+    const result=data.result?.body;
+    if(result?.answer){
+      if(result.conversationId){setConversationId(result.conversationId);sessionStorage.setItem(ACTIVE_CONVERSATION_KEY,result.conversationId);}
+      const saved=result.conversationId?await supabase.from('ai_messages').select('id,role,content,attachment_name,created_at,citations').eq('conversation_id',result.conversationId).order('created_at',{ascending:false}).limit(MESSAGE_PAGE_SIZE):null;
+      if(requestRef.current!==recovering)return;
+      if(saved?.data?.length)setMessages([...saved.data].reverse() as ChatMessage[]);
+      else setMessages(current=>{
+        const next=current.filter(item=>item.id!==`recovered-${pendingRequest}`);
+        if(result.originalQuestion && !(next[next.length-1]?.role==='user'&&next[next.length-1]?.content===result.originalQuestion))next.push({id:`question-${pendingRequest}`,role:'user',content:result.originalQuestion});
+        return [...next,{id:`recovered-${pendingRequest}`,role:'assistant',content:result.answer,citations:result.citations??[]}];
+      });
+      setQuestion('');setRemaining(result.usage?.remainingToday??null);
+      setStatus(pick('Recovered the saved answer without generating again.','התשובה השמורה שוחזרה ללא יצירה נוספת.'));
+    }
+    else setStatus(result?.error??pick('This request has stopped. A call already sent to the provider may still be charged.','הבקשה נעצרה. קריאה שכבר נשלחה לספק עשויה עדיין להיות מחויבת.'));
+    clearPending();setBusy(false);
+  }
+  async function cancelRequest(){if(!pendingRequest)return;const {data,error}=await supabase.rpc('cancel_g3_assist_execution',{p_request:pendingRequest});if(error||!data){setStatus(pick('Cancellation could not be confirmed. Check request status before trying again.','לא ניתן לאשר ביטול. בדקו את מצב הבקשה לפני ניסיון נוסף.'));return;}if(data==='completed'||data==='failed'){await recoverRequest();return;}clearPending();setBusy(false);setStatus(pick('Request cancelled. No further paid steps will start; a call already in progress may still be charged.','הבקשה בוטלה. לא יתחילו שלבים נוספים בתשלום; קריאה שכבר פעילה עשויה עדיין להיות מחויבת.'));}
 
   const filteredConversations = useMemo(() => {
     const term = historySearch.trim().toLocaleLowerCase();
@@ -100,6 +135,7 @@ export default function FrcAssistantPage() {
   }
 
   function startNewConversation() {
+    clearEvidence();
     sessionStorage.removeItem(ACTIVE_CONVERSATION_KEY);
     setConversationId(null); setMessages([]); setQuestion(""); setImage(null); setPrivacyConfirmed(false); setRemaining(null); setStatus(""); setHistoryOpen(false); setHistoryMode("active"); void refreshHistory("active");
     window.setTimeout(() => questionRef.current?.focus(), 0);
@@ -171,16 +207,23 @@ export default function FrcAssistantPage() {
   async function send(event: FormEvent) {
     event.preventDefault();
     const clean = question.trim();
-    if ((!clean && !image) || busy) return;
+    if ((!clean && !image) || busy || !canUseAssist || (BUDGET_PILOT&&pendingRequest)) return;
     if (image && !privacyConfirmed) { setStatus(pick("Confirm the image contains no people or personal student information.", "יש לאשר שאין בתמונה אנשים או מידע אישי על תלמידים.")); return; }
     setBusy(true); setStatus("");
     const optimistic: ChatMessage = { id: `pending-${Date.now()}`, role: "user", content: clean || pick("Analyze this image in an FRC context.", "נתחו את התמונה בהקשר של FRC."), attachment_name: image?.name, created_at: new Date().toISOString() };
     setMessages((current) => [...current, optimistic]); setQuestion("");
     const pendingImage = image; setImage(null); setPrivacyConfirmed(false);
-    const { data, error } = await supabase.functions.invoke("frc-assistant", { body: { conversationId, message: clean, language, contextIssueId:issueContext?.id??null, attachmentKind: pendingImage ? attachmentKind : null, privacyConfirmed: Boolean(pendingImage), image: pendingImage ? { name: pendingImage.name, mimeType: pendingImage.mimeType, data: pendingImage.data } : null } });
+    const requestId=crypto.randomUUID();
+    if(BUDGET_PILOT){requestRef.current=requestId;sessionStorage.setItem(pendingKey,requestId);setPendingRequest(requestId);}
+    let outcome;
+    try{outcome=await supabase.functions.invoke("frc-assistant", { body: { requestId, conversationId, message: clean, language, evidence:params.get("evidence")&&params.get("generation")?{generation:params.get("generation"),ids:params.get("evidence")!.split(",").map(Number)}:null, contextIssueId:issueContext?.id??null, attachmentKind: pendingImage ? attachmentKind : null, privacyConfirmed: Boolean(pendingImage), image: pendingImage ? { name: pendingImage.name, mimeType: pendingImage.mimeType, data: pendingImage.data } : null } });}
+    catch{if(!BUDGET_PILOT||requestRef.current===requestId){setBusy(false);setStatus(BUDGET_PILOT?pick('Connection interrupted. Check request status before submitting another question.','החיבור נותק. בדקו את מצב הבקשה לפני שליחת שאלה נוספת.'):pick('Connection interrupted. Check conversation history for a saved answer before trying again.','החיבור נותק. בדקו בהיסטוריית השיחות אם נשמרה תשובה לפני ניסיון נוסף.'));}return;}
+    if(BUDGET_PILOT&&requestRef.current!==requestId)return;
+    const {data,error}=outcome;
     let functionError = data?.error || "";
     if (error && "context" in error) { try { const details = await (error as { context: Response }).context.clone().json(); functionError = details?.error || functionError; } catch { /* Use SDK message. */ } }
     if (error || data?.error) { setMessages((current) => current.filter((item) => item.id !== optimistic.id)); setQuestion(clean); setImage(pendingImage); setPrivacyConfirmed(Boolean(pendingImage)); setStatus(functionError || error?.message || pick("G3 Assist is unavailable.", "G3 Assist אינו זמין כרגע.")); setBusy(false); return; }
+    if(BUDGET_PILOT)clearPending();
     setConversationId(data.conversationId); sessionStorage.setItem(ACTIVE_CONVERSATION_KEY, data.conversationId); setRemaining(data.usage?.remainingToday ?? null);
     setMessages((current) => [...current, { id: `answer-${Date.now()}`, role: "assistant", content: data.answer, citations:data.citations??[], created_at: new Date().toISOString() }]); setBusy(false);
     await refreshHistory();
@@ -200,15 +243,18 @@ export default function FrcAssistantPage() {
     {issueContext?<section className="assistant-context-card"><span>G3-{issueContext.issue_number}</span><div><strong>{pick("Working from robot issue context","עבודה מתוך הקשר של תקלה ברובוט")}</strong><small>{issueContext.title} · {issueContext.subsystem} · {issueContext.severity}</small></div><button onClick={()=>navigate(`/robot-issues?issue=${issueContext.id}`)}>{pick("Open issue","פתיחת תקלה")}</button></section>:null}
     {conversationId && activeConversation ? <section className="assistant-active-conversation" aria-label={pick("Active conversation", "שיחה פעילה")}><span>{pick("Continuing conversation", "ממשיכים שיחה")}</span><strong>{activeConversation.title}</strong><small>{pick(`${activeConversation.message_count} saved messages · Your next message continues this conversation`, `${activeConversation.message_count} הודעות שמורות · ההודעה הבאה תמשיך את השיחה`)}</small></section> : null}
     <section className="assistant-chat" aria-live="polite">
-      {conversationLoading ? <div className="assistant-conversation-loading" role="status"><span aria-hidden="true">✦</span><b>{pick("Opening conversation…", "פותח את השיחה…")}</b><small>{pick("Loading its saved messages", "טוען את ההודעות השמורות")}</small></div> : messages.length === 0 ? <div className="assistant-welcome"><span className="assistant-spark">✦</span><h2>{pick("What are you working on?", "על מה אתם עובדים?")}</h2><p>{pick("Start a new FRC question or reopen a previous conversation when you need it.", "התחילו שאלה חדשה על FRC או פתחו שיחה קודמת בעת הצורך.")}</p><div>{suggestions.map(([en, he]) => <button key={en} type="button" onClick={() => setQuestion(pick(en, he))}>{pick(en, he)} <span>→</span></button>)}</div>{conversations.length > 0 ? <button className="assistant-recent" type="button" onClick={() => setHistoryOpen(true)}><span aria-hidden="true">◷</span><span><b>{pick("Recent conversations", "שיחות אחרונות")}</b><small>{pick(`${conversations.length} saved conversations`, `${conversations.length} שיחות שמורות`)}</small></span><strong aria-hidden="true">›</strong></button> : null}</div> : <>{hasEarlier ? <button className="assistant-load-earlier" type="button" onClick={() => void loadEarlier()} disabled={loadingEarlier}>{loadingEarlier ? pick("Loading…", "טוען…") : pick("Load earlier messages", "טעינת הודעות קודמות")}</button> : null}{messages.map((message) => <article key={message.id} className={`assistant-message is-${message.role}`}><div className="assistant-message-label">{message.role === "assistant" ? "G3 Assist" : pick("You", "אתם")}</div>{message.attachment_name ? <small>▧ {message.attachment_name}</small> : null}<div>{message.content}</div>{message.role==="assistant"?<>{message.citations?.length?<div className="assistant-citations"><b>{pick("Sources","מקורות")}</b>{message.citations.map(source=><a href={source.url} target="_blank" rel="noreferrer" key={source.url}>{source.title} ↗</a>)}</div>:null}<footer className="assistant-answer-actions"><button onClick={()=>void saveKnowledge(message)}>{pick("Save knowledge","שמירת ידע")}</button><button onClick={()=>void createIssue(message)}>{pick("Create issue","יצירת תקלה")}</button><button onClick={()=>createTaskDraft(message)}>{pick("Create task","יצירת משימה")}</button></footer></>:null}</article>)}</>}
+      {conversationLoading ? <div className="assistant-conversation-loading" role="status"><span aria-hidden="true">✦</span><b>{pick("Opening conversation…", "פותח את השיחה…")}</b><small>{pick("Loading its saved messages", "טוען את ההודעות השמורות")}</small></div> : messages.length === 0 ? <div className="assistant-welcome"><span className="assistant-spark">✦</span><h2>{pick("What are you working on?", "על מה אתם עובדים?")}</h2><p>{pick("Start a new FRC question or reopen a previous conversation when you need it.", "התחילו שאלה חדשה על FRC או פתחו שיחה קודמת בעת הצורך.")}</p><div>{(BUDGET_PILOT?suggestions.slice(0,3):suggestions).map(([en, he]) => <button key={en} disabled={!canUseAssist} type="button" onClick={() => setQuestion(pick(en, he))}>{pick(en, he)} <span>→</span></button>)}</div>{conversations.length > 0 ? <button className="assistant-recent" type="button" onClick={() => setHistoryOpen(true)}><span aria-hidden="true">◷</span><span><b>{pick("Recent conversations", "שיחות אחרונות")}</b><small>{pick(`${conversations.length} saved conversations`, `${conversations.length} שיחות שמורות`)}</small></span><strong aria-hidden="true">›</strong></button> : null}</div> : <>{hasEarlier ? <button className="assistant-load-earlier" type="button" onClick={() => void loadEarlier()} disabled={loadingEarlier}>{loadingEarlier ? pick("Loading…", "טוען…") : pick("Load earlier messages", "טעינת הודעות קודמות")}</button> : null}{messages.map((message) => <article key={message.id} className={`assistant-message is-${message.role}`}><div className="assistant-message-label">{message.role === "assistant" ? "G3 Assist" : pick("You", "אתם")}</div>{message.attachment_name ? <small>▧ {message.attachment_name}</small> : null}<div>{message.content}</div>{message.role==="assistant"?<>{message.citations?.length?<div className="assistant-citations"><b>{pick("Sources","מקורות")}</b>{message.citations.map(source=><a href={source.url} target="_blank" rel="noreferrer" key={source.url}>{source.title} ↗</a>)}</div>:null}<footer className="assistant-answer-actions"><button onClick={()=>void saveKnowledge(message)}>{pick("Save knowledge","שמירת ידע")}</button><button onClick={()=>void createIssue(message)}>{pick("Create issue","יצירת תקלה")}</button><button onClick={()=>createTaskDraft(message)}>{pick("Create task","יצירת משימה")}</button></footer></>:null}</article>)}</>}
       {busy ? <div className="assistant-thinking"><span></span><span></span><span></span>{pick("Working through it…", "בודק את הנושא…")}</div> : null}<div ref={endRef} />
     </section>
-    <form className="assistant-composer" onSubmit={send}>
+    {!canUseAssist ? <section className="assistant-safety" role="status"><b>{accessLoading ? pick("Checking G3 Assist access…", "בודק הרשאת גישה ל-G3 Assist…") : pick("Paid AI access is not enabled for your role.", "גישה לבינה מלאכותית בתשלום אינה מופעלת לתפקיד שלכם.")}</b><span>{pick("An administrator can enable access in Roles & permissions. Your saved conversations remain available.", "מנהל יכול להפעיל גישה במסך תפקידים והרשאות. השיחות השמורות שלכם נשארות זמינות.")}</span></section> : null}
+    {BUDGET_PILOT&&pendingRequest?<section className="assistant-active-conversation" aria-label={pick("Request recovery","שחזור בקשה")}><p>{pick("A request is recorded. Check its status or cancel before sending another.","קיימת בקשה מתועדת. בדקו את מצבה או בטלו לפני שליחת בקשה נוספת.")}</p><button type="button" onClick={()=>void recoverRequest()}>{pick("Check request","בדיקת בקשה")}</button><button type="button" onClick={()=>void cancelRequest()}>{pick("Cancel request","ביטול בקשה")}</button></section>:null}
+    <fieldset disabled={!canUseAssist} style={{border:0,padding:0,margin:0,minWidth:0}} aria-label={pick("Ask G3 Assist", "שאלו את G3 Assist")}><form className="assistant-composer" onSubmit={send}>
       {image ? <div className="assistant-attachment"><img src={image.preview} alt={pick("Selected attachment preview", "תצוגה מקדימה של הקובץ")} /><div><b>{image.name}</b><select value={attachmentKind} onChange={(e) => setAttachmentKind(e.target.value as "screenshot" | "robot_photo")}><option value="screenshot">{pick("Code/log screenshot", "צילום מסך של קוד או לוג")}</option><option value="robot_photo">{pick("Robot/component photo", "תמונת רובוט או רכיב")}</option></select><label><input type="checkbox" checked={privacyConfirmed} onChange={(e) => setPrivacyConfirmed(e.target.checked)} />{pick("I confirm there are no people, faces, names or personal student data in this image.", "אני מאשר/ת שאין בתמונה אנשים, פנים, שמות או מידע אישי על תלמידים.")}</label></div><button type="button" onClick={() => { setImage(null); setPrivacyConfirmed(false); }} aria-label={pick("Remove image", "הסרת תמונה")}>×</button></div> : null}
-      {status ? <div className="assistant-error" role="alert">{status}</div> : null}
-      <div className="assistant-compose-row"><textarea ref={questionRef} rows={3} value={question} onChange={(e) => setQuestion(e.target.value)} placeholder={pick("Ask G3 Assist about the robot, code, electrical or strategy…", "שאלו את G3 Assist על הרובוט, תוכנה, אלקטרוניקה או אסטרטגיה…")} aria-label={pick("Message G3 Assist", "שליחת הודעה ל-G3 Assist")} /><div className="assistant-compose-actions"><label className="assistant-upload" title={pick("Attach image", "צירוף תמונה")}><input type="file" accept="image/jpeg,image/png,image/webp" onChange={chooseImage} /><span aria-hidden="true">＋</span></label><button className="assistant-send" type="submit" disabled={busy || (!question.trim() && !image)}>{pick("Send", "שליחה")} <span aria-hidden="true">↑</span></button></div></div>
-      <footer><span>{pick("Do not upload faces, attendance or personal student data.", "אין להעלות פנים, נוכחות או מידע אישי על תלמידים.")}</span>{remaining !== null ? <b>{pick(`${remaining} questions remaining today`, `${remaining} שאלות נותרו היום`)}</b> : null}</footer>
-    </form>
+        {selectedEvidence.length>0&&<div className="assistant-evidence-context" role="status"><span>{pick(`${selectedEvidence.length} source passage(s) selected from FRC knowledge. The server checks your access and the source revision before using them.`,`${selectedEvidence.length} קטעי מקור נבחרו מתוך ידע FRC. השרת בודק הרשאה וגרסת מקור לפני השימוש.`)}</span><button type="button" disabled={busy} onClick={clearEvidence}>{pick('Remove selected evidence','הסרת המקורות הנבחרים')}</button></div>}
+        {status ? <div className="assistant-error" role="alert">{status}</div> : null}
+      <div className="assistant-compose-row"><textarea ref={questionRef} rows={3} value={question} onChange={(e) => setQuestion(e.target.value)} placeholder={pick("Ask G3 Assist about the robot, code, electrical or strategy…", "שאלו את G3 Assist על הרובוט, תוכנה, אלקטרוניקה או אסטרטגיה…")} aria-label={pick("Message G3 Assist", "שליחת הודעה ל-G3 Assist")} /><div className="assistant-compose-actions">{!BUDGET_PILOT?<label className="assistant-upload" title={pick("Attach image", "צירוף תמונה")}><input type="file" accept="image/jpeg,image/png,image/webp" disabled={BUDGET_PILOT} onChange={chooseImage} /><span aria-hidden="true">＋</span></label>:null}<button className="assistant-send" type="submit" disabled={busy || (BUDGET_PILOT&&Boolean(pendingRequest)) || (!question.trim() && !image)}>{pick("Send", "שליחה")} <span aria-hidden="true">↑</span></button></div></div>
+      <footer>{BUDGET_PILOT?<span>{pick("Text-only pilot. Paste code or describe the mechanism; images are not enabled.", "שלב ניסוי בטקסט בלבד. הדביקו קוד או תארו את המנגנון; תמונות אינן זמינות.")}</span>:null}<span>{pick("Do not upload faces, attendance or personal student data.", "אין להעלות פנים, נוכחות או מידע אישי על תלמידים.")}</span>{remaining !== null ? <b>{pick(`${remaining} questions remaining today`, `${remaining} שאלות נותרו היום`)}</b> : null}</footer>
+    </form></fieldset>
     {historyOpen ? <div className="assistant-history-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) closeHistory(); }}>
       <section className="assistant-history" role="dialog" aria-modal="true" aria-labelledby="assistant-history-title">
         <header><div><div className="hub-eyebrow">G3 Assist</div><h2 id="assistant-history-title">{pick("Conversation history", "היסטוריית שיחות")}</h2></div><button type="button" onClick={closeHistory} aria-label={pick("Close history", "סגירת היסטוריה")}>×</button></header>

@@ -1,10 +1,16 @@
+**Current-state notice (2026-09-21):** Read [START_NEXT_SESSION.md](START_NEXT_SESSION.md) and [WORKING_EXPECTATIONS.md](WORKING_EXPECTATIONS.md) first. They supersede older deployment/disabled-state notes in this document; see the connected release record for actual production acceptance.
+
 # Current release and roadmap — 2026-09-20
+
+Latest approved direction: deterministic historical robot/mechanism research is now implemented as a first local increment inside Evidence search. Read [robot research status](ROBOT_RESEARCH_20260920.md) for the 24-topic taxonomy, six real starter configurations, tests, deployment order and the still-open historical ingestion/advanced-filter programme. No production deployment. Continue this approved direction; earlier unselected-work wording is historical.
 
 Start with [the session entry point](START_NEXT_SESSION.md). [The master handover](PAUSE_HANDOVER_20260913.md) is authoritative for detailed scope, all 105 V5.2 section references, evidence, limitations and release identity. This file is a short index, not a second competing status register.
 
 Production application: **1326629**, Vercel **CK1LewiyZedM7qYaMcHkTjxGbTXQ**, https://g3-6740.com. Workshop, inventory, attendance and Team Stories SQL/functions/web are deployed. Release documentation checkpoint: **72df908**. The subsequent Attendance Center menu rename awaits the next web release. Android remains 2.1.9/code 23.
 
 ## Remaining work — order to confirm with the user
+
+Subsequent decision: Knowledge Intelligence is selected; the first admin Check now increment is implemented locally, not deployed. See [knowledge source checks](KNOWLEDGE_SOURCE_CHECKS_20260920.md) and [knowledge evolution plan](KNOWLEDGE_EVOLUTION_PLAN_20260920.md). No five-minute polling or automatic schedule. Link discovery/fingerprints are not full-text knowledge ingestion. The unselected-work wording and candidate sequence below describe the earlier checkpoint; the approved knowledge increment now takes precedence, without closing any wider phase.
 
 Latest user direction: first confirm understanding and discuss remote-capable options while the user is away from the workshop. Do not automatically start replay or another phase. Follow `START_NEXT_SESSION.md`; the sequence below is a proposed roadmap, not permission to begin implementation.
 
