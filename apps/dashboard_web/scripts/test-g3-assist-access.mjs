@@ -82,7 +82,7 @@ try {
   let trustedRole="mentor";
   client.from=table=>{
     const result=table==='team_members'?{data:{active:true,role:trustedRole}}:table==='ai_conversations'?{data:{id:'conversation'}}:{data:[],count:0};
-    const q=new Proxy({}, {get:(_,key)=>key==='then'?(done,fail)=>Promise.resolve(result).then(done,fail):()=>q});
+    const q=new Proxy({}, {get:(_,key)=>key==='insert'?(rows)=>{if(table==='ai_messages'){assert.deepEqual(Object.keys(rows[0]).sort(),Object.keys(rows[1]).sort());assert.ok(rows.every(r=>Array.isArray(r.citations)&&Number.isFinite(r.input_tokens)&&Number.isFinite(r.output_tokens)));}return q;}:key==='then'?(done,fail)=>Promise.resolve(result).then(done,fail):()=>q});
     return q;
   };
   globalThis.fetch=async()=>{paidCalls++;return new Response(JSON.stringify({error:{message:'quota exhausted'}}),{status:429});};
@@ -130,6 +130,8 @@ try {
   assert.equal((await call({message:'General question',requestId:crypto.randomUUID()})).status,429);
   const missingRules=await call({message:'Based on the 2026 challenge, from strategy perspective, should we build a climbing mechanism?',requestId:crypto.randomUUID()});
   assert.equal(missingRules.status,503);assert.equal((await missingRules.json()).code,'OFFICIAL_EVIDENCE_UNAVAILABLE');
+  globalThis.__assistBudgetModule.executeBudgetedText=async()=>({model:'synthetic',answer:'Test answer',usage:{inputTokens:10,outputTokens:10,thoughtTokens:0}});
+  assert.equal((await call({message:'Explain PID',requestId:crypto.randomUUID()})).status,200);
   trustedRole='mentor';
 
   client.rpc=async name=>({data:name==='claim_g3_assist_execution'?{claimed:false,state:'completed',result:{status:200,body:{answer:'recovered'}}}:true,error:null});

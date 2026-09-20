@@ -244,8 +244,8 @@ Deno.serve(async (request) => {
 
     const storedAnswer = answer.slice(0, 19500);
     const { error: saveError } = await admin.from("ai_messages").insert([
-      { conversation_id: conversationId, member_id: memberId, role: "user", content: prompt, attachment_name: attachmentName, attachment_kind: imagePart ? attachmentKind : null, context_issue_id:contextIssueId, input_tokens: Number(usage.total_input_tokens ?? 0), output_tokens: 0, model: usedModel },
-      { conversation_id: conversationId, member_id: memberId, role: "assistant", content: storedAnswer, citations, context_issue_id:contextIssueId, input_tokens: 0, output_tokens: Number(usage.total_output_tokens ?? 0), model: usedModel },
+      { conversation_id: conversationId, member_id: memberId, role: "user", content: prompt, citations: [], attachment_name: attachmentName, attachment_kind: imagePart ? attachmentKind : null, context_issue_id:contextIssueId, input_tokens: Number(usage.total_input_tokens ?? 0), output_tokens: 0, model: usedModel },
+      { conversation_id: conversationId, member_id: memberId, role: "assistant", content: storedAnswer, citations, attachment_name: null, attachment_kind: null, context_issue_id:contextIssueId, input_tokens: 0, output_tokens: Number(usage.total_output_tokens ?? 0), model: usedModel },
     ]);
     if (saveError) console.error("G3 Assist history save failed", { code: saveError.code, message: saveError.message });
     else await admin.from("ai_conversations").update({ updated_at: new Date().toISOString() }).eq("id", conversationId);
