@@ -1,6 +1,8 @@
 # G3 Assist controls checkpoint — 20 September 2026
 
-Latest release preparation: user deferred Mentor/Student sign-in testing to later production acceptance. Do not present those checks as passed. This isolated candidate now includes the controls extension, superseding earlier references below to an unchanged protection-only candidate. Cooldown entry/expiry with retained uncertain charges and localized limit errors passed actual SQL/handler tests. Candidate TypeScript, build and article protection regression passed. No paid activation or production rollout is included.
+## Latest packaging and user decision
+
+User deferred Mentor/Student authenticated checks to later production testing; no further password handoff is required for continued preparation. Admin authenticated checks remain passed; other roles remain deferred, not passed. Isolated candidate `34d7741` on `codex/knowledge-protection-release` now contains controls and original protection changes, excluding unfinished source/history UI and personal Android files. Candidate build, TypeScript and article regression passed. Actual SQL cooldown test now proves three uncertain outcomes prevent new reservations, expiry permits a new reservation without releasing uncertain holds. Actual-handler tests prove specific EN/HE daily/purpose/rate/cooldown errors and no legacy fallback. Candidate is committed locally, clean, not pushed/deployed. Hosted QA still has the earlier handler bundle, not the latest error wording. Remaining release configuration and paid-evaluation gates in its manifest still apply.
 
 ## Authenticated Admin QA result
 

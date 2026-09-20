@@ -40,3 +40,16 @@ docs/staging/*.local.*
 docs/staging/*.local/
 docs/staging/ops-qa/
 
+# Downloaded evidence and generated research datasets stay local.
+# Keep research scripts/reports and attribution decisions reviewable in Git.
+docs/research/evidence-pilot/
+docs/research/expanded-study/
+docs/research/linked-documents/
+docs/research/isolated-corpus/
+docs/research/archive-inspection.html
+docs/research/statbotics-team-years.csv
+
+
+# Resumable public source cache (local research, not application seed)
+docs/research/full-collection/
+docs/research/wpilib-reference/

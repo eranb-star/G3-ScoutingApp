@@ -1,0 +1,170 @@
+{
+  "generatedAt": "2026-09-20T16:29:45.820Z",
+  "targetPerRankedSeason": 500,
+  "selectionMeaning": "Archived ranking snapshots where available. Source-title associations are candidates, not verified robot facts.",
+  "selectedTeamSeasons": 3000,
+  "seasons": [
+    {
+      "year": 2017,
+      "status": "ranked-snapshot",
+      "selected": 500,
+      "rankingSource": "Statbotics archive 02113df5bc7c66655fd0496ead62ad4fc5212283",
+      "candidateTeamSeasons": 58,
+      "downloadedTeamSeasons": 58,
+      "indexedTeamSeasons": 58,
+      "selectedWithoutDiscoveredSources": 442
+    },
+    {
+      "year": 2018,
+      "status": "ranked-snapshot",
+      "selected": 500,
+      "rankingSource": "Statbotics archive 02113df5bc7c66655fd0496ead62ad4fc5212283",
+      "candidateTeamSeasons": 49,
+      "downloadedTeamSeasons": 49,
+      "indexedTeamSeasons": 49,
+      "selectedWithoutDiscoveredSources": 451
+    },
+    {
+      "year": 2019,
+      "status": "ranked-snapshot",
+      "selected": 500,
+      "rankingSource": "Statbotics archive 02113df5bc7c66655fd0496ead62ad4fc5212283",
+      "candidateTeamSeasons": 98,
+      "downloadedTeamSeasons": 98,
+      "indexedTeamSeasons": 98,
+      "selectedWithoutDiscoveredSources": 402
+    },
+    {
+      "year": 2020,
+      "status": "ranked-snapshot",
+      "selected": 500,
+      "rankingSource": "Statbotics archive 02113df5bc7c66655fd0496ead62ad4fc5212283",
+      "candidateTeamSeasons": 70,
+      "downloadedTeamSeasons": 70,
+      "indexedTeamSeasons": 70,
+      "selectedWithoutDiscoveredSources": 430
+    },
+    {
+      "year": 2021,
+      "status": "unranked-exception",
+      "selected": 0,
+      "rankingSource": null,
+      "candidateTeamSeasons": 37,
+      "downloadedTeamSeasons": 37,
+      "indexedTeamSeasons": 37,
+      "selectedWithoutDiscoveredSources": 0
+    },
+    {
+      "year": 2022,
+      "status": "ranked-snapshot",
+      "selected": 500,
+      "rankingSource": "Statbotics archive 02113df5bc7c66655fd0496ead62ad4fc5212283",
+      "candidateTeamSeasons": 87,
+      "downloadedTeamSeasons": 87,
+      "indexedTeamSeasons": 87,
+      "selectedWithoutDiscoveredSources": 413
+    },
+    {
+      "year": 2023,
+      "status": "ranked-snapshot",
+      "selected": 500,
+      "rankingSource": "Statbotics archive 02113df5bc7c66655fd0496ead62ad4fc5212283",
+      "candidateTeamSeasons": 130,
+      "downloadedTeamSeasons": 130,
+      "indexedTeamSeasons": 130,
+      "selectedWithoutDiscoveredSources": 370
+    },
+    {
+      "year": 2024,
+      "status": "ranking-unavailable",
+      "selected": 0,
+      "rankingSource": null,
+      "candidateTeamSeasons": 281,
+      "downloadedTeamSeasons": 281,
+      "indexedTeamSeasons": 281,
+      "selectedWithoutDiscoveredSources": 0
+    },
+    {
+      "year": 2025,
+      "status": "ranking-unavailable",
+      "selected": 0,
+      "rankingSource": null,
+      "candidateTeamSeasons": 255,
+      "downloadedTeamSeasons": 255,
+      "indexedTeamSeasons": 255,
+      "selectedWithoutDiscoveredSources": 0
+    },
+    {
+      "year": 2026,
+      "status": "ranking-unavailable",
+      "selected": 0,
+      "rankingSource": null,
+      "candidateTeamSeasons": 218,
+      "downloadedTeamSeasons": 218,
+      "indexedTeamSeasons": 218,
+      "selectedWithoutDiscoveredSources": 0
+    }
+  ],
+  "threads": 1423,
+  "statuses": {
+    "collected": 1423
+  },
+  "publicPostsCollected": 40546,
+  "rankedTeamSeasonsWithSources": 492,
+  "rankedTeamSeasonsWithoutDiscoveredSources": 2508,
+  "supplementalTeamSeasons": 791,
+  "discovery": {
+    "37": {
+      "nextPage": 219,
+      "status": "scope-boundary",
+      "note": "Latest-activity listing reached a full page with created, posted and bumped dates before 2017."
+    },
+    "89": {
+      "nextPage": 22,
+      "status": "exhausted"
+    }
+  },
+  "measurement": {
+    "checkedAt": "2026-09-20T16:29:44.993Z",
+    "sourceVersions": 1716,
+    "uniquePassages": 48797,
+    "citationOccurrences": 50157,
+    "duplicateOccurrences": 1360,
+    "relationSizes": [
+      {
+        "relname": "citations",
+        "bytes": 22781952
+      },
+      {
+        "relname": "passages",
+        "bytes": 96641024
+      },
+      {
+        "relname": "sources",
+        "bytes": 2121728
+      }
+    ],
+    "indexedBytes": 121544704,
+    "checks": {
+      "allSourcesUnreviewed": true,
+      "allCitationsResolvable": true,
+      "duplicateTextRetainsCitations": true
+    },
+    "verifiedFacts": 0,
+    "productionWrites": 0
+  },
+  "missingRankingYears": [
+    2024,
+    2025,
+    2026
+  ],
+  "unrankedExceptionYears": [
+    2021
+  ],
+  "limitations": [
+    "Not an exhaustive internet catalogue. Titles require attribution review.",
+    "Downloaded post text excludes linked file contents, images, video and CAD unless separately collected.",
+    "Local indexed relation bytes exclude production schema, WAL, backups and original-file storage.",
+    "Searchable mentions are not verified robot mechanisms. No production import or deployment."
+  ]
+}

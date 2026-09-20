@@ -1,0 +1,65 @@
+{
+  "checkedAt": "2026-09-20T12:57:20.167Z",
+  "years": [
+    {
+      "year": 2017,
+      "url": "https://api.statbotics.io/v3/team_years?year=2017&limit=500&metric=epa_end&ascending=false",
+      "status": 500,
+      "data": []
+    },
+    {
+      "year": 2018,
+      "url": "https://api.statbotics.io/v3/team_years?year=2018&limit=500&metric=epa_end&ascending=false",
+      "status": 500,
+      "data": []
+    },
+    {
+      "year": 2019,
+      "url": "https://api.statbotics.io/v3/team_years?year=2019&limit=500&metric=epa_end&ascending=false",
+      "status": 500,
+      "data": []
+    },
+    {
+      "year": 2020,
+      "url": "https://api.statbotics.io/v3/team_years?year=2020&limit=500&metric=epa_end&ascending=false",
+      "status": 500,
+      "data": []
+    },
+    {
+      "year": 2021,
+      "url": "https://api.statbotics.io/v3/team_years?year=2021&limit=500&metric=epa_end&ascending=false",
+      "status": 500,
+      "data": []
+    },
+    {
+      "year": 2022,
+      "url": "https://api.statbotics.io/v3/team_years?year=2022&limit=500&metric=epa_end&ascending=false",
+      "status": 500,
+      "data": []
+    },
+    {
+      "year": 2023,
+      "url": "https://api.statbotics.io/v3/team_years?year=2023&limit=500&metric=epa_end&ascending=false",
+      "status": 500,
+      "data": []
+    },
+    {
+      "year": 2024,
+      "url": "https://api.statbotics.io/v3/team_years?year=2024&limit=500&metric=epa_end&ascending=false",
+      "status": 500,
+      "data": []
+    },
+    {
+      "year": 2025,
+      "url": "https://api.statbotics.io/v3/team_years?year=2025&limit=500&metric=epa_end&ascending=false",
+      "status": 500,
+      "data": []
+    },
+    {
+      "year": 2026,
+      "url": "https://api.statbotics.io/v3/team_years?year=2026&limit=500&metric=epa_end&ascending=false",
+      "status": 500,
+      "data": []
+    }
+  ]
+}

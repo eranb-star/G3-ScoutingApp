@@ -1,0 +1,65 @@
+{
+ "checkedAt":"2026-09-20T11:49:53Z",
+ "reviewMethod":"Source text inspected during local development; concise paraphrases. No physical or CAD validation. Link-only references. Starter collection, not full historical coverage.",
+ "topics":[
+  ["elevator","Elevator","מעלית","mechanism",["elevators","lift","lifts"]],
+  ["turret","Turret","צריח","mechanism",["turrets","turreting","turreting elevator"]],
+  ["shooter","Shooter","משגר","mechanism",["shooters","flywheel"]],
+  ["intake","Intake","איסוף","mechanism",["intakes","collector","pickup"]],
+  ["hopper","Hopper / storage","אגירה","mechanism",["hopper","hoppers","storage","accumulator"]],
+  ["indexer","Indexer / conveyor","מזין / מסוע","mechanism",["indexer","indexers","conveyor","feeder","spindexer"]],
+  ["arm","Arm","זרוע","mechanism",["arms","articulated arm","telescoping arm"]],
+  ["wrist","Wrist","מפרק קצה","mechanism",["wrists"]],
+  ["gripper","Gripper","תפסן","mechanism",["grippers","claw","claws","end effector"]],
+  ["climber","Climber","מטפס","mechanism",["climbers","climb mechanism"]],
+  ["drivetrain","Drivetrain","מערכת הנעה","mechanism",["drivebase","drive train"]],
+  ["swerve","Swerve drivetrain","הנעת סוורב","mechanism",["swerve","swerve drive","סוורב"]],
+  ["tank","Tank drivetrain","הנעה דיפרנציאלית","mechanism",["tank drive","differential drive","6 wheel drive"]],
+  ["deployment","Deployment mechanism","מנגנון פריסה","mechanism",["deployable","deployment"]],
+  ["mechanical","Mechanical design","תכן מכני","subject",["mechanical","packaging"]],
+  ["electrical","Electrical systems","מערכות חשמל","subject",["electrical","wiring","electronics"]],
+  ["programming","Programming","תכנות","subject",["programming","code","software"]],
+  ["pid","PID & controls","בקרה ו-PID","subject",["PID","control loop","feedback control"]],
+  ["autonomous","Autonomous","אוטונומי","subject",["autonomous","auton","auto align","auto-align"]],
+  ["vision","Vision","ראייה ממוחשבת","subject",["vision","AprilTag","April Tags","Photonvision","Limelight"]],
+  ["simulation","Simulation","סימולציה","subject",["simulation","simulator"]],
+  ["manufacturing","Manufacturing","ייצור","subject",["manufacturing","machining","CNC","3D printing"]],
+  ["maintenance","Maintenance","תחזוקה","subject",["maintenance","repair","serviceability"]],
+  ["reliability","Reliability","אמינות","subject",["reliability","failure","health-check","durability"]]
+ ],
+ "robots":[
+  {"team":3476,"season":2019,"name":"Cloudbreak","configuration":"2019 design retrospective · documented elevator/turret architecture","url":"https://aryabastani.com/projects/code-orange/","sourceTitle":"Arya Bastani · Cloudbreak design retrospective","locator":"The Robot; Turret; Elevator sections","facts":[
+   {"topic":"elevator","body":"The designer describes a two-stage continuous elevator with 60.8 inches of travel, mounted on the turret."},
+   {"topic":"turret","body":"Cloudbreak used an elevator mounted on a rotating turret. The designer describes the ring, pinion drive and homing sensor."},
+   {"topic":"arm","body":"A pneumatic prismatic arm extended the end effector beyond the drivebase."},
+   {"topic":"intake","body":"The retrospective describes a two-roller ground cargo intake feeding the raised end effector."}
+  ]},
+  {"team":2767,"season":2023,"name":"Stryke Force 2023","configuration":"Public CAD/code release · 17 May 2023","url":"https://www.chiefdelphi.com/t/2767-stryke-force-cad-code-release-2023/437202","sourceTitle":"2767 · 2023 CAD and code release","locator":"Opening post · mechanism and software feature lists","facts":[
+   {"topic":"elevator","body":"The team lists a carbon-fibre single-stage elevator in its public release."},
+   {"topic":"arm","body":"The released design has an arm attached to the elevator carriage, driven through a printed gearbox."},
+   {"topic":"swerve","body":"The team describes a custom swerve drive using printed Onyx parts."},
+   {"topic":"vision","body":"The software feature list includes Photonvision AprilTag detection and automatic game-piece placement."}
+  ]},
+  {"team":2910,"season":2024,"name":"Typhoon","configuration":"Public release · June 2024","url":"https://www.chiefdelphi.com/t/2910-cad-code-and-tech-binder-release-2024/467192","sourceTitle":"2910 · Typhoon CAD, code and technical binder release","locator":"Team author Sudhir · posts 2 and 17","facts":[
+   {"topic":"turret","body":"The team describes feeding at any turret orientation, with slower transfer at 90 and 270 degrees."},
+   {"topic":"indexer","body":"The team describes a dual-entry indexing system that transfers a note into the turret."},
+   {"topic":"climber","body":"Typhoon had a climber; the team reported motor loading and unresolved reliability problems and recommended exploring alternative designs."},
+   {"topic":"reliability","body":"The team reported climber stalls and a burned motor. Its release explicitly cautions against copying that design without further investigation."}
+  ]},
+  {"team":6036,"season":2024,"name":"Snoopy","configuration":"2024 released robot · team control clarification June 2024","url":"https://www.chiefdelphi.com/t/6036-2024-cad-and-tech-binder-release/465406?page=2","sourceTitle":"6036 · Snoopy team technical discussion","locator":"Team reply by Benson · post 29","facts":[
+   {"topic":"turret","body":"The team reports a software-limited turret range of approximately 580 degrees, with wrap handling to avoid exceeding that range."}
+  ]},
+  {"team":695,"season":2025,"name":"Goldfish","configuration":"Public CAD release · 20 June 2025","url":"https://www.chiefdelphi.com/t/team-695-cad-code-2025-release/503259","sourceTitle":"695 · Goldfish CAD and code release","locator":"Team CAD-release reply · post 4","facts":[
+   {"topic":"elevator","body":"The team describes an elevator assembled using elements from several commercial elevator kits."},
+   {"topic":"climber","body":"Goldfish used a modified Everybot-style climber, according to the CAD-release post."},
+   {"topic":"intake","body":"The team describes a feeder-station intake using a ramp and indexer."},
+   {"topic":"indexer","body":"The feeder-station intake includes an indexer that pivots with the arm mechanism."},
+   {"topic":"arm","body":"The combined arm mechanism pivots the intake and also dislodges algae."},
+   {"topic":"manufacturing","body":"The team reports extensive 3D printing in its coral-handling mechanism to simplify spare parts and replacement."}
+  ]},
+  {"team":179,"season":2017,"name":"Swamp Thing","configuration":"Robot reveal · 21 February 2017","url":"https://www.chiefdelphi.com/t/frc-179-2017-robot-reveal/156987","sourceTitle":"179 · 2017 Swamp Thing reveal","locator":"Team author Dylan179 · post 3","facts":[
+   {"topic":"shooter","body":"The team states that its shooter was fixed and used four 775 PRO motors."},
+   {"topic":"turret","present":false,"body":"Asked whether the robot used a turret, the team explicitly replied that the shooter was fixed. This documents absence of a shooter turret in the reveal configuration."}
+  ]}
+ ]
+}

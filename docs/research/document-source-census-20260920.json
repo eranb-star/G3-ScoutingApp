@@ -1,0 +1,1960 @@
+{
+  "checkedAt": "2026-09-20T12:44:17.584Z",
+  "archive": {
+    "url": "https://www.firstinspires.org/resources/library/frc/archived-games",
+    "status": 200,
+    "years": [
+      {
+        "year": 2026,
+        "links": [
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2026/Manual/2026GameManual.pdf",
+            "label": "REBUILT Game Manual"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2026/Manual/TeamUpdates/REBUILT_TeamUpdate-Combined.pdf",
+            "label": "Team Updates"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2026/FRC2026REBUILT-QandAExport.pdf",
+            "label": "Q&amp;A"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2026/Manual/2026FRCInspectionChecklist.pdf",
+            "label": "Inspection Checklist"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2026/Manual/playoff-alliance-communication.pdf",
+            "label": "Playoff Communication Document"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2026/Manual/champs-playoff-alliance-communication.pdf",
+            "label": "Playoff Communication Document for FIRST Championship"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2026/KOP/2026-checklist-season-specific-box.pdf",
+            "label": "Season Specific Box"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2026/KOP/2026-checklist-black-tote.pdf",
+            "label": "Black Tote"
+          },
+          {
+            "url": "https://andymark.com/2026-am14u6-Chassis",
+            "label": "Drive Base Kit"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2026/KOP/2026-checklist-gray-tote.pdf",
+            "label": "Gray Tote"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2026/frc-voucher-catalog-2026.pdf",
+            "label": "Virtual Kit Voucher Book"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2026/KitBot/2026-kitbot-build-instructions.pdf",
+            "label": "KitBot Build Instructions"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2026/KitBot/2026-kitbot-iteration.pdf",
+            "label": "Kitbot Enhancement/ Iteration Guide"
+          },
+          {
+            "url": "https://www.youtube.com/playlist?list=PLZT9pIgNOV6YaIHpIM3xnxd6zn6xse2JS",
+            "label": "2026&nbsp;KitBot Videos"
+          },
+          {
+            "url": "https://cad.onshape.com/documents/08ad0ea8bc18f51d43dcf821/w/ec957a5d81c424bbaf78375c/e/cec96dd24c4ef6dde82def59",
+            "label": "KitBot Onshape CAD Model"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2026/KitBot/KB-2026-rev.step",
+            "label": "STEP File"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2026/KitBot/2026-kitbot-drawings.pdf",
+            "label": "KitBot Drawings"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2026/KitBot/2026-kitbot-drawings-metric.pdf",
+            "label": "metric"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2026/KitBot/2026-kitbot-spacers.zip",
+            "label": "KitBot Spacers"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2026/KitBot/2026-kitbot-java-guide.pdf",
+            "label": "Java Code Guide"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2026/KitBot/2026-kitbot-code.zip",
+            "label": "Java Code"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2026/FieldAssets/2026-field-dimension-dwgs.pdf",
+            "label": "Field Dimension Drawings"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2026/FieldAssets/2026-field-dwg-complete.pdf",
+            "label": "Full Drawing Package"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2026/FieldAssets/2026-field-dwg-evergreen.pdf",
+            "label": "Evergreen Elements"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2026/FieldAssets/2026-field-dwg-game-specific.pdf",
+            "label": "REBUILT specific drawings"
+          },
+          {
+            "url": "https://cad.onshape.com/documents/8a691e28680da30504859fce/w/c6aa636fb23edb3f1e272fb1/e/c043973ea96914e2eaa1e8fc",
+            "label": "Onshape"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2026/FieldAssets/FE-2026-rev-rebuilt-playing-field.step",
+            "label": "STEP"
+          },
+          {
+            "url": "https://cad.onshape.com/documents/8a691e28680da30504859fce/w/c6aa636fb23edb3f1e272fb1/e/2774b7edcc4d6399b46e8382",
+            "label": "Onshape"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2026/FieldAssets/team-test-elements.step",
+            "label": "STEP"
+          },
+          {
+            "url": "https://cad.onshape.com/documents/8a691e28680da30504859fce/w/c6aa636fb23edb3f1e272fb1/e/10dc7aafec22019ab866007b",
+            "label": "Onshape"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2026/FieldAssets/event-test-elements.step",
+            "label": "STEP"
+          },
+          {
+            "url": "https://cad.onshape.com/documents/8a691e28680da30504859fce/w/c6aa636fb23edb3f1e272fb1/e/d1a9349b7700cf0f624f08ab",
+            "label": "Onshape"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2026/FieldAssets/team-practice-elements.step",
+            "label": "STEP"
+          },
+          {
+            "url": "https://cad.onshape.com/documents/5ee69d0cbb3290551b28d652/w/a5c414f89ccea8dd719e8d87/e/b00d197070d6f3b95b545e9f",
+            "label": "Onshape"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2026/FieldAssets/wood-practice-perimeter.step",
+            "label": "STEP"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2026/FieldAssets/2026-apriltag-images-user-guide.pdf",
+            "label": "AprilTags (User Guide &amp; Images)"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2026/FieldAssets/2026-field-images.zip",
+            "label": "Field Photo Album"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2026/FieldAssets/field-manual.pdf",
+            "label": "Field Manual"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2026/FieldAssets/2026-field-acceptance-welded.pdf",
+            "label": "Field Acceptance Checklist - Welded Field"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2026/FieldAssets/2026-field-acceptance-am.pdf",
+            "label": "Field Acceptance Checklist -&nbsp;AndyMark Field"
+          },
+          {
+            "url": "https://www.firstinspires.org/hubfs/blog/frc/2026-scoring-element-whitepaper-am.pdf?hsLang=en",
+            "label": "2026 Scoring Element Inspection Testing Report Whitepaper"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2026/rebuilt-logos.zip",
+            "label": "Game Logos"
+          },
+          {
+            "url": "https://www.firstinspires.org/hubfs/web/program/frc/resources/first-age-frc-rebuilt-certificate-ltr.pptx?hsLang=en",
+            "label": "Letter Size"
+          },
+          {
+            "url": "https://www.firstinspires.org/hubfs/web/program/frc/resources/first-age-frc-rebuilt-certificate-a4.pptx?hsLang=en",
+            "label": "A4 Size"
+          },
+          {
+            "url": "https://youtu.be/xr69EMH4BZM",
+            "label": "Alliance Selection Animation Video"
+          },
+          {
+            "url": "https://www.youtube.com/playlist?list=PLZT9pIgNOV6Y-gv2OmEdktNjWC8ftqZkK",
+            "label": "Kickoff &amp; Season Videos"
+          },
+          {
+            "url": "https://www.youtube.com/playlist?list=PLZT9pIgNOV6YBi98X1AV4zmnniN_7KS0q",
+            "label": "Field Tour Videos"
+          },
+          {
+            "url": "https://www.firstinspires.org/hubfs/web/program/frc/awards/fia-essays/2026/2026-fia-winners.pdf?hsLang=en",
+            "label": "Regional &amp; District Championship FIRST Impact Award Winners"
+          },
+          {
+            "url": "https://community.firstinspires.org/2026-digital-animation-award-winners?hsLang=en",
+            "label": "2026&nbsp;Digital Animation Award Winner"
+          },
+          {
+            "url": "https://community.firstinspires.org/2026-safety-animation-award-winner-and-finalists?hsLang=en",
+            "label": "2026&nbsp;Safety Animation Award Winner"
+          },
+          {
+            "url": "https://frc-events.firstinspires.org/2026/awards",
+            "label": "FIRST Championship Awards"
+          },
+          {
+            "url": "https://community.firstinspires.org/2026-scoreboard-and-live-stream-graphics?hsLang=en",
+            "label": "2026&nbsp;Scoreboard &amp; Live Stream Graphics"
+          },
+          {
+            "url": "https://www.firstinspires.org/hubfs/blog/frc/2026-anonymized-usage-data.zip?hsLang=en",
+            "label": "Usage Data"
+          }
+        ],
+        "uniqueUrls": 53
+      },
+      {
+        "year": 2025,
+        "links": [
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2025/Manual/2025GameManual.pdf",
+            "label": "REEFSCAPE Game Manual"
+          },
+          {
+            "url": "http://firstfrc.blob.core.windows.net/frc2025/Manual/TeamUpdates/TeamUpdate-Combined.pdf",
+            "label": "Team Updates"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2025/FRC2025REEFSCAPE-QandAExport.pdf",
+            "label": "Q&amp;A&nbsp;"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2025/Manual/2025FRCInspectionChecklist.pdf",
+            "label": "Inspection Checklist"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2025/Manual/2025-Playoff_Alliance_Communication.pdf",
+            "label": "Playoff Communication Document"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2025/Manual/2025-Playoff_Alliance_Communication-CMP.pdf",
+            "label": "Playoff Communication Document for FIRST Championship"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2025/KOP/2025KOPChecklist-SeasonSpecificBox.pdf",
+            "label": "Season Specific Box"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2025/KOP/2025KOPChecklist-BlackTote.pdf",
+            "label": "Black Tote"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2025/KOP/2025KOPChecklist-DriveBaseKit.pdf",
+            "label": "Drive Base Kit"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2025/KOP/2025KOPChecklist-GrayTote.pdf",
+            "label": "Gray Tote"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2025/KOP/FRC_Voucher_Catalog_2025.pdf",
+            "label": "Virtual Kit Voucher Book"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2025/KitBot/KitBotBuildInstructions.pdf",
+            "label": "KitBot Build Instructions"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2025/KitBot/KitBotEnhancement_IterationGuide.pdf",
+            "label": "Kitbot Enhancement/Iteration Guide"
+          },
+          {
+            "url": "https://www.youtube.com/watch?v=PBd633U_3wg&list=PLZT9pIgNOV6aGAXqDxaAjFjnvecgcA-Zv&pp=0gcJCbAEOCosWNin",
+            "label": "2025&nbsp;KitBot Videos&nbsp;"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2025/KitBot/KitBotCADandDrawings.zip",
+            "label": "KitBot CAD and Drawings Zip"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2025/KitBot/KitBotCPPCode.zip",
+            "label": "C++ Code Zip"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2025/KitBot/KitBotJavaCode.zip",
+            "label": "Java Code Zip"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2025/KitBot/KitBotLabVIEWCode.zip",
+            "label": "LabView Code Zip"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2025/KitBot/KitBotPythonCode.zip",
+            "label": "Python Code Zip"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2025/FieldAssets/2025FieldDrawings.pdf",
+            "label": "Drawing Package"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2025/FieldAssets/2025Field-Solidworks.zip",
+            "label": "SOLIDWORKS"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2025/FieldAssets/2025Field-STEP.zip",
+            "label": "STEP"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2025/FieldAssets/2025TeamElements.zip",
+            "label": "Team Elements"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2025/FieldAssets/Apriltag_Images_and_User_Guide.pdf",
+            "label": "AprilTags (User Guide &amp; Images)"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2025/FieldAssets/2025PlayingFieldImages.zip",
+            "label": "Field Photo Album"
+          },
+          {
+            "url": "https://cad.onshape.com/documents/e31edfe3161914019277ff02/w/ad1329fb0703eb4b1c3bd3c4/e/82cc274a3c6f30c0bb298152",
+            "label": "CNC Files"
+          },
+          {
+            "url": "https://cad.onshape.com/documents/02475035ce593faf13290f7e/w/fe91ecff8f308b39b39adc97/e/c09cc77ea2ba7ebcf88550c1",
+            "label": "Full"
+          },
+          {
+            "url": "https://cad.onshape.com/documents/14c6855735b6d6a330a968b5/w/6a4f8aad4ba9e1144d545a32/e/6108cee1cf837762e5424864",
+            "label": "Optimized"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2025/FieldAssets/Stratasys_3D_print_files.zip",
+            "label": "3D Print Files Zip"
+          },
+          {
+            "url": "https://xrcsimulator.org/Downloads/",
+            "label": "XRC Simulation"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2025/Reefscape_Logos.zip",
+            "label": "Game Logos"
+          },
+          {
+            "url": "https://youtu.be/xr69EMH4BZM",
+            "label": "Alliance Selection Animation Video&nbsp;"
+          },
+          {
+            "url": "https://youtu.be/YNyzrkLxAtA",
+            "label": "Kickoff &amp; Season Videos"
+          },
+          {
+            "url": "https://www.youtube.com/playlist?list=PLZT9pIgNOV6aMzMboyCYP9MdSFgfckvl9",
+            "label": "Field Tour Videos"
+          },
+          {
+            "url": "https://www.firstinspires.org/hubfs/web/program/frc/awards/fia-essays/2025/2025-fia-winners.pdf?hsLang=en",
+            "label": "Regional &amp; District Championship FIRST Impact Award Winners&nbsp;"
+          },
+          {
+            "url": "https://community.firstinspires.org/2025-digital-animation-award-winners?hsLang=en",
+            "label": "2025 Digital Animation Award Winner"
+          },
+          {
+            "url": "https://community.firstinspires.org/2025-safety-animation-award-winner-and-finalists?hsLang=en",
+            "label": "2025 Safety Animation Award Winner"
+          },
+          {
+            "url": "https://frc-events.firstinspires.org/2025/awards",
+            "label": "FIRST Championship Awards"
+          },
+          {
+            "url": "https://community.firstinspires.org/2025-scoreboard-and-live-stream-graphics?hsLang=en",
+            "label": "2025 Scoreboard &amp; Live Stream Graphics"
+          },
+          {
+            "url": "https://www.firstinspires.org/hubfs/blog/frc/2025-anonymized-usage-data.zip?hsLang=en",
+            "label": "Usage Data"
+          }
+        ],
+        "uniqueUrls": 40
+      },
+      {
+        "year": 2024,
+        "links": [
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2024/Manual/2024GameManual.pdf",
+            "label": "CRESCENDO Game Manual"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2024/Manual/TeamUpdates/TeamUpdates-combined.pdf",
+            "label": "Team Updates"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2024/FRC2024CRESCENDO-QandAExport.pdf",
+            "label": "Q&amp;A"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2024/Manual/2024FRCInspectionChecklist.pdf",
+            "label": "Inspection Checklist"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2024/Manual/2024-Playoff_Alliance_Communication.pdf",
+            "label": "Playoff Communication Document"
+          },
+          {
+            "url": "http://firstfrc.blob.core.windows.net/frc2024/Manual/2024-Playoff_Alliance_Communication-CMP.pdf",
+            "label": "Playoff Communication Document for FIRST Championship"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2024/Manual/NOTECounterAssessment.pdf",
+            "label": "Note Counter Assessment"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2024/Manual/NOTEUsabilityGuide.pdf",
+            "label": "Note Usability Guide"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2024/KOP/2024KOPChecklist-SeasonSpecificBox.pdf",
+            "label": "Season Specific Box"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2024/KOP/2024KOPChecklist-BlackTote.pdf",
+            "label": "Black Tote"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2024/KOP/2024KOPChecklist-DriveBaseKit.pdf",
+            "label": "Drive Base Kit"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2024/KOP/2024KOPChecklist-GrayTote.pdf",
+            "label": "Gray Tote"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2024/KOP/FRC_Voucher_Catalog_2024.pdf",
+            "label": "Virtual Kit Voucher Book"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2024/KitBot/KitBot%20Build%20Instructions.pdf",
+            "label": "KitBot Build Instructions"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2024/KitBot/Kitbot%20Enhancement_Iteration%20Guide.pdf",
+            "label": "Kitbot Enhancement/Iteration Guide"
+          },
+          {
+            "url": "https://www.youtube.com/playlist?list=PLZT9pIgNOV6aCIESaD1Je0nDl3AgYAfe2",
+            "label": "2024 KitBot Videos"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2024/KitBot/KitBot%20CAD%20and%20Drawings.zip",
+            "label": "KitBot CAD and Drawings Zip"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2024/KitBot/KitBot%20CPP%20Code.zip",
+            "label": "C++ Code Zip"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2024/KitBot/KitBot%20Java%20Code.zip",
+            "label": "Java Code Zip"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2024/KitBot/KitBot%20LabVIEW%20Code.zip",
+            "label": "LabView Code Zip"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2024/KitBot/KitBot%20Python%20Code.zip",
+            "label": "Python Code Zip"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2024/FieldAssets/2024FieldDrawings.pdf",
+            "label": "Drawing Package"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2024/FieldAssets/CRESCENDO2024Field-SOLIDWORKS.zip",
+            "label": "SOLIDWORKS"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2024/FieldAssets/CRESCENDO2024Field-STEP.zip",
+            "label": "STEP"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2024/FieldAssets/2024TeamVersion-CAD-Dwgs-ReadMes.zip",
+            "label": "Team Elements"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2024/FieldAssets/2024VisionSampleImages.zip",
+            "label": "Vision Sample Images"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2024/FieldAssets/2024CRESCENDO-PlayingFieldImages.zip",
+            "label": "Field Photo Album"
+          },
+          {
+            "url": "https://www.revrobotics.com/2024-frc-field-cnc/",
+            "label": "CNC files"
+          },
+          {
+            "url": "https://cad.onshape.com/documents/891cea152ca8ef70b516496a/w/58d3e083bc7a32779ff17ae7/e/25d21c8c1e35d1553640e533",
+            "label": "Full"
+          },
+          {
+            "url": "https://cad.onshape.com/documents/dcbe49ce579f6342435bc298/w/b93673f5b2ec9c9bdcfec487/e/6ecb2d6b7590f4d1c820d5e3",
+            "label": "Optimized"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2024/FieldAssets/3DPrintedFieldInstructions.pdf",
+            "label": "User Guide"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2024/FieldAssets/3DPrintedFieldFiles.zip",
+            "label": "Download"
+          },
+          {
+            "url": "https://xrcsimulator.org/downloads/",
+            "label": "xRC Simulation&nbsp;"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2024/FIRST_IN_SHOW_CRESCENDO_FRC_Logos.zip",
+            "label": "Game Logos"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/AllianceSelectionAnimation.mp4",
+            "label": "Alliance Selection Animation Video"
+          },
+          {
+            "url": "https://youtube.com/playlist?list=PLZT9pIgNOV6ai8nBeeLlC1PnDIhhVHV3k&si=UOgLT_ov3CROXnrZ",
+            "label": "Kickoff &amp; Season Videos"
+          },
+          {
+            "url": "https://www.youtube.com/playlist?list=PLZT9pIgNOV6Y3SCO9QceNgc9aef56TJN4",
+            "label": "Field Tour Videos"
+          },
+          {
+            "url": "https://www.firstinspires.org/hubfs/web/program/frc/awards/fia-essays/2024/2024-fia-winners.pdf?hsLang=en",
+            "label": "Regional &amp; District Championship FIRST Impact Award Winners"
+          },
+          {
+            "url": "https://www.youtube.com/watch?v=c-tdmCr3PlA",
+            "label": "2024 Digital Animation Award Winner"
+          },
+          {
+            "url": "https://youtu.be/liY1Hvhe5Y0",
+            "label": "2024 Safety Animation Award Winner"
+          },
+          {
+            "url": "https://frc-events.firstinspires.org/2024/awards",
+            "label": "FIRST Championship Awards"
+          },
+          {
+            "url": "https://www.firstinspires.org/hubfs/blog/frc/2024-audience-displays-blog.pdf?hsLang=en",
+            "label": "2024 Scoreboard &amp; Live Stream Graphics"
+          },
+          {
+            "url": "https://www.firstinspires.org/hubfs/blog/frc/2024-anonymized-usage-data.zip?hsLang=en",
+            "label": "Usage Data"
+          }
+        ],
+        "uniqueUrls": 43
+      },
+      {
+        "year": 2023,
+        "links": [
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2023/Manual/2023FRCGameManual.pdf",
+            "label": "CHARGED UP Game Manual"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2023/Manual/TeamUpdates/TeamUpdates-combined.pdf",
+            "label": "Team Updates"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2023/FRC2023CHARGEDUP-QandAExport.pdf",
+            "label": "Q&amp;A"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2023/Manual/2023-inspection-checklist.pdf",
+            "label": "Inspection Checklist"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2023/Manual/2023-PlayoffAllianceCommunication.pdf",
+            "label": "Playoff Alliance Communication handout"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2023/KOP/2023KOPChecklist-SeasonSpecificBox.pdf",
+            "label": "Season Specific Box"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2023/KOP/2023KOPChecklist-BlackTote.pdf",
+            "label": "Black Tote"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2023/KOP/2023KOPChecklist-DriveBaseKit.pdf",
+            "label": "Drive Base Kit"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2023/KOP/2023KOPChecklist-GrayTote.pdf",
+            "label": "Gray Tote"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2023/KOP/2023KOPChecklist-SeparateItems.pdf",
+            "label": "Rookie Separates"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2023/KOP/FR036_Voucher_Catalog_2023_2.pdf",
+            "label": "Virtual Kit Voucher Book"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2023/FieldAssets/2023FieldDrawings.zip",
+            "label": "Drawing package"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2023/FieldAssets/CHARGEDUP2023Field-SOLIDWORKS.zip",
+            "label": "SOLIDWORKS"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2023/FieldAssets/CHARGEDUP2023Field-STEP.zip",
+            "label": "STEP"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2023/FieldAssets/TeamVersions/2023TeamVersion-CAD-Dwgs-ReadMe.zip",
+            "label": "Team Elements"
+          },
+          {
+            "url": "https://www.revrobotics.com/content/cad/FRC_2023_CNC_Router_Field_REV_Robotics_1.0.zip",
+            "label": "CNC files"
+          },
+          {
+            "url": "https://cad.onshape.com/documents/91bf8e9fffc4dbc59e403692/w/cc5b5d1a9682d3369a631f6e/e/9c68a0331cef4682a38666a9",
+            "label": "Full"
+          },
+          {
+            "url": "https://cad.onshape.com/documents/418c44a447140f83b050d1e1/w/5958cbddccccb793d441b4bf/e/e84e39c6eb04228bd804d14e",
+            "label": "Lightweight"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2023/FieldAssets/WPIPlayingFieldImages.zip",
+            "label": "Photo Album"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2023/FieldAssets/2023VisionSampleImages.zip",
+            "label": "Vision Sample Images"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2023/FieldAssets/xRC_Win_x64_v10.0a.zip",
+            "label": "Windows"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2023/FieldAssets/xRC_OSX_v10.0a.zip",
+            "label": "OSX"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2023/FieldAssets/xRC_Linux_v10.0a.zip",
+            "label": "Linux"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2023/FieldAssets/xRC_Linux_Server_v10.0a.zip",
+            "label": "Linux Server"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2023/firstenergize-frc-chargedup-logos-guidelines-pdp.zip",
+            "label": "Game Logos"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/AllianceSelectionAnimation.mp4",
+            "label": "Alliance Selection Animation Video"
+          },
+          {
+            "url": "https://youtube.com/playlist?list=PLZT9pIgNOV6Z1KGc3k1GswZmKvrYbPlmU&si=nkNixpL23WTlaSw3",
+            "label": "Kickoff &amp; Season Videos"
+          },
+          {
+            "url": "https://youtube.com/playlist?list=PLZT9pIgNOV6ZxDnkFOrJvNdYcpn4KcWRV&si=UU-hpRbGGIgT6FXs",
+            "label": "Field Tour Videos"
+          },
+          {
+            "url": "http://frc-events.firstinspires.org/2023",
+            "label": "Results"
+          },
+          {
+            "url": "https://www.firstinspires.org/hubfs/web/program/frc/awards/fia-essays/2023/2023-fia-winners.pdf?hsLang=en",
+            "label": "Regional &amp; District Championship FIRST Impact Award Winners"
+          },
+          {
+            "url": "https://youtu.be/0VUgG35eQts",
+            "label": "2023 Digital Animation Award Winner"
+          },
+          {
+            "url": "https://youtu.be/WbK_PS60bhA",
+            "label": "2023 Safety Animation Award Winner"
+          },
+          {
+            "url": "https://frc-events.firstinspires.org/2023/awards",
+            "label": "FIRST Championship Awards"
+          },
+          {
+            "url": "https://www.firstinspires.org/hubfs/blog/frc/2023-audience-display-blog.pdf?hsLang=en",
+            "label": "2023 Audience Displays"
+          },
+          {
+            "url": "https://www.firstinspires.org/hubfs/blog/frc/2023-anonymized-usage-data.zip?hsLang=en",
+            "label": "Usage Data"
+          }
+        ],
+        "uniqueUrls": 35
+      },
+      {
+        "year": 2022,
+        "links": [
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/Manual/2022FRCGameManual.pdf",
+            "label": "RAPID REACT Game Manual"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/Manual/TeamUpdates/TeamUpdates-combined.pdf",
+            "label": "Team Updates"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/FRC2022RapidReact-QandAExport.pdf",
+            "label": "Q&amp;A"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/Manual/2022-inspection-checklist.pdf",
+            "label": "Inspection Checklist"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/Manual/2022-abbreviated-inspection-checklist.pdf",
+            "label": "Abbreviated Inspection Checklist"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/Manual/Playoff_Alliance_Communication.pdf",
+            "label": "Playoff Alliance Communication"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/KitofParts/2022KOPChecklist-BlackTote.pdf",
+            "label": "Black Tote"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/KitofParts/2022KOPChecklist-GrayTote.pdf",
+            "label": "Gray Tote"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/KitofParts/2022KOPChecklist-DriveBaseKit.pdf",
+            "label": "Drive Base Kit"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/KitofParts/2022KOPChecklist-SeparateItems.pdf",
+            "label": "Separate Items"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/KitofParts/2022VoucherBook.pdf",
+            "label": "Virtual Kit Voucher Book"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/FieldAssets/RAPIDREACT2022Field-SOLIDWORKS.zip",
+            "label": "FIRST Official Model (SOLIDWORKS)"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/FieldAssets/RAPIDREACT2022Field-STEP.zip",
+            "label": "FIRST Official Model (STEP)"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/FieldAssets/FRCRapidReact2022-InventorandSTEP.zip",
+            "label": "Autodesk Inventor"
+          },
+          {
+            "url": "https://cad.onshape.com/documents/16a9dd9bb1cb80652a50d8e8/w/f20da9307f41b2c7d65245ca/e/171bf802c6183d35c1ff001e",
+            "label": "full version"
+          },
+          {
+            "url": "https://cad.onshape.com/documents/e491d0b03d0534894c2f50ee/w/746eeb7ee6910a6cbe50eb65/e/6f25d3aee97d55ef18af9901",
+            "label": "lightweight version"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/FieldAssets/Assembly1_Complex.zip",
+            "label": "complex"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/FieldAssets/Assembly1_Simple.zip",
+            "label": "simple"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/FieldAssets/Assembly2_Complex.zip",
+            "label": "complex"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/FieldAssets/Assembly2_Simple.zip",
+            "label": "simple"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/FieldAssets/Assembly3_Complex.zip",
+            "label": "complex"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/FieldAssets/Assembly3_Simple.zip",
+            "label": "simple"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/FieldAssets/TE-22330.zip",
+            "label": "Cable Protector"
+          },
+          {
+            "url": "http://firstfrc.blob.core.windows.net/frc2022/FieldAssets/2022FieldDrawings-Evergreen.pdf",
+            "label": "Evergreen"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/FieldAssets/2022FieldDrawings-RAPIDREACTSpecific.pdf",
+            "label": "RAPID REACT specific"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/FieldAssets/2022LayoutMarkingDiagram.pdf",
+            "label": "Layout and Marking Diagram"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/FieldAssets/ReadMe_Complex_TE-22100_and_TE-22100-AM.pdf",
+            "label": "Read Me"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/FieldAssets/TE-22100.pdf",
+            "label": "Drawing Packet (TE-22100)"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/FieldAssets/TE-22100-AM.pdf",
+            "label": "Drawing Packet - for use with AndyMark Upper Hub, AM-4671 (TE-22100-AM)"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/FieldAssets/TE-22000.pdf",
+            "label": "Drawing Packet (TE-22000)"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/FieldAssets/TE-22000-AM.pdf",
+            "label": "Drawing Packet - for use with AndyMark Vision Target Ring, AM-4672 (TE-22000-AM)"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/FieldAssets/ReadMe_Simple_Lower_TE-22001-Multiple_and_TE-22001-Single.pdf",
+            "label": "Read Me"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/FieldAssets/TE-22001-Multiple.pdf",
+            "label": "Drawing Packet - full Lower Hub &amp; single Fender (TE-22001-Multiple)"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/FieldAssets/TE-22001-Single.pdf",
+            "label": "Drawing Packet - ¼ Lower Hub &amp; single Fender (TE-22001-Single)"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/FieldAssets/ReadMe_Simple_Upper_TE-22002_and_TE-22002-AM.pdf",
+            "label": "Read Me"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/FieldAssets/TE-22002.pdf",
+            "label": "Drawing Packet (TE-22002)"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/FieldAssets/TE-22002-AM.pdf",
+            "label": "Drawing Packet - for use with AndyMark Vision Target Ring, AM-4672 (TE-22002-AM)"
+          },
+          {
+            "url": "http://firstfrc.blob.core.windows.net/frc2022/FieldAssets/ReadMe_Assembly2_Complex.pdf",
+            "label": "Read Me"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/FieldAssets/TE-22401.pdf",
+            "label": "Drawing Packet (TE-22401)"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/FieldAssets/ReadMe_Assembly2_Simple.pdf",
+            "label": "Read Me"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/FieldAssets/TE-22400.pdf",
+            "label": "Drawing Packet (TE-22400)"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/FieldAssets/ReadMe_Assembly3_Complex.pdf",
+            "label": "Read Me"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/FieldAssets/TE-22310.pdf",
+            "label": "Drawing Packet (TE-22310)"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/FieldAssets/ReadMe_Assembly3_Simple.pdf",
+            "label": "Read Me"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/FieldAssets/TE-22300.pdf",
+            "label": "Drawing (TE-22300)"
+          },
+          {
+            "url": "http://firstfrc.blob.core.windows.net/frc2022/FieldAssets/TE-22330.pdf",
+            "label": "Cable Protector (TE-22330)"
+          },
+          {
+            "url": "https://library.automationdirect.com/2022-first-robotics-rapid-react-3d-printed-field/",
+            "label": "3D Print Model"
+          },
+          {
+            "url": "https://library.automationdirect.com/oculus-quest-vr-simulation-of-the-2022-first-robotics-rapid-react-game-field/",
+            "label": "Quest support page"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/FieldAssets/RapidReact_OculusQuest_AutomationDirect.zip",
+            "label": "Quest download"
+          },
+          {
+            "url": "https://cdn.automationdirect.com/static/video-resources/robotics/2022%20Rapid%20React/Loading%20VR%20Simulator%20on%20Oculus%20Quest%20via%20CodeWorks%202022%20v0.pdf",
+            "label": "Quest install instructions"
+          },
+          {
+            "url": "https://library.automationdirect.com/steamvr-vive-rift-etc-simulation-of-the-2022-first-robotics-rapid-react-game-field/",
+            "label": "SteamVR support page"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/FieldAssets/RapidReact_SteamVR_AutomationDirect.zip",
+            "label": "SteamVR download"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/FieldAssets/xRC_Linux_v7.0a.zip",
+            "label": "Linux"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/FieldAssets/xRC_OSX_v7.0a.zip",
+            "label": "OSX"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/FieldAssets/xRC_Win_x64_v7.0a.zip",
+            "label": "Windows"
+          },
+          {
+            "url": "http://firstfrc.blob.core.windows.net/frc2022/FieldAssets/WPIPlayingFieldImages.zip",
+            "label": "Field Photo Album"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/FieldAssets/2022VisionSampleImages.zip",
+            "label": "Vision Sample Images"
+          },
+          {
+            "url": "https://app.supervise.ly/share-links/KZbTQ8V2ryJKoSw56R7kaTwCNpNcU15h5iZzpF9FA4mJDf6gqv8p3X3UVYBmO5SM",
+            "label": "Machine Learning Imagery"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/2022-game-logos.zip",
+            "label": "Game Logos"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/2022-single-day-plan.pdf",
+            "label": "Single Day Event Plan"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/AllianceSelectionAnimation.mp4",
+            "label": "Alliance Selection Animation Video"
+          },
+          {
+            "url": "https://youtube.com/playlist?list=PLZT9pIgNOV6ZZ0Nlwte7ZaE-_DGoAFPQF",
+            "label": "Kickoff &amp; Season Videos"
+          },
+          {
+            "url": "https://www.youtube.com/playlist?list=PLZT9pIgNOV6a_P3_HDTolvzprSdYB_zd3",
+            "label": "Field Tour Videos"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/2022-safety-manual.pdf",
+            "label": "Safety Manual"
+          },
+          {
+            "url": "https://frc-events.firstinspires.org/2022",
+            "label": "Results"
+          },
+          {
+            "url": "https://www.firstinspires.org/hubfs/web/program/frc/awards/fia-essays/2022/2022-chairmans-winners.pdf?hsLang=en",
+            "label": "Regional &amp; District Championship Chairman's Award Winners"
+          },
+          {
+            "url": "http://www.youtube.com/watch?v=qr4Up3dkpqY&feature=youtu.be",
+            "label": "2022 Digital Animation Award Winner"
+          },
+          {
+            "url": "https://youtu.be/F_rOMVgX3iM",
+            "label": "2022 Safety Animation Award Winner"
+          },
+          {
+            "url": "https://frc-events.firstinspires.org/2022/awards",
+            "label": "FIRST Championship Awards"
+          },
+          {
+            "url": "https://www.firstinspires.org/hubfs/blog/frc/2022-audience-displays-blog.pdf?hsLang=en",
+            "label": "2022 Audience Displays"
+          },
+          {
+            "url": "https://www.firstinspires.org/hubfs/blog/frc/2022-anonymized-usage-data.zip?hsLang=en",
+            "label": "Usage Data"
+          }
+        ],
+        "uniqueUrls": 71
+      },
+      {
+        "year": 2021,
+        "links": [
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2021/Manual/2021AtHomeChallengesManual.pdf",
+            "label": "At Home Challenges Manual"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2021/Manual/2021GameDesignChallengeActivities.pdf",
+            "label": "Game Design Activities"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2021/Manual/2021-award-guidelines.pdf",
+            "label": "At Home Challenge Award Guidelines"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2021/Manual/AtHomeChallengesSupplements/2021INFINITERECHARGEatHome-Guides.pdf",
+            "label": "INFINITE RECHARGE at Home Guides"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2021/Manual/AtHomeChallengesSupplements/2021INFINITERECHARGEatHomeChallenge-SpaceLayout.pdf",
+            "label": "INFINITE RECHARGE at Home Space Layout"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2021/Manual/2021-award-guidelines.pdf",
+            "label": "Award Guidelines"
+          },
+          {
+            "url": "http://firstfrc.blob.core.windows.net/frc2021/Manual/2021FRCGameManual.pdf",
+            "label": "INFINITE RECHARGESM &nbsp;Game Manual"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2021/PlayingField/2021FieldDrawings-SeasonSpecific.pdf",
+            "label": "2021 Field Drawings - season specific"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2021/PlayingField/2021LayoutMarkingDiagram.pdf",
+            "label": "2021 Layout and Marking Diagram"
+          },
+          {
+            "url": "https://cad.onshape.com/documents/64c9a36aa14dd9954d373667/w/923414dccbd21a86b90509b3/e/ab8019f2342c82f78d7c8004",
+            "label": "2021 OnShape model"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2021/Manual/TeamUpdates/2021TeamUpdates-combined.pdf",
+            "label": "Team Updates"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2021/Manual/FRCQA-2021InfiniteRecharge.pdf",
+            "label": "Q&amp;A"
+          },
+          {
+            "url": "https://www.firstinspires.org/resource-library/frc/2021koparchive?hsLang=en",
+            "label": "Kit of Parts"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2021/KitofParts/2021KOPChecklist-EveryoneBox.pdf",
+            "label": "Everyone Box"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2021/KitofParts/2021KOPChecklist-BlackTote.pdf",
+            "label": "Black Tote"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2021/KitofParts/2021KOPChecklist-GrayTote.pdf",
+            "label": "Gray Tote"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2021/KitofParts/2021KOPChecklist-DriveBaseKit.pdf",
+            "label": "Drive Base Kit"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2021/KitofParts/2021KOPChecklist-SeparateItems.pdf",
+            "label": "Aluminum Extrusion"
+          },
+          {
+            "url": "https://youtu.be/I77Dz9pfds4",
+            "label": "Game Animation"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2022/AllianceSelectionAnimation.mp4",
+            "label": "Alliance Selection Animation Video"
+          },
+          {
+            "url": "https://www.youtube.com/playlist?list=PLZT9pIgNOV6bCXXnzjwuOxi7L1vsED7wV",
+            "label": "Kickoff &amp; Season Videos"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2021/2021-safety-manual.pdf",
+            "label": "Safety Manual"
+          },
+          {
+            "url": "https://frc-events.firstinspires.org/2021",
+            "label": "Results"
+          },
+          {
+            "url": "https://www.firstinspires.org/hubfs/web/program/frc/awards/fia-essays/2021/2021-chairmans-winners.pdf?hsLang=en",
+            "label": "Regional &amp; District Championship Chairman's Award Winners"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2021/GDCFinalists/2021-gdc-finalists.pdf",
+            "label": "Game Design Challenge Finalists"
+          },
+          {
+            "url": "https://youtu.be/0kSPRmBVgZU",
+            "label": "2021 Digital Animation Award Winner"
+          },
+          {
+            "url": "https://youtu.be/wkVfRolibH4",
+            "label": "2021 Safety Animation Award Winner"
+          },
+          {
+            "url": "https://www.youtube.com/watch?v=wnSdE7IZ16I&t=2171s",
+            "label": "FIRST Robotics Competition Virtual Season Celebration"
+          },
+          {
+            "url": "https://www.youtube.com/watch?v=7SxpBhOU6-c&t=1s",
+            "label": "2021 Global Innovation Awards"
+          }
+        ],
+        "uniqueUrls": 28
+      },
+      {
+        "year": 2020,
+        "links": [
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2020/Manual/2020FRCGameSeasonManual.pdf",
+            "label": "Game Manual"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2021/Manual/Sections/2021FRCGameManualSection02.pdf",
+            "label": "One-page Game Description"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2020/Manual/TeamUpdates/TeamUpdates-combined.pdf",
+            "label": "Team Updates"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2020/Manual/2020-inspection-checklist.pdf",
+            "label": "Inspection Checklist"
+          },
+          {
+            "url": "https://www.youtube.com/watch?v=gmiYWTmFRVE&list=PLZT9pIgNOV6ZzienUkfYzfV_wzufKq_6s&index=2",
+            "label": "Game Animation"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2020/2020_QA_PreSeason_Archive.pdf",
+            "label": "pre-season"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2020/2020_QA_Full_Archive.pdf",
+            "label": "in-season"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2020/PlayingField/LayoutandMarkingDiagram.pdf",
+            "label": "Layout &amp; Marking Diagram"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2020/PlayingField/2020FieldDrawings-Evergreen.pdf",
+            "label": "Evergreen"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2020/PlayingField/2020FieldDrawing-SeasonSpecific.pdf",
+            "label": "Season specific"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2020/PlayingField/2020TeamDrawing-HalfField.pdf",
+            "label": "Half Field"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2020/PlayingField/2020TeamDrawing-MinimalField.pdf",
+            "label": "Minimal Field"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2020/PlayingField/ADC_FRC2020_InfiniteRecharge_VR.zip",
+            "label": "AutomationDirect.com VR Experience"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2020/PlayingField/FRC2020_AD-VR_SourceFiles.zip",
+            "label": "source files"
+          },
+          {
+            "url": "https://library.automationdirect.com/2021-first-robotics-infinite-recharge-3d-printable-field/",
+            "label": "3D Print Model"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2020/PlayingField/FRC-SimInsights.zip",
+            "label": "SimInsights Model"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2020/PlayingField/FRC2020_SimInsights_UsersGuide.pdf",
+            "label": "User Guide"
+          },
+          {
+            "url": "https://youtu.be/WWhrriaD1Ms",
+            "label": "360 Hotspots"
+          },
+          {
+            "url": "https://www.youtube.com/watch?v=FxOTcRXf2Ms&feature=youtu.be",
+            "label": "360 Walkthrough"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2020/PlayingField/VuforiaViewThingMark-InfiniteRecharge.pdf",
+            "label": "Vuforia ThingMark"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2020/PlayingField/NASAFieldImages.zip",
+            "label": "NASA Field Images"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2020/PlayingField/WPILibFieldImages.zip",
+            "label": "WPI Field Images"
+          },
+          {
+            "url": "https://www.youtube.com/watch?v=WH0H8fHIP6I&list=PLZT9pIgNOV6aqZuX1DLzkWq8lvccwnanF",
+            "label": "Field Tour Videos"
+          },
+          {
+            "url": "https://www.youtube.com/playlist?list=PLZT9pIgNOV6ZzienUkfYzfV_wzufKq_6s",
+            "label": "Drone Footage"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2020/KitofParts/2020KitofPartsChecklist-BlackTote.pdf",
+            "label": "Black Tote"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2020/KitofParts/2020KitofPartsChecklist-GrayTote.pdf",
+            "label": "Gray Tote"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2020/KitofParts/2020KitofPartsChecklist-DriveBaseKit.pdf",
+            "label": "Drive Base Kit"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2020/KitofParts/2020KitofPartsChecklist-SeparateItems.pdf",
+            "label": "Separate Items"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2020/KitofParts/2020VoucherBook.pdf",
+            "label": "Voucher Book"
+          },
+          {
+            "url": "https://www.youtube.com/watch?v=Jh4VWusW17o&list=PLZT9pIgNOV6ZzienUkfYzfV_wzufKq_6s",
+            "label": "Kickoff Videos"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2020/2020-safety-manual.pdf",
+            "label": "Safety Manual"
+          },
+          {
+            "url": "http://frc-events.firstinspires.org/2020",
+            "label": "Event Results"
+          },
+          {
+            "url": "https://www.firstinspires.org/hubfs/web/program/frc/awards/fia-essays/2020/2020-chairmans-winners.pdf?hsLang=en",
+            "label": "Regional &amp; District Championship Chairman's Award Winners"
+          },
+          {
+            "url": "https://youtu.be/E5Kv-gpyK98",
+            "label": "2020 Safety Animation Award Winner"
+          },
+          {
+            "url": "https://www.twitch.tv/videos/609132663",
+            "label": "FIRST Virtual Showcase"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2020/Backgrounds%2FInfiniteRecharge_001.png",
+            "label": "Red Alliance"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2020/Backgrounds%2FInfiniteRecharge_002.png",
+            "label": "Blue Alliance"
+          },
+          {
+            "url": "https://www.firstinspires.org/hubfs/blog/frc/2020-anonymized-usage-data.xlsx?hsLang=en",
+            "label": "Usage Data"
+          }
+        ],
+        "uniqueUrls": 38
+      },
+      {
+        "year": 2019,
+        "links": [
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2019/Manual/2019FRCGameSeasonManual.pdf",
+            "label": "Game Manual"
+          },
+          {
+            "url": "https://www.firstinspires.org/sites/default/files/uploads/resource_library/frc/game-and-season-info/competition-manual/2019/frc19-fr021-spectator-flyer.pdf?hsLang=en",
+            "label": "One-page Game Description"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2019/Manual/TeamUpdates/TeamUpdates-combined.pdf",
+            "label": "Updates"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2019/2019_QA_Full_Archive.pdf",
+            "label": "Q&amp;A"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2019/Playing%20Field.pdf",
+            "label": "Playing Field"
+          },
+          {
+            "url": "https://www.youtube.com/playlist?list=PLZT9pIgNOV6ZuZql5bZdTJq1mC75R1l08",
+            "label": "Field Tour Videos"
+          },
+          {
+            "url": "https://www.youtube.com/playlist?list=PLZT9pIgNOV6bbr6hfD2K0WZgvQT_B6JVX",
+            "label": "Kickoff Videos"
+          },
+          {
+            "url": "https://www.firstinspires.org/sites/default/files/uploads/resource_library/frc/game-and-season-info/archive/2019/2019-kop.pdf?hsLang=en",
+            "label": "Kit of Parts (KoP)"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2019/AuxDocx/2019FRCInspectionChecklist.pdf",
+            "label": "Inspection Checklist"
+          },
+          {
+            "url": "https://www.firstinspires.org/sites/default/files/uploads/resource_library/frc/team-resources/safety/2019/2019-first-robotics-competition-safety-manual.pdf?hsLang=en",
+            "label": "Safety Manual"
+          },
+          {
+            "url": "https://youtu.be/Mew6G_og-PI",
+            "label": "Game Animation"
+          },
+          {
+            "url": "https://firstinspiresst01.blob.core.windows.net/first-launch/first-launch-logo-package.zip",
+            "label": ""
+          },
+          {
+            "url": "http://frc-events.firstinspires.org/2019",
+            "label": "Event Results"
+          },
+          {
+            "url": "https://frc-events.firstinspires.org/2019/CMPTX/awards",
+            "label": "Championship Awards Houston"
+          },
+          {
+            "url": "https://frc-events.firstinspires.org/2019/CMPMI/awards",
+            "label": "Championship Awards Detroit"
+          },
+          {
+            "url": "https://www.twitch.tv/collections/QZfD0GGnmhUj9A",
+            "label": "Championship Video Footage Detroit"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2020/Backgrounds%2FDestinationDeepSpace_002.png",
+            "label": "Red Switch"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2020/Backgrounds%2FDestinationDeepSpace_001.png",
+            "label": "Blue Switch"
+          },
+          {
+            "url": "https://www.firstinspires.org/hubfs/web/program/frc/awards/fia-essays/2019/2019-chairmans-winners.pdf?hsLang=en",
+            "label": "Regional/District Championship Chairman's Award Winners"
+          },
+          {
+            "url": "https://www.youtube.com/watch?v=cMNgZIWRZD8",
+            "label": "2019 Digital Animation Award Winner"
+          },
+          {
+            "url": "https://www.youtube.com/watch?v=cyknxL-lIKo",
+            "label": "2019 Safety Animation Award Winner"
+          },
+          {
+            "url": "https://www.firstinspires.org/hubfs/blog/frc/2019-audience-displays-blog.pdf?hsLang=en",
+            "label": "2019 Audience Displays"
+          },
+          {
+            "url": "https://www.firstinspires.org/hubfs/blog/frc/2019-anonymized-usage-data.xlsx?hsLang=en",
+            "label": "Usage Data"
+          }
+        ],
+        "uniqueUrls": 23
+      },
+      {
+        "year": 2018,
+        "links": [
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2018/Manual/2018FRCGameSeasonManual.pdf",
+            "label": "Game Manual"
+          },
+          {
+            "url": "https://www.firstinspires.org/sites/default/files/uploads/resource_library/frc/game-and-season-info/competition-manual/2018/first-spectatorflyer18-frc-ltr-dec-form.pdf?hsLang=en",
+            "label": "One-page Game Description"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2018/Manual/TeamUpdates/TeamUpdates-combined.pdf",
+            "label": "Updates"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2018/2018_QA_Full_Archive.pdf",
+            "label": "Q&amp;A"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2018/Drawings/FieldDrawings-evergreen.pdf",
+            "label": "Evergreen Field Drawings"
+          },
+          {
+            "url": "http://firstfrc.blob.core.windows.net/frc2018/Drawings/FieldDrawings-FIRSTPOWERUPspecific.pdf",
+            "label": "Game Specific"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2018/Drawings/LayoutandMarkingDiagram.pdf",
+            "label": "Layout and Marking Diagram"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2018/Drawings/TeamDrawings.pdf",
+            "label": "Field Drawings for Teams"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2018/Drawings/2018FIRSTPOWERUP-SolidWorksModels.zip",
+            "label": "CAD Models, including all artwork"
+          },
+          {
+            "url": "https://www.youtube.com/watch?v=eO7uKLerMZ4&list=PLZT9pIgNOV6aY9LAVq33qSuBZchy-IC5M",
+            "label": "Field Tour Videos"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2018/2018FIRSTPOWERUP-360PhotosVideos.zip",
+            "label": "360° Images"
+          },
+          {
+            "url": "http://first.wpi.edu/FRC/roborio/FIRST%20PowerUp%20Field%20Pics.zip",
+            "label": "Kickoff Filming Field Photos"
+          },
+          {
+            "url": "https://www.youtube.com/playlist?list=PLZT9pIgNOV6aopa_lFj3A-Sud2e_qJsYv",
+            "label": "Kickoff Videos"
+          },
+          {
+            "url": "https://www.firstinspires.org/sites/default/files/uploads/resource_library/frc/game-and-season-info/archive/2018/2018-kop.pdf?hsLang=en",
+            "label": "Kit of Parts (KoP)"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2018/Manual/2018FRCInspectionChecklist.pdf",
+            "label": "Inspection Checklist"
+          },
+          {
+            "url": "https://www.firstinspires.org/sites/default/files/uploads/resource_library/frc/team-resources/safety/2018/2018-first-robotics-competition-safety-manual.pdf?hsLang=en",
+            "label": "Safety Manual"
+          },
+          {
+            "url": "https://www.youtube.com/watch?v=HZbdwYiCY74",
+            "label": "Game Animation"
+          },
+          {
+            "url": "https://frc-events.firstinspires.org/2018",
+            "label": "Event Results"
+          },
+          {
+            "url": "https://frc-events.firstinspires.org/2018/CMPTX/awards",
+            "label": "Championship Awards Houston"
+          },
+          {
+            "url": "https://www.twitch.tv/collections/p0vukyumKhXUbQ",
+            "label": "Championship Video Footage Houston"
+          },
+          {
+            "url": "https://frc-events.firstinspires.org/2018/CMPMI/awards",
+            "label": "Championship Awards Detroit"
+          },
+          {
+            "url": "https://www.twitch.tv/collections/p0vukyumKhXUbQ",
+            "label": "Championship Video Footage Detroit"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2020/Backgrounds%2FPowerup_002.png",
+            "label": "Red Switch"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2020/Backgrounds%2FPowerup_001.png",
+            "label": "Blue Switch"
+          },
+          {
+            "url": "https://www.firstinspires.org/resource-library/frc/2018-regional-district-championship-chairmans-award-winners?hsLang=en",
+            "label": "Regional/District Championship Chairman's Award Winners"
+          },
+          {
+            "url": "https://www.youtube.com/watch?v=uuI-37UL0Vk&feature=youtu.be",
+            "label": "2018 Digital Animation Award Winner"
+          },
+          {
+            "url": "https://www.youtube.com/watch?v=uYKLdn5Mbu4",
+            "label": "2018 Safety Animation Award Winner"
+          },
+          {
+            "url": "https://www.firstinspires.org/hubfs/blog/frc/2018-audience-displays-blog.pdf?hsLang=en",
+            "label": "2018 Audience Displays"
+          },
+          {
+            "url": "https://www.firstinspires.org/hubfs/blog/frc/2018-anonymized-usage-data.xls?hsLang=en",
+            "label": "Usage Data"
+          }
+        ],
+        "uniqueUrls": 28
+      },
+      {
+        "year": 2017,
+        "links": [
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2017/Manual/2017FRCGameSeasonManual.pdf",
+            "label": "Game Manual"
+          },
+          {
+            "url": "https://www.firstinspires.org/sites/default/files/uploads/resource_library/frc/game-and-season-info/competition-manual/2017/FIRST-FRC-SpectatorFlyer'17-FR021-FORM.pdf?hsLang=en",
+            "label": "One-page Game Description"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2017/Manual/TeamUpdates/TeamUpdates-combined.pdf",
+            "label": "Updates"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2017/2017_QA_Full_Archive.pdf",
+            "label": "Q&amp;A"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2017/Drawings/2017BasicFieldDrawings.pdf",
+            "label": "Basic Field Drawings"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2017/Drawings/2017FieldAssembly.pdf",
+            "label": "Field Assembly"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2017/Drawings/2017FieldComponents.pdf",
+            "label": "Field Components"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2017/Drawings/2017TeamVersions.pdf",
+            "label": "Field Drawings for Teams"
+          },
+          {
+            "url": "https://www.firstinspires.org/sites/default/files/uploads/resource_library/frc/game-and-season-info/archive/2017/2017-kit-of-parts.pdf?hsLang=en",
+            "label": "Kit of Parts (KoP)"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2017/AuxDocs/2017FRCInspectionChecklist.pdf",
+            "label": "Inspection Checklist"
+          },
+          {
+            "url": "https://www.firstinspires.org/sites/default/files/uploads/resource_library/frc/team-resources/safety/2017/2017-safety-manual.pdf?hsLang=en",
+            "label": "Safety Manual"
+          },
+          {
+            "url": "https://www.youtube.com/watch?v=EMiNmJW7enI",
+            "label": "Game Animation"
+          },
+          {
+            "url": "https://frc-events.firstinspires.org/2017",
+            "label": "Regional and Championship Results"
+          },
+          {
+            "url": "https://frc-events.firstinspires.org/2017/CMPTX/awards",
+            "label": "Championship Awards Houston"
+          },
+          {
+            "url": "https://www.twitch.tv/firstinspires/videos/all",
+            "label": ""
+          },
+          {
+            "url": "https://frc-events.firstinspires.org/2017/CMPMO/awards",
+            "label": "Championship Awards St. Louis"
+          },
+          {
+            "url": "https://www.twitch.tv/firstinspires/videos/all",
+            "label": ""
+          },
+          {
+            "url": "https://www.firstinspires.org/about/press-room/first-celebrates-next-generation-world-class-problem-solvers-at-first-class-festival-of-champions?hsLang=en",
+            "label": "Festival of Champions Winners"
+          },
+          {
+            "url": "https://www.twitch.tv/videos/163370401",
+            "label": "Festival of Champions Video Footage"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2020/Backgrounds%2FSteamworks_002.png",
+            "label": "Red Airship"
+          },
+          {
+            "url": "https://firstfrc.blob.core.windows.net/frc2020/Backgrounds%2FSteamworks_001.png",
+            "label": "Blue Airship"
+          },
+          {
+            "url": "https://www.firstinspires.org/hubfs/web/program/frc/awards/fia-essays/2017/2017-chairmans-winners.pdf?hsLang=en",
+            "label": "Regional/District Championship Chairman's Award Winners"
+          },
+          {
+            "url": "https://www.firstinspires.org/sites/default/files/uploads/resource_library/frc/game-and-season-info/awards/2017/2017-digital-animation-award-winners.pdf?hsLang=en",
+            "label": "2017 Digital Animation Award Winner"
+          },
+          {
+            "url": "https://youtu.be/b9RIY8rCsSE",
+            "label": "2017 Safety Animation Award Winner"
+          },
+          {
+            "url": "https://www.firstinspires.org/hubfs/blog/frc/2017-audience-displays-blog.pdf?hsLang=en",
+            "label": "Audience Displays"
+          },
+          {
+            "url": "https://www.firstinspires.org/hubfs/blog/frc/2017-anonymized-usage-data.xlsx?hsLang=en",
+            "label": "Usage Data"
+          }
+        ],
+        "uniqueUrls": 25
+      }
+    ],
+    "distinctUrls": 380
+  },
+  "wpilib": {
+    "url": "https://api.github.com/repos/wpilibsuite/wpilib-docs/git/trees/main?recursive=1",
+    "status": 200,
+    "sha": "1897febd8ae910a6e0de78388f62e7ccd6d8a085",
+    "truncated": false,
+    "paths": [
+      "source/404.rst",
+      "source/docs/beta/beta-getting-started/accessing-the-beta-project.rst",
+      "source/docs/beta/beta-getting-started/index.rst",
+      "source/docs/beta/beta-getting-started/monitoring-via-email-notifications.rst",
+      "source/docs/beta/beta-getting-started/reporting-progress.rst",
+      "source/docs/beta/beta-getting-started/trackers-reporting-bugs.rst",
+      "source/docs/beta/beta-getting-started/welcome.rst",
+      "source/docs/beta/tasks/beta-task-overview.rst",
+      "source/docs/beta/tasks/index.rst",
+      "source/docs/beta/tasks/international-team-note.rst",
+      "source/docs/beta/tasks/task-0-tools-and-docs.rst",
+      "source/docs/beta/tasks/task-1-software-install.rst",
+      "source/docs/beta/tasks/task-2-configure-and-benchtop.rst",
+      "source/docs/beta/tasks/task-3-port-code.rst",
+      "source/docs/beta/tasks/task-4-new-features.rst",
+      "source/docs/contributing/wpilib-docs/build-instructions.rst",
+      "source/docs/contributing/wpilib-docs/contribution-guidelines.rst",
+      "source/docs/contributing/wpilib-docs/drawio-saving-instructions.rst",
+      "source/docs/contributing/wpilib-docs/index.rst",
+      "source/docs/contributing/wpilib-docs/style-guide.rst",
+      "source/docs/contributing/wpilib-docs/todo.rst",
+      "source/docs/contributing/wpilib-docs/top-contributors.rst",
+      "source/docs/contributing/wpilib-docs/top-translators.rst",
+      "source/docs/contributing/wpilib-docs/translations.rst",
+      "source/docs/contributing/wpilib/index.rst",
+      "source/docs/controls-overviews/control-system-hardware.rst",
+      "source/docs/controls-overviews/control-system-software.rst",
+      "source/docs/hardware/hardware-basics/can-wiring-basics.rst",
+      "source/docs/hardware/hardware-basics/index.rst",
+      "source/docs/hardware/hardware-basics/preemptive-troubleshooting.rst",
+      "source/docs/hardware/hardware-basics/robot-battery.rst",
+      "source/docs/hardware/hardware-basics/status-lights-ref.rst",
+      "source/docs/hardware/hardware-basics/wiring-best-practices.rst",
+      "source/docs/hardware/hardware-basics/wiring-pneumatics-pcm.rst",
+      "source/docs/hardware/hardware-basics/wiring-pneumatics-ph.rst",
+      "source/docs/hardware/hardware-tutorials/index.rst",
+      "source/docs/hardware/hardware-tutorials/motors.rst",
+      "source/docs/hardware/hardware-tutorials/pneumatics.rst",
+      "source/docs/hardware/hardware-tutorials/sensors.rst",
+      "source/docs/hardware/hardware-tutorials/transmissions.rst",
+      "source/docs/hardware/sensors/accelerometers-hardware.rst",
+      "source/docs/hardware/sensors/analog-inputs-hardware.rst",
+      "source/docs/hardware/sensors/analog-potentiometers-hardware.rst",
+      "source/docs/hardware/sensors/digital-inputs-hardware.rst",
+      "source/docs/hardware/sensors/encoders-hardware.rst",
+      "source/docs/hardware/sensors/gyros-hardware.rst",
+      "source/docs/hardware/sensors/index.rst",
+      "source/docs/hardware/sensors/lidar.rst",
+      "source/docs/hardware/sensors/proximity-switches.rst",
+      "source/docs/hardware/sensors/sensor-overview-hardware.rst",
+      "source/docs/hardware/sensors/serial-buses.rst",
+      "source/docs/hardware/sensors/triangulating-rangefinders.rst",
+      "source/docs/legal/privacy-policy.rst",
+      "source/docs/networking/networking-introduction/index.rst",
+      "source/docs/networking/networking-introduction/ip-configurations.rst",
+      "source/docs/networking/networking-introduction/measuring-bandwidth-usage.rst",
+      "source/docs/networking/networking-introduction/networking-basics.rst",
+      "source/docs/networking/networking-introduction/systemcore-network-troubleshooting.rst",
+      "source/docs/networking/networking-introduction/windows-firewall-configuration.rst",
+      "source/docs/networking/networking-utilities/index.rst",
+      "source/docs/networking/networking-utilities/portforwarding.rst",
+      "source/docs/romi-robot/getting-to-know-romi.rst",
+      "source/docs/romi-robot/hardware-support.rst",
+      "source/docs/romi-robot/hardware.rst",
+      "source/docs/romi-robot/imaging-romi.rst",
+      "source/docs/romi-robot/index.rst",
+      "source/docs/romi-robot/programming-romi.rst",
+      "source/docs/romi-robot/web-ui.rst",
+      "source/docs/software/advanced-controls/controllers/bang-bang.rst",
+      "source/docs/software/advanced-controls/controllers/combining-feedforward-feedback.rst",
+      "source/docs/software/advanced-controls/controllers/feedforward.rst",
+      "source/docs/software/advanced-controls/controllers/index.rst",
+      "source/docs/software/advanced-controls/controllers/pidcontroller.rst",
+      "source/docs/software/advanced-controls/controllers/profiled-pidcontroller.rst",
+      "source/docs/software/advanced-controls/controllers/trapezoidal-profiles.rst",
+      "source/docs/software/advanced-controls/controls-glossary.rst",
+      "source/docs/software/advanced-controls/filters/debouncer.rst",
+      "source/docs/software/advanced-controls/filters/index.rst",
+      "source/docs/software/advanced-controls/filters/introduction.rst",
+      "source/docs/software/advanced-controls/filters/linear-filter.rst",
+      "source/docs/software/advanced-controls/filters/median-filter.rst",
+      "source/docs/software/advanced-controls/filters/slew-rate-limiter.rst",
+      "source/docs/software/advanced-controls/geometry/index.rst",
+      "source/docs/software/advanced-controls/geometry/pose.rst",
+      "source/docs/software/advanced-controls/geometry/transformations.rst",
+      "source/docs/software/advanced-controls/index.rst",
+      "source/docs/software/advanced-controls/introduction/common-control-issues.rst",
+      "source/docs/software/advanced-controls/introduction/control-system-basics.rst",
+      "source/docs/software/advanced-controls/introduction/index.rst",
+      "source/docs/software/advanced-controls/introduction/introduction-to-feedforward.rst",
+      "source/docs/software/advanced-controls/introduction/introduction-to-pid.rst",
+      "source/docs/software/advanced-controls/introduction/picking-control-strategy.rst",
+      "source/docs/software/advanced-controls/introduction/pid-video.rst",
+      "source/docs/software/advanced-controls/introduction/tuning-elevator.rst",
+      "source/docs/software/advanced-controls/introduction/tuning-flywheel.rst",
+      "source/docs/software/advanced-controls/introduction/tuning-turret.rst",
+      "source/docs/software/advanced-controls/introduction/tuning-vertical-arm.rst",
+      "source/docs/software/advanced-controls/introduction/tutorial-intro.rst",
+      "source/docs/software/advanced-controls/state-space/index.rst",
+      "source/docs/software/advanced-controls/state-space/state-space-debugging.rst",
+      "source/docs/software/advanced-controls/state-space/state-space-flywheel-walkthrough.rst",
+      "source/docs/software/advanced-controls/state-space/state-space-intro.rst",
+      "source/docs/software/advanced-controls/state-space/state-space-observers.rst",
+      "source/docs/software/advanced-controls/state-space/state-space-pose-estimators.rst",
+      "source/docs/software/advanced-controls/system-identification/additional-utils.rst",
+      "source/docs/software/advanced-controls/system-identification/analyzing-gains.rst",
+      "source/docs/software/advanced-controls/system-identification/creating-routine.rst",
+      "source/docs/software/advanced-controls/system-identification/index.rst",
+      "source/docs/software/advanced-controls/system-identification/introduction.rst",
+      "source/docs/software/advanced-controls/system-identification/loading-data.rst",
+      "source/docs/software/advanced-controls/system-identification/running-routine.rst",
+      "source/docs/software/advanced-controls/system-identification/viewing-diagnostics.rst",
+      "source/docs/software/advanced-controls/trajectories/constraints.rst",
+      "source/docs/software/advanced-controls/trajectories/index.rst",
+      "source/docs/software/advanced-controls/trajectories/ltv.rst",
+      "source/docs/software/advanced-controls/trajectories/manipulating-trajectories.rst",
+      "source/docs/software/advanced-controls/trajectories/trajectory-generation.rst",
+      "source/docs/software/advanced-controls/trajectories/transforming-trajectories.rst",
+      "source/docs/software/advanced-controls/trajectories/troubleshooting.rst",
+      "source/docs/software/advanced-controls/video-walkthrough.rst",
+      "source/docs/software/advanced-gradlerio/code-formatting.rst",
+      "source/docs/software/advanced-gradlerio/compiler-args.rst",
+      "source/docs/software/advanced-gradlerio/deploy-git-data.rst",
+      "source/docs/software/advanced-gradlerio/external-libraries.rst",
+      "source/docs/software/advanced-gradlerio/gradlew-tasks.rst",
+      "source/docs/software/advanced-gradlerio/index.rst",
+      "source/docs/software/advanced-gradlerio/jvm-runtime.rst",
+      "source/docs/software/advanced-gradlerio/profiling-with-visualvm.rst",
+      "source/docs/software/advanced-gradlerio/robot-code-ci.rst",
+      "source/docs/software/basic-programming/alliancecolor.rst",
+      "source/docs/software/basic-programming/coordinate-system.rst",
+      "source/docs/software/basic-programming/cpp-units.rst",
+      "source/docs/software/basic-programming/deploy-directory.rst",
+      "source/docs/software/basic-programming/functions-as-data.rst",
+      "source/docs/software/basic-programming/git-getting-started.rst",
+      "source/docs/software/basic-programming/index.rst",
+      "source/docs/software/basic-programming/java-gc.rst",
+      "source/docs/software/basic-programming/java-units.rst",
+      "source/docs/software/basic-programming/joystick.rst",
+      "source/docs/software/basic-programming/opmodes.rst",
+      "source/docs/software/basic-programming/reading-stacktraces.rst",
+      "source/docs/software/basic-programming/robot-preferences.rst",
+      "source/docs/software/basic-programming/using-utility-mode.rst",
+      "source/docs/software/can-devices/can-addressing.rst",
+      "source/docs/software/can-devices/index.rst",
+      "source/docs/software/can-devices/pneumatic-hub.rst",
+      "source/docs/software/can-devices/pneumatics-control-module.rst",
+      "source/docs/software/can-devices/power-distribution-module.rst",
+      "source/docs/software/can-devices/third-party-devices.rst",
+      "source/docs/software/can-devices/using-can-devices.rst",
+      "source/docs/software/commandbased/commands-v2/binding-commands-to-triggers.rst",
+      "source/docs/software/commandbased/commands-v2/command-compositions.rst",
+      "source/docs/software/commandbased/commands-v2/command-scheduler.rst",
+      "source/docs/software/commandbased/commands-v2/commands.rst",
+      "source/docs/software/commandbased/commands-v2/cpp-command-discussion.rst",
+      "source/docs/software/commandbased/commands-v2/index.rst",
+      "source/docs/software/commandbased/commands-v2/organizing-command-based.rst",
+      "source/docs/software/commandbased/commands-v2/pid-subsystems-commands.rst",
+      "source/docs/software/commandbased/commands-v2/profile-subsystems-commands.rst",
+      "source/docs/software/commandbased/commands-v2/profilepid-subsystems-commands.rst",
+      "source/docs/software/commandbased/commands-v2/structuring-command-based-project.rst",
+      "source/docs/software/commandbased/commands-v2/subsystems.rst",
+      "source/docs/software/commandbased/commands-v2/what-is-command-based.rst",
+      "source/docs/software/commandbased/index.rst",
+      "source/docs/software/convenience-features/event-based.rst",
+      "source/docs/software/convenience-features/index.rst",
+      "source/docs/software/convenience-features/scheduling-functions.rst",
+      "source/docs/software/dashboards/advantagescope.rst",
+      "source/docs/software/dashboards/dashboard-intro.rst",
+      "source/docs/software/dashboards/elastic.rst",
+      "source/docs/software/dashboards/glass/command-based-widgets.rst",
+      "source/docs/software/dashboards/glass/field2d-widget.rst",
+      "source/docs/software/dashboards/glass/index.rst",
+      "source/docs/software/dashboards/glass/introduction.rst",
+      "source/docs/software/dashboards/glass/mech2d-widget.rst",
+      "source/docs/software/dashboards/glass/networktables-connection.rst",
+      "source/docs/software/dashboards/glass/plots.rst",
+      "source/docs/software/dashboards/glass/widgets.rst",
+      "source/docs/software/dashboards/index.rst",
+      "source/docs/software/dashboards/troubleshooting-dashboard-connectivity.rst",
+      "source/docs/software/examples-tutorials/third-party-examples.rst",
+      "source/docs/software/examples-tutorials/wpilib-examples.rst",
+      "source/docs/software/firstdriverstation/first-driver-station-best-practices.rst",
+      "source/docs/software/firstdriverstation/first-driver-station-debug-graph.rst",
+      "source/docs/software/firstdriverstation/first-driver-station-errors-warnings.rst",
+      "source/docs/software/firstdriverstation/first-driver-station-introduction.rst",
+      "source/docs/software/firstdriverstation/first-driver-station-log-viewer.rst",
+      "source/docs/software/firstdriverstation/index.rst",
+      "source/docs/software/firstdriverstation/manually-setting-the-first-driver-station-to-start-custom-dashboard.rst",
+      "source/docs/software/frc-glossary.rst",
+      "source/docs/software/hardware-apis/index.rst",
+      "source/docs/software/hardware-apis/misc/addressable-leds.rst",
+      "source/docs/software/hardware-apis/misc/index.rst",
+      "source/docs/software/hardware-apis/motors/index.rst",
+      "source/docs/software/hardware-apis/motors/pwm-controllers.rst",
+      "source/docs/software/hardware-apis/motors/servos.rst",
+      "source/docs/software/hardware-apis/motors/using-motor-controllers.rst",
+      "source/docs/software/hardware-apis/motors/wpi-drive-classes.rst",
+      "source/docs/software/hardware-apis/pneumatics/index.rst",
+      "source/docs/software/hardware-apis/pneumatics/pressure.rst",
+      "source/docs/software/hardware-apis/pneumatics/solenoids.rst",
+      "source/docs/software/hardware-apis/sensors/accelerometers-software.rst",
+      "source/docs/software/hardware-apis/sensors/analog-inputs-software.rst",
+      "source/docs/software/hardware-apis/sensors/analog-potentiometers-software.rst",
+      "source/docs/software/hardware-apis/sensors/digital-inputs-software.rst",
+      "source/docs/software/hardware-apis/sensors/encoders-software.rst",
+      "source/docs/software/hardware-apis/sensors/gyros-software.rst",
+      "source/docs/software/hardware-apis/sensors/index.rst",
+      "source/docs/software/hardware-apis/sensors/limit-switch.rst",
+      "source/docs/software/hardware-apis/sensors/sensor-overview-software.rst",
+      "source/docs/software/kinematics-and-odometry/differential-drive-kinematics.rst",
+      "source/docs/software/kinematics-and-odometry/differential-drive-odometry.rst",
+      "source/docs/software/kinematics-and-odometry/index.rst",
+      "source/docs/software/kinematics-and-odometry/intro-and-chassis-velocities.rst",
+      "source/docs/software/kinematics-and-odometry/mecanum-drive-kinematics.rst",
+      "source/docs/software/kinematics-and-odometry/mecanum-drive-odometry.rst",
+      "source/docs/software/kinematics-and-odometry/swerve-drive-kinematics.rst",
+      "source/docs/software/kinematics-and-odometry/swerve-drive-odometry.rst",
+      "source/docs/software/networktables/client-side-program.rst",
+      "source/docs/software/networktables/index.rst",
+      "source/docs/software/networktables/listening-for-change.rst",
+      "source/docs/software/networktables/multiple-instances.rst",
+      "source/docs/software/networktables/networktables-intro.rst",
+      "source/docs/software/networktables/networktables-networking.rst",
+      "source/docs/software/networktables/nt4-migration-guide.rst",
+      "source/docs/software/networktables/publish-and-subscribe.rst",
+      "source/docs/software/networktables/reading-array-values-published-by-networktables.rst",
+      "source/docs/software/networktables/robot-program.rst",
+      "source/docs/software/networktables/tables-and-topics.rst",
+      "source/docs/software/pathplanning/choreo/index.rst",
+      "source/docs/software/pathplanning/index.rst",
+      "source/docs/software/python/index.rst",
+      "source/docs/software/python/pyproject_toml.rst",
+      "source/docs/software/python/subcommands/deploy.rst",
+      "source/docs/software/python/subcommands/index.rst",
+      "source/docs/software/support/support-resources.rst",
+      "source/docs/software/systemcore-info/index.rst",
+      "source/docs/software/systemcore-info/roborio-brownouts.rst",
+      "source/docs/software/systemcore-info/roborio-ftp.rst",
+      "source/docs/software/systemcore-info/roborio-ssh.rst",
+      "source/docs/software/systemcore-info/systemcore-introduction.rst",
+      "source/docs/software/systemcore-info/systemcore-web-dashboard.rst",
+      "source/docs/software/telemetry/3rd-party-libraries.rst",
+      "source/docs/software/telemetry/datalog-download.rst",
+      "source/docs/software/telemetry/datalog.rst",
+      "source/docs/software/telemetry/index.rst",
+      "source/docs/software/telemetry/persistent-alerts.rst",
+      "source/docs/software/telemetry/robot-telemetry-with-annotations.rst",
+      "source/docs/software/telemetry/telemetry.rst",
+      "source/docs/software/vision-processing/apriltag/apriltag-intro.rst",
+      "source/docs/software/vision-processing/apriltag/index.rst",
+      "source/docs/software/vision-processing/index.rst",
+      "source/docs/software/vision-processing/introduction/cameraserver-class.rst",
+      "source/docs/software/vision-processing/introduction/identifying-and-processing-the-targets.rst",
+      "source/docs/software/vision-processing/introduction/index.rst",
+      "source/docs/software/vision-processing/introduction/strategies-for-vision-programming.rst",
+      "source/docs/software/vision-processing/introduction/what-is-vision.rst",
+      "source/docs/software/vision-processing/roborio/cameraserver-webserver.rst",
+      "source/docs/software/vision-processing/roborio/index.rst",
+      "source/docs/software/vision-processing/roborio/using-multiple-cameras.rst",
+      "source/docs/software/vision-processing/roborio/using-the-cameraserver-on-the-roborio.rst",
+      "source/docs/software/vision-processing/wpilibpi/basic-vision-example.rst",
+      "source/docs/software/vision-processing/wpilibpi/image-thresholding.rst",
+      "source/docs/software/vision-processing/wpilibpi/index.rst",
+      "source/docs/software/vision-processing/wpilibpi/installing-the-image-to-your-microsd-card.rst",
+      "source/docs/software/vision-processing/wpilibpi/morphological-operations.rst",
+      "source/docs/software/vision-processing/wpilibpi/the-raspberry-pi-frc-console.rst",
+      "source/docs/software/vision-processing/wpilibpi/using-a-coprocessor-for-vision-processing.rst",
+      "source/docs/software/vision-processing/wpilibpi/using-cameraserver.rst",
+      "source/docs/software/vision-processing/wpilibpi/using-the-raspberry-pi-for-frc.rst",
+      "source/docs/software/vision-processing/wpilibpi/walkthrough-video.rst",
+      "source/docs/software/vision-processing/wpilibpi/what-you-need-to-get-the-pi-image-running.rst",
+      "source/docs/software/vision-processing/wpilibpi/working-with-contours.rst",
+      "source/docs/software/vscode-overview/3rd-party-libraries.rst",
+      "source/docs/software/vscode-overview/creating-robot-program.rst",
+      "source/docs/software/vscode-overview/debugging-robot-program.rst",
+      "source/docs/software/vscode-overview/deploying-robot-code.rst",
+      "source/docs/software/vscode-overview/importing-last-years-robot-code.rst",
+      "source/docs/software/vscode-overview/index.rst",
+      "source/docs/software/vscode-overview/viewing-console-output.rst",
+      "source/docs/software/vscode-overview/vscode-basics.rst",
+      "source/docs/software/vscode-overview/wpilib-commands-vscode.rst",
+      "source/docs/software/what-is-wpilib.rst",
+      "source/docs/software/wpilib-tools/outlineviewer/index.rst",
+      "source/docs/software/wpilib-tools/robot-simulation/device-sim.rst",
+      "source/docs/software/wpilib-tools/robot-simulation/drivesim-tutorial/diffdrive-sim-overview.rst",
+      "source/docs/software/wpilib-tools/robot-simulation/drivesim-tutorial/drivetrain-model.rst",
+      "source/docs/software/wpilib-tools/robot-simulation/drivesim-tutorial/index.rst",
+      "source/docs/software/wpilib-tools/robot-simulation/drivesim-tutorial/odometry-simgui.rst",
+      "source/docs/software/wpilib-tools/robot-simulation/drivesim-tutorial/simulation-instance.rst",
+      "source/docs/software/wpilib-tools/robot-simulation/drivesim-tutorial/updating-drivetrain-model.rst",
+      "source/docs/software/wpilib-tools/robot-simulation/index.rst",
+      "source/docs/software/wpilib-tools/robot-simulation/introduction.rst",
+      "source/docs/software/wpilib-tools/robot-simulation/physics-sim.rst",
+      "source/docs/software/wpilib-tools/robot-simulation/simulation-gui.rst",
+      "source/docs/software/wpilib-tools/robot-simulation/unit-testing.rst",
+      "source/docs/software/wpilib-tools/wpical/index.rst",
+      "source/docs/xrp-robot/getting-to-know-xrp.rst",
+      "source/docs/xrp-robot/hardware-and-imaging.rst",
+      "source/docs/xrp-robot/hardware-support.rst",
+      "source/docs/xrp-robot/index.rst",
+      "source/docs/xrp-robot/programming-xrp.rst",
+      "source/docs/xrp-robot/web-ui.rst",
+      "source/docs/yearly-overview/2020-Game-Data.rst",
+      "source/docs/yearly-overview/2026-game-data.rst",
+      "source/docs/yearly-overview/index.rst",
+      "source/docs/yearly-overview/known-issues.rst",
+      "source/docs/yearly-overview/removed-features.rst",
+      "source/docs/yearly-overview/returning-quickstart.rst",
+      "source/docs/yearly-overview/yearly-changelog.rst",
+      "source/docs/zero-to-robot/introduction.rst",
+      "source/docs/zero-to-robot/step-1/basic-robot-wiring.rst",
+      "source/docs/zero-to-robot/step-1/index.rst",
+      "source/docs/zero-to-robot/step-1/intro-to-frc-robot-wiring.rst",
+      "source/docs/zero-to-robot/step-2/first-driver-station-installation.rst",
+      "source/docs/zero-to-robot/step-2/index.rst",
+      "source/docs/zero-to-robot/step-2/offline-installation-preparations.rst",
+      "source/docs/zero-to-robot/step-2/python-setup.rst",
+      "source/docs/zero-to-robot/step-2/step-2-next-steps.rst",
+      "source/docs/zero-to-robot/step-2/wpilib-setup.rst",
+      "source/docs/zero-to-robot/step-3/imaging-your-systemcore.rst",
+      "source/docs/zero-to-robot/step-3/index.rst",
+      "source/docs/zero-to-robot/step-3/openmesh.rst",
+      "source/docs/zero-to-robot/step-3/radio-programming.rst",
+      "source/docs/zero-to-robot/step-4/creating-test-drivetrain-program-cpp-java-python.rst",
+      "source/docs/zero-to-robot/step-4/index.rst",
+      "source/docs/zero-to-robot/step-4/running-test-program.rst",
+      "source/index.rst",
+      "source/stubs/advanced-programming-stub.rst",
+      "source/stubs/api-docs-stub.rst",
+      "source/stubs/hardware-stub.rst",
+      "source/stubs/programming-basics-stub.rst",
+      "source/stubs/software-tools-stub.rst"
+    ],
+    "nonIndexDocs": 270
+  }
+}

@@ -56,3 +56,5 @@ Scope limit: reviewed live manual registry currently covers 2026 only, not arbit
 A separate cold-open popup failure (React lazy component outside Suspense) was reproduced while testing. The assistant dialog now has a loading and error boundary; direct /assistant succeeded. Frontend promotion and cold-open verification are recorded in the follow-up below.
 
 Frontend follow-up verified: commit 73dee1d, production Vercel JBcqaNToZxoiQvFXzKwfHBuPFwr4 Ready/Current on g3-6740.com. Fresh home load -> Open G3 Assist showed loading state then full composer without the React crash. Final persisted Edge bundle matched source after source-anchor correction. One paid acceptance question only, 0.010543 USD settled.
+
+History follow-up c754f5d: successful answer was durable in execution ledger but bulk message insert omitted user citations, causing a default/null mismatch. Explicit consistent row columns fixed and deployed; handler regression passed; persisted bundle matched. Restored the acceptance question and answer from the completed execution (2 messages) without another paid call.
