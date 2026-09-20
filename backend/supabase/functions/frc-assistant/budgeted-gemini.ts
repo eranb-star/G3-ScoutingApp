@@ -32,7 +32,7 @@ export async function executeBudgetedText(options: Options, dependencies: {fetch
   if(options.signal?.aborted) throw new BudgetExecutionError('CANCELLED',409);
   const step=options.step??'answer:0';
   if(!['scope:0','answer:0'].includes(step)) throw new BudgetExecutionError('INVALID_STEP',400);
-  const maxOutput=step==='scope:0'?512:PRICE.maxOutput;
+  const maxOutput=step==='scope:0'?2048:PRICE.maxOutput;
   const body={contents:[{role:'user',parts:[{text:options.prompt}]}],
     systemInstruction:{parts:[{text:options.systemInstruction}]},
     generationConfig:{candidateCount:1,maxOutputTokens:maxOutput}};
