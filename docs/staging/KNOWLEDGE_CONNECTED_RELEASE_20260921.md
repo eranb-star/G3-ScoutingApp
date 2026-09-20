@@ -1,4 +1,4 @@
-# Connected knowledge release — deployment in progress
+# Connected knowledge release — production cutover verified
 
 The user authorized the complete connected knowledge release. This extends the production protection release `34d7741`; it is not a second unrelated knowledge application.
 
@@ -27,8 +27,16 @@ TypeScript and isolated production build passed. Full local corpus queries retur
 
 Regression tests passed: corpus authorization/filtering/topic semantics/source diversity/atomic activation; team relevance and caller RLS; robot evidence review/retirement/concurrency; actual assistant-handler authorization; official source discovery/leases/retry/cancellation; article revision protections; spending guards. EN/HE desktop and 390px iframe layout inspected. These are layout checks, not physical-device acceptance.
 
-## Deployment checkpoint
+## Deployment checkpoint — verified 2026-09-21
 
-Production and QA received source-check, robot research, corpus and team-search schemas. Both have all 48,797 passages. Citation bulk loads are in progress. Neither corpus is activated yet. Assistant retrieval handler deployed to QA and its persisted editor source matched the bundle exactly after reload. Production assistant and source-check deployments are in progress and require final verification.
+Production website: commit `fee0895f40145d1d066a5d6ca304085ff904a8a6`, Vercel `CssQY5nCPp7VGc8tT7JZVFEfSkFy`, Ready / Production, assigned to https://g3-6740.com. Built using production environment. Public entry `/assets/index-DuQ2wgsb.js` points to the production Supabase project, not QA, and includes the connected workspace. The deployed assistant chunk retains text-only mode, request recovery and selected-evidence controls; image upload is compiled out.
 
-Website cutover is pending. Do not call the release complete. Real Mentor/Student sign-in, paid provider quality evaluation, automatic new-document extraction, restore rehearsal and physical-device acceptance remain unverified or incomplete. Earlier user deferral of production account acceptance remains in force; no passwords were reset.
+Both QA and production generations are ACTIVE: 1,716 sources, 48,797 passages, 50,157 citations. Every body SHA256 and the full citation mapping digest passed before activation. CSV transfer altered three QA and seven production passage bodies; exact canonical bodies were restored before the integrity gate passed. Production indexed footprint is 137,609,216 bytes (~131.2 MiB); this is the corpus footprint, not total project usage.
+
+Production and QA authenticated SQL-role acceptance passed for PID retrieval (805 occurrences, 10 per page), topic retrieval, citation resolution, private-table denial and team search. QA also passed inactive-caller denial with all temporary changes rolled back. Production did not modify any member. These checks do not replace real signed-in browser acceptance.
+
+Persisted deployed assistant code matches the release bundle in QA and production. Production knowledge-source-check code also matches its bundle. Unauthenticated Edge requests returned 401. Source-check retains its default gateway JWT verification; authenticated invocation remains unverified.
+
+Final production budget policy: enabled=false, activation_approved=false, monthly_limit_microusd=25000000, provider attempts=0. No paid calls or billing changes occurred.
+
+The connected website/search/data release is deployed. The entire long-term design is NOT complete: automatic new-PDF extraction/indexing remains unimplemented; paid provider quality evaluation and activation remain pending; real Mentor/Student sign-in was deferred by the user; restore rehearsal and physical-device acceptance remain outstanding. No passwords were reset. Historical coverage remains partial. Do not represent imported passages as verified robot facts or claim exhaustive top-500 coverage.
