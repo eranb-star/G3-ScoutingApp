@@ -44,12 +44,14 @@ const client = {
   },
 };
 globalThis.__assistClient = () => client;
-globalThis.__assistDeno = {env:{get:()=> 'synthetic'},serve:fn=>handler=fn};
+globalThis.__assistDeno = {env:{get:key=>key==='G3_ASSIST_EXECUTION_MODE'?'legacy':'synthetic'},serve:fn=>handler=fn};
 const oldFetch = globalThis.fetch;
 globalThis.fetch = async () => { paidCalls++; throw new Error('No real provider calls permitted'); };
 try {
   const original = fs.readFileSync(new URL('../../../backend/supabase/functions/frc-assistant/index.ts', import.meta.url), 'utf8');
-  const code = original.replace(/import \{ createClient \} from "[^"]+";/, 'const createClient=globalThis.__assistClient; const Deno=globalThis.__assistDeno;');
+  const code = original.replace(/import \{ createClient \} from "[^"]+";/, 'const createClient=globalThis.__assistClient; const Deno=globalThis.__assistDeno;')
+    .replace('import("./budgeted-gemini.ts")','Promise.resolve(globalThis.__assistBudgetModule)')
+    .replace("import('./team-purpose.ts')",'Promise.resolve(globalThis.__assistPurposeModule)');
   const compiled = ts.transpileModule(code,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}});
   await import('data:text/javascript;base64,'+Buffer.from(compiled.outputText).toString('base64'));
   const call = body => handler(new Request('https://test.invalid/assistant',{method:'POST',headers:{Authorization:'Bearer synthetic'},body:JSON.stringify(body)}));
@@ -69,7 +71,7 @@ try {
   assert.equal(noProvider.status,503);
   assert.equal((await noProvider.json()).code,'PROVIDER_NOT_CONFIGURED');
   assert.equal(protectedReads,0); assert.equal(paidCalls,0);
-  globalThis.__assistDeno.env.get=()=> 'synthetic';
+  globalThis.__assistDeno.env.get=key=>key==='G3_ASSIST_EXECUTION_MODE'?'legacy':'synthetic';
   active=true;
   let accessChecks=0;
   client.rpc=async()=>({data:++accessChecks < 3,error:null});
@@ -82,5 +84,42 @@ try {
   // First call is permitted; permission is revoked before the fallback call.
   assert.equal((await call({message:'Explain PID'})).status,403);
   assert.equal(paidCalls,1); assert.equal(accessChecks,3);
+  client.rpc=async name=>({data:name==='claim_g3_assist_execution'?{claimed:true}:true,error:null});
+  globalThis.__assistPurposeModule={checkTeamPurpose:async()=>({decision:'allow',category:'engineering'})};
+  globalThis.__assistDeno.env.get=key=>key==='G3_ASSIST_EXECUTION_MODE'?'budgeted-text-v1':'synthetic';
+  assert.equal((await call({message:'PID'})).status,400);
+  assert.equal((await call({message:'PID',image:{data:'x'}})).status,400);
+  class BudgetExecutionError extends Error {constructor(code,status){super(code);this.code=code;this.status=status;}}
+  globalThis.__assistBudgetModule={BudgetExecutionError,executeBudgetedText:async options=>{
+    assert.equal(options.memberId,'synthetic');assert.ok(options.prompt.includes('Explain PID'));
+    throw new BudgetExecutionError('TEAM_MONTHLY_BUDGET_EXHAUSTED',429);
+  }};
+  const exhausted=await call({message:'Explain PID',requestId:crypto.randomUUID()});
+  assert.equal(exhausted.status,429);assert.equal((await exhausted.json()).code,'TEAM_MONTHLY_BUDGET_EXHAUSTED');
+  assert.equal(paidCalls,1); // Budget failure never falls back to the legacy provider loop.
+  for(const [code,english,hebrew] of [
+    ['MEMBER_DAILY_BUDGET_EXHAUSTED','Your daily','היומי שלכם'],
+    ['TEAM_DAILY_BUDGET_EXHAUSTED',"team's daily",'היומי של הקבוצה'],
+    ['PURPOSE_BUDGET_EXHAUSTED','relevance checks','לבדיקות רלוונטיות'],
+    ['PROVIDER_RATE_LIMIT','one minute','דקה'],
+    ['PROVIDER_COOLDOWN','five minutes','חמש דקות']
+  ]){
+    globalThis.__assistBudgetModule.executeBudgetedText=async()=>{throw new BudgetExecutionError(code,429);};
+    for(const [language,expected] of [['en',english],['he',hebrew]]){
+      const response=await call({message:'Explain PID',language,requestId:crypto.randomUUID()});
+      assert.equal(response.status,429);const body=await response.json();assert.equal(body.code,code);assert.ok(body.error.includes(expected));
+    }
+  }
+  assert.equal(paidCalls,1);
+  let answerCalls=0;
+  globalThis.__assistBudgetModule.executeBudgetedText=async()=>{answerCalls++;return {model:'synthetic',answer:'test',usage:{}};};
+  for(const decision of ['decline','clarify']){
+    globalThis.__assistPurposeModule.checkTeamPurpose=async()=>({decision});
+    assert.equal((await call({message:'Unrelated request',requestId:crypto.randomUUID()})).status,422);
+  }
+  assert.equal(answerCalls,0);
+  client.rpc=async name=>({data:name==='claim_g3_assist_execution'?{claimed:false,state:'completed',result:{status:200,body:{answer:'recovered'}}}:true,error:null});
+  assert.equal((await (await call({message:'Previously answered',requestId:crypto.randomUUID()})).json()).answer,'recovered');
+  assert.equal(answerCalls,0);
   console.log('PASS: real permission SQL defaults, grants, revocation, inactive members, rerun preservation, audit isolation; actual Edge handler denies text/history/image/issue requests before context or provider work and fails closed on permission errors.');
-} finally { globalThis.fetch=oldFetch; delete globalThis.__assistClient; delete globalThis.__assistDeno; }
+} finally { globalThis.fetch=oldFetch; delete globalThis.__assistClient; delete globalThis.__assistDeno; delete globalThis.__assistBudgetModule; delete globalThis.__assistPurposeModule; }

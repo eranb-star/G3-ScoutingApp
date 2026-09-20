@@ -1,0 +1,64 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+import {randomUUID} from 'node:crypto';
+import {PGlite} from '../../../docs/staging/ops-qa/node_modules/@electric-sql/pglite/dist/index.js';
+const db=new PGlite(),member=randomUUID(),hash='a'.repeat(64);
+await db.exec(`create role anon;create role authenticated;create role service_role;create schema auth;
+create function auth.uid()returns uuid language sql as $$select null::uuid$$;
+create table team_members(id uuid primary key,role text,active boolean);create table role_permissions(role text,permission_key text,allowed boolean);
+create function current_team_role()returns text language sql as $$select 'mentor'::text$$;
+create function is_admin()returns boolean language sql as $$select false$$;
+insert into team_members values('${member}','mentor',true);insert into role_permissions values('mentor','use_g3_assist',true);`);
+for(const f of ['budget','budget_admin','executions','spending_guards'])await db.exec(fs.readFileSync(new URL('../../../backend/supabase/g3_assist_'+f+'_20260920.sql',import.meta.url),'utf8'));
+const rpc=async(name,args)=>(await db.query(`select to_jsonb(${name}(${args.map((_,i)=>'$'+(i+1)).join(',')})) result`,args)).rows[0].result;
+await db.exec('update g3_assist_budget_policy set enabled=true,activation_approved=true');
+let request;
+const claim=async()=>{request=randomUUID();await rpc('claim_g3_assist_execution',[member,request,hash]);};
+const reserve=(amount,step='scope:0')=>rpc('reserve_g3_assist_budget',[member,request,step,hash,'qa','gemini','synthetic',amount]);
+await claim();
+await assert.rejects(reserve(1000001),/MEMBER_DAILY_BUDGET_EXHAUSTED/);
+await db.exec('update g3_assist_budget_policy set daily_team_microusd=700000');
+await assert.rejects(reserve(800000),/TEAM_DAILY_BUDGET_EXHAUSTED/);
+await db.exec('update g3_assist_budget_policy set daily_team_microusd=3000000,monthly_scope_microusd=700000');
+await assert.rejects(reserve(800000),/PURPOSE_BUDGET_EXHAUSTED/);
+await db.exec('update g3_assist_budget_policy set monthly_scope_microusd=5000000,execution_microusd=700000');
+await assert.rejects(reserve(800000),/EXECUTION_BUDGET_EXHAUSTED/);
+await db.exec('update g3_assist_budget_policy set execution_microusd=1600000');
+const first=await reserve(800000);await rpc('dispatch_g3_assist_budget',[first.id]);await rpc('settle_g3_assist_budget',[first.id,100000,'synthetic']);
+const second=await reserve(800000,'answer:0');
+await db.exec('update g3_assist_budget_policy set daily_member_microusd=850000');
+await assert.rejects(rpc('dispatch_g3_assist_budget',[second.id]),/MEMBER_DAILY_BUDGET_EXHAUSTED/);
+await db.exec('update g3_assist_budget_policy set daily_member_microusd=1000000,dispatches_per_minute=1');
+await assert.rejects(rpc('dispatch_g3_assist_budget',[second.id]),/PROVIDER_RATE_LIMIT/);
+await db.exec('update g3_assist_budget_policy set dispatches_per_minute=4');
+await rpc('dispatch_g3_assist_budget',[second.id]);await rpc('stop_g3_assist_budget',[second.id]);
+await rpc('finish_g3_assist_execution',[member,request,{body:{error:'synthetic'},status:503},true]);
+// An unresolved charge from yesterday must still withhold today's allowance.
+await db.query("update g3_assist_budget_attempts set created_at=clock_timestamp()-interval '2 days' where id=$1",[second.id]);
+await claim();await assert.rejects(reserve(200001),/MEMBER_DAILY_BUDGET_EXHAUSTED/);
+await assert.rejects(reserve(1,'arbitrary:0'),/UNSUPPORTED_PAID_STEP/);
+await db.exec('create table ai_conversations(id uuid primary key,member_id uuid not null)');
+await db.exec(fs.readFileSync(new URL('../../../backend/supabase/g3_assist_result_privacy_20260920.sql',import.meta.url),'utf8'));
+const conversation=randomUUID();await db.query('insert into ai_conversations values($1,$2)',[conversation,member]);
+assert.equal(await rpc('finish_g3_assist_execution',[member,request,{body:{conversationId:conversation,answer:'Synthetic private answer'},status:200},false]),true);
+await db.query('delete from ai_conversations where id=$1',[conversation]);
+assert.equal((await rpc('claim_g3_assist_execution',[member,request,hash])).result,null);
+await claim();assert.equal(await rpc('finish_g3_assist_execution',[member,request,{body:{conversationId:conversation,answer:'Late answer'},status:200},false]),false);
+assert.equal((await rpc('claim_g3_assist_execution',[member,request,hash])).result,null);
+assert.equal((await db.query('select count(*)::int n from g3_assist_budget_attempts')).rows[0].n,2);
+// Produce two more uncertain outcomes through real RPCs, not direct ledger writes.
+const secondMember=randomUUID();await db.query("insert into team_members values($1,'mentor',true)",[secondMember]);
+for(let i=0;i<2;i++){
+ const id=randomUUID();await rpc('claim_g3_assist_execution',[secondMember,id,hash]);
+ const attempt=await rpc('reserve_g3_assist_budget',[secondMember,id,'scope:0',hash,'qa','gemini','synthetic',1]);
+ await rpc('dispatch_g3_assist_budget',[attempt.id]);await rpc('stop_g3_assist_budget',[attempt.id]);
+ await rpc('finish_g3_assist_execution',[secondMember,id,{body:{error:'synthetic failure'},status:503},true]);
+}
+const cooldownRequest=randomUUID();await rpc('claim_g3_assist_execution',[secondMember,cooldownRequest,hash]);
+const duringCooldown=()=>rpc('reserve_g3_assist_budget',[secondMember,cooldownRequest,'scope:0',hash,'qa','gemini','synthetic',1]);
+await assert.rejects(duringCooldown(),/PROVIDER_COOLDOWN/);
+// Advance fixture timestamps without releasing uncertain money.
+await db.exec("update g3_assist_budget_attempts set dispatched_at=clock_timestamp()-interval '6 minutes' where state='uncertain'");
+assert.equal((await duringCooldown()).state,'reserved');
+assert.equal((await db.query("select sum(reserved_microusd)::int amount from g3_assist_budget_attempts where state='uncertain'")).rows[0].amount,800002);
+await db.close();console.log('PASS: team/day, member/day, purpose/month, execution caps; lowered cap rechecked at dispatch; dispatch pacing; old uncertain costs retained; unknown paid steps blocked; deleted conversation answers cannot be recovered or resurrected, accounting retained.');

@@ -1,0 +1,28 @@
+import {useEffect,useState} from 'react';
+import {supabase} from '../supabase';
+import {useLocalization} from '../lib/localization';
+import '../styles/assistBudget.css';
+type Budget={limitMicrousd:number;spentMicrousd:number;reservedMicrousd:number;remainingMicrousd:number;enabled:boolean;activationApproved:boolean;unresolvedAttempts:number;resetAt:string;warning:string;safeguards?:{teamDay:number|null;memberDay:number|null;purposeMonth:number|null}};
+export default function AssistBudgetPanel(){
+ const {pick}=useLocalization();
+ const [budget,setBudget]=useState<Budget|null>(null),[limit,setLimit]=useState('25'),[message,setMessage]=useState(''),[busy,setBusy]=useState(false);
+ const money=(n:number)=>new Intl.NumberFormat(pick('en-US','he-IL'),{style:'currency',currency:'USD',maximumFractionDigits:2}).format(n/1000000);
+ async function load(){setBusy(true);try{const {data,error}=await supabase.rpc('get_g3_assist_budget_status');if(error)throw error;setBudget(data as Budget);setLimit(String(data.limitMicrousd/1000000));setMessage('');}catch{setMessage(pick('Spending controls are unavailable. No settings have been changed.','בקרות התקציב אינן זמינות. ההגדרות לא שונו.'));}finally{setBusy(false);}}
+ useEffect(()=>{void load();},[]);
+ async function save(paused:boolean){if(!budget)return;const amount=Number(limit);if(!/^\d+(\.\d{1,2})?$/.test(limit)||amount<0||amount>25){setMessage(pick('Enter an amount from $0 to $25, with up to two decimal places.','יש להזין סכום בין 0 ל־25 דולר, עם עד שתי ספרות אחרי הנקודה.'));return;}setBusy(true);try{const {data,error}=await supabase.rpc('update_g3_assist_budget',{p_limit_microusd:Math.round(amount*1000000),p_paused:paused});if(error)throw error;setBudget(data as Budget);setMessage(pick('Spending controls saved.','בקרות התקציב נשמרו.'));}catch{setMessage(pick('Settings could not be saved. Refresh and try again.','לא ניתן לשמור את ההגדרות. רעננו ונסו שוב.'));}finally{setBusy(false);}}
+ return <section className="assist-budget" aria-labelledby="assist-budget-title" aria-busy={busy}>
+  <header><div><div className="hub-eyebrow">G3 ASSIST</div><h2 id="assist-budget-title">{pick('Team AI budget','תקציב הבינה המלאכותית לקבוצה')}</h2><p>{pick('One monthly allowance shared by all permitted users. Ordinary search does not use this budget.','תקציב חודשי אחד לכל המשתמשים המורשים. חיפוש רגיל אינו משתמש בתקציב זה.')}</p></div><button type="button" disabled={busy} onClick={()=>void load()}>{pick('Refresh','רענון')}</button></header>
+  {message&&<p role="status">{message}</p>}
+  {!budget?<p>{busy?pick('Loading spending controls…','טוען בקרות תקציב…'):pick('Budget information is not available.','מידע התקציב אינו זמין.')}</p>:<>
+   <p className="assist-budget-state">{!budget.activationApproved?pick('Paid pilot not enabled','הפיילוט בתשלום טרם הופעל'):budget.enabled?pick('AI requests enabled','בקשות AI פעילות'):pick('AI requests paused','בקשות AI מושהות')}</p>
+   <dl className="assist-budget-metrics">{[[pick('Spent','נוצל'),budget.spentMicrousd],[pick('Reserved for requests','שמור לבקשות'),budget.reservedMicrousd],[pick('Remaining','נותר'),budget.remainingMicrousd],[pick('Monthly limit','מגבלה חודשית'),budget.limitMicrousd]].map(([label,value])=><div key={label}><dt>{label}</dt><dd>{money(Number(value))}</dd></div>)}</dl>
+   <progress max={Math.max(1,budget.limitMicrousd)} value={Math.min(budget.limitMicrousd,budget.spentMicrousd+budget.reservedMicrousd)} aria-label={pick('Monthly budget used and reserved','תקציב חודשי שנוצל ונשמר')}/>
+   {budget.warning!=='normal'&&<p role="status" className="assist-budget-warning">{budget.warning==='exhausted'?pick('Budget fully spent or reserved. New paid requests are blocked.','התקציב נוצל או נשמר במלואו. בקשות חדשות בתשלום חסומות.'):pick('The team is approaching its monthly AI limit.','הקבוצה מתקרבת למגבלת התקציב החודשית.')}</p>}
+   <p>{pick('Resets','מתאפס')} {new Date(budget.resetAt).toLocaleString(pick('en-US','he-IL'))}. {pick('Reserved funds include requests whose final charge is not yet known.','כספים שמורים כוללים בקשות שהחיוב הסופי שלהן טרם ידוע.')}</p>
+   {budget.unresolvedAttempts>0&&<p>{pick('Requests awaiting cost reconciliation:','בקשות הממתינות לבירור חיוב:')} {budget.unresolvedAttempts}</p>}
+   {budget.safeguards?.teamDay!=null&&<p>{pick('Additional safeguards:','מגבלות נוספות:')} {money(budget.safeguards.teamDay)} {pick('per team/day','לקבוצה ביום')} · {money(budget.safeguards.memberDay??0)} {pick('per member/day','למשתמש ביום')} · {money(budget.safeguards.purposeMonth??0)} {pick('per month for relevance checks. All count toward the same monthly allowance.','בחודש לבדיקות רלוונטיות. הכל נכלל באותו תקציב חודשי.')}</p>}
+   <div className="assist-budget-controls"><label>{pick('Monthly limit (USD)','מגבלה חודשית (דולר)')}<input type="number" min="0" max="25" step="0.01" inputMode="decimal" value={limit} disabled={busy} onChange={e=>setLimit(e.target.value)}/></label><button type="button" disabled={busy} onClick={()=>void save(!budget.enabled)}>{pick('Save limit','שמירת מגבלה')}</button><button type="button" disabled={busy||(!budget.enabled&&!budget.activationApproved)} onClick={()=>void save(budget.enabled)}>{budget.enabled?pick('Pause AI requests','השהיית בקשות AI'):pick('Resume AI requests','חידוש בקשות AI')}</button></div>
+   <small>{pick('Maximum approved: $25/month. Warnings at 80% and 95%. Pausing stops new paid dispatches; an already running call may still incur a charge. Provider billing and taxes are separate.','מקסימום מאושר: 25 דולר בחודש. התראות ב־80% וב־95%. השהיה עוצרת בקשות חדשות; בקשה שכבר נשלחה עשויה עדיין להיות מחויבת. חיובי הספק ומסים נפרדים.')}</small>
+  </>}
+ </section>;
+}

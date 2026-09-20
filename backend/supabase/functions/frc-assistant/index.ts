@@ -43,7 +43,33 @@ function retryDelay(attempt: number) {
   return 700 * 2 ** attempt + Math.floor(Math.random() * 350);
 }
 
+function budgetErrorMessage(code: string, language: string) {
+  const messages: Record<string, [string,string]> = {
+    TEAM_MONTHLY_BUDGET_EXHAUSTED: ["The team's monthly AI allowance is spent or reserved. Ordinary search remains available.","תקציב ה-AI החודשי של הקבוצה נוצל או שמור לבקשות. החיפוש הרגיל עדיין זמין."],
+    TEAM_DAILY_BUDGET_EXHAUSTED: ["The team's daily AI allowance is spent or reserved. Ordinary search remains available. Unresolved charges may continue to hold funds after the daily reset.","תקציב ה-AI היומי של הקבוצה נוצל או שמור לבקשות. החיפוש הרגיל עדיין זמין. חיובים שטרם הושלמו עשויים להמשיך לשמור כספים גם לאחר האיפוס היומי."],
+    MEMBER_DAILY_BUDGET_EXHAUSTED: ["Your daily AI allowance is spent or reserved. Check any pending request; ordinary search remains available.","תקציב ה-AI היומי שלכם נוצל או שמור לבקשות. בדקו בקשות ממתינות; החיפוש הרגיל עדיין זמין."],
+    PURPOSE_BUDGET_EXHAUSTED: ["The monthly allowance for relevance checks is spent or reserved. An administrator can review spending; ordinary search remains available.","התקציב החודשי לבדיקות רלוונטיות נוצל או שמור לבקשות. מנהל יכול לבדוק את ההוצאות; החיפוש הרגיל עדיין זמין."],
+    EXECUTION_BUDGET_EXHAUSTED: ["This request exceeds its spending allowance. No further paid step was started.","הבקשה חורגת ממגבלת ההוצאה שלה. לא הופעל שלב נוסף בתשלום."],
+    PROVIDER_RATE_LIMIT: ["The assistant is handling the permitted number of requests. Wait at least one minute before trying again; no automatic retry was made.","העוזר מטפל במספר הבקשות המותר. המתינו לפחות דקה לפני ניסיון נוסף; לא בוצע ניסיון חוזר אוטומטי."],
+    PROVIDER_COOLDOWN: ["AI requests are temporarily paused after repeated uncertain responses. Wait at least five minutes; an administrator may need to reconcile pending charges.","בקשות AI מושהות זמנית לאחר מספר תשובות שמצבן אינו ודאי. המתינו לפחות חמש דקות; ייתכן שמנהל יצטרך לברר חיובים ממתינים."],
+    REQUEST_ALREADY_PROCESSED: ["This request was already submitted. Check its saved status before trying again.","הבקשה כבר נשלחה. בדקו את מצבה השמור לפני ניסיון נוסף."]
+  };
+  const fallback: [string,string] = ["The budget-controlled assistant could not complete this request. No automatic retry was made.","העוזר לא הצליח להשלים את הבקשה במסגרת בקרות התקציב. לא בוצע ניסיון חוזר אוטומטי."];
+  return (messages[code]??fallback)[language==='he'?1:0];
+}
+
 Deno.serve(async (request) => {
+  let execution: {admin:any;memberId:string;requestId:string}|null=null;
+  async function finishResponse(body: any,status=200){
+    if(execution){
+      try{
+        const result=await execution.admin.rpc('finish_g3_assist_execution',{p_member:execution.memberId,p_request:execution.requestId,p_result:{body,status},p_failed:status>=400});
+        if(result.error) return response({error:'The answer status could not be saved. Check this request before submitting another.',code:'EXECUTION_SAVE_UNCERTAIN',requestId:execution.requestId},503);
+        if(result.data!==true) return response({error:'This request was cancelled or expired. Check its status.',code:'EXECUTION_STOPPED',requestId:execution.requestId},409);
+      }catch{return response({error:'The request status could not be saved.',code:'EXECUTION_SAVE_UNCERTAIN',requestId:execution.requestId},503);}
+    }
+    return response(body,status);
+  }
   if (request.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (request.method !== "POST") return response({ error: "Method not allowed" }, 405);
 
@@ -80,10 +106,27 @@ Deno.serve(async (request) => {
     // Enforce identity/role even in QA with no provider key. Never create
     // conversations or read context when the provider is not configured.
     if (!geminiKey) return response({ error: "Assistant service is not configured.", code: "PROVIDER_NOT_CONFIGURED" }, 503);
+    // Server-only rollout switch. Never silently fall back to an unmetered path.
+    const executionMode = Deno.env.get("G3_ASSIST_EXECUTION_MODE") || "legacy";
+    if (!["legacy", "budgeted-text-v1"].includes(executionMode)) return response({error:"Assistant execution configuration is unavailable.",code:"EXECUTION_NOT_CONFIGURED"},503);
+    const budgeted = executionMode === "budgeted-text-v1";
+    if (budgeted && (image || body.tools || body.model || body.provider)) return response({error:"This pilot supports text questions using team context. Image analysis and external search are not enabled in this pilot.",code:"PILOT_UNSUPPORTED_INPUT"},400);
+    if (budgeted && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(body.requestId??"")) return response({error:"Reload the assistant before sending this question.",code:"REQUEST_ID_REQUIRED"},400);
+    if(budgeted){
+      const canonical=JSON.stringify({message,language,conversationId:requestedConversation,contextIssueId});
+      const hash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(canonical))),b=>b.toString(16).padStart(2,'0')).join('');
+      const {data:claim,error}=await admin.rpc('claim_g3_assist_execution',{p_member:memberId,p_request:body.requestId,p_hash:hash});
+      if(error) return response({error:'The request could not be started. Check the AI budget or try again later.',code:error.message?.includes('IDEMPOTENCY_CONFLICT')?'IDEMPOTENCY_CONFLICT':'EXECUTION_UNAVAILABLE'},error.message?.includes('IDEMPOTENCY_CONFLICT')?409:503);
+      if(!claim?.claimed){
+        if(claim?.result?.body) return response(claim.result.body,claim.result.status);
+        return response({error:'This request is already recorded. Check its status instead of submitting it again.',code:'EXECUTION_PENDING',state:claim?.state,requestId:body.requestId},409);
+      }
+      execution={admin,memberId,requestId:body.requestId};
+    }
 
     const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     const { count } = await admin.from("ai_messages").select("id", { count: "exact", head: true }).eq("member_id", memberId).eq("role", "user").gte("created_at", since);
-    if ((count ?? 0) >= DAILY_LIMIT) return response({ error: "Your daily G3 Assist limit has been reached. Try again after the rolling 24-hour window resets.", code: "DAILY_LIMIT" }, 429);
+    if ((count ?? 0) >= DAILY_LIMIT) return await finishResponse({ error: "Your daily G3 Assist limit has been reached. Try again after the rolling 24-hour window resets.", code: "DAILY_LIMIT" }, 429);
 
     let imagePart: Record<string, unknown> | null = null;
     let attachmentName: string | null = null;
@@ -91,15 +134,15 @@ Deno.serve(async (request) => {
       const mimeType = ["image/jpeg", "image/png", "image/webp"].includes(String(image.mimeType)) ? String(image.mimeType) : "";
       const data = typeof image.data === "string" ? image.data.replace(/^data:[^;]+;base64,/, "") : "";
       attachmentName = typeof image.name === "string" ? image.name.slice(0, 160) : "image";
-      if (!mimeType || !data || estimatedBase64Bytes(data) > MAX_IMAGE_BYTES) return response({ error: "Use a JPG, PNG, or WebP image smaller than 4 MB." }, 400);
-      if (!body.privacyConfirmed || !attachmentKind) return response({ error: "Confirm that the image contains no people or personal student information." }, 400);
+      if (!mimeType || !data || estimatedBase64Bytes(data) > MAX_IMAGE_BYTES) return await finishResponse({ error: "Use a JPG, PNG, or WebP image smaller than 4 MB." }, 400);
+      if (!body.privacyConfirmed || !attachmentKind) return await finishResponse({ error: "Confirm that the image contains no people or personal student information." }, 400);
       imagePart = { type: "image", mime_type: mimeType, data };
     }
 
     let conversationId = requestedConversation;
     if (conversationId) {
       const { data: owned } = await admin.from("ai_conversations").select("id").eq("id", conversationId).eq("member_id", memberId).maybeSingle();
-      if (!owned) return response({ error: "Conversation not found." }, 404);
+      if (!owned) return await finishResponse({ error: "Conversation not found." }, 404);
     } else {
       const title = (message || (language === "he" ? "ניתוח תמונה" : "Image analysis")).slice(0, 80);
       const { data: created, error } = await admin.from("ai_conversations").insert({ member_id: memberId, title, language }).select("id").single();
@@ -127,12 +170,30 @@ Deno.serve(async (request) => {
     let usedModel = MODEL;
     let lastStatus = 503;
     let providerMessage = "Gemini is temporarily unavailable.";
-    for (const model of [...new Set([MODEL, ...FALLBACK_MODELS])]) {
+    if (budgeted) {
+      const { executeBudgetedText, BudgetExecutionError } = await import("./budgeted-gemini.ts");
+      try {
+        const {checkTeamPurpose}=await import('./team-purpose.ts');
+        const purpose=await checkTeamPurpose({rpc:(name,args)=>admin.rpc(name,args),memberId,requestId:body.requestId,apiKey:geminiKey,
+          prompt:JSON.stringify({question:prompt,history:history.slice(-8000),activeIssue:activeIssue.slice(0,4000)}),systemInstruction:'',signal:request.signal});
+        if(purpose.decision!=='allow') return await finishResponse({error:purpose.decision==='clarify'?
+          (language==='he'?'כיצד השאלה קשורה לרובוט, ללמידה או לפעילות הקבוצה? הוסיפו הקשר וננסה שוב.':'How does this relate to the robot, team learning or team work? Add that context and ask again.'):
+          (language==='he'?'G3 Assist מיועד להנדסה, FRC ופעילות הקבוצה. הבקשה הזו אינה בתחום השימוש.':'G3 Assist is for engineering, FRC and team work. This request is outside that scope.'),code:purpose.decision==='clarify'?'PURPOSE_CLARIFICATION':'PURPOSE_DECLINED'},422);
+        const result = await executeBudgetedText({rpc:(name,args)=>admin.rpc(name,args),memberId,requestId:body.requestId,
+          apiKey:geminiKey,prompt:contextualPrompt,systemInstruction,signal:request.signal});
+        usedModel=result.model;
+        payload={output_text:result.answer,usage:{total_input_tokens:result.usage.inputTokens,
+          total_output_tokens:result.usage.outputTokens,total_thought_tokens:result.usage.thoughtTokens}};
+      } catch(error) {
+        if(error instanceof BudgetExecutionError) return await finishResponse({error:budgetErrorMessage(error.code,language),code:error.code},error.status);
+        throw error;
+      }
+    } else for (const model of [...new Set([MODEL, ...FALLBACK_MODELS])]) {
       for (let attempt = 0; attempt < 2; attempt += 1) {
         // Recheck immediately before every billable attempt, including fallbacks.
         const currentAccess = await checkAccess();
-        if (currentAccess.error) return response({ error: "G3 Assist access could not be verified.", code: "ACCESS_CHECK_FAILED" }, 503);
-        if (currentAccess.data !== true) return response({ error: "G3 Assist permission is no longer available for your role.", code: "ASSIST_ACCESS_DENIED" }, 403);
+        if (currentAccess.error) return await finishResponse({ error: "G3 Assist access could not be verified.", code: "ACCESS_CHECK_FAILED" }, 503);
+        if (currentAccess.data !== true) return await finishResponse({ error: "G3 Assist permission is no longer available for your role.", code: "ASSIST_ACCESS_DENIED" }, 403);
         const requestBody: Record<string, unknown> = { model, input: interactionInput, system_instruction: systemInstruction, generation_config: { max_output_tokens: 3000 }, store: false };
         if (!imagePart) requestBody.tools = [{type:"google_search",search_types:["web_search"]}];
         const geminiResponse = await fetch("https://generativelanguage.googleapis.com/v1beta/interactions", {
@@ -154,7 +215,7 @@ Deno.serve(async (request) => {
     if (!payload) {
       const quotaFailure = isQuotaFailure(providerMessage);
       const capacityFailure = isTransientProviderFailure(lastStatus, providerMessage);
-      return response({ error: quotaFailure ? "G3 Assist has reached its current AI usage limit. Please try again after the quota resets." : capacityFailure ? "G3 Assist is temporarily at capacity. Please try again shortly." : providerMessage, code: quotaFailure ? "PROVIDER_QUOTA" : capacityFailure ? "PROVIDER_CAPACITY" : "PROVIDER_ERROR" }, quotaFailure ? 429 : capacityFailure ? 503 : 502);
+      return await finishResponse({ error: quotaFailure ? "G3 Assist has reached its current AI usage limit. Please try again after the quota resets." : capacityFailure ? "G3 Assist is temporarily at capacity. Please try again shortly." : providerMessage, code: quotaFailure ? "PROVIDER_QUOTA" : capacityFailure ? "PROVIDER_CAPACITY" : "PROVIDER_ERROR" }, quotaFailure ? 429 : capacityFailure ? 503 : 502);
     }
     const modelSteps=(payload?.steps ?? []).filter((step:{type?:string})=>step.type==="model_output");
     const outputBlocks=modelSteps.flatMap((step:{content?:any[]})=>step.content??[]);
@@ -164,7 +225,7 @@ Deno.serve(async (request) => {
       .join("\n"))
       .trim();
     const citations=Array.from(new Map(outputBlocks.flatMap((content:any)=>content.annotations??[]).filter((item:any)=>item.type==="url_citation"&&item.url).map((item:any)=>[item.url,{url:item.url,title:item.title||String(item.url).replace(/^https?:\/\//,"").split("/")[0]}])).values()).slice(0,12);
-    if (!answer) return response({ error: "Gemini did not return an answer. Try rephrasing the question." }, 502);
+    if (!answer) return await finishResponse({ error: "Gemini did not return an answer. Try rephrasing the question." }, 502);
     const usage = payload?.usage ?? {};
 
     const storedAnswer = answer.slice(0, 19500);
@@ -175,9 +236,9 @@ Deno.serve(async (request) => {
     if (saveError) console.error("G3 Assist history save failed", { code: saveError.code, message: saveError.message });
     else await admin.from("ai_conversations").update({ updated_at: new Date().toISOString() }).eq("id", conversationId);
 
-    return response({ conversationId, answer, citations, grounded:Boolean(citations.length), usage: { inputTokens: Number(usage.total_input_tokens ?? 0), outputTokens: Number(usage.total_output_tokens ?? 0), remainingToday: Math.max(0, DAILY_LIMIT - (count ?? 0) - 1) } });
+    return await finishResponse({ conversationId, originalQuestion: message, answer, citations, grounded:Boolean(citations.length), usage: { inputTokens: Number(usage.total_input_tokens ?? 0), outputTokens: Number(usage.total_output_tokens ?? 0), remainingToday: Math.max(0, DAILY_LIMIT - (count ?? 0) - 1) } });
   } catch (error) {
     console.error("frc-assistant", error);
-    return response({ error: "G3 Assist could not complete the request. Please try again." }, 500);
+    return await finishResponse({ error: "G3 Assist could not complete the request. Please try again." }, 500);
   }
 });
