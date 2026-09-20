@@ -54,3 +54,5 @@ Implementation fetches the reviewed FIRST-hosted 2026 HTML manual on demand (3 M
 Scope limit: reviewed live manual registry currently covers 2026 only, not arbitrary seasons, PDF-only ingestion, live Q&A or all team updates. Current explicit-year/current-season routing is bounded and does not resolve every conversational follow-up. Do not claim universal season coverage. Tests require the local ignored official manual download at docs/staging/manual-2026.local.html; publisher document is not redistributed in Git.
 
 A separate cold-open popup failure (React lazy component outside Suspense) was reproduced while testing. The assistant dialog now has a loading and error boundary; direct /assistant succeeded. Frontend promotion and cold-open verification are recorded in the follow-up below.
+
+Frontend follow-up verified: commit 73dee1d, production Vercel JBcqaNToZxoiQvFXzKwfHBuPFwr4 Ready/Current on g3-6740.com. Fresh home load -> Open G3 Assist showed loading state then full composer without the React crash. Final persisted Edge bundle matched source after source-anchor correction. One paid acceptance question only, 0.010543 USD settled.
