@@ -1,4 +1,4 @@
-import {useEffect,useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
 import {Link} from 'react-router-dom';
 import {useLocalization} from '../lib/localization';
 import {sourceLink,type ResearchFilters} from '../lib/robotResearch';
@@ -8,13 +8,14 @@ export default function CollectedSourceResults({filters,search}:{filters:Researc
  const {pick}=useLocalization();
  const [page,setPage]=useState(0),[retry,setRetry]=useState(0);
  const [selected,setSelected]=useState<number[]>([]);
+ const selectedGeneration=useRef<string|undefined>();
  const [result,setResult]=useState<CollectedSourceResult|null>(null),[error,setError]=useState(false),[loading,setLoading]=useState(true);
  const key=JSON.stringify(filters);
  const hasCriteria=Boolean(filters.query.trim()||filters.topics.length||filters.seasons.length||filters.source||(filters.teams??[]).length);
  useEffect(()=>{
   const controller=new AbortController();setLoading(true);setError(false);setResult(null);
   if(filters.exclude.length){setLoading(false);return()=>controller.abort();}
-  const timer=setTimeout(()=>{search(filters,page,controller.signal).then(data=>{if(!controller.signal.aborted)setResult(data);}).catch(()=>{if(!controller.signal.aborted)setError(true);}).finally(()=>{if(!controller.signal.aborted)setLoading(false);});},180);
+  const timer=setTimeout(()=>{search(filters,page,controller.signal).then(data=>{if(!controller.signal.aborted){if(selectedGeneration.current!==data.generation){setSelected([]);selectedGeneration.current=data.generation;}setResult(data);}}).catch(()=>{if(!controller.signal.aborted)setError(true);}).finally(()=>{if(!controller.signal.aborted)setLoading(false);});},180);
   return()=>{clearTimeout(timer);controller.abort();};
  // The parent remounts this view when shared search filters change, resetting pagination.
  // eslint-disable-next-line react-hooks/exhaustive-deps
