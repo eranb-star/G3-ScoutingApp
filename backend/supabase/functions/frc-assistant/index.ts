@@ -53,7 +53,7 @@ Deno.serve(async (request) => {
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     const geminiKey = Deno.env.get("GEMINI_API_KEY");
     const authorization = request.headers.get("Authorization");
-    if (!supabaseUrl || !anonKey || !serviceKey || !geminiKey) return response({ error: "Assistant service is not configured." }, 503);
+    if (!supabaseUrl || !anonKey || !serviceKey) return response({ error: "Assistant service is not configured." }, 503);
     if (!authorization?.startsWith("Bearer ")) return response({ error: "Sign in is required." }, 401);
 
     const caller = createClient(supabaseUrl, anonKey, { global: { headers: { Authorization: authorization } } });
@@ -64,6 +64,11 @@ Deno.serve(async (request) => {
     const { data: member } = await admin.from("team_members").select("id,active,language").eq("id", memberId).maybeSingle();
     if (!member?.active) return response({ error: "Only active G3 members can use G3 Assist." }, 403);
 
+    const checkAccess = () => caller.rpc("has_permission", { requested_permission: "use_g3_assist" });
+    const access = await checkAccess();
+    if (access.error) return response({ error: "G3 Assist access could not be verified. Try again later.", code: "ACCESS_CHECK_FAILED" }, 503);
+    if (access.data !== true) return response({ error: "Your role does not have permission to use G3 Assist. Contact an administrator.", code: "ASSIST_ACCESS_DENIED" }, 403);
+
     const body = await request.json().catch(() => ({}));
     const message = typeof body.message === "string" ? body.message.trim().slice(0, 6000) : "";
     const language = body.language === "he" ? "he" : "en";
@@ -72,6 +77,9 @@ Deno.serve(async (request) => {
     const attachmentKind = body.attachmentKind === "robot_photo" ? "robot_photo" : body.attachmentKind === "screenshot" ? "screenshot" : null;
     const image = body.image && typeof body.image === "object" ? body.image : null;
     if (!message && !image) return response({ error: "Write a question or attach an image." }, 400);
+    // Enforce identity/role even in QA with no provider key. Never create
+    // conversations or read context when the provider is not configured.
+    if (!geminiKey) return response({ error: "Assistant service is not configured.", code: "PROVIDER_NOT_CONFIGURED" }, 503);
 
     const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     const { count } = await admin.from("ai_messages").select("id", { count: "exact", head: true }).eq("member_id", memberId).eq("role", "user").gte("created_at", since);
@@ -101,9 +109,9 @@ Deno.serve(async (request) => {
 
     const [{ data: historyRows },{data:knowledgeRows},{data:resolvedIssues},{data:contextIssue}]=await Promise.all([
       admin.from("ai_messages").select("role,content").eq("conversation_id", conversationId).order("created_at", { ascending: false }).limit(10),
-      admin.from("frc_knowledge_articles").select("title,summary,content,subsystem,source_type,source_url,verified").eq("archived",false).order("verified",{ascending:false}).order("updated_at",{ascending:false}).limit(8),
-      admin.from("robot_issues").select("issue_number,title,description,subsystem,resolution").eq("status","resolved").eq("archived",false).not("resolution","is",null).order("updated_at",{ascending:false}).limit(6),
-      contextIssueId?admin.from("robot_issues").select("issue_number,title,description,subsystem,severity,status,resolution").eq("id",contextIssueId).maybeSingle():Promise.resolve({data:null})
+      caller.from("frc_knowledge_articles").select("title,summary,content,subsystem,source_type,source_url,verified").eq("archived",false).order("verified",{ascending:false}).order("updated_at",{ascending:false}).limit(8),
+      caller.from("robot_issues").select("issue_number,title,description,subsystem,resolution").eq("status","resolved").eq("archived",false).not("resolution","is",null).order("updated_at",{ascending:false}).limit(6),
+      contextIssueId?caller.from("robot_issues").select("issue_number,title,description,subsystem,severity,status,resolution").eq("id",contextIssueId).maybeSingle():Promise.resolve({data:null})
     ]);
     const history = (historyRows ?? []).reverse().map((row) => `${row.role === "assistant" ? "G3 Assist" : "Team member"}: ${row.content}`).join("\n\n");
     const prompt = message || (language === "he" ? "נתח את התמונה הזו בהקשר של FRC." : "Analyze this image in an FRC context.");
@@ -121,6 +129,10 @@ Deno.serve(async (request) => {
     let providerMessage = "Gemini is temporarily unavailable.";
     for (const model of [...new Set([MODEL, ...FALLBACK_MODELS])]) {
       for (let attempt = 0; attempt < 2; attempt += 1) {
+        // Recheck immediately before every billable attempt, including fallbacks.
+        const currentAccess = await checkAccess();
+        if (currentAccess.error) return response({ error: "G3 Assist access could not be verified.", code: "ACCESS_CHECK_FAILED" }, 503);
+        if (currentAccess.data !== true) return response({ error: "G3 Assist permission is no longer available for your role.", code: "ASSIST_ACCESS_DENIED" }, 403);
         const requestBody: Record<string, unknown> = { model, input: interactionInput, system_instruction: systemInstruction, generation_config: { max_output_tokens: 3000 }, store: false };
         if (!imagePart) requestBody.tools = [{type:"google_search",search_types:["web_search"]}];
         const geminiResponse = await fetch("https://generativelanguage.googleapis.com/v1beta/interactions", {

@@ -1,3 +1,4 @@
+import { useG3AssistAccess } from "../lib/useG3AssistAccess";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAdminStatus } from "../lib/useAdminStatus";
@@ -18,6 +19,7 @@ const contexts=["workshop","testing","inspection","match","pit","other"];
 const statusLabel:Record<string,[string,string]>={reported:["Reported","דווח"],triaged:["Triaged","מוין"],in_progress:["In progress","בטיפול"],blocked:["Blocked","חסום"],verification:["Verify fix","אימות תיקון"],resolved:["Resolved","נפתר"]};
 
 export default function RobotIssuesPage(){
+  const { allowed: canUseAssist } = useG3AssistAccess();
   const {pick}=useLocalization(); const {profile}=useMemberAuth(); const isAdmin=useAdminStatus(); const navigate=useNavigate(); const [params,setParams]=useSearchParams();
   const [issues,setIssues]=useState<Issue[]>([]); const [members,setMembers]=useState<Person[]>([]); const [updates,setUpdates]=useState<Update[]>([]); const [attachments,setAttachments]=useState<Attachment[]>([]);
   const [loading,setLoading]=useState(true); const [message,setMessage]=useState(""); const [reporting,setReporting]=useState(false); const [showArchived,setShowArchived]=useState(false);
@@ -72,7 +74,7 @@ export default function RobotIssuesPage(){
         <header><div><div className="hub-eyebrow">G3-{selected.issue_number} · {selected.subsystem}</div><h2>{selected.title}</h2></div><button onClick={() => setParams({})} aria-label={pick("Close", "סגירה")}>×</button></header>
         <div className="issue-detail-tags"><span className={`severity-${selected.severity}`}>{selected.severity}</span><span>{selected.discovered_context}</span><time>{new Date(selected.created_at).toLocaleString()}</time></div>
         <p className="issue-detail-description">{selected.description}</p>
-        <button className="issue-assistant-action" onClick={() => navigate(`/assistant?issue=${selected.id}`)}><span aria-hidden="true">✦</span><span><strong>{pick("Diagnose with G3 Assist", "אבחון עם G3 Assist")}</strong><small>{pick("Continue troubleshooting with this issue's complete context", "המשך פתרון התקלה עם ההקשר המלא שלה")}</small></span><b aria-hidden="true">→</b></button>
+        <button disabled={!canUseAssist} className="issue-assistant-action" onClick={() => navigate(`/assistant?issue=${selected.id}`)}><span aria-hidden="true">✦</span><span><strong>{pick("Diagnose with G3 Assist", "אבחון עם G3 Assist")}</strong><small>{pick("Continue troubleshooting with this issue's complete context", "המשך פתרון התקלה עם ההקשר המלא שלה")}</small></span><b aria-hidden="true">→</b></button>
         <div className="issue-detail-controls"><label>{pick("Status", "סטטוס")}<select value={selected.status} onChange={(event) => void patchIssue(selected, { status: event.target.value })}>{statuses.map((item) => <option value={item} key={item}>{pick(...statusLabel[item])}</option>)}</select></label><label>{pick("Owner", "אחראי/ת")}<select value={selected.owner_id ?? ""} onChange={(event) => void patchIssue(selected, { owner_id: event.target.value || null })}><option value="">{pick("Unassigned", "ללא שיוך")}</option>{members.map((item) => <option value={item.id} key={item.id}>{item.display_name}</option>)}</select></label></div>
         <section className="issue-evidence"><h3>{pick("Evidence", "ראיות")}</h3>{attachments.length ? <div>{attachments.map((file) => file.mime_type?.startsWith("image/") ? <a href={file.url} target="_blank" rel="noreferrer" key={file.id}><img src={file.url} alt={file.file_name}/><span>{file.file_name}</span></a> : <a href={file.url} target="_blank" rel="noreferrer" key={file.id}>{file.file_name} ↗</a>)}</div> : <p>{pick("No evidence attached.", "לא צורפו ראיות.")}</p>}</section>
         <section className="issue-resolution"><h3>{pick("Resolution and verification", "פתרון ואימות")}</h3><textarea rows={3} value={resolution} onChange={(event) => setResolution(event.target.value)} placeholder={pick("What was changed, tested and verified?", "מה שונה, נבדק ואומת?")}/><button onClick={() => void saveResolution()}>{pick("Save resolution", "שמירת פתרון")}</button></section>
