@@ -57,26 +57,12 @@ Deno.serve(async (request) => {
     }
 
     if (body.action === "open_workshop") {
-      const { data: existing } = await admin.from("team_meetings").select("id,title,starts_at,ends_at,status,meeting_type").eq("status", "open").lte("starts_at", nowIso).gte("ends_at", nowIso).order("opened_at", { ascending: false }).limit(1).maybeSingle();
-      if (existing) return response({ meeting: existing, alreadyOpen: true });
-      const now = new Date();
-      const israelDate = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Jerusalem", year: "numeric", month: "2-digit", day: "2-digit" }).format(now);
-      const { data, error } = await admin.from("team_meetings").insert({
-        meeting_date: israelDate,
-        title: "Member-opened workshop",
-        starts_at: now.toISOString(),
-        ends_at: new Date(now.getTime() + 12 * 60 * 60 * 1000).toISOString(),
-        status: "open",
-        meeting_type: "workshop",
-        is_ad_hoc: true,
-        created_by: auth.user.id,
-        opened_by: auth.user.id,
-        opened_at: now.toISOString(),
-      }).select("id,title,starts_at,ends_at,status,meeting_type").single();
+      const { data, error } = await admin.rpc("open_verified_workshop", { p_member_id: auth.user.id });
       if (error) return response({ error: error.message }, 400);
       return response({ meeting: data, verificationMethod: method, distanceMetres: distance });
     }
 
+    if(body.action === "check_in"){const opening=await admin.rpc("open_due_workshops");if(opening.error)return response({error:opening.error.message},503);}
     if (!body.meetingId) return response({ error: "Meeting ID is required" }, 400);
     const { data: meeting } = await admin.from("team_meetings").select("id,status").eq("id", body.meetingId).single();
     const { data: activeAttendance } = await admin.from("attendance_records").select("id,checked_out_at").eq("meeting_id", body.meetingId).eq("member_id", auth.user.id).is("checked_out_at", null).maybeSingle();

@@ -4,6 +4,10 @@ Checkpoint updated: 2026-09-20. This file is the current resumption authority. V
 
 ## What is saved and live
 
+### Workshop operations increment — 20 September 2026
+
+See [workshop, inventory, attendance and Team Stories release record](WORKSHOP_ATTENDANCE_MEDIA_20260920.md). Approved changes: scheduled early opening; session opener/closer audit and supervised close/extension; shared inventory permission enforcement; person/meeting attendance views and protected measured timestamps; editable paginated compact Team Stories. **Keep Sunday and Wednesday 16:00–19:00**, explicitly reconfirmed by the user after live inspection. Departure-based automatic checkout is deferred until official iOS/Android work; current checkout/location behaviour and installed APK remain unchanged. This is an operations increment, not completion of remaining platform phases. Refer to the linked release record for final deployment evidence and physical workshop acceptance still outstanding.
+
 - Branch: `codex/release-1-qa`. Application commit **e9f59ba** (controller redesign), building on **fe200ef** (finance) and **b0fc377**, including attendance **b00a306** and prior simulator **8012578** and telemetry **48af302**. Pushed to remote. Browser GPS attendance is now enabled; installed APK and backend unchanged. See [attendance release and onsite acceptance checklist](MOBILE_BROWSER_ATTENDANCE_20260915.md). Physical phone/workshop acceptance remains pending today.
 - Production: https://g3-6740.com/field-twin ; Vercel production rebuild **6KJEFAzG9mQrXT4piPXWJQQHME7M**, Ready. Recorded verification: HTTP 200, bundle `index-Bp0nxVt1.js`, production Supabase `hnqwhuuxlqfyawqymaaz`, no QA reference, engine `g3-physical-v3`. No production redeployment is needed for this documentation change.
 - Latest correction is live: reference robot has red 6740 bumpers; negative-X hub counts RED, positive-X hub BLUE. Browser verification: eight shots at red hub → Red 8 / Blue 0. Uploaded user CAD appearance is preserved.

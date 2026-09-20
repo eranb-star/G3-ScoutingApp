@@ -1,3 +1,4 @@
+import WorkshopSessionControls,{SessionAudit} from "../components/WorkshopSessionControls";
 import {browserLocationAttendance} from '../lib/browserAttendance';
 import { FormEvent, useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
@@ -8,7 +9,7 @@ import { useLocalization } from "../lib/localization";
 
 const WifiInfo = registerPlugin<{ getCurrentNetwork(): Promise<{ ssid: string }> }>("WifiInfo");
 
-type TeamMeeting = {
+type TeamMeeting = SessionAudit & {
   id: string;
   title: string;
   starts_at: string;
@@ -67,6 +68,7 @@ export function HomePage({ isAdmin }: { isAdmin: boolean }) {
   const { pick } = useLocalization();
   const { profile } = useMemberAuth();
   const [activeMeeting, setActiveMeeting] = useState<TeamMeeting | null>(null);
+  const [sessionRevision,setSessionRevision]=useState(0);
   const [nextMeeting, setNextMeeting] = useState<TeamMeeting | null>(null);
   const [openTasks, setOpenTasks] = useState(0);
   const competitionSeason = new Date().getMonth() <= 4;
@@ -74,15 +76,15 @@ export function HomePage({ isAdmin }: { isAdmin: boolean }) {
   useEffect(() => {
     const now = new Date().toISOString();
     Promise.all([
-      supabase.from("team_meetings").select("id,title,starts_at,ends_at,status,meeting_type").eq("status", "open").lte("starts_at", now).gte("ends_at", now).order("starts_at").limit(1),
-      supabase.from("team_meetings").select("id,title,starts_at,ends_at,status,meeting_type").eq("status", "scheduled").gt("starts_at", now).order("starts_at").limit(1),
+      supabase.from("team_meetings").select("id,title,starts_at,ends_at,status,meeting_type,opened_by,closed_by,opened_at,closed_at,opened_automatically,closed_automatically").eq("status", "open").lte("starts_at", now).gte("ends_at", now).order("starts_at").limit(1),
+      supabase.from("team_meetings").select("id,title,starts_at,ends_at,status,meeting_type,opened_by,closed_by,opened_at,closed_at,opened_automatically,closed_automatically").eq("status", "scheduled").gt("starts_at", now).order("starts_at").limit(1),
       supabase.from("project_tasks").select("id", { count: "exact", head: true }).neq("status", "done").eq("archived", false),
     ]).then(([openResult, nextResult, taskResult]) => {
       setActiveMeeting((openResult.data?.[0] ?? null) as TeamMeeting | null);
       setNextMeeting((nextResult.data?.[0] ?? null) as TeamMeeting | null);
       setOpenTasks(taskResult.count ?? 0);
     });
-  }, [profile?.id]);
+  }, [profile?.id,sessionRevision]);
 
   return (
     <div className="hub-page">
@@ -151,7 +153,7 @@ export function SchedulePage() {
     setLoading(true);
     await supabase.rpc("ensure_workshop_schedule", { days_ahead: 120 });
     const { data, error } = await supabase.from("team_meetings")
-      .select("id,title,starts_at,ends_at,status,meeting_type")
+      .select("id,title,starts_at,ends_at,status,meeting_type,opened_by,closed_by,opened_at,closed_at,opened_automatically,closed_automatically")
       .gte("ends_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
       .neq("status", "cancelled").order("starts_at").limit(30);
     setMessage(error?.message ?? "");
@@ -184,7 +186,7 @@ export function SchedulePage() {
   return (
     <div className="hub-page">
       <header className="hub-page-header">
-        <div><div className="hub-eyebrow">{pick("Team calendar · Israel time","יומן הקבוצה · שעון ישראל")}</div><h1>{pick("Schedule","לוח זמנים")}</h1><p>{pick("Regular workshops every Sunday and Wednesday, 16:00–19:00.","מפגשי סדנה קבועים בימי ראשון ורביעי, 16:00–19:00.")}</p></div>
+        <div><div className="hub-eyebrow">{pick("Team calendar · Israel time","יומן הקבוצה · שעון ישראל")}</div><h1>{pick("Schedule","לוח זמנים")}</h1><p>{pick("Scheduled workshops open for check-in one hour before their start. Times below follow the configured schedule.","מפגשי סדנה נפתחים לכניסה שעה לפני ההתחלה. הזמנים לפי לוח הזמנים המוגדר.")}</p></div>
         {isAdmin ? <button className="hub-button" onClick={() => setShowCreate((value) => !value)}>{pick("Add special meeting","הוספת מפגש מיוחד")}</button> : null}
       </header>
       {showCreate ? <form className="hub-card schedule-create" onSubmit={createSpecial}>
@@ -198,8 +200,8 @@ export function SchedulePage() {
         {loading ? <p>{pick("Loading schedule…","טוען לוח זמנים…")}</p> : meetings.length === 0 ? <EmptyState title={pick("No upcoming meetings","אין מפגשים קרובים")} body={pick("The recurring workshop schedule could not be loaded.","לא ניתן לטעון את לוח מפגשי הסדנה.")} /> : meetings.map((meeting) => (
           <article className="schedule-row" key={meeting.id}>
             <div className={`schedule-date status-${meeting.status}`}><strong>{israelDateTime.format(new Date(meeting.starts_at)).split(",")[0]}</strong><span>{new Intl.DateTimeFormat("en-IL", {timeZone:"Asia/Jerusalem",day:"2-digit",month:"2-digit"}).format(new Date(meeting.starts_at))}</span></div>
-            <div className="schedule-info"><strong>{meeting.title}</strong><span>{new Intl.DateTimeFormat(language==="he"?"he-IL":"en-IL", {timeZone:"Asia/Jerusalem",weekday:"short",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}).format(new Date(meeting.starts_at))}–{new Intl.DateTimeFormat(language==="he"?"he-IL":"en-IL", {timeZone:"Asia/Jerusalem",hour:"2-digit",minute:"2-digit"}).format(new Date(meeting.ends_at))}</span><small>{meeting.meeting_type} · {meeting.status}</small></div>
-            {isAdmin ? <div className="schedule-actions">{meeting.status !== "open" ? <button onClick={() => setStatus(meeting.id, "open")}>{pick("Open","פתיחה")}</button> : <button onClick={() => setStatus(meeting.id, "closed")}>{pick("Close","סגירה")}</button>}<button onClick={() => setStatus(meeting.id, "cancelled")}>{pick("Cancel","ביטול")}</button></div> : null}
+            <div className="schedule-info"><strong>{meeting.title}</strong><span>{new Intl.DateTimeFormat(language==="he"?"he-IL":"en-IL", {timeZone:"Asia/Jerusalem",weekday:"short",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}).format(new Date(meeting.starts_at))}–{new Intl.DateTimeFormat(language==="he"?"he-IL":"en-IL", {timeZone:"Asia/Jerusalem",hour:"2-digit",minute:"2-digit"}).format(new Date(meeting.ends_at))}</span><small>{meeting.meeting_type} · {meeting.status}</small><WorkshopSessionControls meeting={meeting} onUpdated={()=>void loadMeetings()}/></div>
+            {isAdmin ? <div className="schedule-actions">{meeting.status !== "open" ? <button onClick={() => setStatus(meeting.id, "open")}>{pick("Open","פתיחה")}</button> : null}<button onClick={() => setStatus(meeting.id, "cancelled")}>{pick("Cancel","ביטול")}</button></div> : null}
           </article>
         ))}
       </section>
@@ -218,6 +220,7 @@ export function CheckInPage() {
   const [working, setWorking] = useState(false);
   const [message, setMessage] = useState("");
   const [locationConfigured, setLocationConfigured] = useState<boolean | null>(null);
+  const [sessionRevision,setSessionRevision]=useState(0);
   const [nextMeeting, setNextMeeting] = useState<TeamMeeting | null>(null);
 
   async function loadAttendance(meeting: TeamMeeting | null) {
@@ -232,21 +235,21 @@ export function CheckInPage() {
     const currentTime = new Date();
     const now = currentTime.toISOString();
     Promise.all([
-      supabase.from("team_meetings").select("id,title,starts_at,ends_at,status,meeting_type").eq("status", "open").order("opened_at", { ascending: false }),
-      supabase.from("team_meetings").select("id,title,starts_at,ends_at,status,meeting_type").in("status", ["scheduled","open"]).gt("starts_at", now).order("starts_at").limit(1),
+      supabase.from("team_meetings").select("id,title,starts_at,ends_at,status,meeting_type,opened_by,closed_by,opened_at,closed_at,opened_automatically,closed_automatically").in("status", ["open","scheduled"]).lte("starts_at",new Date(Date.now()+3600000).toISOString()).gte("ends_at",now).order("opened_at", { ascending: false }),
+      supabase.from("team_meetings").select("id,title,starts_at,ends_at,status,meeting_type,opened_by,closed_by,opened_at,closed_at,opened_automatically,closed_automatically").in("status", ["scheduled","open"]).gt("starts_at", now).order("starts_at").limit(1),
       profile ? supabase.from("attendance_records").select("meeting_id,checked_in_at,checked_out_at").eq("member_id",profile.id).is("checked_out_at",null).order("checked_in_at",{ascending:false}).limit(1).maybeSingle() : Promise.resolve({data:null}),
     ]).then(async([openResult, nextResult, activeResult]) => {
       if(openResult.error||nextResult.error||('error' in activeResult&&activeResult.error)){setMessage(pick("Attendance could not load. Check your connection and reload before trying again.","לא ניתן לטעון נוכחות. בדקו חיבור ורעננו לפני ניסיון נוסף."));return;}
       const openMeetings=(openResult.data ?? []) as TeamMeeting[],activeRecord=activeResult.data as {meeting_id:string;checked_in_at:string;checked_out_at:null}|null;
       let meeting = (activeRecord?openMeetings.find(item=>item.id===activeRecord.meeting_id):null) ?? openMeetings.find(item => isMeetingWindowAvailable(item, currentTime)) ?? null;
-      if(activeRecord&&!meeting){const{data}=await supabase.from("team_meetings").select("id,title,starts_at,ends_at,status,meeting_type").eq("id",activeRecord.meeting_id).maybeSingle();meeting=data as TeamMeeting|null;}
+      if(activeRecord&&!meeting){const{data}=await supabase.from("team_meetings").select("id,title,starts_at,ends_at,status,meeting_type,opened_by,closed_by,opened_at,closed_at,opened_automatically,closed_automatically").eq("id",activeRecord.meeting_id).maybeSingle();meeting=data as TeamMeeting|null;}
       setActiveMeeting(meeting);
       setNextMeeting((nextResult.data?.[0] ?? null) as TeamMeeting | null);
       if(activeRecord&&meeting?.id===activeRecord.meeting_id)setAttendance(activeRecord);else await loadAttendance(meeting);
       setAttendanceReady(true);
     }).catch(()=>setMessage(pick("Attendance could not load. Check your connection and reload.","לא ניתן לטעון נוכחות. בדקו חיבור ורעננו.")));
     if (profile?.role === "admin") supabase.from("workshop_locations").select("id").eq("active", true).maybeSingle().then(({ data }) => setLocationConfigured(Boolean(data)));
-  }, [profile?.id]);
+  }, [profile?.id,sessionRevision]);
 
   async function verifyAndRecord(action: "open_workshop" | "check_in" | "check_out", preferred: "location" | "wifi") {
     if (!attendanceReady||requestLock.current||(action !== "open_workshop" && !activeMeeting)) return;
@@ -309,6 +312,7 @@ export function CheckInPage() {
           {!activeMeeting && nextMeeting ? <p className="next-meeting-note"><strong>{pick("Next scheduled meeting:","המפגש המתוכנן הבא:")}</strong> {nextMeeting.title} · {israelDateTime.format(new Date(nextMeeting.starts_at))}. {pick("If you are at school for unscheduled work, you may open an ad-hoc session below.","אם אתם בבית הספר לעבודה שלא תוכננה מראש, ניתן לפתוח מפגש מיוחד למטה.")}</p> : null}
           <p>{pick("The app requests one location reading, verifies that you are at the workshop, and discards the raw coordinates.","האפליקציה מבקשת קריאת מיקום אחת, מאמתת שאתם בסדנה ומוחקת את הקואורדינטות הגולמיות.")}</p>
           {attendance ? <div className="attendance-current"><strong>{attendance.checked_out_at ? "Attendance complete" : "Currently checked in"}</strong><span>Arrived {israelDateTime.format(new Date(attendance.checked_in_at))}{attendance.checked_out_at ? ` · Left ${israelDateTime.format(new Date(attendance.checked_out_at))}` : ""}</span></div> : null}
+          {activeMeeting&&<WorkshopSessionControls meeting={activeMeeting} onUpdated={()=>setSessionRevision(n=>n+1)}/>}
           <div className="attendance-verification-actions"><button type="button" className="hub-button" disabled={!attendanceReady || working || Boolean(attendance?.checked_out_at)} onClick={() => verifyAndRecord(activeMeeting ? attendance ? "check_out" : "check_in" : "open_workshop","location")}>{working ? pick("Verifying…","מאמת…") : attendance ? pick("GPS · Check out","GPS · יציאה") : activeMeeting ? pick("GPS · Check in","GPS · כניסה") : pick("GPS · Open workshop","GPS · פתיחת סדנה")}</button>{nativeApp&&<button type="button" className="attendance-wifi-button" disabled={!attendanceReady || working || Boolean(attendance?.checked_out_at)} onClick={() => verifyAndRecord(activeMeeting ? attendance ? "check_out" : "check_in" : "open_workshop","wifi")}>{pick("School Wi-Fi","רשת בית הספר")}</button>}</div>
           <small className="attendance-method-help">{!nativeApp?pick("Allow precise location for this website. Check-in and check-out must be at the workshop. If location is unavailable indoors, try near an entrance; browser Wi-Fi verification is not supported.","אפשרו מיקום מדויק לאתר. כניסה ויציאה מחייבות נוכחות בסדנה. אם אין מיקום בתוך המבנה, נסו ליד הכניסה; אימות Wi-Fi אינו נתמך בדפדפן."):pick("Use GPS outdoors. Inside the school, connect to the registered school Wi-Fi and choose School Wi-Fi.","מחוץ למבנה השתמשו ב-GPS. בתוך בית הספר התחברו לרשת הרשומה ובחרו רשת בית הספר.")}</small>
           {message ? <div className="auth-message" role="status">{message}</div> : null}
@@ -350,7 +354,7 @@ export function MessagesPage() {
   }
   useEffect(() => {
     void loadMessages();
-    supabase.from("team_meetings").select("id,title,starts_at,ends_at,status,meeting_type").gte("ends_at", new Date().toISOString()).order("starts_at").limit(20).then(({data}) => setMessageMeetings((data ?? []) as TeamMeeting[]));
+    supabase.from("team_meetings").select("id,title,starts_at,ends_at,status,meeting_type,opened_by,closed_by,opened_at,closed_at,opened_automatically,closed_automatically").gte("ends_at", new Date().toISOString()).order("starts_at").limit(20).then(({data}) => setMessageMeetings((data ?? []) as TeamMeeting[]));
   }, [profile?.id, showArchived]);
 
   async function markRead(id: string) {

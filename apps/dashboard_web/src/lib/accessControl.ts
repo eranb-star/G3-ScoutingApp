@@ -11,7 +11,7 @@ const defaults:Record<TeamRole,PermissionKey[]>={
   mentor:["view_team_data","manage_team_projects","assign_team_work","manage_robot_reliability","manage_training","validate_training","manage_team_calendar","create_announcements","submit_purchase_requests","operate_competition","view_team_reports"],
   admin:["view_evidence_search","view_field_twin","view_team_data","manage_team_projects","assign_team_work","manage_robot_reliability","manage_training","validate_training","manage_team_calendar","create_announcements","manage_inventory","submit_purchase_requests","operate_competition","view_team_reports","correct_attendance","manage_members","manage_permissions","view_security_audit"],
 };
-const teamScoped=new Set<PermissionKey>(["manage_team_projects","assign_team_work","manage_robot_reliability","manage_training","manage_team_calendar","create_announcements","manage_inventory","view_team_reports"]);
+const teamScoped=new Set<PermissionKey>(["manage_team_projects","assign_team_work","manage_robot_reliability","manage_training","manage_team_calendar","create_announcements","view_team_reports"]);
 
 export function memberTeams(profile:{subteam:string|null;subteams?:string[]} | null | undefined){return Array.from(new Set([...(profile?.subteams??[]),profile?.subteam??""].map(item=>item.trim()).filter(Boolean)));}
 export function normalizedTeamMatch(left:string|null|undefined,right:string|null|undefined){
@@ -25,6 +25,13 @@ export function normalizedTeamMatch(left:string|null|undefined,right:string|null
 export function useAccessControl(){
   const {profile}=useMemberAuth();
   const [permissions,setPermissions]=useState<PermissionKey[]>(profile?defaults[profile.role]:[]);
-  useEffect(()=>{let active=true;if(!profile){setPermissions([]);return;}setPermissions(defaults[profile.role]);supabase.from("role_permissions").select("permission_key").eq("role",profile.role).eq("allowed",true).then(({data,error})=>{if(active&&!error)setPermissions((data??[]).map(row=>row.permission_key as PermissionKey));});return()=>{active=false;};},[profile?.id,profile?.role]);
+  useEffect(()=>{
+    let active=true;
+    const refresh=()=>{if(!profile){setPermissions([]);return;}void supabase.from("role_permissions").select("permission_key").eq("role",profile.role).eq("allowed",true).then(({data,error})=>{if(active&&!error)setPermissions((data??[]).map(row=>row.permission_key as PermissionKey));});};
+    setPermissions(profile?defaults[profile.role]:[]);refresh();
+    const visible=()=>{if(document.visibilityState==="visible")refresh();};
+    window.addEventListener("focus",refresh);window.addEventListener("g3-permissions-changed",refresh);document.addEventListener("visibilitychange",visible);
+    return()=>{active=false;window.removeEventListener("focus",refresh);window.removeEventListener("g3-permissions-changed",refresh);document.removeEventListener("visibilitychange",visible);};
+  },[profile?.id,profile?.role]);
   return useMemo(()=>({permissions,can:(key:PermissionKey,team?:string|null)=>{if(!profile||!permissions.includes(key))return false;if(profile.role==="admin"||profile.role==="mentor")return true;if(profile.role!=="team_leader")return !teamScoped.has(key);if(!teamScoped.has(key))return true;if(!team)return false;return (profile.leader_subteams??[]).some(item=>normalizedTeamMatch(item,team));}}),[permissions,profile]);
 }

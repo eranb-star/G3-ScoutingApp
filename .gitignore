@@ -38,4 +38,5 @@ docs/staging/*.local.*
 
 /releases/*.apk
 docs/staging/*.local/
+docs/staging/ops-qa/
 
