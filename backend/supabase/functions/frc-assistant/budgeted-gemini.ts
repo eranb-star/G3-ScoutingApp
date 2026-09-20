@@ -13,7 +13,7 @@ export class BudgetExecutionError extends Error {
 // https://ai.google.dev/gemini-api/docs/pricing#gemini-3.6-flash
 export const PRICE = Object.freeze({model:'gemini-3.6-flash',version:'gemini-3.6-standard-20260920',
   validFrom:Date.parse('2026-09-20T00:00:00Z'),validUntil:Date.parse('2026-10-20T00:00:00Z'),
-  inputQuarterMicros:3,outputQuarterMicros:15,maxInput:1048576,maxOutput:2000});
+  inputQuarterMicros:3,outputQuarterMicros:15,maxInput:1048576,maxOutput:8192});
 const integer=(n: unknown): n is number => typeof n==='number' && Number.isSafeInteger(n) && n>=0;
 export function costMicros(input: number, output: number): number {
   if(!integer(input)||!integer(output)) throw new BudgetExecutionError('INVALID_USAGE');

@@ -18,7 +18,7 @@ export async function retrieveEvidence(caller:any,question:string,selected?:{gen
  if(resolved.error)return [];
  return resolved.data as Evidence[];
 }
-export function evidencePrompt(rows:Evidence[]){return rows.map(r=>`[S${r.id}] ${r.title}\nAuthority: ${r.source_class}; season context: ${r.seasons.join(', ')||'unspecified'}; revision: ${r.version}; scope: ${r.scope||'unspecified'}. Unreviewed source text; not a verified robot fact.\n${r.body}`).join('\n\n').slice(0,18000);}
+export function evidencePrompt(rows:Evidence[]){return rows.map(r=>`[S${r.id}] ${r.title}\nAuthority: ${r.source_class}; season context: ${r.seasons.join(', ')||'unspecified'}; revision: ${r.version}; scope: ${r.scope||'unspecified'}. ${r.source_class==="official"?"Official publisher text; interpret only within this season and revision.":"Unreviewed source text; not a verified robot fact."}\n${r.body}`).join('\n\n').slice(0,18000);}
 export function validatedCitations(answer:string,rows:Evidence[]){
  const ids=[...answer.matchAll(/\[S(\d+)\]/g)].map(m=>Number(m[1]));
  const allowed=new Map(rows.map(r=>[r.id,r]));

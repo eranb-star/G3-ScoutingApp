@@ -51,7 +51,9 @@ try {
   const original = fs.readFileSync(new URL('../../../backend/supabase/functions/frc-assistant/index.ts', import.meta.url), 'utf8');
   const evidenceCode=ts.transpileModule(fs.readFileSync(new URL('../../../backend/supabase/functions/frc-assistant/evidence-context.ts',import.meta.url),'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText;
   const evidenceUrl='data:text/javascript;base64,'+Buffer.from(evidenceCode).toString('base64');
-  const code = original.replace("'./evidence-context.ts'",JSON.stringify(evidenceUrl)).replace(/import \{ createClient \} from "[^"]+";/, 'const createClient=globalThis.__assistClient; const Deno=globalThis.__assistDeno;')
+  const officialCode=ts.transpileModule(fs.readFileSync(new URL('../../../backend/supabase/functions/frc-assistant/official-season.ts',import.meta.url),'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText;
+  const officialUrl='data:text/javascript;base64,'+Buffer.from(officialCode).toString('base64');
+  const code = original.replace("'./official-season.ts'",JSON.stringify(officialUrl)).replace("'./evidence-context.ts'",JSON.stringify(evidenceUrl)).replace(/import \{ createClient \} from "[^"]+";/, 'const createClient=globalThis.__assistClient; const Deno=globalThis.__assistDeno;')
     .replace('import("./budgeted-gemini.ts")','Promise.resolve(globalThis.__assistBudgetModule)')
     .replace("import('./team-purpose.ts')",'Promise.resolve(globalThis.__assistPurposeModule)');
   const compiled = ts.transpileModule(code,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}});
@@ -126,6 +128,8 @@ try {
   trustedRole='admin';
   globalThis.__assistBudgetModule.executeBudgetedText=async options=>{assert.ok(options.systemInstruction.includes('may ask general questions'));throw new BudgetExecutionError('TEAM_MONTHLY_BUDGET_EXHAUSTED',429);};
   assert.equal((await call({message:'General question',requestId:crypto.randomUUID()})).status,429);
+  const missingRules=await call({message:'Based on the 2026 challenge, from strategy perspective, should we build a climbing mechanism?',requestId:crypto.randomUUID()});
+  assert.equal(missingRules.status,503);assert.equal((await missingRules.json()).code,'OFFICIAL_EVIDENCE_UNAVAILABLE');
   trustedRole='mentor';
 
   client.rpc=async name=>({data:name==='claim_g3_assist_execution'?{claimed:false,state:'completed',result:{status:200,body:{answer:'recovered'}}}:true,error:null});

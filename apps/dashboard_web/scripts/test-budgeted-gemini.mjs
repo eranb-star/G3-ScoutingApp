@@ -32,7 +32,7 @@ const send=async(url,init)=>{
     return new Response(JSON.stringify({totalTokens:scenario==='oversize'?17000:100}));
   }
   assert.ok(url.endsWith(':generateContent'));
-  assert.equal(body.generationConfig.maxOutputTokens,2000);
+  assert.equal(body.generationConfig.maxOutputTokens,8192);
   assert.equal(body.tools,undefined);assert.equal(body.cachedContent,undefined);
   if(scenario==='timeout') throw new Error('Synthetic ambiguous timeout');
   if(scenario==='quota') return new Response('{}',{status:429});
