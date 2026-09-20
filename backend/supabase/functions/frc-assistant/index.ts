@@ -88,7 +88,7 @@ Deno.serve(async (request) => {
     const { data: userData, error: userError } = await caller.auth.getUser();
     if (userError || !userData.user) return response({ error: "Your session has expired. Sign in again." }, 401);
     const memberId = userData.user.id;
-    const { data: member } = await admin.from("team_members").select("id,active,language").eq("id", memberId).maybeSingle();
+    const { data: member } = await admin.from("team_members").select("id,active,language,role").eq("id", memberId).maybeSingle();
     if (!member?.active) return response({ error: "Only active G3 members can use G3 Assist." }, 403);
 
     const checkAccess = () => caller.rpc("has_permission", { requested_permission: "use_g3_assist" });
@@ -96,6 +96,8 @@ Deno.serve(async (request) => {
     if (access.error) return response({ error: "G3 Assist access could not be verified. Try again later.", code: "ACCESS_CHECK_FAILED" }, 503);
     if (access.data !== true) return response({ error: "Your role does not have permission to use G3 Assist. Contact an administrator.", code: "ASSIST_ACCESS_DENIED" }, 403);
 
+    const isAdmin = member.role === "admin";
+    const answerInstruction = isAdmin ? systemInstruction.replace("Focus only on FRC:", "The authenticated administrator may ask general questions as well as FRC questions. Answer their requested topic; do not restrict them to team subjects. Your specialist FRC areas include:") : systemInstruction;
     const body = await request.json().catch(() => ({}));
     const message = typeof body.message === "string" ? body.message.trim().slice(0, 6000) : "";
     const language = body.language === "he" ? "he" : "en";
@@ -177,14 +179,16 @@ Deno.serve(async (request) => {
     if (budgeted) {
       const { executeBudgetedText, BudgetExecutionError } = await import("./budgeted-gemini.ts");
       try {
+        if (!isAdmin) {
         const {checkTeamPurpose}=await import('./team-purpose.ts');
         const purpose=await checkTeamPurpose({rpc:(name,args)=>admin.rpc(name,args),memberId,requestId:body.requestId,apiKey:geminiKey,
           prompt:JSON.stringify({question:prompt,history:history.slice(-8000),activeIssue:activeIssue.slice(0,4000)}),systemInstruction:'',signal:request.signal});
         if(purpose.decision!=='allow') return await finishResponse({error:purpose.decision==='clarify'?
           (language==='he'?'כיצד השאלה קשורה לרובוט, ללמידה או לפעילות הקבוצה? הוסיפו הקשר וננסה שוב.':'How does this relate to the robot, team learning or team work? Add that context and ask again.'):
           (language==='he'?'G3 Assist מיועד להנדסה, FRC ופעילות הקבוצה. הבקשה הזו אינה בתחום השימוש.':'G3 Assist is for engineering, FRC and team work. This request is outside that scope.'),code:purpose.decision==='clarify'?'PURPOSE_CLARIFICATION':'PURPOSE_DECLINED'},422);
+        }
         const result = await executeBudgetedText({rpc:(name,args)=>admin.rpc(name,args),memberId,requestId:body.requestId,
-          apiKey:geminiKey,prompt:groundedPrompt,systemInstruction:systemInstruction+'\n'+evidenceInstructions,signal:request.signal});
+          apiKey:geminiKey,prompt:groundedPrompt,systemInstruction:answerInstruction+'\n'+evidenceInstructions,signal:request.signal});
         usedModel=result.model;
         payload={output_text:result.answer,usage:{total_input_tokens:result.usage.inputTokens,
           total_output_tokens:result.usage.outputTokens,total_thought_tokens:result.usage.thoughtTokens}};
@@ -198,7 +202,7 @@ Deno.serve(async (request) => {
         const currentAccess = await checkAccess();
         if (currentAccess.error) return await finishResponse({ error: "G3 Assist access could not be verified.", code: "ACCESS_CHECK_FAILED" }, 503);
         if (currentAccess.data !== true) return await finishResponse({ error: "G3 Assist permission is no longer available for your role.", code: "ASSIST_ACCESS_DENIED" }, 403);
-        const requestBody: Record<string, unknown> = { model, input: interactionInput, system_instruction: systemInstruction, generation_config: { max_output_tokens: 3000 }, store: false };
+        const requestBody: Record<string, unknown> = { model, input: interactionInput, system_instruction: answerInstruction, generation_config: { max_output_tokens: 3000 }, store: false };
         if (!imagePart) requestBody.tools = [{type:"google_search",search_types:["web_search"]}];
         const geminiResponse = await fetch("https://generativelanguage.googleapis.com/v1beta/interactions", {
           method: "POST",

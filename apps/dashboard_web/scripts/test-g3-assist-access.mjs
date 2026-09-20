@@ -77,8 +77,9 @@ try {
   active=true;
   let accessChecks=0;
   client.rpc=async name=>name==='search_frc_team_knowledge'?{data:[],error:null}:name==='search_frc_corpus'?{data:{rows:[]},error:null}:{data:++accessChecks < 3,error:null};
+  let trustedRole="mentor";
   client.from=table=>{
-    const result=table==='team_members'?{data:{active:true}}:table==='ai_conversations'?{data:{id:'conversation'}}:{data:[],count:0};
+    const result=table==='team_members'?{data:{active:true,role:trustedRole}}:table==='ai_conversations'?{data:{id:'conversation'}}:{data:[],count:0};
     const q=new Proxy({}, {get:(_,key)=>key==='then'?(done,fail)=>Promise.resolve(result).then(done,fail):()=>q});
     return q;
   };
@@ -120,6 +121,13 @@ try {
     assert.equal((await call({message:'Unrelated request',requestId:crypto.randomUUID()})).status,422);
   }
   assert.equal(answerCalls,0);
+  // A client role claim cannot skip the gate; only the database role can.
+  assert.equal((await call({message:'General question',role:'admin',requestId:crypto.randomUUID()})).status,422);
+  trustedRole='admin';
+  globalThis.__assistBudgetModule.executeBudgetedText=async options=>{assert.ok(options.systemInstruction.includes('may ask general questions'));throw new BudgetExecutionError('TEAM_MONTHLY_BUDGET_EXHAUSTED',429);};
+  assert.equal((await call({message:'General question',requestId:crypto.randomUUID()})).status,429);
+  trustedRole='mentor';
+
   client.rpc=async name=>({data:name==='claim_g3_assist_execution'?{claimed:false,state:'completed',result:{status:200,body:{answer:'recovered'}}}:true,error:null});
   assert.equal((await (await call({message:'Previously answered',requestId:crypto.randomUUID()})).json()).answer,'recovered');
   assert.equal(answerCalls,0);
