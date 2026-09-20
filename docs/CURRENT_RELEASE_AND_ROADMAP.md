@@ -4,11 +4,13 @@ Start with [the session entry point](START_NEXT_SESSION.md). [The master handove
 
 Production application: **1326629**, Vercel **CK1LewiyZedM7qYaMcHkTjxGbTXQ**, https://g3-6740.com. Workshop, inventory, attendance and Team Stories SQL/functions/web are deployed. Release documentation checkpoint: **72df908**. The subsequent Attendance Center menu rename awaits the next web release. Android remains 2.1.9/code 23.
 
-## Ordered remaining work
+## Remaining work — order to confirm with the user
+
+Latest user direction: first confirm understanding and discuss remote-capable options while the user is away from the workshop. Do not automatically start replay or another phase. Follow `START_NEXT_SESSION.md`; the sequence below is a proposed roadmap, not permission to begin implementation.
 
 | Order | Workstream | Remaining outcome |
 |---|---|---|
-| Next bounded development | Phase 3 physical replay | Complete initial state/commands/events/queues, pinned runtime/assets/config, mismatch detection; then ghost/Auto Play/comparison. |
+| Candidate remote increment | Phase 3 physical replay | Complete initial state/commands/events/queues, pinned runtime/assets/config, mismatch detection; then ghost/Auto Play/comparison. User has not selected this as the next task. |
 | Alongside, when resources available | Phase 0/1 closure and operational acceptance | Remaining recovery/offsite/permission evidence, authenticated review/mobile/offline journeys, real workshop/controller/CAD/finance acceptance. Reuse passing evidence. |
 | Then | Phase 2 bounded 2026 knowledge | Reviewed Gold Set, authoritative/versioned ingestion, conflict/staleness/insufficient-evidence handling and evaluation. |
 | Then | Phase 3 closure | Device/performance acceptance, calibrated collisions/balls/shooting, team mechanism profile, geometry/clearance, full-match timing/scoring/multi-robot scope. |
