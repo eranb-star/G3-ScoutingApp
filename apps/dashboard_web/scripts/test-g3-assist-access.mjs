@@ -49,7 +49,9 @@ const oldFetch = globalThis.fetch;
 globalThis.fetch = async () => { paidCalls++; throw new Error('No real provider calls permitted'); };
 try {
   const original = fs.readFileSync(new URL('../../../backend/supabase/functions/frc-assistant/index.ts', import.meta.url), 'utf8');
-  const code = original.replace(/import \{ createClient \} from "[^"]+";/, 'const createClient=globalThis.__assistClient; const Deno=globalThis.__assistDeno;')
+  const evidenceCode=ts.transpileModule(fs.readFileSync(new URL('../../../backend/supabase/functions/frc-assistant/evidence-context.ts',import.meta.url),'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText;
+  const evidenceUrl='data:text/javascript;base64,'+Buffer.from(evidenceCode).toString('base64');
+  const code = original.replace("'./evidence-context.ts'",JSON.stringify(evidenceUrl)).replace(/import \{ createClient \} from "[^"]+";/, 'const createClient=globalThis.__assistClient; const Deno=globalThis.__assistDeno;')
     .replace('import("./budgeted-gemini.ts")','Promise.resolve(globalThis.__assistBudgetModule)')
     .replace("import('./team-purpose.ts')",'Promise.resolve(globalThis.__assistPurposeModule)');
   const compiled = ts.transpileModule(code,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}});
@@ -74,7 +76,7 @@ try {
   globalThis.__assistDeno.env.get=key=>key==='G3_ASSIST_EXECUTION_MODE'?'legacy':'synthetic';
   active=true;
   let accessChecks=0;
-  client.rpc=async()=>({data:++accessChecks < 3,error:null});
+  client.rpc=async name=>name==='search_frc_team_knowledge'?{data:[],error:null}:name==='search_frc_corpus'?{data:{rows:[]},error:null}:{data:++accessChecks < 3,error:null};
   client.from=table=>{
     const result=table==='team_members'?{data:{active:true}}:table==='ai_conversations'?{data:{id:'conversation'}}:{data:[],count:0};
     const q=new Proxy({}, {get:(_,key)=>key==='then'?(done,fail)=>Promise.resolve(result).then(done,fail):()=>q});
@@ -84,7 +86,7 @@ try {
   // First call is permitted; permission is revoked before the fallback call.
   assert.equal((await call({message:'Explain PID'})).status,403);
   assert.equal(paidCalls,1); assert.equal(accessChecks,3);
-  client.rpc=async name=>({data:name==='claim_g3_assist_execution'?{claimed:true}:true,error:null});
+  client.rpc=async name=>({data:name==='search_frc_corpus'?{rows:[]}:name==='claim_g3_assist_execution'?{claimed:true}:true,error:null});
   globalThis.__assistPurposeModule={checkTeamPurpose:async()=>({decision:'allow',category:'engineering'})};
   globalThis.__assistDeno.env.get=key=>key==='G3_ASSIST_EXECUTION_MODE'?'budgeted-text-v1':'synthetic';
   assert.equal((await call({message:'PID'})).status,400);

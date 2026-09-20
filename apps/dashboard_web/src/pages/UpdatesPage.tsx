@@ -1,6 +1,6 @@
 import {useProjectRefresh} from "../lib/projectRefresh";
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { useLocalization } from "../lib/localization";
 import { useMemberAuth } from "../lib/memberAuth";
 import { supabase } from "../supabase";
@@ -8,7 +8,6 @@ import { useAdminStatus } from "../lib/useAdminStatus";
 import { memberTeams, normalizedTeamMatch, useAccessControl } from "../lib/accessControl";
 import { getUnreadUpdateCounts } from "../lib/unreadUpdates";
 import ChannelWorkspace from "../components/ChannelWorkspace";
-import FrcKnowledgeWorkspace from "../components/FrcKnowledgeWorkspace";
 import { frcTeams } from "../lib/frcTeams";
 
 type View = "inbox" | "announcements" | "channels" | "knowledge";
@@ -216,7 +215,7 @@ export default function UpdatesPage() {
   ];
 
   if(String(view)==="channels")return <ChannelWorkspace />;
-  if(String(view)==="knowledge")return <FrcKnowledgeWorkspace />;
+  if(String(view)==="knowledge")return <Navigate replace to={'/knowledge?'+new URLSearchParams({...Object.fromEntries(params),view:'library'})} />;
   return <main className="hub-page updates-page">
     <header className="updates-header"><div><div className="hub-eyebrow">G3 6740 · {pick("Team signal", "תקשורת הקבוצה")}</div><h1>{pick("Updates", "עדכונים")}</h1><p>{pick("Official announcements notify their audience; channels are ongoing team conversations.", "הודעות רשמיות מתריעות לקהל שלהן; ערוצים הם שיחות צוות מתמשכות.")}</p></div>{canAnnounce ? <div className="message-header-actions">{isAdmin?<button className="hub-button secondary" onClick={() => { changeView("announcements"); setShowArchived((value) => !value); }}>{showArchived ? pick("Current", "פעילות") : pick("Archive", "ארכיון")}</button>:null}<button className="hub-button" onClick={() => { changeView("announcements"); setAudience(profile?.role==="team_leader"?"subteam":"all");setAudienceSubteam(profile?.leader_subteams?.[0]??frcTeams[0].name);setCompose(true); }}>{pick("New announcement", "הודעה חדשה")}</button></div> : null}</header>
     <nav className="updates-tabs" aria-label={pick("Update sections", "אזורי עדכונים")}>{tabs.map(([id,en,he,count]) => <button key={id} className={view === id ? "is-active" : ""} onClick={() => changeView(id)}><span>{pick(en,he)}</span>{count ? <b>{count}</b> : null}</button>)}</nav>

@@ -25,7 +25,9 @@ const suggestions = [
 export default function FrcAssistantPage() {
   const navigate = useNavigate();
   const { allowed: canUseAssist, loading: accessLoading } = useG3AssistAccess();
-  const [params]=useSearchParams();
+  const [params,setParams]=useSearchParams();
+  const selectedEvidence=params.get('evidence')?.split(',').filter(Boolean)??[];
+  function clearEvidence(){setParams(current=>{const next=new URLSearchParams(current);next.delete('evidence');next.delete('generation');return next;},{replace:true});}
   const { language, pick } = useLocalization();
   const { profile } = useMemberAuth();
   const [conversationId, setConversationId] = useState<string | null>(null);
@@ -40,7 +42,7 @@ export default function FrcAssistantPage() {
   const [conversationTitle, setConversationTitle] = useState("");
   const [hasEarlier, setHasEarlier] = useState(false);
   const [loadingEarlier, setLoadingEarlier] = useState(false);
-  const [question, setQuestion] = useState("");
+  const [question, setQuestion] = useState(()=>(params.get('question')??'').slice(0,6000));
   const [image, setImage] = useState<PendingImage | null>(null);
   const [attachmentKind, setAttachmentKind] = useState<"screenshot" | "robot_photo">("screenshot");
   const [privacyConfirmed, setPrivacyConfirmed] = useState(false);
@@ -133,6 +135,7 @@ export default function FrcAssistantPage() {
   }
 
   function startNewConversation() {
+    clearEvidence();
     sessionStorage.removeItem(ACTIVE_CONVERSATION_KEY);
     setConversationId(null); setMessages([]); setQuestion(""); setImage(null); setPrivacyConfirmed(false); setRemaining(null); setStatus(""); setHistoryOpen(false); setHistoryMode("active"); void refreshHistory("active");
     window.setTimeout(() => questionRef.current?.focus(), 0);
@@ -213,7 +216,7 @@ export default function FrcAssistantPage() {
     const requestId=crypto.randomUUID();
     if(BUDGET_PILOT){requestRef.current=requestId;sessionStorage.setItem(pendingKey,requestId);setPendingRequest(requestId);}
     let outcome;
-    try{outcome=await supabase.functions.invoke("frc-assistant", { body: { requestId, conversationId, message: clean, language, contextIssueId:issueContext?.id??null, attachmentKind: pendingImage ? attachmentKind : null, privacyConfirmed: Boolean(pendingImage), image: pendingImage ? { name: pendingImage.name, mimeType: pendingImage.mimeType, data: pendingImage.data } : null } });}
+    try{outcome=await supabase.functions.invoke("frc-assistant", { body: { requestId, conversationId, message: clean, language, evidence:params.get("evidence")&&params.get("generation")?{generation:params.get("generation"),ids:params.get("evidence")!.split(",").map(Number)}:null, contextIssueId:issueContext?.id??null, attachmentKind: pendingImage ? attachmentKind : null, privacyConfirmed: Boolean(pendingImage), image: pendingImage ? { name: pendingImage.name, mimeType: pendingImage.mimeType, data: pendingImage.data } : null } });}
     catch{if(!BUDGET_PILOT||requestRef.current===requestId){setBusy(false);setStatus(BUDGET_PILOT?pick('Connection interrupted. Check request status before submitting another question.','החיבור נותק. בדקו את מצב הבקשה לפני שליחת שאלה נוספת.'):pick('Connection interrupted. Check conversation history for a saved answer before trying again.','החיבור נותק. בדקו בהיסטוריית השיחות אם נשמרה תשובה לפני ניסיון נוסף.'));}return;}
     if(BUDGET_PILOT&&requestRef.current!==requestId)return;
     const {data,error}=outcome;
@@ -247,7 +250,8 @@ export default function FrcAssistantPage() {
     {BUDGET_PILOT&&pendingRequest?<section className="assistant-active-conversation" aria-label={pick("Request recovery","שחזור בקשה")}><p>{pick("A request is recorded. Check its status or cancel before sending another.","קיימת בקשה מתועדת. בדקו את מצבה או בטלו לפני שליחת בקשה נוספת.")}</p><button type="button" onClick={()=>void recoverRequest()}>{pick("Check request","בדיקת בקשה")}</button><button type="button" onClick={()=>void cancelRequest()}>{pick("Cancel request","ביטול בקשה")}</button></section>:null}
     <fieldset disabled={!canUseAssist} style={{border:0,padding:0,margin:0,minWidth:0}} aria-label={pick("Ask G3 Assist", "שאלו את G3 Assist")}><form className="assistant-composer" onSubmit={send}>
       {image ? <div className="assistant-attachment"><img src={image.preview} alt={pick("Selected attachment preview", "תצוגה מקדימה של הקובץ")} /><div><b>{image.name}</b><select value={attachmentKind} onChange={(e) => setAttachmentKind(e.target.value as "screenshot" | "robot_photo")}><option value="screenshot">{pick("Code/log screenshot", "צילום מסך של קוד או לוג")}</option><option value="robot_photo">{pick("Robot/component photo", "תמונת רובוט או רכיב")}</option></select><label><input type="checkbox" checked={privacyConfirmed} onChange={(e) => setPrivacyConfirmed(e.target.checked)} />{pick("I confirm there are no people, faces, names or personal student data in this image.", "אני מאשר/ת שאין בתמונה אנשים, פנים, שמות או מידע אישי על תלמידים.")}</label></div><button type="button" onClick={() => { setImage(null); setPrivacyConfirmed(false); }} aria-label={pick("Remove image", "הסרת תמונה")}>×</button></div> : null}
-      {status ? <div className="assistant-error" role="alert">{status}</div> : null}
+        {selectedEvidence.length>0&&<div className="assistant-evidence-context" role="status"><span>{pick(`${selectedEvidence.length} source passage(s) selected from FRC knowledge. The server checks your access and the source revision before using them.`,`${selectedEvidence.length} קטעי מקור נבחרו מתוך ידע FRC. השרת בודק הרשאה וגרסת מקור לפני השימוש.`)}</span><button type="button" disabled={busy} onClick={clearEvidence}>{pick('Remove selected evidence','הסרת המקורות הנבחרים')}</button></div>}
+        {status ? <div className="assistant-error" role="alert">{status}</div> : null}
       <div className="assistant-compose-row"><textarea ref={questionRef} rows={3} value={question} onChange={(e) => setQuestion(e.target.value)} placeholder={pick("Ask G3 Assist about the robot, code, electrical or strategy…", "שאלו את G3 Assist על הרובוט, תוכנה, אלקטרוניקה או אסטרטגיה…")} aria-label={pick("Message G3 Assist", "שליחת הודעה ל-G3 Assist")} /><div className="assistant-compose-actions">{!BUDGET_PILOT?<label className="assistant-upload" title={pick("Attach image", "צירוף תמונה")}><input type="file" accept="image/jpeg,image/png,image/webp" disabled={BUDGET_PILOT} onChange={chooseImage} /><span aria-hidden="true">＋</span></label>:null}<button className="assistant-send" type="submit" disabled={busy || (BUDGET_PILOT&&Boolean(pendingRequest)) || (!question.trim() && !image)}>{pick("Send", "שליחה")} <span aria-hidden="true">↑</span></button></div></div>
       <footer>{BUDGET_PILOT?<span>{pick("Text-only pilot. Paste code or describe the mechanism; images are not enabled.", "שלב ניסוי בטקסט בלבד. הדביקו קוד או תארו את המנגנון; תמונות אינן זמינות.")}</span>:null}<span>{pick("Do not upload faces, attendance or personal student data.", "אין להעלות פנים, נוכחות או מידע אישי על תלמידים.")}</span>{remaining !== null ? <b>{pick(`${remaining} questions remaining today`, `${remaining} שאלות נותרו היום`)}</b> : null}</footer>
     </form></fieldset>
