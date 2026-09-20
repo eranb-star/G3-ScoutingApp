@@ -50,7 +50,9 @@ Run SQL acceptance with an isolated PGlite module argument, e.g. `node apps/dash
 - Production database migration `backend/supabase/workshop_reporting_inventory_20260920.sql` applied successfully.
 - Production cron verified active at one-minute cadence; recorded run succeeded.
 - Production attendance Edge function updated; existing location/checkout code preserved.
-- Web and scheduled-operations deployment verification recorded below when completed.
+- Production `scheduled-operations` Edge function updated; both function deployments confirmed in Supabase.
+- Application commit **1326629**, pushed on `codex/release-1-qa`. Vercel production rebuild **CK1LewiyZedM7qYaMcHkTjxGbTXQ** is Ready and aliased to **https://g3-6740.com**, 20 September 2026, 11:03 Israel time.
+- Public release verification: HTTP 200, main bundle `index-Cc1SdWd-.js`, media bundle `TeamMediaPage-CS65agOY.js`; production Supabase reference present, QA reference absent; workshop management, protected attendance records, media library and editor included. No real attendance or media changes were performed as a release test.
 
 ## Remaining / deferred
 
