@@ -27,3 +27,7 @@ Profiles are versioned and validated, keyed by controller identifier, browser ma
 - Actual Xbox/joystick hardware was not available to this agent. Team acceptance remains: forward/reverse/strafe/turn at two headings, trigger release, stop, disconnect/reconnect, saved profile after reload; verify their actual browser/controller combination. Do not report this hardware acceptance as complete.
 
 No database or APK update. No robot-code, PID or live hardware control integration added. Keep all remaining V5.2/simulator tasks in the master pause handover; this closes the controller mapping correction, not the larger simulator acceptance programme.
+
+## Production release
+
+Application commit `e9f59ba`, pushed and deployed via production rebuild `6KJEFAzG9mQrXT4piPXWJQQHME7M`. Verified live on 20 September 2026: HTTP 200; `index-Bp0nxVt1.js` and `FieldTwinPage-DRbsIXiE.js`; production Supabase reference present, QA absent; saved profiles, robot-relative mode, neutral start and calibration present. Synthetic controller fixture absent. Finance repayment update remains present. No physical controller hardware acceptance is claimed.

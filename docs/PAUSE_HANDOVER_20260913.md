@@ -1,11 +1,11 @@
 # Pause handover and complete remaining programme
 
-Checkpoint updated: 2026-09-19. This file is the current resumption authority. V5.2 section 82 defines releases; sections 81–105 correct earlier sections. Simulator 3A/3B/3C are additions within the Field & Concept Twin work, not replacements for Releases 4–7. Historical notes are evidence, not current instructions.
+Checkpoint updated: 2026-09-20. This file is the current resumption authority. V5.2 section 82 defines releases; sections 81–105 correct earlier sections. Simulator 3A/3B/3C are additions within the Field & Concept Twin work, not replacements for Releases 4–7. Historical notes are evidence, not current instructions.
 
 ## What is saved and live
 
-- Branch: `codex/release-1-qa`. Application commit **fe200ef** (finance redesign), building on **b0fc377**, including attendance **b00a306** and prior simulator **8012578** and telemetry **48af302**. Pushed to remote. Browser GPS attendance is now enabled; installed APK and backend unchanged. See [attendance release and onsite acceptance checklist](MOBILE_BROWSER_ATTENDANCE_20260915.md). Physical phone/workshop acceptance remains pending today.
-- Production: https://g3-6740.com/field-twin ; Vercel production rebuild **3tAfGCv8ZL1juCEUwNo5qD1NKfJt**, Ready. Recorded verification: HTTP 200, bundle `index-JQQXD4GR.js`, production Supabase `hnqwhuuxlqfyawqymaaz`, no QA reference, engine `g3-physical-v3`. No production redeployment is needed for this documentation change.
+- Branch: `codex/release-1-qa`. Application commit **e9f59ba** (controller redesign), building on **fe200ef** (finance) and **b0fc377**, including attendance **b00a306** and prior simulator **8012578** and telemetry **48af302**. Pushed to remote. Browser GPS attendance is now enabled; installed APK and backend unchanged. See [attendance release and onsite acceptance checklist](MOBILE_BROWSER_ATTENDANCE_20260915.md). Physical phone/workshop acceptance remains pending today.
+- Production: https://g3-6740.com/field-twin ; Vercel production rebuild **6KJEFAzG9mQrXT4piPXWJQQHME7M**, Ready. Recorded verification: HTTP 200, bundle `index-Bp0nxVt1.js`, production Supabase `hnqwhuuxlqfyawqymaaz`, no QA reference, engine `g3-physical-v3`. No production redeployment is needed for this documentation change.
 - Latest correction is live: reference robot has red 6740 bumpers; negative-X hub counts RED, positive-X hub BLUE. Browser verification: eight shots at red hub → Red 8 / Blue 0. Uploaded user CAD appearance is preserved.
 - Simulator 3A implemented: gravity/suspension, acceleration/braking, bump tilt, hub/boundary/tower blocking, trench clearance and depot rail rise.
 - Simulator 3B implemented: individual moving balls, scattering, configured intake zone/rate/capacity, capture removes the same ball from the field; no duplicate static CAD balls.
@@ -28,6 +28,16 @@ Recipient-first finance redesign is deployed to production from **fe200ef**. See
 Production SQL migration succeeded; production web rebuild **3tAfGCv8ZL1juCEUwNo5qD1NKfJt** is Ready and aliased to g3-6740.com. Public bundle check: HTTP 200, **index-JQQXD4GR.js**, production Supabase reference present, QA reference absent, recipient repayment/history/tabs present. Admin finance route redirects unauthenticated access to login. Browser UI checks used synthetic fixtures; no actual financial payment was recorded. User acceptance of the next genuine repayment remains pending.
 
 Additional future finance scope recorded by this review: compensating reversals with audit history, bank reconciliation, restricted fund accounts, receipt attachments and accounting close. These are not implemented or required to use the corrected operational repayment flow. Keep these alongside all remaining programme items below; do not silently consider the system a full accounting suite.
+
+## Controller driving correction — 19 September 2026
+
+Production deployment **6KJEFAzG9mQrXT4piPXWJQQHME7M** verified live on 20 September: HTTP 200, main bundle `index-Bp0nxVt1.js`, twin bundle `FieldTwinPage-DRbsIXiE.js`; production database reference present, QA reference absent, controller profiles/calibration/neutral-start present and synthetic fixture absent. Finance increment remains included.
+
+Controller mapping root cause fixed in **e9f59ba**: driver forward/strafe/clockwise intent is converted to physics field coordinates at the robot’s current heading. Default is robot-relative; field-relative is explicitly labelled. Keyboard/touch field-axis bindings remain unchanged. See [controller behaviour, configuration and test evidence](CONTROLLER_DRIVING_20260919.md).
+
+Added saved per-controller profiles, live intent/raw input display, axis reversals, dead zone/curve/power limits, released-stick calibration, button assignments (A intake, hold RT shoot, B disable by default), neutral-start interlock and selected-controller disconnect protection. Non-standard mappings require direction verification; two-axis joysticks can disable strafe. Configuration locks while driving/recording; no automatic restart after reconnect. No database or APK changes.
+
+**Remaining hardware acceptance:** team tests its actual Xbox/joystick/browser at the workshop: forward after turning, strafe and rotation signs, held trigger/release, stop, disconnect/reconnect and saved profile reload. Real physics and synthetic browser controller tests passed; physical controller acceptance is not claimed. This acceptance is added to the existing CAD/device and simulator remaining tasks; no wider phase is closed.
 
 ## Exact resumption point
 
