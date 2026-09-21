@@ -100,3 +100,5 @@
 .intel-page.twin-expanded .twin-touch button{font-size:18px;min-height:36px;height:36px;padding:3px}
 @media(max-width:850px){.twin-expanded .twin-toolbar>div{justify-content:flex-start}.twin-expanded .twin-state{display:none}}
 @media(max-width:550px){.intel-page.twin-expanded .twin-touch{grid-template-columns:repeat(3,40px)}.intel-page.twin-expanded .twin-drive{bottom:8px;max-width:45%;flex-direction:column}.twin-expanded .twin-driver-controls{align-items:flex-start}}
+
+.twin-vr-entry{position:absolute;top:8px;left:8px;z-index:3;max-width:340px;background:#102035ed;color:#fff;padding:8px;border-radius:8px;font-size:12px}.intel-page .twin-vr-entry button{font-size:12px;min-height:32px;padding:4px 8px}.intel-page .twin-vr-entry label{display:inline-flex;align-items:center;gap:4px;font-size:11px;margin:4px}.twin-vr-entry small{display:block;line-height:1.4;font-size:11px}.twin-vr-entry input{accent-color:#d50091}
