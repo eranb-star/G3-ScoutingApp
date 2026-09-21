@@ -1,3 +1,4 @@
+import {driverCamera,isDriverView,type TwinView,type DriverSettings} from '../lib/twinDriverView';
 import {carpetTexture,styleReferenceModel,intakePresentation} from '../lib/twinSceneStyle';
 import {hopperVisuals} from '../lib/hopperVisuals';
 import {AdaptiveQuality,QUALITY,type QualityMode,type QualityTier} from '../lib/twinQuality';
@@ -15,7 +16,7 @@ import {RobotModel} from '../lib/robotModel';
 import {Concept,OBSTACLES,Pose} from '../lib/conceptTwin';
 
 export type ModelMetrics={length:number;width:number;height:number;triangles:number};
-type Props={onUnavailable:()=>void;errorText:string;retryText:string;quality:QualityMode;onQuality:(tier:QualityTier)=>void;telemetry?:Telemetry;intake:IntakeConfig;onModelMetrics:(m:ModelMetrics|null)=>void;season:FieldSeason;custom?:RobotModel;pose:Pose;concept:Concept;detailed:boolean;kitbot:boolean;view:'orbit'|'top'|'follow'|'robot';path:Pose[];onStatus:(s:string)=>void;onFps:(fps:number)=>void};
+type Props={onUnavailable:()=>void;errorText:string;retryText:string;quality:QualityMode;onQuality:(tier:QualityTier)=>void;telemetry?:Telemetry;intake:IntakeConfig;onModelMetrics:(m:ModelMetrics|null)=>void;season:FieldSeason;custom?:RobotModel;pose:Pose;concept:Concept;detailed:boolean;kitbot:boolean;view:TwinView;driver:DriverSettings;path:Pose[];onStatus:(s:string)=>void;onFps:(fps:number)=>void};
 const CACHE=TWIN_CACHE;
 const assets={field:{url:'/twin/2026/field-optimized.glb',bytes:19627748,hash:'088126b167906ca95e7b21a76a430a64199103d1ea184a121b1cf52e984b75e8'},robot:{url:'/twin/2026/robot-optimized.glb',bytes:16177620,hash:'053caf847815cb163632b8f858f5b261e589cb9abae3819b502c016fb57238b8'}};
 export async function clearTwinCache(){if('caches' in window)await Promise.all([caches.delete(CACHE),caches.delete('g3-twin-2026-v2'),caches.delete('g3-twin-2026-v3')]);}
@@ -59,7 +60,7 @@ export default function FieldTwinCanvas(props:Props){
   const hopper=new THREE.InstancedMesh(new THREE.SphereGeometry(FUEL_RADIUS,16,10),new THREE.MeshStandardMaterial({color:0xffcf18,roughness:.72}),60);hopper.instanceMatrix.setUsage(THREE.DynamicDrawUsage);hopper.frustumCulled=false;hopper.castShadow=true;hopper.receiveShadow=true;robot.add(hopper);
   const visualPosition=new THREE.Vector3(),visualScale=new THREE.Vector3(),visualRotation=new THREE.Quaternion();
   const captureZone=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({color:0x45e2aa,transparent:true,opacity:0.25,side:THREE.DoubleSide,depthWrite:false}));robot.add(captureZone);
-  // Solid reference attachment. Geometry follows capture reach, but adds no physical collider.
+  // Open round-tube reference attachment. Geometry follows capture reach, but adds no physical collider.
   const intakePivot=new THREE.Group();robot.add(intakePivot);
   const mounts=new THREE.Group();robot.add(mounts);
   const mountCrossbar=box(0,0,.18,.065,1,.055,0x525e6c,mounts);
@@ -67,11 +68,13 @@ export default function FieldTwinCanvas(props:Props){
   const mountPosts=[-1,1].map(()=>box(0,0,0,.07,.065,.13,0x525e6c,mounts));
   const hinges=[-1,1].map(()=>{const m=new THREE.Mesh(new THREE.CylinderGeometry(.055,.055,.085,20),new THREE.MeshStandardMaterial({color:0x313844,roughness:.4,metalness:.7}));m.castShadow=true;mounts.add(m);return m;});
   const axle=new THREE.Mesh(new THREE.CylinderGeometry(.019,.019,1,16),new THREE.MeshStandardMaterial({color:0xadb5bd,roughness:.32,metalness:.8}));intakePivot.add(axle);axle.castShadow=true;
-  const guide=box(0,0,-.018,1,1,.025,0x252a31,intakePivot);
-  const intakeArms=[-1,1].map(()=>box(0,0,0,1,.055,.055,0x697887,intakePivot));
+  const carbon=new THREE.MeshStandardMaterial({color:0x303640,roughness:.48,metalness:.2});
+  const tube=()=>{const m=new THREE.Mesh(new THREE.CylinderGeometry(.018,.018,1,16),carbon);m.castShadow=true;m.receiveShadow=true;intakePivot.add(m);return m;};
+  const crossTubes=[tube(),tube()];
+  const intakeArms=[tube(),tube()];intakeArms.forEach(m=>m.rotation.z=-Math.PI/2);
   const roller=new THREE.Mesh(new THREE.CylinderGeometry(.065,.065,1,24),new THREE.MeshStandardMaterial({color:0x262b31,roughness:.95,metalness:0}));intakePivot.add(roller);roller.castShadow=true;roller.receiveShadow=true;
   const rollerStripe=box(.065,0,0,.015,1,.025,0xe8b64a,roller);
-  let intakeAngle=-Math.PI/2,intakeTime=performance.now();
+  let kitHeight=.65,intakeAngle=0,intakeTime=performance.now();
   const chassis=box(0,0,.2,1,1,.24,0xc72235,concept),mast=box(0,0,.4,.5,.45,.35,0xdde5ec,concept);
   // Team-number plates sit just outside the reference bumper faces.
   function bumperNumbers(parent:THREE.Group,length:number,width:number,cx=0,cy=0,z=.18){
@@ -105,44 +108,46 @@ export default function FieldTwinCanvas(props:Props){
     if(disposed){gltf.scene.traverse(o=>{if(o instanceof THREE.Mesh)o.geometry.dispose();});return;}
     const model=gltf.scene;styleReferenceModel(model,carpet);prepareModel(model);for(const r of which==='field'?season.rotations:[{axis:'x',degrees:90}])model.rotateOnWorldAxis(new THREE.Vector3(r.axis==='x'?1:0,r.axis==='y'?1:0,r.axis==='z'?1:0),r.degrees*Math.PI/180);
     if(which==='field'){for(const decoration of removeStaticFuel(model,season.year)??[])disposeModel(decoration);model.name='detailed-field';scene.add(model);simplified.visible=false;}
-    else{model.traverse(o=>{if(o instanceof THREE.Mesh)for(const material of Array.isArray(o.material)?o.material:[o.material]){if(material.name==='mat_6'&&material instanceof THREE.MeshStandardMaterial)material.color.set('#c72235');if((material.name==='mat_13'||material.name==='mat_41')&&material instanceof THREE.MeshStandardMaterial){material.transparent=false;material.opacity=1;material.depthWrite=true;material.roughness=.65;material.metalness=0;material.needsUpdate=true;}}});model.rotateOnWorldAxis(new THREE.Vector3(0,0,1),Math.PI/2);model.position.set(-.3,0,.05);kit.add(model);kit.updateWorldMatrix(true,true);const bumper=model.getObjectByName('Front_Bumper')??model;const b=new THREE.Box3().setFromObject(bumper).applyMatrix4(kit.matrixWorld.clone().invert()),size=b.getSize(new THREE.Vector3()),center=b.getCenter(new THREE.Vector3());bumperNumbers(kit,size.x,size.y,center.x,center.y,(b.min.z+b.max.z)/2);}
+    else{model.traverse(o=>{if(o instanceof THREE.Mesh)for(const material of Array.isArray(o.material)?o.material:[o.material]){if(material.name==='mat_6'&&material instanceof THREE.MeshStandardMaterial)material.color.set('#c72235');if((material.name==='mat_13'||material.name==='mat_41')&&material instanceof THREE.MeshStandardMaterial){material.transparent=false;material.opacity=1;material.depthWrite=true;material.roughness=.65;material.metalness=0;material.needsUpdate=true;}}});model.rotateOnWorldAxis(new THREE.Vector3(0,0,1),Math.PI/2);model.position.set(-.3,0,.05);model.updateWorldMatrix(true,true);kitHeight=new THREE.Box3().setFromObject(model).max.z;kit.add(model);kit.updateWorldMatrix(true,true);const bumper=model.getObjectByName('Front_Bumper')??model;const b=new THREE.Box3().setFromObject(bumper).applyMatrix4(kit.matrixWorld.clone().invert()),size=b.getSize(new THREE.Vector3()),center=b.getCenter(new THREE.Vector3());bumperNumbers(kit,size.x,size.y,center.x,center.y,(b.min.z+b.max.z)/2);}
     latest.current.onStatus(which==='field'?`${season.year} field model loaded · checksum verified`:'2026 KitBot loaded · checksum verified');
    }).catch(error=>{if(!disposed&&error.name!=='AbortError')latest.current.onStatus('Detailed model unavailable. Simplified view remains usable; check connection and reopen 3D to retry.');}).finally(()=>{pendingLoads--;warmUntil=performance.now()+3000;adaptive.reset();});
   }
   let firstResize=true;const resize=()=>{const w=element.clientWidth,h=element.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/Math.max(h,1);if(firstResize){camera.position.set(-12,-15,15).multiplyScalar(Math.max(1,1.15/camera.aspect));firstResize=false;}camera.updateProjectionMatrix();warmUntil=performance.now()+2500;adaptive.reset();};const observer=new ResizeObserver(resize);observer.observe(element);resize();
   const render=()=>{
-   if(disposed)return;const p=latest.current;
+   if(disposed)return;const p=latest.current,driverView=season.year===2026&&isDriverView(p.view);
    if(p.quality!==mode){mode=p.quality;adaptive.reset(mode==='auto'?'medium':mode);applyQuality(adaptive.tier);warmUntil=performance.now()+3000;}
    if(document.hidden){frames=0;last=performance.now();adaptive.reset();frame=requestAnimationFrame(render);return;}
-   if(p.detailed&&!fieldStarted){fieldStarted=true;load('field');}if(p.kitbot&&!robotStarted){robotStarted=true;load('robot');}
-   const detail=scene.getObjectByName('detailed-field');if(detail){detail.visible=p.detailed;simplified.visible=!p.detailed;}
+   if((p.detailed||driverView)&&!fieldStarted){fieldStarted=true;load('field');}if(p.kitbot&&!robotStarted){robotStarted=true;load('robot');}
+   const detail=scene.getObjectByName('detailed-field');if(detail){detail.visible=p.detailed||driverView;simplified.visible=!detail.visible;}
    if(p.custom?.data!==customData){customData=p.custom?.data;if(customData)loadCustom(customData);else{customGeneration++;custom.children.forEach(disposeModel);custom.clear();}}
    custom.visible=!!p.custom&&custom.children.length>0;custom.scale.setScalar(p.custom?.scale??1);custom.rotation.z=(p.custom?.rotation??0)*Math.PI/180;
    concept.visible=!custom.visible&&(!p.kitbot||kit.children.length===0);kit.visible=!custom.visible&&p.kitbot;
    conceptNumbers.scale.set(p.concept.length,p.concept.width,1);chassis.scale.set(p.concept.length,p.concept.width,1);mast.scale.z=p.concept.height/.65;
    robot.position.set(p.pose.x,p.pose.y,p.pose.z??0);if(p.pose.rotation)robot.quaternion.set(p.pose.rotation.x,p.pose.rotation.y,p.pose.rotation.z,p.pose.rotation.w);else robot.rotation.set(0,0,p.pose.heading);
-   arrow.position.z=p.concept.height+.12;
+   arrow.position.z=p.concept.height+.12;arrow.visible=!driverView;line.visible=!driverView;
    const intakeNow=performance.now(),intakeDt=Math.min(.1,(intakeNow-intakeTime)/1000);intakeTime=intakeNow;
-   const attachment=intakePresentation(p.concept.length,p.intake.reach,kit.visible);const span=attachment.span,desired=p.intake.on?attachment.angle:-Math.PI/2;
-   intakeAngle+=(desired-intakeAngle)*(1-Math.exp(-9*intakeDt));intakePivot.visible=mounts.visible=season.year===2026&&!p.custom;intakePivot.position.set(attachment.pivotX,0,attachment.pivotZ);intakePivot.rotation.y=intakeAngle;
-   mountCrossbar.position.x=attachment.mountX;mountCrossbar.scale.y=p.intake.width+.09;
+   const attachment=intakePresentation(p.concept.length,p.intake.reach,kit.visible,kit.visible?kitHeight:p.concept.height);const span=attachment.span,desired=p.intake.on?attachment.angle:attachment.stowAngle;
+   intakeAngle=Math.max(attachment.stowAngle,intakeAngle+(desired-intakeAngle)*(1-Math.exp(-9*intakeDt)));intakePivot.visible=mounts.visible=season.year===2026&&!p.custom;intakePivot.position.set(attachment.pivotX,0,attachment.pivotZ);intakePivot.rotation.y=intakeAngle;
+   const mountZ=Math.min(.18,attachment.pivotZ-.03);mountCrossbar.position.set(attachment.mountX,0,mountZ);mountCrossbar.scale.y=p.intake.width+.09;
    const railLength=attachment.pivotX-attachment.mountX+.08;
-   mountRails.forEach((m,i)=>{m.position.set((attachment.mountX+attachment.pivotX)/2,(i?1:-1)*p.intake.width/2,.18);m.scale.x=railLength;});
-   mountPosts.forEach((m,i)=>m.position.set(attachment.pivotX,(i?1:-1)*p.intake.width/2,.225));
+   mountRails.forEach((m,i)=>{m.position.set((attachment.mountX+attachment.pivotX)/2,(i?1:-1)*p.intake.width/2,mountZ);m.scale.x=railLength;});
+   mountPosts.forEach((m,i)=>{m.position.set(attachment.pivotX,(i?1:-1)*p.intake.width/2,(mountZ+attachment.pivotZ)/2);m.scale.z=(attachment.pivotZ-mountZ)/.13;});
    hinges.forEach((m,i)=>m.position.set(attachment.pivotX,(i?1:-1)*p.intake.width/2,attachment.pivotZ));
-   axle.scale.y=p.intake.width+.08;guide.position.x=span*.48;guide.scale.set(span*.85,p.intake.width*.92,1);
-   intakeArms.forEach((arm,i)=>{arm.position.set(span/2,(i?1:-1)*p.intake.width/2,0);arm.scale.x=span;});roller.position.set(span,0,0);roller.scale.y=p.intake.width;if(p.intake.on)roller.rotation.y-=intakeDt*8;rollerStripe.visible=true;
-   captureZone.visible=season.year===2026&&p.intake.on&&!!p.telemetry;captureZone.scale.set(p.intake.reach,p.intake.width,1);captureZone.position.set(p.concept.length/2+p.intake.reach/2,0,0.025);
+   axle.scale.y=p.intake.width+.08;crossTubes.forEach((m,i)=>{m.position.x=span*(i? .68:.32);m.scale.y=p.intake.width;});
+   intakeArms.forEach((arm,i)=>{arm.position.set(span/2,(i?1:-1)*p.intake.width/2,0);arm.scale.y=span;});roller.position.set(span,0,0);roller.scale.y=p.intake.width;if(p.intake.on)roller.rotation.y-=intakeDt*8;rollerStripe.visible=true;
+   captureZone.visible=!driverView&&season.year===2026&&p.intake.on&&!!p.telemetry;captureZone.scale.set(p.intake.reach,p.intake.width,1);captureZone.position.set(p.concept.length/2+p.intake.reach/2,0,0.025);
    const reference=season.year===2026&&!p.custom;
    const visuals=reference?hopperVisuals(p.pose,p.intake.capacity):null;
    hopper.visible=reference;hopper.count=visuals?.stored.length??0;
    visuals?.stored.forEach((b,i)=>{visualPosition.set(b.x,b.y,b.z);visualScale.setScalar(b.radius/FUEL_RADIUS);hopper.setMatrixAt(i,ballMatrix.compose(visualPosition,visualRotation,visualScale));});hopper.instanceMatrix.needsUpdate=true;
    const balls=season.year===2026?(visuals?.field??p.pose.balls??[]):[];fuel.count=balls.length;balls.forEach((b,i)=>{visualPosition.set(b.x,b.y,b.z);visualScale.setScalar(('radius' in b?b.radius as number:FUEL_RADIUS)/FUEL_RADIUS);fuel.setMatrixAt(i,ballMatrix.compose(visualPosition,visualRotation,visualScale));});fuel.instanceMatrix.needsUpdate=true;
    if(previousPath!==p.path){previousPath=p.path;pathGeometry.setFromPoints(p.path.map(point=>new THREE.Vector3(point.x,point.y,.08)));}
-   const t=p.telemetry;targetLine.visible=headingLine.visible=targetLabel.visible=!!t;
+   const t=driverView?undefined:p.telemetry;targetLine.visible=headingLine.visible=targetLabel.visible=!!t;
    if(t){targetGeometry.setFromPoints([new THREE.Vector3(t.muzzleX,t.muzzleY,t.muzzleZ),new THREE.Vector3(t.targetX,t.targetY,t.targetZ)]);headingLine.position.set(p.pose.x,p.pose.y,(p.pose.z??0)+p.concept.height+.15);headingLine.setDirection(new THREE.Vector3(Math.cos(p.pose.heading),Math.sin(p.pose.heading),0));targetLabel.position.set((t.muzzleX+t.targetX)/2,(t.muzzleY+t.targetY)/2,Math.max(t.muzzleZ,t.targetZ)+.3);const text=`${t.rangeM.toFixed(2)} m · ${t.aimErrorDeg===null?'—':t.aimErrorDeg.toFixed(1)+'°'}`;if(text!==labelText){labelText=text;labelContext.clearRect(0,0,512,80);labelContext.fillStyle='#102636';labelContext.fillRect(0,0,512,80);labelContext.fillStyle='#8bffe8';labelContext.font='bold 40px monospace';labelContext.textAlign='center';labelContext.fillText(text,256,55);labelTexture.needsUpdate=true;}}
-   if(p.view!==previousView){if(p.view==='robot'){camera.position.set(p.pose.x-1.3,p.pose.y-1.6,1.6);controls.target.set(p.pose.x,p.pose.y,.35);}if(p.view==='orbit'){camera.position.set(-12,-15,15).multiplyScalar(Math.max(1,1.15/camera.aspect));controls.target.set(0,0,0);}previousView=p.view;}
-   if(p.view==='top'){camera.position.set(0,-.01,Math.max(23,24/ camera.aspect));controls.target.set(0,0,0);controls.enableRotate=false;}
+   controls.enabled=!driverView;controls.enablePan=!driverView;controls.enableZoom=!driverView;
+   if(p.view!==previousView){renderer.domElement.setAttribute('aria-label',driverView?'2026 fixed driver-station view; adjust looking direction using the controls above.':`${season.year} field and robot 3D view; rotate by dragging, zoom with scroll.`);controls.enableDamping=false;controls.update();controls.enableDamping=true;if(p.view==='robot'){camera.position.set(p.pose.x-1.3,p.pose.y-1.6,1.6);controls.target.set(p.pose.x,p.pose.y,.35);}if(p.view==='orbit'){camera.position.set(-12,-15,15).multiplyScalar(Math.max(1,1.15/camera.aspect));controls.target.set(0,0,0);}previousView=p.view;}
+   if(driverView){const d=driverCamera(p.view,p.driver,camera.aspect);camera.position.set(d.x,d.y,d.z);controls.target.set(d.targetX,d.targetY,d.targetZ);camera.lookAt(controls.target);camera.fov=d.fov;camera.updateProjectionMatrix();}
+   else if(p.view==='top'){camera.position.set(0,-.01,Math.max(23,24/ camera.aspect));controls.target.set(0,0,0);controls.enableRotate=false;}
    else if(p.view==='follow'){camera.position.lerp(new THREE.Vector3(p.pose.x-4,p.pose.y-5,4.5),1-Math.exp(-5*intakeDt));controls.target.set(p.pose.x,p.pose.y,.35);controls.enableRotate=false;}
    else if(p.view==='robot'){camera.position.x+=p.pose.x-controls.target.x;camera.position.y+=p.pose.y-controls.target.y;controls.target.set(p.pose.x,p.pose.y,.35);controls.enableRotate=true;}
    else controls.enableRotate=true;
@@ -150,7 +155,7 @@ export default function FieldTwinCanvas(props:Props){
    const lightX=following?p.pose.x:0,lightY=following?p.pose.y:0;sun.position.set(lightX-4,lightY-6,15);sun.target.position.set(lightX,lightY,0);
    if(sun.shadow.camera.right!==shadowRadius){sun.shadow.camera.left=-shadowRadius;sun.shadow.camera.right=shadowRadius;sun.shadow.camera.top=shadowRadius;sun.shadow.camera.bottom=-shadowRadius;sun.shadow.camera.updateProjectionMatrix();}
    controls.minDistance=p.view==='robot'?.65:2;
-   controls.update();renderer.render(scene,camera);frames++;const now=performance.now();if(now-last>=1500){const measured=Math.round(frames*1000/(now-last));p.onFps(measured);if(mode==='auto'&&pendingLoads===0&&now>warmUntil){const next=adaptive.sample(measured);if(next!==tier)applyQuality(next);}else adaptive.reset();frames=0;last=now;}
+   if(!driverView){if(camera.fov!==43){camera.fov=43;camera.updateProjectionMatrix();}controls.update();}renderer.render(scene,camera);frames++;const now=performance.now();if(now-last>=1500){const measured=Math.round(frames*1000/(now-last));p.onFps(measured);if(mode==='auto'&&pendingLoads===0&&now>warmUntil){const next=adaptive.sample(measured);if(next!==tier)applyQuality(next);}else adaptive.reset();frames=0;last=now;}
    frame=requestAnimationFrame(render);
   };frame=requestAnimationFrame(render);
   const lost=(e:Event)=>{e.preventDefault();cancelAnimationFrame(frame);setFailed(true);latest.current.onUnavailable();latest.current.onStatus('Graphics context lost. Switch to 2D or reopen 3D.');};renderer.domElement.addEventListener('webglcontextlost',lost);

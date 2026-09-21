@@ -1,3 +1,5 @@
+**Superseded intake detail:** The later [driver-view and open-intake update](DRIVER_VIEWS_20260921.md) removes the solid tray and limits folded height. Scene/material improvements below remain.
+
 # Intake attachment and Scene Polish (Step 3) — 2026-09-21
 
 User authorized fixing the detached/transparent-looking reference intake and implementing Scene Polish. Local preview/implementation only; no push or production deployment.

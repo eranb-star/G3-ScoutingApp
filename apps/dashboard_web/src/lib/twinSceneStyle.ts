@@ -31,9 +31,12 @@ export function styleReferenceModel(model:THREE.Object3D,carpet:THREE.Texture){
 }
 
 /** Reference frame front is x=.333 m, bumper top z=.169 m in renderer coordinates. */
-export function intakePresentation(length:number,reach:number,reference:boolean){
+export function intakePresentation(length:number,reach:number,reference:boolean,height=.65){
  const mountX=reference ? .30 : length*.35;
  const pivotX=reference ? .35 : length/2-.04;
- const pivotZ=.28,rollerX=length/2+reach,rollerZ=.09;
- return {mountX,pivotX,pivotZ,rollerX,rollerZ,span:Math.hypot(rollerX-pivotX,pivotZ-rollerZ),angle:Math.atan2(pivotZ-rollerZ,rollerX-pivotX)};
+ const pivotZ=Math.min(.28,height-.08),rollerX=length/2+reach,rollerZ=.09;
+ const span=Math.hypot(rollerX-pivotX,pivotZ-rollerZ);
+ // Include the roller radius, with clearance for its rotating accent strip.
+ const stowAngle=-Math.asin(Math.max(0,Math.min(1,(height-.085-pivotZ)/span)));
+ return {mountX,pivotX,pivotZ,rollerX,rollerZ,span,stowAngle,angle:Math.atan2(pivotZ-rollerZ,rollerX-pivotX)};
 }
