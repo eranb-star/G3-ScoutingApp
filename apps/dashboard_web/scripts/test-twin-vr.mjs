@@ -1,0 +1,43 @@
+import {createRequire} from 'node:module';import fs from 'node:fs/promises';import os from 'node:os';import path from 'node:path';import {pathToFileURL} from 'node:url';
+const req=createRequire(import.meta.url),{build}=createRequire(req.resolve('vite'))('esbuild');
+const result=await build({stdin:{contents:String.raw`
+import assert from 'node:assert/strict';
+import * as THREE from 'three';
+import {createTwinVR,vrInput} from './src/lib/twinVR';
+import {DRIVER_STATIONS_2026} from './src/lib/twinDriverView';
+const pad=()=>({mapping:'xr-standard',axes:[0,0,0,0],buttons:Array.from({length:6},()=>({pressed:false}))});
+const left={handedness:'left',gamepad:pad(),gripSpace:{}},right={handedness:'right',gamepad:pad(),gripSpace:{}};
+const sources=[left,right];right.gamepad.buttons[1].pressed=true;left.gamepad.axes[3]=-1;
+assert.equal(vrInput(sources,false).drive,false);assert.equal(vrInput([left],true).drive,false);
+assert.equal(vrInput(sources,true).vx,1);left.gamepad.axes[3]=NaN;assert.ok(vrInput(sources,true).vx===0);
+right.gamepad.buttons[1].pressed=false;assert.equal(vrInput(sources,true).drive,false);left.gamepad.axes.fill(0);
+globalThis.document={createElement:()=>({width:0,height:0,getContext:()=>({clearRect(){},fillRect(){},fillText(){}})})};
+class Session extends EventTarget {visibilityState='visible';inputSources=sources;async end(){this.dispatchEvent(new Event('end'));}}
+let session,requests=0,requestOptions,scale,foveation,referenceType;
+Object.defineProperty(globalThis,'navigator',{configurable:true,value:{xr:{requestSession:async(mode,opts)=>{assert.equal(mode,'immersive-vr');requests++;requestOptions=opts;session=new Session();return session;}}}});
+const renderer={xr:{setReferenceSpaceType:v=>referenceType=v,setFramebufferScaleFactor:v=>scale=v,setFoveation:v=>foveation=v,setSession:async()=>{},getReferenceSpace:()=>({})}};
+const camera=new THREE.PerspectiveCamera(),scene=new THREE.Scene(),changes=[];
+const vr=createTwinVR(renderer,camera,scene,a=>changes.push(a));
+await Promise.all([vr.enter(false),vr.enter(false)]);assert.equal(requests,1);assert.equal(scale,.8);assert.equal(foveation,1);assert.equal(referenceType,'local-floor');assert.deepEqual(requestOptions,{requiredFeatures:['local-floor']});
+let tracked=true;const pose={emulatedPosition:false,transform:{position:{x:1,y:1.65,z:2},orientation:{x:0,y:0,z:0,w:1}}};
+const frame={getViewerPose:()=>pose,getPose:()=>tracked?{}:null};
+assert.equal(vr.update(10,frame).drive,false);
+scene.updateMatrixWorld(true);const head=new THREE.Vector3(1,1.65,2).applyMatrix4(camera.parent.matrixWorld);
+assert.ok(Math.abs(head.x-(DRIVER_STATIONS_2026.red[0][0]-.6))<1e-9);assert.ok(Math.abs(head.y-DRIVER_STATIONS_2026.red[0][1])<1e-9);assert.ok(Math.abs(head.z-1.65)<1e-9);
+const forward=new THREE.Vector3(0,0,-1).applyQuaternion(camera.parent.quaternion);assert.ok(forward.distanceTo(new THREE.Vector3(1,0,0))<1e-9);
+right.gamepad.buttons[1].pressed=true;left.gamepad.axes[3]=-1;assert.equal(vr.update(20,frame).vx,1);
+tracked=false;assert.equal(vr.update(30,frame).drive,false);tracked=true;assert.equal(vr.update(40,frame).drive,false);
+right.gamepad.buttons[1].pressed=false;left.gamepad.axes.fill(0);vr.update(50,frame);right.gamepad.buttons[1].pressed=true;assert.equal(vr.update(60,frame).drive,true);
+assert.equal(vr.update(500,frame).drive,false);right.gamepad.buttons[1].pressed=false;vr.update(510,frame);right.gamepad.buttons[1].pressed=true;
+session.visibilityState='visible-blurred';session.dispatchEvent(new Event('visibilitychange'));assert.equal(vr.update(520,frame).drive,false);
+session.visibilityState='visible';session.dispatchEvent(new Event('visibilitychange'));assert.equal(vr.update(530,frame).drive,false);
+right.gamepad.buttons[1].pressed=false;vr.update(540,frame);right.gamepad.buttons[1].pressed=true;left.gamepad.buttons[4].pressed=true;assert.equal(vr.update(550,frame).drive,false);left.gamepad.buttons[4].pressed=false;
+right.gamepad.buttons[5].pressed=true;vr.update(560,frame);assert.equal(vr.active,false);assert.equal(changes.at(-1),false);assert.equal(camera.up.z,1);
+right.gamepad.buttons[5].pressed=false;right.gamepad.buttons[1].pressed=false;await vr.enter(true);assert.equal(scale,1);assert.equal(foveation,0);
+const yaw=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),.6);pose.transform.orientation=yaw;vr.update(600,frame);
+const aimed=new THREE.Vector3(0,0,-1).applyQuaternion(yaw).applyQuaternion(camera.parent.quaternion);assert.ok(aimed.distanceTo(new THREE.Vector3(1,0,0))<1e-9);
+vr.dispose();assert.equal(vr.active,false);
+console.log('VR: input/deadman, duplicate entry, floor scale/head origin/yaw, tracking/focus/gap/recenter disarming, exit and quality passed');
+`,resolveDir:process.cwd(),loader:'ts'},bundle:true,platform:'node',format:'esm',write:false,logLevel:'silent'});
+const file=path.join(os.tmpdir(),'g3-vr-test.mjs');await fs.writeFile(file,result.outputFiles[0].text);await import(pathToFileURL(file));
+

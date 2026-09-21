@@ -1,3 +1,4 @@
+import {createTwinVR,type VRInput} from '../lib/twinVR';
 import {driverCamera,isDriverView,type TwinView,type DriverSettings} from '../lib/twinDriverView';
 import {carpetTexture,styleReferenceModel,intakePresentation} from '../lib/twinSceneStyle';
 import {hopperVisuals} from '../lib/hopperVisuals';
@@ -16,7 +17,7 @@ import {RobotModel} from '../lib/robotModel';
 import {Concept,OBSTACLES,Pose} from '../lib/conceptTwin';
 
 export type ModelMetrics={length:number;width:number;height:number;triangles:number};
-type Props={onUnavailable:()=>void;errorText:string;retryText:string;quality:QualityMode;onQuality:(tier:QualityTier)=>void;telemetry?:Telemetry;intake:IntakeConfig;onModelMetrics:(m:ModelMetrics|null)=>void;season:FieldSeason;custom?:RobotModel;pose:Pose;concept:Concept;detailed:boolean;kitbot:boolean;view:TwinView;driver:DriverSettings;path:Pose[];onStatus:(s:string)=>void;onFps:(fps:number)=>void};
+type Props={vrReady:boolean;onVRState:(active:boolean)=>void;onVRFrame:(now:number,input:VRInput)=>Pose;onUnavailable:()=>void;errorText:string;retryText:string;quality:QualityMode;onQuality:(tier:QualityTier)=>void;telemetry?:Telemetry;intake:IntakeConfig;onModelMetrics:(m:ModelMetrics|null)=>void;season:FieldSeason;custom?:RobotModel;pose:Pose;concept:Concept;detailed:boolean;kitbot:boolean;view:TwinView;driver:DriverSettings;path:Pose[];onStatus:(s:string)=>void;onFps:(fps:number)=>void};
 const CACHE=TWIN_CACHE;
 const assets={field:{url:'/twin/2026/field-optimized.glb',bytes:19627748,hash:'088126b167906ca95e7b21a76a430a64199103d1ea184a121b1cf52e984b75e8'},robot:{url:'/twin/2026/robot-optimized.glb',bytes:16177620,hash:'053caf847815cb163632b8f858f5b261e589cb9abae3819b502c016fb57238b8'}};
 export async function clearTwinCache(){if('caches' in window)await Promise.all([caches.delete(CACHE),caches.delete('g3-twin-2026-v2'),caches.delete('g3-twin-2026-v3')]);}
@@ -30,11 +31,13 @@ async function assetBuffer(which:keyof typeof assets,signal:AbortSignal,season:F
  return data;
 }
 export default function FieldTwinCanvas(props:Props){
+ const [vrSupport,setVRSupport]=useState(false),[vrError,setVRError]=useState(''),[vrHigh,setVRHigh]=useState(false);const enterVR=useRef<(high:boolean)=>Promise<void>>(async()=>{});
+ useEffect(()=>{let active=true;void navigator.xr?.isSessionSupported('immersive-vr').then(ok=>{if(active)setVRSupport(ok);}).catch(()=>{});return()=>{active=false;};},[]);
  const [failed,setFailed]=useState(false),[retry,setRetry]=useState(0);
  const host=useRef<HTMLDivElement>(null),latest=useRef(props);latest.current=props;
  useEffect(()=>{
   setFailed(false);
-  const season=props.season;const field={length:season.length,width:season.width};const element=host.current!;let disposed=false,frame=0,frames=0,last=performance.now();const abort=new AbortController();
+  const season=props.season;const field={length:season.length,width:season.width};const element=host.current!;let disposed=false,frames=0,last=performance.now();const abort=new AbortController();
   let renderer:THREE.WebGLRenderer;
   try{renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});}catch{setFailed(true);latest.current.onUnavailable();latest.current.onStatus('WebGL unavailable — use 2D or retry the renderer.');return;}
   renderer.setPixelRatio(Math.min(devicePixelRatio,1));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.95;
@@ -43,6 +46,8 @@ export default function FieldTwinCanvas(props:Props){
   const studio=new RoomEnvironment(),pmrem=new THREE.PMREMGenerator(renderer),environment=pmrem.fromScene(studio,.04);scene.environment=environment.texture;scene.environmentIntensity=.45;studio.dispose();pmrem.dispose();
   const adaptive=new AdaptiveQuality();let previousView:Props['view']|null=null;let mode:QualityMode=props.quality,tier:QualityTier=mode==='auto'?'medium':mode,pendingLoads=0,warmUntil=performance.now()+4000;adaptive.reset(tier);renderer.shadowMap.type=THREE.PCFSoftShadowMap;
   const camera=new THREE.PerspectiveCamera(43,1,.05,150);camera.up.set(0,0,1);camera.position.set(-12,-15,15);
+  const vr=createTwinVR(renderer,camera,scene,active=>{latest.current.onVRState(active);if(!active){previousView=null;applyQuality(mode==='auto'?'medium':mode);}});
+  enterVR.current=async high=>{if(latest.current.custom||!latest.current.kitbot)throw Error('Prototype uses the reference KitBot. Select it before entering VR.');if(!latest.current.vrReady||!scene.getObjectByName('detailed-field')||!robotStarted||kit.children.length===0)throw Error('Wait for the field, robot and physics to load before entering VR.');applyQuality(high?'high':'medium');try{await vr.enter(high);}catch(e){applyQuality(mode==='auto'?'medium':mode);throw e;}};
   const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.maxPolarAngle=Math.PI/2-.03;controls.minDistance=2;controls.maxDistance=80;
   const ambient=new THREE.HemisphereLight(0xe6f1ff,0x596477,1.4);ambient.position.set(0,0,1);scene.add(ambient);const sun=new THREE.DirectionalLight(0xfff4e5,2.8);sun.position.set(-4,-6,15);scene.add(sun,sun.target);sun.castShadow=true;sun.shadow.camera.left=-14;sun.shadow.camera.right=14;sun.shadow.camera.top=12;sun.shadow.camera.bottom=-12;sun.shadow.camera.near=.5;sun.shadow.camera.far=50;sun.shadow.normalBias=.008;sun.shadow.bias=-.00015;sun.shadow.camera.updateProjectionMatrix();
   const fill=new THREE.DirectionalLight(0xb4d4ff,.8);fill.position.set(8,5,9);scene.add(fill);
@@ -112,11 +117,11 @@ export default function FieldTwinCanvas(props:Props){
     latest.current.onStatus(which==='field'?`${season.year} field model loaded · checksum verified`:'2026 KitBot loaded · checksum verified');
    }).catch(error=>{if(!disposed&&error.name!=='AbortError')latest.current.onStatus('Detailed model unavailable. Simplified view remains usable; check connection and reopen 3D to retry.');}).finally(()=>{pendingLoads--;warmUntil=performance.now()+3000;adaptive.reset();});
   }
-  let firstResize=true;const resize=()=>{const w=element.clientWidth,h=element.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/Math.max(h,1);if(firstResize){camera.position.set(-12,-15,15).multiplyScalar(Math.max(1,1.15/camera.aspect));firstResize=false;}camera.updateProjectionMatrix();warmUntil=performance.now()+2500;adaptive.reset();};const observer=new ResizeObserver(resize);observer.observe(element);resize();
-  const render=()=>{
-   if(disposed)return;const p=latest.current,driverView=season.year===2026&&isDriverView(p.view);
-   if(p.quality!==mode){mode=p.quality;adaptive.reset(mode==='auto'?'medium':mode);applyQuality(adaptive.tier);warmUntil=performance.now()+3000;}
-   if(document.hidden){frames=0;last=performance.now();adaptive.reset();frame=requestAnimationFrame(render);return;}
+  let firstResize=true;const resize=()=>{if(renderer.xr.isPresenting)return;const w=element.clientWidth,h=element.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/Math.max(h,1);if(firstResize){camera.position.set(-12,-15,15).multiplyScalar(Math.max(1,1.15/camera.aspect));firstResize=false;}camera.updateProjectionMatrix();warmUntil=performance.now()+2500;adaptive.reset();};const observer=new ResizeObserver(resize);observer.observe(element);resize();
+  const render=(time:number,xrFrame?:XRFrame)=>{
+   if(disposed)return;const input=vr.active&&xrFrame?vr.update(time,xrFrame):undefined;const p=input?{...latest.current,pose:latest.current.onVRFrame(time,input),intake:{...latest.current.intake,on:input.intake},telemetry:undefined}:latest.current,driverView=vr.active||(season.year===2026&&isDriverView(p.view));
+   if(!vr.active&&p.quality!==mode){mode=p.quality;adaptive.reset(mode==='auto'?'medium':mode);applyQuality(adaptive.tier);warmUntil=performance.now()+3000;}
+   if(document.hidden&&!vr.active){frames=0;last=performance.now();adaptive.reset();return;}
    if((p.detailed||driverView)&&!fieldStarted){fieldStarted=true;load('field');}if(p.kitbot&&!robotStarted){robotStarted=true;load('robot');}
    const detail=scene.getObjectByName('detailed-field');if(detail){detail.visible=p.detailed||driverView;simplified.visible=!detail.visible;}
    if(p.custom?.data!==customData){customData=p.custom?.data;if(customData)loadCustom(customData);else{customGeneration++;custom.children.forEach(disposeModel);custom.clear();}}
@@ -145,8 +150,9 @@ export default function FieldTwinCanvas(props:Props){
    const t=driverView?undefined:p.telemetry;targetLine.visible=headingLine.visible=targetLabel.visible=!!t;
    if(t){targetGeometry.setFromPoints([new THREE.Vector3(t.muzzleX,t.muzzleY,t.muzzleZ),new THREE.Vector3(t.targetX,t.targetY,t.targetZ)]);headingLine.position.set(p.pose.x,p.pose.y,(p.pose.z??0)+p.concept.height+.15);headingLine.setDirection(new THREE.Vector3(Math.cos(p.pose.heading),Math.sin(p.pose.heading),0));targetLabel.position.set((t.muzzleX+t.targetX)/2,(t.muzzleY+t.targetY)/2,Math.max(t.muzzleZ,t.targetZ)+.3);const text=`${t.rangeM.toFixed(2)} m · ${t.aimErrorDeg===null?'—':t.aimErrorDeg.toFixed(1)+'°'}`;if(text!==labelText){labelText=text;labelContext.clearRect(0,0,512,80);labelContext.fillStyle='#102636';labelContext.fillRect(0,0,512,80);labelContext.fillStyle='#8bffe8';labelContext.font='bold 40px monospace';labelContext.textAlign='center';labelContext.fillText(text,256,55);labelTexture.needsUpdate=true;}}
    controls.enabled=!driverView;controls.enablePan=!driverView;controls.enableZoom=!driverView;
-   if(p.view!==previousView){renderer.domElement.setAttribute('aria-label',driverView?'2026 fixed driver-station view; adjust looking direction using the controls above.':`${season.year} field and robot 3D view; rotate by dragging, zoom with scroll.`);controls.enableDamping=false;controls.update();controls.enableDamping=true;if(p.view==='robot'){camera.position.set(p.pose.x-1.3,p.pose.y-1.6,1.6);controls.target.set(p.pose.x,p.pose.y,.35);}if(p.view==='orbit'){camera.position.set(-12,-15,15).multiplyScalar(Math.max(1,1.15/camera.aspect));controls.target.set(0,0,0);}previousView=p.view;}
-   if(driverView){const d=driverCamera(p.view,p.driver,camera.aspect);camera.position.set(d.x,d.y,d.z);controls.target.set(d.targetX,d.targetY,d.targetZ);camera.lookAt(controls.target);camera.fov=d.fov;camera.updateProjectionMatrix();}
+   if(!vr.active&&p.view!==previousView){renderer.domElement.setAttribute('aria-label',driverView?'2026 fixed driver-station view; adjust looking direction using the controls above.':`${season.year} field and robot 3D view; rotate by dragging, zoom with scroll.`);controls.enableDamping=false;controls.update();controls.enableDamping=true;if(p.view==='robot'){camera.position.set(p.pose.x-1.3,p.pose.y-1.6,1.6);controls.target.set(p.pose.x,p.pose.y,.35);}if(p.view==='orbit'){camera.position.set(-12,-15,15).multiplyScalar(Math.max(1,1.15/camera.aspect));controls.target.set(0,0,0);}previousView=p.view;}
+   if(vr.active){controls.enabled=false;}
+   else if(driverView){const d=driverCamera(p.view,p.driver,camera.aspect);camera.position.set(d.x,d.y,d.z);controls.target.set(d.targetX,d.targetY,d.targetZ);camera.lookAt(controls.target);camera.fov=d.fov;camera.updateProjectionMatrix();}
    else if(p.view==='top'){camera.position.set(0,-.01,Math.max(23,24/ camera.aspect));controls.target.set(0,0,0);controls.enableRotate=false;}
    else if(p.view==='follow'){camera.position.lerp(new THREE.Vector3(p.pose.x-4,p.pose.y-5,4.5),1-Math.exp(-5*intakeDt));controls.target.set(p.pose.x,p.pose.y,.35);controls.enableRotate=false;}
    else if(p.view==='robot'){camera.position.x+=p.pose.x-controls.target.x;camera.position.y+=p.pose.y-controls.target.y;controls.target.set(p.pose.x,p.pose.y,.35);controls.enableRotate=true;}
@@ -155,14 +161,13 @@ export default function FieldTwinCanvas(props:Props){
    const lightX=following?p.pose.x:0,lightY=following?p.pose.y:0;sun.position.set(lightX-4,lightY-6,15);sun.target.position.set(lightX,lightY,0);
    if(sun.shadow.camera.right!==shadowRadius){sun.shadow.camera.left=-shadowRadius;sun.shadow.camera.right=shadowRadius;sun.shadow.camera.top=shadowRadius;sun.shadow.camera.bottom=-shadowRadius;sun.shadow.camera.updateProjectionMatrix();}
    controls.minDistance=p.view==='robot'?.65:2;
-   if(!driverView){if(camera.fov!==43){camera.fov=43;camera.updateProjectionMatrix();}controls.update();}renderer.render(scene,camera);frames++;const now=performance.now();if(now-last>=1500){const measured=Math.round(frames*1000/(now-last));p.onFps(measured);if(mode==='auto'&&pendingLoads===0&&now>warmUntil){const next=adaptive.sample(measured);if(next!==tier)applyQuality(next);}else adaptive.reset();frames=0;last=now;}
-   frame=requestAnimationFrame(render);
-  };frame=requestAnimationFrame(render);
-  const lost=(e:Event)=>{e.preventDefault();cancelAnimationFrame(frame);setFailed(true);latest.current.onUnavailable();latest.current.onStatus('Graphics context lost. Switch to 2D or reopen 3D.');};renderer.domElement.addEventListener('webglcontextlost',lost);
+   if(!driverView){if(camera.fov!==43){camera.fov=43;camera.updateProjectionMatrix();}controls.update();}renderer.render(scene,camera);frames++;const now=performance.now();if(now-last>=1500){const measured=Math.round(frames*1000/(now-last));p.onFps(measured);if(!vr.active&&mode==='auto'&&pendingLoads===0&&now>warmUntil){const next=adaptive.sample(measured);if(next!==tier)applyQuality(next);}else adaptive.reset();frames=0;last=now;}
+   };renderer.setAnimationLoop(render);
+  const lost=(e:Event)=>{e.preventDefault();renderer.setAnimationLoop(null);vr.dispose();setFailed(true);latest.current.onUnavailable();latest.current.onStatus('Graphics context lost. Switch to 2D or reopen 3D.');};renderer.domElement.addEventListener('webglcontextlost',lost);
   const visibility=()=>{frames=0;last=performance.now();warmUntil=last+3000;adaptive.reset();};document.addEventListener('visibilitychange',visibility);
-  return()=>{disposed=true;document.removeEventListener('visibilitychange',visibility);renderer.domElement.removeEventListener('webglcontextlost',lost);sun.shadow.map?.dispose();abort.abort();cancelAnimationFrame(frame);observer.disconnect();controls.dispose();scene.traverse(o=>{if(o instanceof THREE.Mesh||o instanceof THREE.Line){o.geometry.dispose();const materials=Array.isArray(o.material)?o.material:[o.material];materials.forEach(m=>{Object.values(m).forEach(v=>{if(v instanceof THREE.Texture)v.dispose();});m.dispose();});}});labelTexture.dispose();labelMaterial.dispose();environment.dispose();carpet.dispose();renderer.dispose();renderer.domElement.remove();};
+  return()=>{disposed=true;document.removeEventListener('visibilitychange',visibility);renderer.domElement.removeEventListener('webglcontextlost',lost);sun.shadow.map?.dispose();abort.abort();renderer.setAnimationLoop(null);vr.dispose();observer.disconnect();controls.dispose();scene.traverse(o=>{if(o instanceof THREE.Mesh||o instanceof THREE.Line){o.geometry.dispose();const materials=Array.isArray(o.material)?o.material:[o.material];materials.forEach(m=>{Object.values(m).forEach(v=>{if(v instanceof THREE.Texture)v.dispose();});m.dispose();});}});labelTexture.dispose();labelMaterial.dispose();environment.dispose();carpet.dispose();renderer.dispose();renderer.domElement.remove();};
  },[props.season.year,retry]);
- return <div className="twin-canvas" ref={host}>{failed&&<div className="twin-render-error" role="alert"><p>{props.errorText}</p><button onClick={()=>{setFailed(false);setRetry(v=>v+1);}}>{props.retryText}</button></div>}</div>;
+ return <div className="twin-canvas" ref={host}>{props.season.year===2026&&<div className="twin-vr-entry"><button disabled={!vrSupport||!props.vrReady} onClick={()=>{setVRError('');void enterVR.current(vrHigh).catch(e=>setVRError(e instanceof Error?e.message:'VR could not start.'));}}>{vrSupport?'Enter VR · prototype':'VR · headset browser required'}</button>{vrSupport&&<><label><input type="checkbox" checked={vrHigh} onChange={e=>setVRHigh(e.target.checked)}/>High test (default: Medium)</label><small>{vrSupport?'Red station 1 · use Quest controllers. Hold right grip to drive; left stick moves, right stick turns. Triggers: intake/shoot. X: recenter. B: exit. Set your headset floor correctly.':'Immersive VR requires a supported headset browser (HTTPS). Desktop simulator remains available.'}</small></>}{vrError&&<small role="alert">{vrError}</small>}</div>}{failed&&<div className="twin-render-error" role="alert"><p>{props.errorText}</p><button onClick={()=>{setFailed(false);setRetry(v=>v+1);}}>{props.retryText}</button></div>}</div>;
 }
 
 
