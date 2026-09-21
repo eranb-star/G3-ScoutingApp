@@ -1,3 +1,4 @@
+import {hopperVisuals} from '../lib/hopperVisuals';
 import {AdaptiveQuality,QUALITY,type QualityMode,type QualityTier} from '../lib/twinQuality';
 import type {Telemetry} from '../lib/twinTelemetry';
 import {removeStaticFuel} from '../lib/fieldFuelVisuals';
@@ -13,7 +14,7 @@ import {RobotModel} from '../lib/robotModel';
 import {Concept,OBSTACLES,Pose} from '../lib/conceptTwin';
 
 export type ModelMetrics={length:number;width:number;height:number;triangles:number};
-type Props={onUnavailable:()=>void;errorText:string;retryText:string;quality:QualityMode;onQuality:(tier:QualityTier)=>void;telemetry?:Telemetry;intake:IntakeConfig;onModelMetrics:(m:ModelMetrics|null)=>void;season:FieldSeason;custom?:RobotModel;pose:Pose;concept:Concept;detailed:boolean;kitbot:boolean;view:'orbit'|'top'|'follow';path:Pose[];onStatus:(s:string)=>void;onFps:(fps:number)=>void};
+type Props={onUnavailable:()=>void;errorText:string;retryText:string;quality:QualityMode;onQuality:(tier:QualityTier)=>void;telemetry?:Telemetry;intake:IntakeConfig;onModelMetrics:(m:ModelMetrics|null)=>void;season:FieldSeason;custom?:RobotModel;pose:Pose;concept:Concept;detailed:boolean;kitbot:boolean;view:'orbit'|'top'|'follow'|'robot';path:Pose[];onStatus:(s:string)=>void;onFps:(fps:number)=>void};
 const CACHE=TWIN_CACHE;
 const assets={field:{url:'/twin/2026/field-optimized.glb',bytes:19627748,hash:'088126b167906ca95e7b21a76a430a64199103d1ea184a121b1cf52e984b75e8'},robot:{url:'/twin/2026/robot-optimized.glb',bytes:16177620,hash:'053caf847815cb163632b8f858f5b261e589cb9abae3819b502c016fb57238b8'}};
 export async function clearTwinCache(){if('caches' in window)await Promise.all([caches.delete(CACHE),caches.delete('g3-twin-2026-v2'),caches.delete('g3-twin-2026-v3')]);}
@@ -53,6 +54,8 @@ export default function FieldTwinCanvas(props:Props){
   (season.year===2026?OBSTACLES:[]).forEach(o=>box(o.x,o.y,.65,o.w,o.h,1.3,o.x<0?0xc93951:0x176daf,simplified));
   const fuel=new THREE.InstancedMesh(new THREE.SphereGeometry(FUEL_RADIUS,12,8),new THREE.MeshStandardMaterial({color:0xffcf18,roughness:.72,metalness:0}),FUEL_COUNT);fuel.instanceMatrix.setUsage(THREE.DynamicDrawUsage);fuel.frustumCulled=false;fuel.castShadow=true;fuel.receiveShadow=true;scene.add(fuel);const ballMatrix=new THREE.Matrix4();
   const robot=new THREE.Group(),concept=new THREE.Group(),kit=new THREE.Group();robot.add(concept,kit);scene.add(robot);
+  const hopper=new THREE.InstancedMesh(new THREE.SphereGeometry(FUEL_RADIUS,16,10),new THREE.MeshStandardMaterial({color:0xffcf18,roughness:.72}),60);hopper.instanceMatrix.setUsage(THREE.DynamicDrawUsage);hopper.frustumCulled=false;hopper.castShadow=true;hopper.receiveShadow=true;robot.add(hopper);
+  const visualPosition=new THREE.Vector3(),visualScale=new THREE.Vector3(),visualRotation=new THREE.Quaternion();
   const captureZone=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({color:0x45e2aa,transparent:true,opacity:0.25,side:THREE.DoubleSide,depthWrite:false}));robot.add(captureZone);
   // Lightweight illustrative front intake. Shared reach/width with the capture zone.
   const intakePivot=new THREE.Group();robot.add(intakePivot);
@@ -93,7 +96,7 @@ export default function FieldTwinCanvas(props:Props){
     if(disposed){gltf.scene.traverse(o=>{if(o instanceof THREE.Mesh)o.geometry.dispose();});return;}
     const model=gltf.scene;prepareModel(model);for(const r of which==='field'?season.rotations:[{axis:'x',degrees:90}])model.rotateOnWorldAxis(new THREE.Vector3(r.axis==='x'?1:0,r.axis==='y'?1:0,r.axis==='z'?1:0),r.degrees*Math.PI/180);
     if(which==='field'){for(const decoration of removeStaticFuel(model,season.year)??[])disposeModel(decoration);model.name='detailed-field';scene.add(model);simplified.visible=false;}
-    else{model.traverse(o=>{if(o instanceof THREE.Mesh)for(const material of Array.isArray(o.material)?o.material:[o.material])if(material.name==='mat_6'&&material instanceof THREE.MeshStandardMaterial)material.color.set('#c72235');});model.rotateOnWorldAxis(new THREE.Vector3(0,0,1),Math.PI/2);model.position.set(-.3,0,.05);kit.add(model);kit.updateWorldMatrix(true,true);const b=new THREE.Box3().setFromObject(model).applyMatrix4(kit.matrixWorld.clone().invert()),size=b.getSize(new THREE.Vector3()),center=b.getCenter(new THREE.Vector3());bumperNumbers(kit,size.x,size.y,center.x,center.y,b.min.z+.25);}
+    else{model.traverse(o=>{if(o instanceof THREE.Mesh)for(const material of Array.isArray(o.material)?o.material:[o.material]){if(material.name==='mat_6'&&material instanceof THREE.MeshStandardMaterial)material.color.set('#c72235');if((material.name==='mat_13'||material.name==='mat_41')&&material instanceof THREE.MeshStandardMaterial){material.transparent=false;material.opacity=1;material.depthWrite=true;material.roughness=.65;material.metalness=0;material.needsUpdate=true;}}});model.rotateOnWorldAxis(new THREE.Vector3(0,0,1),Math.PI/2);model.position.set(-.3,0,.05);kit.add(model);kit.updateWorldMatrix(true,true);const bumper=model.getObjectByName('Front_Bumper')??model;const b=new THREE.Box3().setFromObject(bumper).applyMatrix4(kit.matrixWorld.clone().invert()),size=b.getSize(new THREE.Vector3()),center=b.getCenter(new THREE.Vector3());bumperNumbers(kit,size.x,size.y,center.x,center.y,(b.min.z+b.max.z)/2);}
     latest.current.onStatus(which==='field'?`${season.year} field model loaded · checksum verified`:'2026 KitBot loaded · checksum verified');
    }).catch(error=>{if(!disposed&&error.name!=='AbortError')latest.current.onStatus('Detailed model unavailable. Simplified view remains usable; check connection and reopen 3D to retry.');}).finally(()=>{pendingLoads--;warmUntil=performance.now()+3000;adaptive.reset();});
   }
@@ -115,13 +118,17 @@ export default function FieldTwinCanvas(props:Props){
    intakeAngle+=(desired-intakeAngle)*(1-Math.exp(-9*intakeDt));intakePivot.visible=season.year===2026;intakePivot.position.set(p.concept.length/2,0,.35);intakePivot.rotation.y=intakeAngle;
    intakeArms.forEach((arm,i)=>{arm.position.set(span/2,(i?1:-1)*p.intake.width/2,0);arm.scale.x=span;});roller.position.set(span,0,0);roller.scale.y=p.intake.width;if(p.intake.on)roller.rotation.y-=intakeDt*8;rollerStripe.visible=true;
    captureZone.visible=season.year===2026&&p.intake.on;captureZone.scale.set(p.intake.reach,p.intake.width,1);captureZone.position.set(p.concept.length/2+p.intake.reach/2,0,0.025);
-   const balls=season.year===2026?(p.pose.balls??[]):[];fuel.count=balls.length;balls.forEach((b,i)=>fuel.setMatrixAt(i,ballMatrix.makeTranslation(b.x,b.y,b.z)));fuel.instanceMatrix.needsUpdate=true;
+   const reference=season.year===2026&&!p.custom;
+   const visuals=reference?hopperVisuals(p.pose,p.intake.capacity):null;
+   hopper.visible=reference;hopper.count=visuals?.stored.length??0;
+   visuals?.stored.forEach((b,i)=>{visualPosition.set(b.x,b.y,b.z);visualScale.setScalar(b.radius/FUEL_RADIUS);hopper.setMatrixAt(i,ballMatrix.compose(visualPosition,visualRotation,visualScale));});hopper.instanceMatrix.needsUpdate=true;
+   const balls=season.year===2026?(visuals?.field??p.pose.balls??[]):[];fuel.count=balls.length;balls.forEach((b,i)=>{visualPosition.set(b.x,b.y,b.z);visualScale.setScalar(('radius' in b?b.radius as number:FUEL_RADIUS)/FUEL_RADIUS);fuel.setMatrixAt(i,ballMatrix.compose(visualPosition,visualRotation,visualScale));});fuel.instanceMatrix.needsUpdate=true;
    if(previousPath!==p.path){previousPath=p.path;pathGeometry.setFromPoints(p.path.map(point=>new THREE.Vector3(point.x,point.y,.08)));}
    const t=p.telemetry;targetLine.visible=headingLine.visible=targetLabel.visible=!!t;
    if(t){targetGeometry.setFromPoints([new THREE.Vector3(t.muzzleX,t.muzzleY,t.muzzleZ),new THREE.Vector3(t.targetX,t.targetY,t.targetZ)]);headingLine.position.set(p.pose.x,p.pose.y,(p.pose.z??0)+p.concept.height+.15);headingLine.setDirection(new THREE.Vector3(Math.cos(p.pose.heading),Math.sin(p.pose.heading),0));targetLabel.position.set((t.muzzleX+t.targetX)/2,(t.muzzleY+t.targetY)/2,Math.max(t.muzzleZ,t.targetZ)+.3);const text=`${t.rangeM.toFixed(2)} m · ${t.aimErrorDeg===null?'—':t.aimErrorDeg.toFixed(1)+'°'}`;if(text!==labelText){labelText=text;labelContext.clearRect(0,0,512,80);labelContext.fillStyle='#102636';labelContext.fillRect(0,0,512,80);labelContext.fillStyle='#8bffe8';labelContext.font='bold 40px monospace';labelContext.textAlign='center';labelContext.fillText(text,256,55);labelTexture.needsUpdate=true;}}
    if(p.view!==previousView){if(p.view==='orbit'){camera.position.set(-12,-15,15).multiplyScalar(Math.max(1,1.15/camera.aspect));controls.target.set(0,0,0);}previousView=p.view;}
    if(p.view==='top'){camera.position.set(0,-.01,Math.max(23,24/ camera.aspect));controls.target.set(0,0,0);controls.enableRotate=false;}
-   else if(p.view==='follow'){camera.position.lerp(new THREE.Vector3(p.pose.x-4,p.pose.y-5,4.5),.08);controls.target.set(p.pose.x,p.pose.y,.35);controls.enableRotate=false;}
+   else if(p.view==='follow'||p.view==='robot'){const close=p.view==='robot';camera.position.lerp(new THREE.Vector3(p.pose.x-(close?1.3:4),p.pose.y-(close?1.6:5),close?1.6:4.5),.08);controls.target.set(p.pose.x,p.pose.y,.35);controls.enableRotate=false;}
    else controls.enableRotate=true;
    controls.update();renderer.render(scene,camera);frames++;const now=performance.now();if(now-last>=1500){const measured=Math.round(frames*1000/(now-last));p.onFps(measured);if(mode==='auto'&&pendingLoads===0&&now>warmUntil){const next=adaptive.sample(measured);if(next!==tier)applyQuality(next);}else adaptive.reset();frames=0;last=now;}
    frame=requestAnimationFrame(render);

@@ -4,10 +4,14 @@ import {DT} from './conceptTwin';
 import {HUB_X,HUB_ENTRY_Z,insideHub,ShooterConfig} from './shooter';
 import {BallPose,FUEL_RADIUS,IntakeConfig} from './intake';
 
+export type FuelVisualEvent={sequence:number;kind:'capture'|'shot';id:number;tick:number;local:{x:number;y:number;z:number};count:number};
+
 /** Ball identity is conserved across field, storage, hub processing and outposts. */
 export class FuelPhysics {
   balls = new Map<number,R.RigidBody>();
   stored:number[]=[];
+  visualEpoch=0;visualSequence=0;visualEvents:FuelVisualEvent[]=[];
+  private visualEvent(event:Omit<FuelVisualEvent,'sequence'>){this.visualEvents.push({...event,sequence:++this.visualSequence});if(this.visualEvents.length>64)this.visualEvents.shift();}
   outposts:number[][]=[[],[]];
   transit:{id:number;hub:number;ready:number}[]=[];
   outOfPlay:number[]=[];
@@ -25,6 +29,7 @@ export class FuelPhysics {
   private remove(id:number){const body=this.balls.get(id);if(body)this.world.removeRigidBody(body);this.balls.delete(id);this.previous.delete(id);}
   reset(points?:{x:number;y:number}[],total=504) {
     for(const id of this.balls.keys())this.remove(id);
+    this.visualEpoch++;this.visualSequence=0;this.visualEvents=[];
     this.stored=[];this.outposts=[[],[]];this.transit=[];this.outOfPlay=[];this.scores=[0,0];this.shots=0;this.nextCapture=0;this.nextShot=0;
     this.total=points?points.length:total;
     if(points){points.forEach((p,id)=>this.spawn(id,{...p,z:FUEL_RADIUS+0.005}));return;}
@@ -48,7 +53,8 @@ export class FuelPhysics {
     const rotate=(x:number,y:number,z:number)=>rotateVector(q,x,y,z);
     const muzzle=muzzleOffset(q,length,shooter.height);
     const angle=Math.max(15,Math.min(80,shooter.elevation))*Math.PI/180,speed=Math.max(2,Math.min(18,shooter.speed)),v=rotate(speed*Math.cos(angle),0,speed*Math.sin(angle)),rv=robot.velocityAtPoint({x:p.x+muzzle.x,y:p.y+muzzle.y,z:p.z+muzzle.z});
-    this.spawn(this.stored.shift()!,{x:p.x+muzzle.x,y:p.y+muzzle.y,z:p.z+muzzle.z},{x:v.x+rv.x,y:v.y+rv.y,z:v.z+rv.z});
+    const id=this.stored.shift()!;this.visualEvent({kind:'shot',id,tick,local:{x:length/2+.09,y:0,z:shooter.height},count:this.stored.length+1});
+    this.spawn(id,{x:p.x+muzzle.x,y:p.y+muzzle.y,z:p.z+muzzle.z},{x:v.x+rv.x,y:v.y+rv.y,z:v.z+rv.z});
     this.shots++;this.nextShot=tick+Math.ceil(1/(Math.min(8,shooter.rate)*DT));
   }
 
@@ -94,6 +100,8 @@ export class FuelPhysics {
       const rayOrigin={x:p.x+c*(length/2+0.01),y:p.y+s*(length/2+0.01),z:b.z};
       const delta={x:b.x-rayOrigin.x,y:b.y-rayOrigin.y,z:0},distance=Math.hypot(delta.x,delta.y);
       if(distance>0.001){const hit=this.world.castRay(new R.Ray(rayOrigin,{x:delta.x/distance,y:delta.y/distance,z:0}),distance,true,undefined,undefined,undefined,robot);if(hit&&hit.collider.parent()?.handle!==body.handle)continue;}
+      const local=rotateVector({x:-q.x,y:-q.y,z:-q.z,w:q.w},b.x-p.x,b.y-p.y,b.z-p.z);local.z+=.3;
+      this.visualEvent({kind:'capture',id,tick,local,count:this.stored.length+1});
       this.remove(id);this.stored.push(id);
       this.nextCapture=tick+Math.ceil(1/(Math.min(10,intake.rate)*DT));
       break;
