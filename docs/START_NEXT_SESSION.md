@@ -1,3 +1,5 @@
+**Latest production release: VR phase 1 prototype, source `fcb806e`, Vercel `A6xSdguaqaCcv3FiUoz2XUHERt7Q` (Ready).** See [prototype controls, acceptance and deployment](VR_PROTOTYPE_20260921.md). This supersedes the earlier selected-next and no-further-phase wording below. Physical headset acceptance is pending; graphics and Android milestones remain delivered.
+
 **Android milestone:** Signed APK **2.2.0 / code 24** built and verified. [Artifact, checksum and remaining physical acceptance](APK_MILESTONE_20260921.md). No further phase started.
 
 **Production simulator release:** All graphics/intake/hopper/driver-view/fullscreen changes below are now deployed in `877208b`, Vercel `5z99hJLraPrbKKxzurFsHPEo3UBR`. [Verified release and rollback](SIMULATOR_PRODUCTION_RELEASE_20260921.md). This supersedes earlier not-deployed notices.

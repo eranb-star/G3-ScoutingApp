@@ -2,6 +2,8 @@
 
 These requirements summarize the user's explicit preferences across this session. Read alongside current task instructions; do not infer new authorization from historical documents.
 
+- Use [the agreed phase details](NEXT_PHASES_AGREEMENT_20260921.md) when planning next work. Separate acceptance of delivered functionality from new capabilities. Do not describe knowledge collection, Gemini integration, mentor/task review or chat budgets as work to repeat. Graphics quality is separate from physics fidelity; historical knowledge is separate from playable historical simulation. State estimate boundaries and never equate engineering days with remaining Codex tokens. Record future refinements when authorized; discussion alone is not implementation permission.
+
 - Be precise and concrete. State what works, what failed, what changed, what was actually tested, and what remains. Use ordinary language; avoid vague phases, architecture slogans, superlatives and promises of infinite scale or zero regressions.
 - Act on authorized work and carry it through. Do not repeatedly ask for the same approval or offer to do work instead of doing it. Ask only for genuinely missing information or a required approval, explaining the exact reason. Keep updates and tool output short; user token/time cost matters.
 - Inspect the existing code, deployed schema and real workflow before designing. Extend existing FRC knowledge, Evidence search and G3 Assist; do not rebuild parallel systems or assume placeholder/kitbot data represents the team's robot.
@@ -23,3 +25,5 @@ These requirements summarize the user's explicit preferences across this session
 5. Bulk message insert omitted a required citations value on one row; answer appeared but was absent from history. Test compatible insert row shapes and actual persistence.
 
 Regression prevention is mandatory engineering work, not a guarantee that no future defect can occur. If a check cannot be completed, name the precise gap and never mark it passed.
+
+- VR acceptance: the user wants useful driver realism, not graphics alone. Keep headset performance, stereo scale, physical floor calibration, visibility and controller usability explicit. Desktop FPS or mocked WebXR tests never prove headset acceptance. Preserve a bounded prototype and require measured headset results before claiming full-match realism.
