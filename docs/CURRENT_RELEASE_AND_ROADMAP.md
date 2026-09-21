@@ -1,3 +1,5 @@
+**Android milestone:** Signed APK **2.2.0 / code 24** built and verified. [Artifact, checksum and remaining physical acceptance](APK_MILESTONE_20260921.md). No further phase started.
+
 **Production simulator release:** All graphics/intake/hopper/driver-view/fullscreen changes below are now deployed in `877208b`, Vercel `5z99hJLraPrbKKxzurFsHPEo3UBR`. [Verified release and rollback](SIMULATOR_PRODUCTION_RELEASE_20260921.md). This supersedes earlier not-deployed notices.
 
 **Latest simulator update:** [Open carbon-tube intake, height cap and three driver-station views](DRIVER_VIEWS_20260921.md) implemented and checked locally; not deployed. This supersedes the solid intake tray in the previous scene-polish checkpoint.
