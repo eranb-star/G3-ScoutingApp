@@ -1,31 +1,42 @@
-**Current-state notice (2026-09-21):** Read [START_NEXT_SESSION.md](START_NEXT_SESSION.md) and [WORKING_EXPECTATIONS.md](WORKING_EXPECTATIONS.md) first. They supersede older deployment/disabled-state notes in this document; see the connected release record for actual production acceptance.
+**Latest simulator update:** [Open carbon-tube intake, height cap and three driver-station views](DRIVER_VIEWS_20260921.md) implemented and checked locally; not deployed. This supersedes the solid intake tray in the previous scene-polish checkpoint.
 
-# Current release and roadmap — 2026-09-20
+**Scene polish update:** [Intake mounting and Step 3 scene polish](SCENE_POLISH_20260921.md) is implemented and checked locally. Not deployed; representative-device acceptance remains open.
 
-Latest approved direction: deterministic historical robot/mechanism research is now implemented as a first local increment inside Evidence search. Read [robot research status](ROBOT_RESEARCH_20260920.md) for the 24-topic taxonomy, six real starter configurations, tests, deployment order and the still-open historical ingestion/advanced-filter programme. No production deployment. Continue this approved direction; earlier unselected-work wording is historical.
+**Hopper follow-up:** [Reference robot panels, stored balls and transfer animations](HOPPER_VISUALS_20260921.md) implements the user-selected visual Steps 1–2 locally; not deployed.
 
-Start with [the session entry point](START_NEXT_SESSION.md). [The master handover](PAUSE_HANDOVER_20260913.md) is authoritative for detailed scope, all 105 V5.2 section references, evidence, limitations and release identity. This file is a short index, not a second competing status register.
+**Graphics update (2026-09-21):** The user subsequently authorized graphics A + B and default arrow-key movement. See [implementation and acceptance checkpoint](GRAPHICS_AB_20260921.md). Implemented locally, not deployed; this supersedes the earlier awaiting-start status below.
 
-Production application: **1326629**, Vercel **CK1LewiyZedM7qYaMcHkTjxGbTXQ**, https://g3-6740.com. Workshop, inventory, attendance and Team Stories SQL/functions/web are deployed. Release documentation checkpoint: **72df908**. The subsequent Attendance Center menu rename awaits the next web release. Android remains 2.1.9/code 23.
+# Current release and roadmap — 2026-09-21
 
-## Remaining work — order to confirm with the user
+Read [START_NEXT_SESSION.md](START_NEXT_SESSION.md) for recorded production status and [WORKING_EXPECTATIONS.md](WORKING_EXPECTATIONS.md) for execution rules.
 
-Subsequent decision: Knowledge Intelligence is selected; the first admin Check now increment is implemented locally, not deployed. See [knowledge source checks](KNOWLEDGE_SOURCE_CHECKS_20260920.md) and [knowledge evolution plan](KNOWLEDGE_EVOLUTION_PLAN_20260920.md). No five-minute polling or automatic schedule. Link discovery/fingerprints are not full-text knowledge ingestion. The unselected-work wording and candidate sequence below describe the earlier checkpoint; the approved knowledge increment now takes precedence, without closing any wider phase.
+## Selected next increment
 
-Latest user direction: first confirm understanding and discuss remote-capable options while the user is away from the workshop. Do not automatically start replay or another phase. Follow `START_NEXT_SESSION.md`; the sequence below is a proposed roadmap, not permission to begin implementation.
+**Graphics A + B**: focused lighting/materials/shadows/camera presentation and simple presets (3–5 engineering days), followed by Auto/Low/Medium/High, measured-performance adaptation, saved preference and device checks (3–5 additional days). Documentation is authorized; implementation awaits the user's start instruction. No code or deployment is included in this documentation checkpoint.
 
-| Order | Workstream | Remaining outcome |
-|---|---|---|
-| Candidate remote increment | Phase 3 physical replay | Complete initial state/commands/events/queues, pinned runtime/assets/config, mismatch detection; then ghost/Auto Play/comparison. User has not selected this as the next task. |
-| Alongside, when resources available | Phase 0/1 closure and operational acceptance | Remaining recovery/offsite/permission evidence, authenticated review/mobile/offline journeys, real workshop/controller/CAD/finance acceptance. Reuse passing evidence. |
-| Then | Phase 2 bounded 2026 knowledge | Reviewed Gold Set, authoritative/versioned ingestion, conflict/staleness/insufficient-evidence handling and evaluation. |
-| Then | Phase 3 closure | Device/performance acceptance, calibrated collisions/balls/shooting, team mechanism profile, geometry/clearance, full-match timing/scoring/multi-robot scope. |
-| Staged expansion | 2017–2026 | Verified per-year corpus; missing 2017–2020 fields, season robot assets and season-specific simulation. Viewer selection does not deliver historical physics. |
-| After Phase 3, before paid execution | AI governance | Cost reservations/caps, cancellation/stop, scoped execution permissions, untrusted-file/prompt isolation and audit. |
-| Phase 4 | Engineering Twin | Mechanical/electrical/software graph, mass/CG/load/interference, calibrated motor/controller/PID/WPILib integration and validated uncertainty. |
-| Phase 5 | CAD Intelligence | Version-pinned Onshape reads, review/conversion, bounded generation/patching, conflict protection and human-approved release. |
-| Phase 6 | Manufacturing Intelligence | BOM/drawings, atomic material reservations, manufacture/QC/install lineage, reviewed CAM and capacity/training. |
-| Phase 7 | Autonomous Orchestrator | Durable permissioned jobs across the above, human gates, budgets/recovery and complete engineering-to-manufacturing journeys. |
-| Cross-cutting release | Mobile and final acceptance | Current Android, official Android/iOS distribution, physical-device tests, operational recovery and end-to-end owner acceptance. |
+[Agreed next phases](NEXT_PHASES_AGREEMENT_20260921.md) is the authoritative detailed refinement: deliverables, dependencies, estimates, acceptance criteria and explicit non-goals. Read it before implementing. Estimates are not token budgets.
 
-Detailed handover retains finance extensions (reversals, reconciliation, restricted funds, receipts, accounting close) and deferred departure-based checkout. Enhanced game graphics remain proposed optional scope. This checkpoint does not introduce a new effort estimate or completion-date commitment. Existing foundations do not mean every release has passed final acceptance.
+## Existing production foundation
+
+Recorded web release: 73dee1d; Assistant Edge code: c754f5d. Paid Gemini, Admin topic exemption, $25 monthly application cap, source search and one successful official-cited 2026 climbing answer are recorded in [production acceptance](staging/KNOWLEDGE_CONNECTED_RELEASE_20260921.md). This documentation update makes no new live-verification claim.
+
+Corpus: 1,716 sources / 48,797 distinct passages / 50,157 citations. Not exhaustive top-500 or ten-year coverage. Reviewed production robot catalogue remains empty. Existing task/review/dependency flows and chat budgets are not rebuild projects.
+
+## Programme index
+
+| Workstream | Remaining scope |
+|---|---|
+| 0 Recovery | Portable/offsite recovery, permissions and demonstrated restore. |
+| 1 Engineering controls | Acceptance and demonstrated fixes to existing mentor/review/configuration/test/offline flows. |
+| 2 Knowledge | Populated search UX, season document lifecycle, quality evaluation and answers linked to existing team decisions/tests; selective historical curation. |
+| 3 Simulator | Replay/comparison, measured calibration and complete match/multi-robot behavior. Historical playable seasons are separate optional work. |
+| AI extensions | Existing chat protections stay; extend governance for future paid background jobs and external actions before enabling them. |
+| 4 Engineering Twin | Measured subsystem models; camera placement/count analysis; parameterized robot concepts with explicit assumptions and physical validation. |
+| Software Mentor | Exact-version repository understanding/review, logs, bounded tested patches, simulation/tuning and learning through existing workflows. |
+| 5 CAD/Onshape | Read-only version-linked review, then controlled approved edits. GitHub CAD and Onshape access are separate; labeled public/sample demos are possible. |
+| 6 Manufacturing | BOM/materials, manufacture/QC/install lineage and reviewed machine-specific CAM. |
+| 7 Orchestration | Authorized durable cross-system workflows, human gates, budgets and recovery. |
+| Mobile | Current builds/distribution and real-device acceptance; deferred checkout separately validated. |
+| Optional finance | Audited reversals, bank reconciliation, restricted funds, receipts and period close. Existing repayments already work. |
+
+The [master handover](PAUSE_HANDOVER_20260913.md) preserves detailed programme/V5.2 scope and historical evidence. Older deployment/disabled/undeployed notes are historical and are superseded by START_NEXT_SESSION.md. In particular, the old ordering of all paid AI after Phase 3 no longer describes the already deployed protected assistant.

@@ -55,7 +55,7 @@ export class PhysicalDrive{
  return this.snapshot();
  }
  snapshot():PhysicalPose{const p=this.body.translation(),r=this.body.rotation(),v=this.body.linvel();
- return {velocity:{...v},angularVelocity:{...this.body.angvel()},ledger:this.fuel.ledger(),scores:[...this.fuel.scores],shots:this.fuel.shots,balls:this.fuel.snapshot(),collected:this.fuel.collected,x:p.x,y:p.y,z:p.z-.3,rotation:{...r},heading:Math.atan2(2*(r.w*r.z+r.x*r.y),1-2*(r.y*r.y+r.z*r.z)),tick:this.tick,distance:this.distance,collisions:this.collisions,contacts:this.contacts,speed:Math.hypot(v.x,v.y)};
+ return {storedIds:[...this.fuel.stored],fuelVisualEpoch:this.fuel.visualEpoch,fuelVisualEvents:[...this.fuel.visualEvents],velocity:{...v},angularVelocity:{...this.body.angvel()},ledger:this.fuel.ledger(),scores:[...this.fuel.scores],shots:this.fuel.shots,balls:this.fuel.snapshot(),collected:this.fuel.collected,x:p.x,y:p.y,z:p.z-.3,rotation:{...r},heading:Math.atan2(2*(r.w*r.z+r.x*r.y),1-2*(r.y*r.y+r.z*r.z)),tick:this.tick,distance:this.distance,collisions:this.collisions,contacts:this.contacts,speed:Math.hypot(v.x,v.y)};
  }
  reset(x=START.x,y=START.y){this.body.setTranslation({x,y,z:.31},true);this.body.setRotation({x:0,y:0,z:0,w:1},true);this.body.setLinvel({x:0,y:0,z:0},true);this.body.setAngvel({x:0,y:0,z:0},true);this.body.resetForces(true);this.body.resetTorques(true);this.contacts=0;this.tick=0;this.distance=0;this.collisions=0;}
  dispose(){this.world.free();}

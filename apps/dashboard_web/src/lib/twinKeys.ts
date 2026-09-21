@@ -1,4 +1,4 @@
-export const DEFAULT_KEYS={up:'KeyW',down:'KeyS',left:'KeyA',right:'KeyD',turnLeft:'KeyQ',turnRight:'KeyE',intake:'KeyI',shoot:'KeyF',reset:'KeyR'};
+export const DEFAULT_KEYS={up:'ArrowUp',down:'ArrowDown',left:'ArrowLeft',right:'ArrowRight',turnLeft:'KeyQ',turnRight:'KeyE',intake:'KeyI',shoot:'KeyF',reset:'KeyR'};
 export type Bindings=typeof DEFAULT_KEYS;
 export type KeyAction=keyof Bindings;
 export const KEY_LABELS:Record<KeyAction,string>={up:'Move +Y',down:'Move −Y',left:'Move −X',right:'Move +X',turnLeft:'Turn left / CCW',turnRight:'Turn right / CW',intake:'Toggle intake',shoot:'Toggle shooting',reset:'Reset robot & balls'};
@@ -9,4 +9,4 @@ export function validBindings(value:unknown):value is Bindings{
  const v=value as Bindings,values=Object.keys(DEFAULT_KEYS).map(k=>v[k as KeyAction]);
  return values.every(k=>KEY_OPTIONS.includes(k))&&new Set(values).size===values.length;
 }
-export function loadBindings():Bindings{try{const v=JSON.parse(localStorage.getItem('g3-twin-keys-v1')??'null');if(validBindings(v))return v;}catch{/* Use defaults if storage is blocked. */}return {...DEFAULT_KEYS};}
+export function loadBindings():Bindings{try{const v=JSON.parse(localStorage.getItem('g3-twin-keys-v1')??'null');if(validBindings(v)){const legacy={...DEFAULT_KEYS,up:'KeyW',down:'KeyS',left:'KeyA',right:'KeyD'};return Object.keys(legacy).every(k=>v[k as KeyAction]===legacy[k as KeyAction])?{...DEFAULT_KEYS}:v;}}catch{/* Use defaults if storage is blocked. */}return {...DEFAULT_KEYS};}

@@ -1,8 +1,17 @@
+**Latest simulator update:** [Open carbon-tube intake, height cap and three driver-station views](DRIVER_VIEWS_20260921.md) implemented and checked locally; not deployed. This supersedes the solid intake tray in the previous scene-polish checkpoint.
+
+**Scene polish update:** [Intake mounting and Step 3 scene polish](SCENE_POLISH_20260921.md) is implemented and checked locally. Not deployed; representative-device acceptance remains open.
+
+**Hopper follow-up:** [Reference robot panels, stored balls and transfer animations](HOPPER_VISUALS_20260921.md) implements the user-selected visual Steps 1–2 locally; not deployed.
+
+**Graphics update (2026-09-21):** The user subsequently authorized graphics A + B and default arrow-key movement. See [implementation and acceptance checkpoint](GRAPHICS_AB_20260921.md). Implemented locally, not deployed; this supersedes the earlier awaiting-start status below.
+
 # Start the next G3 session
 
 Read this file first. Current status below supersedes historical disabled, undeployed and candidate-only wording elsewhere.
 
 1. Read [working expectations](WORKING_EXPECTATIONS.md).
+   Read [agreed next phases and detailed acceptance scope](NEXT_PHASES_AGREEMENT_20260921.md) before planning new work. Graphics A + B is the user's selected next increment; this checkpoint authorizes documentation only, with implementation awaiting the user's start instruction. Existing knowledge, review workflows and chat governance must not be rebuilt.
 2. Read [verified production release and acceptance](staging/KNOWLEDGE_CONNECTED_RELEASE_20260921.md).
 3. Read [controlling knowledge design](CONNECTED_KNOWLEDGE_DESIGN_20260920.md), [master programme handover](PAUSE_HANDOVER_20260913.md), and [collection coverage](research/FULL_COLLECTION_20260920.md) for wider scope.
 4. Earlier session checkpoints are preserved in [session history](SESSION_HISTORY_20260921.md); they are historical evidence, not current deployment status.
