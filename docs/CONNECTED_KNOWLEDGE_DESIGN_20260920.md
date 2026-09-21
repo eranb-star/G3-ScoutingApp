@@ -1,3 +1,5 @@
+**Next-phase scope (2026-09-21):** [NEXT_PHASES_AGREEMENT_20260921.md](NEXT_PHASES_AGREEMENT_20260921.md) records the latest user refinements and supersedes older next-step ordering. Graphics A + B is selected next, awaiting a separate start instruction. Software Mentor, camera placement/count analysis and concept generation are detailed future scope. Delivered knowledge, review workflows and chat governance are not rebuild tasks.
+
 # G3 connected knowledge and team assistant — consolidated design
 
 Date: 20 September 2026. Status: design direction approved by the user, with the added requirement that paid G3 Assist access initially belongs only to Admins and Mentors. This is the controlling design for this increment. It incorporates the production audit, the signed-in Google account review and the subsequent team-purpose restrictions. The earlier architecture review and production audit remain supporting evidence; conflicting design recommendations are superseded here. Paid activation, billing changes and production deployment remain separate release gates. No application implementation is part of this document.

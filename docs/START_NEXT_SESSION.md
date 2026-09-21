@@ -3,6 +3,7 @@
 Read this file first. Current status below supersedes historical disabled, undeployed and candidate-only wording elsewhere.
 
 1. Read [working expectations](WORKING_EXPECTATIONS.md).
+   Read [agreed next phases and detailed acceptance scope](NEXT_PHASES_AGREEMENT_20260921.md) before planning new work. Graphics A + B is the user's selected next increment; this checkpoint authorizes documentation only, with implementation awaiting the user's start instruction. Existing knowledge, review workflows and chat governance must not be rebuilt.
 2. Read [verified production release and acceptance](staging/KNOWLEDGE_CONNECTED_RELEASE_20260921.md).
 3. Read [controlling knowledge design](CONNECTED_KNOWLEDGE_DESIGN_20260920.md), [master programme handover](PAUSE_HANDOVER_20260913.md), and [collection coverage](research/FULL_COLLECTION_20260920.md) for wider scope.
 4. Earlier session checkpoints are preserved in [session history](SESSION_HISTORY_20260921.md); they are historical evidence, not current deployment status.

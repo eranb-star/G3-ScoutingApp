@@ -1,3 +1,5 @@
+**Next-phase scope (2026-09-21):** [NEXT_PHASES_AGREEMENT_20260921.md](NEXT_PHASES_AGREEMENT_20260921.md) records the latest user refinements and supersedes older next-step ordering. Graphics A + B is selected next, awaiting a separate start instruction. Software Mentor, camera placement/count analysis and concept generation are detailed future scope. Delivered knowledge, review workflows and chat governance are not rebuild tasks.
+
 **Current-state notice (2026-09-21):** Read [START_NEXT_SESSION.md](START_NEXT_SESSION.md) and [WORKING_EXPECTATIONS.md](WORKING_EXPECTATIONS.md) first. They supersede older deployment/disabled-state notes in this document; see the connected release record for actual production acceptance.
 
 # Pause handover and complete remaining programme
