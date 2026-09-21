@@ -1,3 +1,4 @@
+import {carpetTexture,styleReferenceModel,intakePresentation} from '../lib/twinSceneStyle';
 import {hopperVisuals} from '../lib/hopperVisuals';
 import {AdaptiveQuality,QUALITY,type QualityMode,type QualityTier} from '../lib/twinQuality';
 import type {Telemetry} from '../lib/twinTelemetry';
@@ -35,21 +36,22 @@ export default function FieldTwinCanvas(props:Props){
   const season=props.season;const field={length:season.length,width:season.width};const element=host.current!;let disposed=false,frame=0,frames=0,last=performance.now();const abort=new AbortController();
   let renderer:THREE.WebGLRenderer;
   try{renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});}catch{setFailed(true);latest.current.onUnavailable();latest.current.onStatus('WebGL unavailable — use 2D or retry the renderer.');return;}
-  renderer.setPixelRatio(Math.min(devicePixelRatio,1));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;
+  renderer.setPixelRatio(Math.min(devicePixelRatio,1));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.95;
   element.appendChild(renderer.domElement);renderer.domElement.setAttribute('aria-label',`${season.year} field and robot 3D view; rotate by dragging, zoom with scroll.`);
-  const scene=new THREE.Scene();scene.background=new THREE.Color('#142033');
-  const studio=new RoomEnvironment(),pmrem=new THREE.PMREMGenerator(renderer),environment=pmrem.fromScene(studio,.04);scene.environment=environment.texture;scene.environmentIntensity=.75;studio.dispose();pmrem.dispose();
-  const adaptive=new AdaptiveQuality();let previousView=props.view;let mode:QualityMode=props.quality,tier:QualityTier=mode==='auto'?'medium':mode,pendingLoads=0,warmUntil=performance.now()+4000;adaptive.reset(tier);renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  const scene=new THREE.Scene();scene.background=new THREE.Color('#142033');scene.fog=new THREE.Fog('#142033',35,100);
+  const studio=new RoomEnvironment(),pmrem=new THREE.PMREMGenerator(renderer),environment=pmrem.fromScene(studio,.04);scene.environment=environment.texture;scene.environmentIntensity=.45;studio.dispose();pmrem.dispose();
+  const adaptive=new AdaptiveQuality();let previousView:Props['view']|null=null;let mode:QualityMode=props.quality,tier:QualityTier=mode==='auto'?'medium':mode,pendingLoads=0,warmUntil=performance.now()+4000;adaptive.reset(tier);renderer.shadowMap.type=THREE.PCFSoftShadowMap;
   const camera=new THREE.PerspectiveCamera(43,1,.05,150);camera.up.set(0,0,1);camera.position.set(-12,-15,15);
   const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.maxPolarAngle=Math.PI/2-.03;controls.minDistance=2;controls.maxDistance=80;
-  scene.add(new THREE.HemisphereLight(0xe6f1ff,0x596477,2.1));const sun=new THREE.DirectionalLight(0xfff4e5,3.2);sun.position.set(-4,-6,15);scene.add(sun);sun.castShadow=true;sun.shadow.camera.left=-14;sun.shadow.camera.right=14;sun.shadow.camera.top=12;sun.shadow.camera.bottom=-12;sun.shadow.camera.near=.5;sun.shadow.camera.far=50;sun.shadow.normalBias=.025;sun.shadow.bias=-.00015;sun.shadow.camera.updateProjectionMatrix();
-  const fill=new THREE.DirectionalLight(0xb4d4ff,1.1);fill.position.set(8,5,9);scene.add(fill);
+  const ambient=new THREE.HemisphereLight(0xe6f1ff,0x596477,1.4);ambient.position.set(0,0,1);scene.add(ambient);const sun=new THREE.DirectionalLight(0xfff4e5,2.8);sun.position.set(-4,-6,15);scene.add(sun,sun.target);sun.castShadow=true;sun.shadow.camera.left=-14;sun.shadow.camera.right=14;sun.shadow.camera.top=12;sun.shadow.camera.bottom=-12;sun.shadow.camera.near=.5;sun.shadow.camera.far=50;sun.shadow.normalBias=.008;sun.shadow.bias=-.00015;sun.shadow.camera.updateProjectionMatrix();
+  const fill=new THREE.DirectionalLight(0xb4d4ff,.8);fill.position.set(8,5,9);scene.add(fill);
   function applyQuality(next:QualityTier){tier=next;const settings=QUALITY[tier];renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,settings.pixelRatio));renderer.shadowMap.enabled=settings.shadowSize>0;sun.shadow.map?.dispose();sun.shadow.map=null;sun.shadow.mapSize.setScalar(settings.shadowSize||512);sun.shadow.needsUpdate=true;scene.traverse(o=>{if(o instanceof THREE.Mesh)for(const m of Array.isArray(o.material)?o.material:[o.material])m.needsUpdate=true;});latest.current.onQuality(tier);}
   applyQuality(tier);
-  const ground=new THREE.Mesh(new THREE.PlaneGeometry(40,30),new THREE.MeshStandardMaterial({color:0x162336,roughness:1}));ground.position.z=-.06;ground.receiveShadow=true;scene.add(ground);
+  const carpet=carpetTexture();carpet.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());
+  const ground=new THREE.Mesh(new THREE.PlaneGeometry(160,160),new THREE.MeshStandardMaterial({color:0x162336,roughness:1}));ground.position.z=-.06;ground.receiveShadow=true;scene.add(ground);
   const simplified=new THREE.Group();scene.add(simplified);
   const box=(x:number,y:number,z:number,w:number,d:number,h:number,color:number,parent:THREE.Object3D)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(w,d,h),new THREE.MeshStandardMaterial({color,roughness:.75}));m.position.set(x,y,z);m.castShadow=h>.05;m.receiveShadow=true;parent.add(m);return m;};
-  box(0,0,-.02,field.length,field.width,.04,0x596773,simplified);
+  const floor=box(0,0,-.02,field.length,field.width,.04,0x727780,simplified);(floor.material as THREE.MeshStandardMaterial).map=carpet;(floor.material as THREE.MeshStandardMaterial).roughness=1;
   [-1,1].forEach(side=>{box(side*(field.length/2),0,.25,.06,field.width,.5,side<0?0xe65662:0x2581df,simplified);box(0,side*field.width/2,.25,field.length,.06,.5,0xa7b9c9,simplified);});
   (season.year===2026?OBSTACLES:[]).forEach(o=>box(o.x,o.y,.65,o.w,o.h,1.3,o.x<0?0xc93951:0x176daf,simplified));
   const fuel=new THREE.InstancedMesh(new THREE.SphereGeometry(FUEL_RADIUS,12,8),new THREE.MeshStandardMaterial({color:0xffcf18,roughness:.72,metalness:0}),FUEL_COUNT);fuel.instanceMatrix.setUsage(THREE.DynamicDrawUsage);fuel.frustumCulled=false;fuel.castShadow=true;fuel.receiveShadow=true;scene.add(fuel);const ballMatrix=new THREE.Matrix4();
@@ -57,11 +59,18 @@ export default function FieldTwinCanvas(props:Props){
   const hopper=new THREE.InstancedMesh(new THREE.SphereGeometry(FUEL_RADIUS,16,10),new THREE.MeshStandardMaterial({color:0xffcf18,roughness:.72}),60);hopper.instanceMatrix.setUsage(THREE.DynamicDrawUsage);hopper.frustumCulled=false;hopper.castShadow=true;hopper.receiveShadow=true;robot.add(hopper);
   const visualPosition=new THREE.Vector3(),visualScale=new THREE.Vector3(),visualRotation=new THREE.Quaternion();
   const captureZone=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({color:0x45e2aa,transparent:true,opacity:0.25,side:THREE.DoubleSide,depthWrite:false}));robot.add(captureZone);
-  // Lightweight illustrative front intake. Shared reach/width with the capture zone.
+  // Solid reference attachment. Geometry follows capture reach, but adds no physical collider.
   const intakePivot=new THREE.Group();robot.add(intakePivot);
-  const intakeArms=[-1,1].map(()=>box(0,0,0,1,.035,.04,0x8497ad,intakePivot));
-  const roller=new THREE.Mesh(new THREE.CylinderGeometry(.065,.065,1,12),new THREE.MeshStandardMaterial({color:0xffd54a,roughness:.7}));intakePivot.add(roller);
-  const rollerStripe=box(.065,0,0,.015,1,.025,0x243343,roller);
+  const mounts=new THREE.Group();robot.add(mounts);
+  const mountCrossbar=box(0,0,.18,.065,1,.055,0x525e6c,mounts);
+  const mountRails=[-1,1].map(()=>box(0,0,0,1,.065,.055,0x525e6c,mounts));
+  const mountPosts=[-1,1].map(()=>box(0,0,0,.07,.065,.13,0x525e6c,mounts));
+  const hinges=[-1,1].map(()=>{const m=new THREE.Mesh(new THREE.CylinderGeometry(.055,.055,.085,20),new THREE.MeshStandardMaterial({color:0x313844,roughness:.4,metalness:.7}));m.castShadow=true;mounts.add(m);return m;});
+  const axle=new THREE.Mesh(new THREE.CylinderGeometry(.019,.019,1,16),new THREE.MeshStandardMaterial({color:0xadb5bd,roughness:.32,metalness:.8}));intakePivot.add(axle);axle.castShadow=true;
+  const guide=box(0,0,-.018,1,1,.025,0x252a31,intakePivot);
+  const intakeArms=[-1,1].map(()=>box(0,0,0,1,.055,.055,0x697887,intakePivot));
+  const roller=new THREE.Mesh(new THREE.CylinderGeometry(.065,.065,1,24),new THREE.MeshStandardMaterial({color:0x262b31,roughness:.95,metalness:0}));intakePivot.add(roller);roller.castShadow=true;roller.receiveShadow=true;
+  const rollerStripe=box(.065,0,0,.015,1,.025,0xe8b64a,roller);
   let intakeAngle=-Math.PI/2,intakeTime=performance.now();
   const chassis=box(0,0,.2,1,1,.24,0xc72235,concept),mast=box(0,0,.4,.5,.45,.35,0xdde5ec,concept);
   // Team-number plates sit just outside the reference bumper faces.
@@ -94,7 +103,7 @@ export default function FieldTwinCanvas(props:Props){
    latest.current.onStatus(which==='field'?`Loading ${season.year} field · ${(season.bytes/1e6).toFixed(1)} MB…`:'Loading KitBot · 16.2 MB…');
    void assetBuffer(which,abort.signal,season).then(data=>loader.parseAsync(data,'')).then(gltf=>{
     if(disposed){gltf.scene.traverse(o=>{if(o instanceof THREE.Mesh)o.geometry.dispose();});return;}
-    const model=gltf.scene;prepareModel(model);for(const r of which==='field'?season.rotations:[{axis:'x',degrees:90}])model.rotateOnWorldAxis(new THREE.Vector3(r.axis==='x'?1:0,r.axis==='y'?1:0,r.axis==='z'?1:0),r.degrees*Math.PI/180);
+    const model=gltf.scene;styleReferenceModel(model,carpet);prepareModel(model);for(const r of which==='field'?season.rotations:[{axis:'x',degrees:90}])model.rotateOnWorldAxis(new THREE.Vector3(r.axis==='x'?1:0,r.axis==='y'?1:0,r.axis==='z'?1:0),r.degrees*Math.PI/180);
     if(which==='field'){for(const decoration of removeStaticFuel(model,season.year)??[])disposeModel(decoration);model.name='detailed-field';scene.add(model);simplified.visible=false;}
     else{model.traverse(o=>{if(o instanceof THREE.Mesh)for(const material of Array.isArray(o.material)?o.material:[o.material]){if(material.name==='mat_6'&&material instanceof THREE.MeshStandardMaterial)material.color.set('#c72235');if((material.name==='mat_13'||material.name==='mat_41')&&material instanceof THREE.MeshStandardMaterial){material.transparent=false;material.opacity=1;material.depthWrite=true;material.roughness=.65;material.metalness=0;material.needsUpdate=true;}}});model.rotateOnWorldAxis(new THREE.Vector3(0,0,1),Math.PI/2);model.position.set(-.3,0,.05);kit.add(model);kit.updateWorldMatrix(true,true);const bumper=model.getObjectByName('Front_Bumper')??model;const b=new THREE.Box3().setFromObject(bumper).applyMatrix4(kit.matrixWorld.clone().invert()),size=b.getSize(new THREE.Vector3()),center=b.getCenter(new THREE.Vector3());bumperNumbers(kit,size.x,size.y,center.x,center.y,(b.min.z+b.max.z)/2);}
     latest.current.onStatus(which==='field'?`${season.year} field model loaded · checksum verified`:'2026 KitBot loaded · checksum verified');
@@ -114,10 +123,16 @@ export default function FieldTwinCanvas(props:Props){
    robot.position.set(p.pose.x,p.pose.y,p.pose.z??0);if(p.pose.rotation)robot.quaternion.set(p.pose.rotation.x,p.pose.rotation.y,p.pose.rotation.z,p.pose.rotation.w);else robot.rotation.set(0,0,p.pose.heading);
    arrow.position.z=p.concept.height+.12;
    const intakeNow=performance.now(),intakeDt=Math.min(.1,(intakeNow-intakeTime)/1000);intakeTime=intakeNow;
-   const span=Math.hypot(p.intake.reach,.26),desired=p.intake.on?Math.atan2(.26,p.intake.reach):-Math.PI/2;
-   intakeAngle+=(desired-intakeAngle)*(1-Math.exp(-9*intakeDt));intakePivot.visible=season.year===2026;intakePivot.position.set(p.concept.length/2,0,.35);intakePivot.rotation.y=intakeAngle;
+   const attachment=intakePresentation(p.concept.length,p.intake.reach,kit.visible);const span=attachment.span,desired=p.intake.on?attachment.angle:-Math.PI/2;
+   intakeAngle+=(desired-intakeAngle)*(1-Math.exp(-9*intakeDt));intakePivot.visible=mounts.visible=season.year===2026&&!p.custom;intakePivot.position.set(attachment.pivotX,0,attachment.pivotZ);intakePivot.rotation.y=intakeAngle;
+   mountCrossbar.position.x=attachment.mountX;mountCrossbar.scale.y=p.intake.width+.09;
+   const railLength=attachment.pivotX-attachment.mountX+.08;
+   mountRails.forEach((m,i)=>{m.position.set((attachment.mountX+attachment.pivotX)/2,(i?1:-1)*p.intake.width/2,.18);m.scale.x=railLength;});
+   mountPosts.forEach((m,i)=>m.position.set(attachment.pivotX,(i?1:-1)*p.intake.width/2,.225));
+   hinges.forEach((m,i)=>m.position.set(attachment.pivotX,(i?1:-1)*p.intake.width/2,attachment.pivotZ));
+   axle.scale.y=p.intake.width+.08;guide.position.x=span*.48;guide.scale.set(span*.85,p.intake.width*.92,1);
    intakeArms.forEach((arm,i)=>{arm.position.set(span/2,(i?1:-1)*p.intake.width/2,0);arm.scale.x=span;});roller.position.set(span,0,0);roller.scale.y=p.intake.width;if(p.intake.on)roller.rotation.y-=intakeDt*8;rollerStripe.visible=true;
-   captureZone.visible=season.year===2026&&p.intake.on;captureZone.scale.set(p.intake.reach,p.intake.width,1);captureZone.position.set(p.concept.length/2+p.intake.reach/2,0,0.025);
+   captureZone.visible=season.year===2026&&p.intake.on&&!!p.telemetry;captureZone.scale.set(p.intake.reach,p.intake.width,1);captureZone.position.set(p.concept.length/2+p.intake.reach/2,0,0.025);
    const reference=season.year===2026&&!p.custom;
    const visuals=reference?hopperVisuals(p.pose,p.intake.capacity):null;
    hopper.visible=reference;hopper.count=visuals?.stored.length??0;
@@ -126,16 +141,21 @@ export default function FieldTwinCanvas(props:Props){
    if(previousPath!==p.path){previousPath=p.path;pathGeometry.setFromPoints(p.path.map(point=>new THREE.Vector3(point.x,point.y,.08)));}
    const t=p.telemetry;targetLine.visible=headingLine.visible=targetLabel.visible=!!t;
    if(t){targetGeometry.setFromPoints([new THREE.Vector3(t.muzzleX,t.muzzleY,t.muzzleZ),new THREE.Vector3(t.targetX,t.targetY,t.targetZ)]);headingLine.position.set(p.pose.x,p.pose.y,(p.pose.z??0)+p.concept.height+.15);headingLine.setDirection(new THREE.Vector3(Math.cos(p.pose.heading),Math.sin(p.pose.heading),0));targetLabel.position.set((t.muzzleX+t.targetX)/2,(t.muzzleY+t.targetY)/2,Math.max(t.muzzleZ,t.targetZ)+.3);const text=`${t.rangeM.toFixed(2)} m · ${t.aimErrorDeg===null?'—':t.aimErrorDeg.toFixed(1)+'°'}`;if(text!==labelText){labelText=text;labelContext.clearRect(0,0,512,80);labelContext.fillStyle='#102636';labelContext.fillRect(0,0,512,80);labelContext.fillStyle='#8bffe8';labelContext.font='bold 40px monospace';labelContext.textAlign='center';labelContext.fillText(text,256,55);labelTexture.needsUpdate=true;}}
-   if(p.view!==previousView){if(p.view==='orbit'){camera.position.set(-12,-15,15).multiplyScalar(Math.max(1,1.15/camera.aspect));controls.target.set(0,0,0);}previousView=p.view;}
+   if(p.view!==previousView){if(p.view==='robot'){camera.position.set(p.pose.x-1.3,p.pose.y-1.6,1.6);controls.target.set(p.pose.x,p.pose.y,.35);}if(p.view==='orbit'){camera.position.set(-12,-15,15).multiplyScalar(Math.max(1,1.15/camera.aspect));controls.target.set(0,0,0);}previousView=p.view;}
    if(p.view==='top'){camera.position.set(0,-.01,Math.max(23,24/ camera.aspect));controls.target.set(0,0,0);controls.enableRotate=false;}
-   else if(p.view==='follow'||p.view==='robot'){const close=p.view==='robot';camera.position.lerp(new THREE.Vector3(p.pose.x-(close?1.3:4),p.pose.y-(close?1.6:5),close?1.6:4.5),.08);controls.target.set(p.pose.x,p.pose.y,.35);controls.enableRotate=false;}
+   else if(p.view==='follow'){camera.position.lerp(new THREE.Vector3(p.pose.x-4,p.pose.y-5,4.5),1-Math.exp(-5*intakeDt));controls.target.set(p.pose.x,p.pose.y,.35);controls.enableRotate=false;}
+   else if(p.view==='robot'){camera.position.x+=p.pose.x-controls.target.x;camera.position.y+=p.pose.y-controls.target.y;controls.target.set(p.pose.x,p.pose.y,.35);controls.enableRotate=true;}
    else controls.enableRotate=true;
+   const tight=p.view==='robot',following=tight||p.view==='follow',shadowRadius=tight?3.5:following?8:14;
+   const lightX=following?p.pose.x:0,lightY=following?p.pose.y:0;sun.position.set(lightX-4,lightY-6,15);sun.target.position.set(lightX,lightY,0);
+   if(sun.shadow.camera.right!==shadowRadius){sun.shadow.camera.left=-shadowRadius;sun.shadow.camera.right=shadowRadius;sun.shadow.camera.top=shadowRadius;sun.shadow.camera.bottom=-shadowRadius;sun.shadow.camera.updateProjectionMatrix();}
+   controls.minDistance=p.view==='robot'?.65:2;
    controls.update();renderer.render(scene,camera);frames++;const now=performance.now();if(now-last>=1500){const measured=Math.round(frames*1000/(now-last));p.onFps(measured);if(mode==='auto'&&pendingLoads===0&&now>warmUntil){const next=adaptive.sample(measured);if(next!==tier)applyQuality(next);}else adaptive.reset();frames=0;last=now;}
    frame=requestAnimationFrame(render);
   };frame=requestAnimationFrame(render);
   const lost=(e:Event)=>{e.preventDefault();cancelAnimationFrame(frame);setFailed(true);latest.current.onUnavailable();latest.current.onStatus('Graphics context lost. Switch to 2D or reopen 3D.');};renderer.domElement.addEventListener('webglcontextlost',lost);
   const visibility=()=>{frames=0;last=performance.now();warmUntil=last+3000;adaptive.reset();};document.addEventListener('visibilitychange',visibility);
-  return()=>{disposed=true;document.removeEventListener('visibilitychange',visibility);renderer.domElement.removeEventListener('webglcontextlost',lost);sun.shadow.map?.dispose();abort.abort();cancelAnimationFrame(frame);observer.disconnect();controls.dispose();scene.traverse(o=>{if(o instanceof THREE.Mesh||o instanceof THREE.Line){o.geometry.dispose();const materials=Array.isArray(o.material)?o.material:[o.material];materials.forEach(m=>{Object.values(m).forEach(v=>{if(v instanceof THREE.Texture)v.dispose();});m.dispose();});}});labelTexture.dispose();labelMaterial.dispose();environment.dispose();renderer.dispose();renderer.domElement.remove();};
+  return()=>{disposed=true;document.removeEventListener('visibilitychange',visibility);renderer.domElement.removeEventListener('webglcontextlost',lost);sun.shadow.map?.dispose();abort.abort();cancelAnimationFrame(frame);observer.disconnect();controls.dispose();scene.traverse(o=>{if(o instanceof THREE.Mesh||o instanceof THREE.Line){o.geometry.dispose();const materials=Array.isArray(o.material)?o.material:[o.material];materials.forEach(m=>{Object.values(m).forEach(v=>{if(v instanceof THREE.Texture)v.dispose();});m.dispose();});}});labelTexture.dispose();labelMaterial.dispose();environment.dispose();carpet.dispose();renderer.dispose();renderer.domElement.remove();};
  },[props.season.year,retry]);
  return <div className="twin-canvas" ref={host}>{failed&&<div className="twin-render-error" role="alert"><p>{props.errorText}</p><button onClick={()=>{setFailed(false);setRetry(v=>v+1);}}>{props.retryText}</button></div>}</div>;
 }

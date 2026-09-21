@@ -1,3 +1,5 @@
+**Scene polish update:** [Intake mounting and Step 3 scene polish](SCENE_POLISH_20260921.md) is implemented and checked locally. Not deployed; representative-device acceptance remains open.
+
 **Hopper follow-up:** [Reference robot panels, stored balls and transfer animations](HOPPER_VISUALS_20260921.md) implements the user-selected visual Steps 1–2 locally; not deployed.
 
 **Graphics update (2026-09-21):** The user subsequently authorized graphics A + B and default arrow-key movement. See [implementation and acceptance checkpoint](GRAPHICS_AB_20260921.md). Implemented locally, not deployed; this supersedes the earlier awaiting-start status below.
