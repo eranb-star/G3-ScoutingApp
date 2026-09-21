@@ -24,3 +24,7 @@ This is modeled sightline practice, not an exact reproduction of human vision. N
 Source: https://firstfrc.blob.core.windows.net/frc2026/Manual/HTML/2026GameManual.htm (section 5.9). Local asset configuration is the numeric placement source.
 
 Preserve user Android .idea edits. Before production release, integrate simulator commits into the documented production baseline; do not deploy accumulated branch changes wholesale.
+
+## Fullscreen correction — user visual review
+
+The initial driver controls consumed too much fullscreen height. Corrected with a 48 px, single-row toolbar; settings collapsed on entering fullscreen; compact, scrollable settings panel; and small bottom-corner drive/touch controls over the canvas. Quality, eye height, alliance and looking controls remain under View settings. Desktop browser measurement at 1440x900: canvas 1440x852 (94.7% height) with settings closed. Camera position/height math and physical simulation are unchanged. The full field is subject to the selected viewing direction and modeled occlusions, not a promise of human-perception equivalence. TypeScript checked; local preview only.
