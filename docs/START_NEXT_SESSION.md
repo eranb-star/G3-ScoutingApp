@@ -1,3 +1,5 @@
+**Production simulator release:** All graphics/intake/hopper/driver-view/fullscreen changes below are now deployed in `877208b`, Vercel `5z99hJLraPrbKKxzurFsHPEo3UBR`. [Verified release and rollback](SIMULATOR_PRODUCTION_RELEASE_20260921.md). This supersedes earlier not-deployed notices.
+
 **Latest simulator update:** [Open carbon-tube intake, height cap and three driver-station views](DRIVER_VIEWS_20260921.md) implemented and checked locally; not deployed. This supersedes the solid intake tray in the previous scene-polish checkpoint.
 
 **Scene polish update:** [Intake mounting and Step 3 scene polish](SCENE_POLISH_20260921.md) is implemented and checked locally. Not deployed; representative-device acceptance remains open.
