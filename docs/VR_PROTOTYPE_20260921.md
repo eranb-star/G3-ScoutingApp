@@ -26,4 +26,9 @@ Actual immersive rendering, controller mappings on this physical device, headset
 
 No database, paid AI, permission or Android changes are included. Existing APK 2.2.0 predates this browser VR feature.
 
-Deployment record will be appended after production verification.
+## Production release
+
+- Release source: `fcb806e5001317d31ceda347d438f5f379e5a15c` on `codex/knowledge-protection-release`; primary implementation `050c1fb`.
+- Vercel production deployment: `A6xSdguaqaCcv3FiUoz2XUHERt7Q`, Ready, Production, g3-6740.com domain verified. Preview `HCGs3vnQKCwdwsRypu3hkfJpDTwK` was promoted through a fresh production-environment build.
+- Live authenticated /field-twin checked: new VR entry message present, detailed field/robot render, compact fullscreen retained, 58–60 desktop FPS and no observed console errors. Headset immersive acceptance remains pending.
+- Rollback: prior simulator production deployment `5z99hJLraPrbKKxzurFsHPEo3UBR` (source `877208b`). No database rollback required.

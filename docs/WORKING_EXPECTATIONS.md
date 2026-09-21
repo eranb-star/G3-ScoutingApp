@@ -25,3 +25,5 @@ These requirements summarize the user's explicit preferences across this session
 5. Bulk message insert omitted a required citations value on one row; answer appeared but was absent from history. Test compatible insert row shapes and actual persistence.
 
 Regression prevention is mandatory engineering work, not a guarantee that no future defect can occur. If a check cannot be completed, name the precise gap and never mark it passed.
+
+- VR acceptance: the user wants useful driver realism, not graphics alone. Keep headset performance, stereo scale, physical floor calibration, visibility and controller usability explicit. Desktop FPS or mocked WebXR tests never prove headset acceptance. Preserve a bounded prototype and require measured headset results before claiming full-match realism.
