@@ -1,3 +1,5 @@
+**Graphics update (2026-09-21):** The user subsequently authorized graphics A + B and default arrow-key movement. See [implementation and acceptance checkpoint](GRAPHICS_AB_20260921.md). Implemented locally, not deployed; this supersedes the earlier awaiting-start status below.
+
 # Current release and roadmap — 2026-09-21
 
 Read [START_NEXT_SESSION.md](START_NEXT_SESSION.md) for recorded production status and [WORKING_EXPECTATIONS.md](WORKING_EXPECTATIONS.md) for execution rules.

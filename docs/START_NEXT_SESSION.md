@@ -1,3 +1,5 @@
+**Graphics update (2026-09-21):** The user subsequently authorized graphics A + B and default arrow-key movement. See [implementation and acceptance checkpoint](GRAPHICS_AB_20260921.md). Implemented locally, not deployed; this supersedes the earlier awaiting-start status below.
+
 # Start the next G3 session
 
 Read this file first. Current status below supersedes historical disabled, undeployed and candidate-only wording elsewhere.

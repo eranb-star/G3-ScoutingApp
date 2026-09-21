@@ -54,3 +54,16 @@
 .knowledge-evidence-page .knowledge-curation>summary{cursor:pointer;font-weight:700;font-size:18px;padding:8px 0}
 .knowledge-evidence-page .knowledge-curation>summary:focus-visible{outline:2px solid #c00080;outline-offset:4px}
 @media(max-width:650px){.knowledge-evidence-page .knowledge-controls{grid-template-columns:minmax(0,1fr)}.knowledge-evidence-page .knowledge-controls input{flex-basis:auto}}
+
+/* Keep quality settings separate from driving controls, including fullscreen. */
+.twin-quality-bar{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;padding:.7rem 1rem;background:#152235;color:#eaf1fb;border-block:1px solid #34465e}
+.intel-page .twin-quality-bar label{display:flex;align-items:center;gap:.75rem;font-weight:700;margin:0}
+.intel-page .twin-quality-bar select{width:auto;margin:0;min-height:40px;background:#21334b;color:#fff;border:1px solid #627891;border-radius:8px;padding:.4rem .7rem;font:inherit}
+.twin-quality-bar select:focus-visible{outline:3px solid #ff86d0;outline-offset:3px}
+.twin-quality-bar strong{font-size:.85rem;color:#ade8d8}
+.twin-quality-bar small{display:block;font-size:.78rem;color:#d0dceb;line-height:1.5}
+@media(max-width:600px){.twin-quality-bar{gap:.5rem}.intel-page .twin-quality-bar label{width:100%;justify-content:space-between}}
+
+.twin-expanded .twin-quality-bar{flex:none}
+
+.twin-canvas{position:relative}.twin-render-error{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;background:#152235;color:#fff;text-align:center}.twin-render-error p{max-width:32rem}

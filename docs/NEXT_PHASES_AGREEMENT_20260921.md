@@ -1,3 +1,5 @@
+**Graphics update (2026-09-21):** The user subsequently authorized graphics A + B and default arrow-key movement. See [implementation and acceptance checkpoint](GRAPHICS_AB_20260921.md). Implemented locally, not deployed; this supersedes the earlier awaiting-start status below.
+
 # Agreed next-phase scope — 21 September 2026
 
 ## Authority and authorization

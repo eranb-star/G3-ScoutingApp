@@ -1,0 +1,21 @@
+import {createRequire} from 'node:module';import fs from 'node:fs/promises';import os from 'node:os';import path from 'node:path';import {pathToFileURL} from 'node:url';
+const req=createRequire(import.meta.url),{build}=createRequire(req.resolve('vite'))('esbuild');
+const result=await build({stdin:{contents:String.raw`
+import assert from 'node:assert/strict';
+import {AdaptiveQuality,loadQuality,QUALITY_STORAGE} from './src/lib/twinQuality';
+import {DEFAULT_KEYS,loadBindings} from './src/lib/twinKeys';
+const store=new Map();globalThis.localStorage={getItem:k=>store.get(k)??null};
+assert.equal(loadQuality(),'auto');store.set(QUALITY_STORAGE,'garbage');assert.equal(loadQuality(),'auto');store.set(QUALITY_STORAGE,'high');assert.equal(loadQuality(),'high');
+assert.equal(loadBindings().up,'ArrowUp');
+const legacy={...DEFAULT_KEYS,up:'KeyW',down:'KeyS',left:'KeyA',right:'KeyD'};store.set('g3-twin-keys-v1',JSON.stringify(legacy));assert.equal(loadBindings().up,'ArrowUp');
+store.set('g3-twin-keys-v1',JSON.stringify({...legacy,shoot:'KeyG'}));assert.equal(loadBindings().up,'KeyW');
+globalThis.localStorage={getItem:()=>{throw Error('blocked')}};assert.equal(loadQuality(),'auto');assert.equal(loadBindings().up,'ArrowUp');
+const a=new AdaptiveQuality();a.reset();for(let i=0;i<5;i++)a.sample(20);assert.equal(a.tier,'medium');a.sample(20);assert.equal(a.tier,'low');
+for(let i=0;i<12;i++)a.sample(60);assert.equal(a.tier,'low');a.sample(60);assert.equal(a.tier,'medium');
+for(let i=0;i<13;i++)a.sample(60);assert.equal(a.tier,'high');
+a.reset();for(let i=0;i<3;i++)a.sample(60);for(let i=0;i<30;i++)a.sample(i%2?60:20);assert.equal(a.tier,'high');
+a.sample(20);a.sample(20);a.reset();a.sample(20);assert.equal(a.tier,'high');
+a.sample(NaN);assert.equal(a.tier,'high');
+console.log('Quality hysteresis/cooldown/reset, preference validation/blocked storage and keyboard migration/custom preservation passed');
+`,resolveDir:process.cwd(),loader:'ts'},bundle:true,platform:'node',format:'esm',write:false,logLevel:'silent'});
+const file=path.join(os.tmpdir(),'g3-quality-test.mjs');await fs.writeFile(file,result.outputFiles[0].text);await import(pathToFileURL(file));
