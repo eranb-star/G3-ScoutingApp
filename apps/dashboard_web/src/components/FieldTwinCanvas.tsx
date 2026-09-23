@@ -1,6 +1,7 @@
+import {competitionVenue,type VenueMode} from '../lib/twinVenue';
 import {createTwinVR,type VRInput} from '../lib/twinVR';
 import {driverCamera,isDriverView,type TwinView,type DriverSettings} from '../lib/twinDriverView';
-import {carpetTexture,styleReferenceModel,intakePresentation} from '../lib/twinSceneStyle';
+import {carpetTexture,styleReferenceModel,intakePresentation,mapCarpetInMetres} from '../lib/twinSceneStyle';
 import {hopperVisuals} from '../lib/hopperVisuals';
 import {AdaptiveQuality,QUALITY,type QualityMode,type QualityTier} from '../lib/twinQuality';
 import type {Telemetry} from '../lib/twinTelemetry';
@@ -17,7 +18,7 @@ import {RobotModel} from '../lib/robotModel';
 import {Concept,OBSTACLES,Pose} from '../lib/conceptTwin';
 
 export type ModelMetrics={length:number;width:number;height:number;triangles:number};
-type Props={vrReady:boolean;onVRState:(active:boolean)=>void;onVRFrame:(now:number,input:VRInput)=>Pose;onUnavailable:()=>void;errorText:string;retryText:string;quality:QualityMode;onQuality:(tier:QualityTier)=>void;telemetry?:Telemetry;intake:IntakeConfig;onModelMetrics:(m:ModelMetrics|null)=>void;season:FieldSeason;custom?:RobotModel;pose:Pose;concept:Concept;detailed:boolean;kitbot:boolean;view:TwinView;driver:DriverSettings;path:Pose[];onStatus:(s:string)=>void;onFps:(fps:number)=>void};
+type Props={practiceLabel:string;venue:VenueMode;vrReady:boolean;onVRState:(active:boolean)=>void;onVRFrame:(now:number,input:VRInput)=>Pose;onUnavailable:()=>void;errorText:string;retryText:string;quality:QualityMode;onQuality:(tier:QualityTier)=>void;telemetry?:Telemetry;intake:IntakeConfig;onModelMetrics:(m:ModelMetrics|null)=>void;season:FieldSeason;custom?:RobotModel;pose:Pose;concept:Concept;detailed:boolean;kitbot:boolean;view:TwinView;driver:DriverSettings;path:Pose[];onStatus:(s:string)=>void;onFps:(fps:number)=>void};
 const CACHE=TWIN_CACHE;
 const assets={field:{url:'/twin/2026/field-optimized.glb',bytes:19627748,hash:'088126b167906ca95e7b21a76a430a64199103d1ea184a121b1cf52e984b75e8'},robot:{url:'/twin/2026/robot-optimized.glb',bytes:16177620,hash:'053caf847815cb163632b8f858f5b261e589cb9abae3819b502c016fb57238b8'}};
 export async function clearTwinCache(){if('caches' in window)await Promise.all([caches.delete(CACHE),caches.delete('g3-twin-2026-v2'),caches.delete('g3-twin-2026-v3')]);}
@@ -46,7 +47,7 @@ export default function FieldTwinCanvas(props:Props){
   const studio=new RoomEnvironment(),pmrem=new THREE.PMREMGenerator(renderer),environment=pmrem.fromScene(studio,.04);scene.environment=environment.texture;scene.environmentIntensity=.45;studio.dispose();pmrem.dispose();
   const adaptive=new AdaptiveQuality();let previousView:Props['view']|null=null;let mode:QualityMode=props.quality,tier:QualityTier=mode==='auto'?'medium':mode,pendingLoads=0,warmUntil=performance.now()+4000;adaptive.reset(tier);renderer.shadowMap.type=THREE.PCFSoftShadowMap;
   const camera=new THREE.PerspectiveCamera(43,1,.05,150);camera.up.set(0,0,1);camera.position.set(-12,-15,15);
-  const vr=createTwinVR(renderer,camera,scene,active=>{latest.current.onVRState(active);if(!active){previousView=null;applyQuality(mode==='auto'?'medium':mode);}});
+  const vr=createTwinVR(renderer,camera,scene,active=>{latest.current.onVRState(active);if(!active){previousView=null;applyQuality(mode==='auto'?'medium':mode);}},()=>latest.current.practiceLabel);
   enterVR.current=async high=>{if(latest.current.custom||!latest.current.kitbot)throw Error('Prototype uses the reference KitBot. Select it before entering VR.');if(!latest.current.vrReady||!scene.getObjectByName('detailed-field')||!robotStarted||kit.children.length===0)throw Error('Wait for the field, robot and physics to load before entering VR.');applyQuality(high?'high':'medium');try{await vr.enter(high);}catch(e){applyQuality(mode==='auto'?'medium':mode);throw e;}};
   const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.maxPolarAngle=Math.PI/2-.03;controls.minDistance=2;controls.maxDistance=80;
   const ambient=new THREE.HemisphereLight(0xe6f1ff,0x596477,1.4);ambient.position.set(0,0,1);scene.add(ambient);const sun=new THREE.DirectionalLight(0xfff4e5,2.8);sun.position.set(-4,-6,15);scene.add(sun,sun.target);sun.castShadow=true;sun.shadow.camera.left=-14;sun.shadow.camera.right=14;sun.shadow.camera.top=12;sun.shadow.camera.bottom=-12;sun.shadow.camera.near=.5;sun.shadow.camera.far=50;sun.shadow.normalBias=.008;sun.shadow.bias=-.00015;sun.shadow.camera.updateProjectionMatrix();
@@ -54,10 +55,11 @@ export default function FieldTwinCanvas(props:Props){
   function applyQuality(next:QualityTier){tier=next;const settings=QUALITY[tier];renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,settings.pixelRatio));renderer.shadowMap.enabled=settings.shadowSize>0;sun.shadow.map?.dispose();sun.shadow.map=null;sun.shadow.mapSize.setScalar(settings.shadowSize||512);sun.shadow.needsUpdate=true;scene.traverse(o=>{if(o instanceof THREE.Mesh)for(const m of Array.isArray(o.material)?o.material:[o.material])m.needsUpdate=true;});latest.current.onQuality(tier);}
   applyQuality(tier);
   const carpet=carpetTexture();carpet.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());
+  const venue=competitionVenue(field.length,field.width);scene.add(venue.group);
   const ground=new THREE.Mesh(new THREE.PlaneGeometry(160,160),new THREE.MeshStandardMaterial({color:0x162336,roughness:1}));ground.position.z=-.06;ground.receiveShadow=true;scene.add(ground);
   const simplified=new THREE.Group();scene.add(simplified);
   const box=(x:number,y:number,z:number,w:number,d:number,h:number,color:number,parent:THREE.Object3D)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(w,d,h),new THREE.MeshStandardMaterial({color,roughness:.75}));m.position.set(x,y,z);m.castShadow=h>.05;m.receiveShadow=true;parent.add(m);return m;};
-  const floor=box(0,0,-.02,field.length,field.width,.04,0x727780,simplified);(floor.material as THREE.MeshStandardMaterial).map=carpet;(floor.material as THREE.MeshStandardMaterial).roughness=1;
+  const floor=box(0,0,-.02,field.length,field.width,.04,0x727780,simplified);(floor.material as THREE.MeshStandardMaterial).map=carpet;(floor.material as THREE.MeshStandardMaterial).roughness=1;floor.name='Playing_Field_Carpet';mapCarpetInMetres(floor);
   [-1,1].forEach(side=>{box(side*(field.length/2),0,.25,.06,field.width,.5,side<0?0xe65662:0x2581df,simplified);box(0,side*field.width/2,.25,field.length,.06,.5,0xa7b9c9,simplified);});
   (season.year===2026?OBSTACLES:[]).forEach(o=>box(o.x,o.y,.65,o.w,o.h,1.3,o.x<0?0xc93951:0x176daf,simplified));
   const fuel=new THREE.InstancedMesh(new THREE.SphereGeometry(FUEL_RADIUS,12,8),new THREE.MeshStandardMaterial({color:0xffcf18,roughness:.72,metalness:0}),FUEL_COUNT);fuel.instanceMatrix.setUsage(THREE.DynamicDrawUsage);fuel.frustumCulled=false;fuel.castShadow=true;fuel.receiveShadow=true;scene.add(fuel);const ballMatrix=new THREE.Matrix4();
@@ -112,17 +114,18 @@ export default function FieldTwinCanvas(props:Props){
    void assetBuffer(which,abort.signal,season).then(data=>loader.parseAsync(data,'')).then(gltf=>{
     if(disposed){gltf.scene.traverse(o=>{if(o instanceof THREE.Mesh)o.geometry.dispose();});return;}
     const model=gltf.scene;styleReferenceModel(model,carpet);prepareModel(model);for(const r of which==='field'?season.rotations:[{axis:'x',degrees:90}])model.rotateOnWorldAxis(new THREE.Vector3(r.axis==='x'?1:0,r.axis==='y'?1:0,r.axis==='z'?1:0),r.degrees*Math.PI/180);
-    if(which==='field'){for(const decoration of removeStaticFuel(model,season.year)??[])disposeModel(decoration);model.name='detailed-field';scene.add(model);simplified.visible=false;}
+    if(which==='field'){mapCarpetInMetres(model);for(const decoration of removeStaticFuel(model,season.year)??[])disposeModel(decoration);model.name='detailed-field';scene.add(model);simplified.visible=false;}
     else{model.traverse(o=>{if(o instanceof THREE.Mesh)for(const material of Array.isArray(o.material)?o.material:[o.material]){if(material.name==='mat_6'&&material instanceof THREE.MeshStandardMaterial)material.color.set('#c72235');if((material.name==='mat_13'||material.name==='mat_41')&&material instanceof THREE.MeshStandardMaterial){material.transparent=false;material.opacity=1;material.depthWrite=true;material.roughness=.65;material.metalness=0;material.needsUpdate=true;}}});model.rotateOnWorldAxis(new THREE.Vector3(0,0,1),Math.PI/2);model.position.set(-.3,0,.05);model.updateWorldMatrix(true,true);kitHeight=new THREE.Box3().setFromObject(model).max.z;kit.add(model);kit.updateWorldMatrix(true,true);const bumper=model.getObjectByName('Front_Bumper')??model;const b=new THREE.Box3().setFromObject(bumper).applyMatrix4(kit.matrixWorld.clone().invert()),size=b.getSize(new THREE.Vector3()),center=b.getCenter(new THREE.Vector3());bumperNumbers(kit,size.x,size.y,center.x,center.y,(b.min.z+b.max.z)/2);}
     latest.current.onStatus(which==='field'?`${season.year} field model loaded · checksum verified`:'2026 KitBot loaded · checksum verified');
    }).catch(error=>{if(!disposed&&error.name!=='AbortError')latest.current.onStatus('Detailed model unavailable. Simplified view remains usable; check connection and reopen 3D to retry.');}).finally(()=>{pendingLoads--;warmUntil=performance.now()+3000;adaptive.reset();});
   }
   let firstResize=true;const resize=()=>{if(renderer.xr.isPresenting)return;const w=element.clientWidth,h=element.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/Math.max(h,1);if(firstResize){camera.position.set(-12,-15,15).multiplyScalar(Math.max(1,1.15/camera.aspect));firstResize=false;}camera.updateProjectionMatrix();warmUntil=performance.now()+2500;adaptive.reset();};const observer=new ResizeObserver(resize);observer.observe(element);resize();
   const render=(time:number,xrFrame?:XRFrame)=>{
-   if(disposed)return;const input=vr.active&&xrFrame?vr.update(time,xrFrame):undefined;const p=input?{...latest.current,pose:latest.current.onVRFrame(time,input),intake:{...latest.current.intake,on:input.intake},telemetry:undefined}:latest.current,driverView=vr.active||(season.year===2026&&isDriverView(p.view));
+   if(disposed)return;const input=vr.active&&xrFrame?vr.update(time,xrFrame):undefined;const p=input?{...latest.current,pose:latest.current.onVRFrame(time,input),intake:{...latest.current.intake,on:latest.current.practiceLabel.startsWith('REPLAY')?latest.current.intake.on:input.intake},telemetry:undefined}:latest.current,driverView=vr.active||(season.year===2026&&isDriverView(p.view));
    if(!vr.active&&p.quality!==mode){mode=p.quality;adaptive.reset(mode==='auto'?'medium':mode);applyQuality(adaptive.tier);warmUntil=performance.now()+3000;}
    if(document.hidden&&!vr.active){frames=0;last=performance.now();adaptive.reset();return;}
    if((p.detailed||driverView)&&!fieldStarted){fieldStarted=true;load('field');}if(p.kitbot&&!robotStarted){robotStarted=true;load('robot');}
+   venue.update(p.venue,tier,driverView,p.pose.scores);ground.visible=p.venue!=='competition';
    const detail=scene.getObjectByName('detailed-field');if(detail){detail.visible=p.detailed||driverView;simplified.visible=!detail.visible;}
    if(p.custom?.data!==customData){customData=p.custom?.data;if(customData)loadCustom(customData);else{customGeneration++;custom.children.forEach(disposeModel);custom.clear();}}
    custom.visible=!!p.custom&&custom.children.length>0;custom.scale.setScalar(p.custom?.scale??1);custom.rotation.z=(p.custom?.rotation??0)*Math.PI/180;
