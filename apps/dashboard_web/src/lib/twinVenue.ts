@@ -32,7 +32,7 @@ export function competitionVenue(length:number,width:number){
  if(typeof document!=='undefined'){
   const canvas=document.createElement('canvas');canvas.width=1024;canvas.height=384;const ctx=canvas.getContext('2d');
   if(ctx){const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;const material=new THREE.MeshBasicMaterial({map:texture});
-   for(const side of [-1,1]){const screen=new THREE.Mesh(new THREE.PlaneGeometry(8.8,3.2),material);screen.position.set(side*(hx-.5),0,4.8);screen.up.set(0,0,1);screen.lookAt(0,0,4.8);group.add(screen);}
+   for(const side of [-1,1]){const screen=new THREE.Mesh(new THREE.PlaneGeometry(8.8,3.2),material);screen.position.set(side*(hx-.7),0,4.8);screen.up.set(0,0,1);screen.lookAt(0,0,4.8);group.add(screen);}
    let previous='';paintScores=(scores)=>{const key=scores.join(',');if(key===previous)return;previous=key;ctx.fillStyle='#0c1725';ctx.fillRect(0,0,1024,384);ctx.textAlign='center';ctx.fillStyle='#c4d7e7';ctx.font='600 38px sans-serif';ctx.fillText('G3  /  DRIVER PRACTICE',512,65);ctx.fillStyle='#f16c86';ctx.font='bold 95px monospace';ctx.fillText(`RED ${scores[0]??0}`,270,205);ctx.fillStyle='#68b9ff';ctx.fillText(`BLUE ${scores[1]??0}`,755,205);ctx.fillStyle='#8cabbc';ctx.font='26px sans-serif';ctx.fillText('BALLS SCORED  ·  TRAINING SESSION',512,310);texture.needsUpdate=true;};
   }
  }
