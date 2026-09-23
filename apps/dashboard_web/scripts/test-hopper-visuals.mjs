@@ -15,7 +15,7 @@ assert.equal(new Set([...visuals.stored,...visuals.field].map(b=>b.id)).size,vis
 assert.deepEqual(hopperVisuals(p,20),visuals,'paused tick has stable visuals');
 for(let i=0;i<20;i++)p=d.step(idle);visuals=hopperVisuals(p,20);assert.deepEqual(visuals.field.find(b=>b.id===preload[0]),{...p.balls.find(b=>b.id===preload[0]),radius:.075});
 d.reset(-6,0);d.fuel.reset([{x:-6+DEFAULT_CONCEPT.length/2+.12,y:0}]);
-for(let i=0;i<10&&d.fuel.collected===0;i++)p=d.step(idle,{...DEFAULT_INTAKE,on:true});
+for(let i=0;i<120&&d.fuel.collected===0;i++)p=d.step(idle,{...DEFAULT_INTAKE,on:true});
 assert.equal(d.fuel.collected,1);assert.equal(p.fuelVisualEvents[0].kind,'capture');assert.equal(hopperVisuals(p,20).stored.length,1);assert.equal(hopperVisuals(p,20).field.length,0);
 for(let i=0;i<30;i++)p=d.step(idle);const slot=hopperSlot(0,20);assert.deepEqual(hopperVisuals(p,20).stored[0],{id:0,...slot});
 const epoch=p.fuelVisualEpoch;d.reset();d.fuel.reset();p=d.snapshot();assert.ok(p.fuelVisualEpoch>epoch);assert.equal(p.fuelVisualEvents.length,0);assert.equal(hopperVisuals(p,20).stored.length,8);

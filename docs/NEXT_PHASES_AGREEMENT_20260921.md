@@ -1,3 +1,5 @@
+**Simulator fidelity increment (2026-09-23):** Intake contact/feeding, 32 official welded-field AprilTags, detailed part inspection, published 6328 Darwin CAD and a shared-world computer opponent are implemented. See [scope, sources and acceptance](SIMULATOR_FIDELITY_20260923.md). Deployment status is recorded there; do not infer it from this checkpoint.
+
 **Latest production release: shared timed practice and competition venue, source `7c7759a`, Vercel `FEZ7Svcb4FTfKrXxZzFH6eHE8GgQ` (Ready).** See [scope, validation and release record](SHARED_PRACTICE_VENUE_20260923.md). This extends the existing web/phone-web/VR simulator. Physical-device acceptance and the remaining match-fidelity phases are still open.
 
 **Graphics update (2026-09-21):** The user subsequently authorized graphics A + B and default arrow-key movement. See [implementation and acceptance checkpoint](GRAPHICS_AB_20260921.md). Implemented locally, not deployed; this supersedes the earlier awaiting-start status below.

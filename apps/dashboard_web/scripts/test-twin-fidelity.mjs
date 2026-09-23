@@ -1,0 +1,41 @@
+import {createRequire} from 'node:module';
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import {pathToFileURL} from 'node:url';
+const req=createRequire(import.meta.url),{build}=createRequire(req.resolve('vite'))('esbuild');
+const result=await build({stdin:{contents:`
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import {createPhysicalDrive} from './src/lib/physicalDrive';
+import {DEFAULT_CONCEPT} from './src/lib/conceptTwin';
+import {DEFAULT_INTAKE} from './src/lib/intake';
+import {APRIL_TAGS_2026,TAG_BLACK_SIZE} from './src/lib/twinAprilTags';
+import {PracticeRun} from './src/lib/twinPractice';
+import {loadDarwin,DARWIN_PROFILE} from './src/lib/publishedRobot';
+import {Box3,Vector3} from 'three';
+const idle={vx:0,vy:0,omega:0};
+const d=await createPhysicalDrive(DEFAULT_CONCEPT);d.reset(0,0);d.fuel.reset([{x:.80,y:0}]);
+const intake={...DEFAULT_INTAKE,on:true};
+for(let n=0;n<8;n++)d.step(idle,intake);
+assert.equal(d.fuel.collected,0,'deployment and feeding take time');
+for(let n=0;n<150;n++)d.step(idle,intake);
+assert.equal(d.fuel.collected,1,'front roller feeds ball into the throat');
+d.reset();d.fuel.reset();d.setOpponent(true);const run=new PracticeRun(d.snapshot(),'test','opponent');
+for(let n=0;n<3600;n++){const p=d.step(idle);if(n%30===0){const l=d.fuel.ledger();assert.equal(l.field+l.stored+l.hub+l.outposts+l.outOfPlay,504);assert.ok(Number.isFinite(p.opponent!.x));}run.step(p,false);}
+console.log('Opponent result',d.snapshot().opponent,'shots',d.fuel.withActor('computer',()=>d.fuel.shots));
+assert.ok(d.fuel.withActor('computer',()=>d.fuel.shots)>0,'opponent shoots');assert.ok((d.snapshot().opponent?.scored??0)>0,'opponent scores');
+assert.equal(d.fuel.shots,0,'opponent does not alter player shot count');assert.equal(run.result!.scored,0,'practice excludes opponent score');assert.ok(run.frame(30).pose.opponent,'replay records opponent');
+d.setOpponent(false);d.fuel.reset();d.setOpponent(true,DARWIN_PROFILE);
+for(let n=0;n<1000;n++)d.step(idle);
+assert.ok(d.fuel.withActor('computer',()=>d.fuel.shots)>0,'Darwin opponent fires rear-facing');assert.ok((d.snapshot().opponent?.scored??0)>0,'Darwin opponent scores with rear-facing aim');
+d.dispose();
+assert.equal(APRIL_TAGS_2026.length,32);assert.equal(new Set(APRIL_TAGS_2026.map(t=>t.id)).size,32);assert.equal(TAG_BLACK_SIZE,.1651);
+const cfg=JSON.parse(await fs.readFile('public/twin/2026/field-config.json','utf8'));
+for(const t of APRIL_TAGS_2026){const c=cfg.aprilTags.find(a=>a.id===t.id);assert.ok(Math.hypot(t.x-c.position[0],t.y-c.position[1],t.z-c.position[2])<.0011);const a=c.rotations[0].degrees*Math.PI/180;assert.ok(Math.abs(Math.atan2(Math.sin(a-t.yaw),Math.cos(a-t.yaw)))<.001);}
+const fetchOriginal=globalThis.fetch;globalThis.fetch=async(url)=>new Response(await fs.readFile('public'+url));
+const model=await loadDarwin(new AbortController().signal);globalThis.fetch=fetchOriginal;
+model.group.updateMatrixWorld(true);const size=new Box3().setFromObject(model.group).getSize(new Vector3());console.log('Darwin stowed bounds',size);assert.ok(size.x<2&&size.y<1.5&&size.z<1.5,'assembly dimensions in metres');model.update(true);model.group.updateMatrixWorld(true);console.log('Darwin deployed bounds',new Box3().setFromObject(model.group).getSize(new Vector3()));
+console.log('PASS feeding delay, shared 504-ball world, opponent scoring, independent practice results, replay, 32 precise tag poses and real CAD integrity');
+`,resolveDir:process.cwd(),loader:'ts'},bundle:true,platform:'node',format:'esm',write:false,logLevel:'silent'});
+const file=path.join(os.tmpdir(),'g3-fidelity-test.mjs');await fs.writeFile(file,result.outputFiles[0].text);await import(pathToFileURL(file));

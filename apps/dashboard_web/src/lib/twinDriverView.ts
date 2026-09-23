@@ -1,4 +1,4 @@
-export type TwinView='orbit'|'top'|'follow'|'robot'|'driver1'|'driver2'|'driver3';
+export type TwinView='opponent'|'inspect'|'orbit'|'top'|'follow'|'robot'|'driver1'|'driver2'|'driver3';
 export type DriverSettings={alliance:'red'|'blue';eyeHeight:number;look:number;pitch:number};
 export const isDriverView=(view:TwinView)=>view.startsWith('driver');
 // Bundled 2026 field-config.json driverStations, in the renderer's centered frame.
