@@ -1,3 +1,5 @@
+**Latest production release: shared timed practice and competition venue, source `7c7759a`, Vercel `FEZ7Svcb4FTfKrXxZzFH6eHE8GgQ` (Ready).** See [scope, validation and release record](SHARED_PRACTICE_VENUE_20260923.md). This extends the existing web/phone-web/VR simulator. Physical-device acceptance and the remaining match-fidelity phases are still open.
+
 **Latest production release: VR phase 1 prototype, source `fcb806e`, Vercel `A6xSdguaqaCcv3FiUoz2XUHERt7Q` (Ready).** See [prototype controls, acceptance and deployment](VR_PROTOTYPE_20260921.md). This supersedes the earlier selected-next and no-further-phase wording below. Physical headset acceptance is pending; graphics and Android milestones remain delivered.
 
 **Android milestone:** Signed APK **2.2.0 / code 24** built and verified. [Artifact, checksum and remaining physical acceptance](APK_MILESTONE_20260921.md). No further phase started.

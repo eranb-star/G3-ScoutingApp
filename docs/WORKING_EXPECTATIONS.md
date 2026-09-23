@@ -27,3 +27,5 @@ These requirements summarize the user's explicit preferences across this session
 Regression prevention is mandatory engineering work, not a guarantee that no future defect can occur. If a check cannot be completed, name the precise gap and never mark it passed.
 
 - VR acceptance: the user wants useful driver realism, not graphics alone. Keep headset performance, stereo scale, physical floor calibration, visibility and controller usability explicit. Desktop FPS or mocked WebXR tests never prove headset acceptance. Preserve a bounded prototype and require measured headset results before claiming full-match realism.
+
+- Shared simulation: training exercises, scoring, replay and calibrated physics should serve web, phone and VR through the same engine. Keep device-specific inputs and presentation separate. The user selected timed practice/results/replay and requested realistic carpet plus a competition venue; preserve the field-first fullscreen layout. Clearly distinguish a generic illustrative hall from measured event sightlines and visual replay from deterministic physics resimulation.
