@@ -23,4 +23,7 @@ Extend the existing simulator across desktop web, phone web and VR. User request
 Persisted training history and comparable runs (matching settings/input context), ghost/comparison and additional drills; then measured robot calibration and full-match rule/robot interaction increments. VR station selection and in-headset training menus remain separate presentation/input work. Do not describe the shared practice prototype as completion of these phases.
 
 ## Release
-Pending production build and verification; append exact release identifiers after verification.
+Production source `7c7759aaec7570e80f97d33021065ada945bac5b` (includes `1d4fa80`); primary implementation `25ae0c3` plus screen correction `a6c965c`. Vercel `FEZ7Svcb4FTfKrXxZzFH6eHE8GgQ` Ready / Production, g3-6740.com domain verified. Preview `d5MRLn9hog4UvtVSUXnV8cCcj4ej` promoted through a fresh production-environment build. Rollback: previous VR release `A6xSdguaqaCcv3FiUoz2XUHERt7Q`, source `fcb806e`; no database rollback needed.
+
+Live authenticated production smoke check: timed practice started, early finish recorded 14.3 simulated seconds, replay opened, and the driver-view hall rendered without observed console errors. Initial production visual inspection found score screens behind their backing panels; corrected their placement and added raycast visibility checks for both screens. The correction is included in the final release above.
+Final production visual check confirmed the score screen is visible from driver station 1. Desktop observed 51 FPS in that check; no headset performance claim is made.
