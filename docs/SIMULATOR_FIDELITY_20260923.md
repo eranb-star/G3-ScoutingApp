@@ -27,4 +27,6 @@ User authorized all five increments: intake physics, official AprilTags, detaile
 
 ## Release status
 
-Implementation and local checks in progress. Production remains the prior shared-practice/venue release until an exact production deployment is recorded here. Do not infer deployment from source commits.
+Production source `b65e92933a4b01f33e21062ae16e3dd69ef43bd6` (includes `17616d8`), Vercel `2t2Bh17M3CMKA24JmLapC4j6vyZY`: Ready / Production, g3-6740.com domain verified. Preview `2VCBE3N2XyasSUv3pWfmXvkNEcpN` promoted through a production-environment rebuild. Primary implementation commits `3420ada` and `35122e1`. TypeScript and production build passed in the isolated release worktree. Rollback is the previous shared-practice/venue production `FEZ7Svcb4FTfKrXxZzFH6eHE8GgQ`, source `7c7759a`; no database rollback required.
+
+Authenticated production smoke check: physical engine v4 loaded; Darwin downloaded with verified hashes; genuine geometry and hopper markers rendered; inspection/whole-model framing and official tags were visible. The reference computer opponent visibly collected and scored 13 balls while the Darwin player retained eight preloads. Follow-computer camera showed its robot, intake and hopper beside the official tags. No browser console errors observed. Desktop performance in this smoke check ranged approximately 27–41 FPS; no headset/mobile performance guarantee is made. APK 2.2.0 remains unchanged.
