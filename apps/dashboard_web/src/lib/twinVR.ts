@@ -10,7 +10,7 @@ export function vrInput(sources:Iterable<XRInputSource>,ready:boolean):VRInput{
  if(!drive)return {vx:0,vy:0,omega:0,shoot:false,intake:false,drive:false};
  return {vx:-axis(a!.axes[3]),vy:-axis(a!.axes[2]),omega:-axis(b!.axes[2]),shoot:!!b!.buttons[0]?.pressed,intake:!!a!.buttons[0]?.pressed,drive:true};
 }
-export function createTwinVR(renderer:THREE.WebGLRenderer,camera:THREE.PerspectiveCamera,scene:THREE.Scene,changed:(active:boolean)=>void){
+export function createTwinVR(renderer:THREE.WebGLRenderer,camera:THREE.PerspectiveCamera,scene:THREE.Scene,changed:(active:boolean)=>void,practiceLabel:()=>string=()=>''){
  renderer.xr.enabled=true;renderer.xr.setReferenceSpaceType('local-floor');
  const rig=new THREE.Group();scene.add(rig);rig.add(camera);
  const label=document.createElement('canvas');label.width=1024;label.height=192;const ctx=label.getContext('2d')!;
@@ -48,7 +48,7 @@ export function createTwinVR(renderer:THREE.WebGLRenderer,camera:THREE.Perspecti
  eye=pose.transform.position.y;if(last){const dt=now-last;worst=Math.max(worst,dt);if(dt>250)armed=false;if(dt>20)slow++;}last=now;if(!start)start=now;frames++;total++;
  if(tracked.length===2&&right&&left&&!right.buttons[1]?.pressed&&!right.buttons[0]?.pressed&&!left.buttons[0]?.pressed&&[...left.axes,...right.axes].every(a=>Number.isFinite(a)&&Math.abs(a)<.15))armed=true;
  const input=vrInput(session.inputSources,armed);
- if(now-start>=1000){paint(`Red station 1 · ${Math.round(frames*1000/(now-start))} FPS · eye ${eye.toFixed(2)} m\nHold right grip: drive · left stick: move · right stick: turn\nTriggers: left intake / right shoot · X: recenter · B: exit\nWorst gap ${worst.toFixed(0)} ms · >20ms gaps ${slow}/${total} · ${input.drive?'DRIVING':'PAUSED'}`);start=now;frames=0;}
+ if(now-start>=1000){paint(`${practiceLabel()||'Red station 1'} · ${Math.round(frames*1000/(now-start))} FPS · eye ${eye.toFixed(2)} m\nHold right grip: drive · left stick: move · right stick: turn\nTriggers: left intake / right shoot · X: recenter · B: exit\nWorst gap ${worst.toFixed(0)} ms · >20ms gaps ${slow}/${total} · ${input.drive?'DRIVING':'PAUSED'}`);start=now;frames=0;}
  return input;
  },
  dispose(){disposed=true;if(session)void session.end();hud.geometry.dispose();material.dispose();texture.dispose();scene.remove(rig);},
