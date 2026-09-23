@@ -64,11 +64,20 @@ export class FuelPhysics {
     if(![shooter.speed,shooter.elevation,shooter.rate,shooter.height].every(Number.isFinite)||shooter.rate<=0)return;
     const p=robot.translation(),q=robot.rotation();
     const rotate=(x:number,y:number,z:number)=>rotateVector(q,x,y,z);
-    const muzzle=muzzleOffset(q,length,shooter.height,shooter.yaw);
-    const angle=Math.max(15,Math.min(80,shooter.elevation))*Math.PI/180,speed=Math.max(2,Math.min(18,shooter.speed)),v=rotate(speed*Math.cos(angle)*Math.cos((shooter.yaw??0)*Math.PI/180),speed*Math.cos(angle)*Math.sin((shooter.yaw??0)*Math.PI/180),speed*Math.sin(angle)),rv=robot.velocityAtPoint({x:p.x+muzzle.x,y:p.y+muzzle.y,z:p.z+muzzle.z});
-    const id=this.stored.shift()!;this.visualEvent({kind:'shot',id,tick,local:{x:(length/2+.09)*Math.cos((shooter.yaw??0)*Math.PI/180),y:(length/2+.09)*Math.sin((shooter.yaw??0)*Math.PI/180),z:shooter.height},count:this.stored.length+1});
-    this.spawn(id,{x:p.x+muzzle.x,y:p.y+muzzle.y,z:p.z+muzzle.z},{x:v.x+rv.x,y:v.y+rv.y,z:v.z+rv.z});
-    this.owners.set(id,this.actor);this.shots++;this.nextShot=tick+Math.ceil(1/(Math.min(8,shooter.rate)*DT));
+    const lanes=shooter.lanes===2||shooter.lanes===3?shooter.lanes:1;
+    const count=Math.min(lanes,this.stored.length),yaw=(shooter.yaw??0)*Math.PI/180;
+    const angle=Math.max(15,Math.min(80,shooter.elevation))*Math.PI/180,speed=Math.max(2,Math.min(18,shooter.speed));
+    const v=rotate(speed*Math.cos(angle)*Math.cos(yaw),speed*Math.cos(angle)*Math.sin(yaw),speed*Math.sin(angle));
+    for(let lane=0;lane<count;lane++){
+      // Separate simultaneous outlets by more than one ball diameter.
+      const lateral=(lane-(count-1)/2)*.17,muzzle=muzzleOffset(q,length,shooter.height,shooter.yaw,lateral);
+      const position={x:p.x+muzzle.x,y:p.y+muzzle.y,z:p.z+muzzle.z},rv=robot.velocityAtPoint(position);
+      const id=this.stored.shift()!;
+      this.visualEvent({kind:'shot',id,tick,local:{x:(length/2+.09)*Math.cos(yaw)-lateral*Math.sin(yaw),y:(length/2+.09)*Math.sin(yaw)+lateral*Math.cos(yaw),z:shooter.height},count:this.stored.length+1});
+      this.spawn(id,position,{x:v.x+rv.x,y:v.y+rv.y,z:v.z+rv.z});
+      this.owners.set(id,this.actor);this.shots++;
+    }
+    this.nextShot=tick+Math.ceil(1/(Math.min(8,shooter.rate)*DT));
   }
 
   afterStep(tick:number){
