@@ -1,3 +1,4 @@
+import {intakeForRobot,shooterForRobot} from './robotPracticeDefaults';
 import {opponentCommand} from './twinOpponent';
 import {DEFAULT_SHOOTER,ShooterConfig,HUB_APOTHEM} from './shooter';
 import {IntakeMechanism} from './intakeMechanism';
@@ -50,7 +51,7 @@ export class PhysicalDrive{
  if(deployed)this.fuel.capture(this.body,this.config.length,this.tick,intake);
  const before=this.body.translation();this.contacts=this.driveBody(this.body,command,this.config);
  if(this.opponent){const o=this.opponent;this.fuel.prepareOpponent();const p=o.body.translation(),r=o.body.rotation(),v=o.body.linvel();const state={x:p.x,y:p.y,heading:Math.atan2(2*(r.w*r.z+r.x*r.y),1-2*(r.y*r.y+r.z*r.z)),speed:Math.hypot(v.x,v.y)};
-  this.fuel.withActor('computer',()=>{const ai=opponentCommand(state,this.fuel.snapshot(),this.fuel.collected,o.config.length,this.tick,o.config.robotId==='darwin');o.state=ai.state;o.intake=ai.intake;const intake={...DEFAULT_INTAKE,on:ai.intake};if(o.mechanism.update(intake,this.fuel.collected<intake.capacity))this.fuel.capture(o.body,o.config.length,this.tick,intake);this.fuel.shoot(o.body,o.config.length,this.tick,ai.shooter);this.driveBody(o.body,ai.command,o.config);});
+  this.fuel.withActor('computer',()=>{const ai=opponentCommand(state,this.fuel.snapshot(),this.fuel.collected,o.config.length,this.tick,o.config.robotId==='darwin');o.state=ai.state;o.intake=ai.intake;const intake={...intakeForRobot(o.config.robotId??'kitbot'),on:ai.intake};if(o.mechanism.update(intake,this.fuel.collected<intake.capacity))this.fuel.capture(o.body,o.config.length,this.tick,intake);this.fuel.shoot(o.body,o.config.length,this.tick,{...ai.shooter,lanes:shooterForRobot(o.config.robotId??'kitbot').lanes});this.driveBody(o.body,ai.command,o.config);});
  }
  this.world.step();this.tick++;this.fuel.afterStep(this.tick);const p=this.body.translation(),v=this.body.linvel();this.distance+=Math.hypot(p.x-before.x,p.y-before.y);if(Math.hypot(command.vx,command.vy)>.2&&Math.hypot(v.x,v.y)<.05)this.collisions++;
  return this.snapshot();

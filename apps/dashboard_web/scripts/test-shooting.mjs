@@ -20,6 +20,15 @@ single(1.2);for(let i=0;i<180;i++){d.step(idle,DEFAULT_INTAKE,{...DEFAULT_SHOOTE
 d.reset(-6,0);d.fuel.reset([]);d.fuel.total=1;d.fuel.spawn(0,{x:-3.644+.8,y:0,z:2.1});for(let i=0;i<90;i++){d.step(idle);conserved();}assert.equal(d.fuel.scores[0],0,'outside opening is not a goal');
 d.fuel.reset([]);for(let i=0;i<60;i++)d.step(idle,DEFAULT_INTAKE,{...DEFAULT_SHOOTER,on:true});assert.equal(d.fuel.shots,0,'empty storage cannot create balls');
 d.fuel.total=1;d.fuel.spawn(0,{x:9,y:0,z:.3});d.step(idle);assert.equal(d.fuel.outOfPlay.length,1);d.fuel.recoverOutOfPlay();conserved();assert.equal(d.fuel.outposts[0].length,1);
+for(const lanes of [1,2,3])for(const yaw of [0,180]){
+ d.reset(-6,0);d.fuel.reset([]);d.fuel.total=8;d.fuel.stored.push(...Array.from({length:8},(_,i)=>i));
+ const shot={...DEFAULT_SHOOTER,on:true,lanes,yaw};
+ d.step(idle,DEFAULT_INTAKE,shot);assert.equal(d.fuel.shots,lanes);assert.equal(d.fuel.collected,8-lanes);conserved();
+ const balls=d.fuel.snapshot();for(let i=1;i<balls.length;i++)assert.ok(Math.hypot(balls[i].x-balls[i-1].x,balls[i].y-balls[i-1].y)>.15,'parallel balls do not overlap');
+ assert.equal(new Set(d.fuel.visualEvents.filter(e=>e.kind==='shot').map(e=>e.tick)).size,1,'same-tick volley');
+ for(let i=0;i<10;i++)d.step(idle,DEFAULT_INTAKE,shot);assert.equal(d.fuel.shots,lanes,'one cooldown per volley');
+ for(let i=0;i<270;i++){d.step(idle,DEFAULT_INTAKE,shot);conserved();}assert.equal(d.fuel.shots,8,'partial final volley conserves balls');assert.equal(d.fuel.collected,0);
+}
 d.dispose();console.log('PASS: match quantity, unique lifecycle, shooting, scoring, hub return, misses, rim, empty storage and recovery');
 `,resolveDir:process.cwd(),loader:'ts'},bundle:true,platform:'node',format:'esm',write:false,logLevel:'silent'});
 const file=path.join(os.tmpdir(),'g3-shooting-test.mjs');await fs.writeFile(file,result.outputFiles[0].text);await import(pathToFileURL(file));
