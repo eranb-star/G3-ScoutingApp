@@ -1,5 +1,7 @@
 # Authorized A–E engineering programme — 24 September 2026
 
+**Current implementation/deployment:** [Engineering release and acceptance](ENGINEERING_RELEASE_20260924.md) supersedes all checkpoint status below. The requirement descriptions remain applicable; the first/continuation checkpoints are preserved history, not a claim that the newly deployed work is still local-only.
+
 User explicitly authorized implementing A through E together. This supersedes the prior awaiting-selection and simulator-deferral wording for this scope. Do not ask again whether to start. It does not authorize inventing robot measurements, raising spending caps, obtaining new private access, or actuating/deploying to the physical robot. Extend existing features and preserve provenance, human review and current production behavior.
 
 ## Required outcomes and release gates
