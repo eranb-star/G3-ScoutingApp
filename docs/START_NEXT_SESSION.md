@@ -1,4 +1,4 @@
-**Latest engineering release:** Read [ENGINEERING_RELEASE_20260924.md](ENGINEERING_RELEASE_20260924.md) first for deployed A/B/C/E capabilities, exact source/backend/deployment evidence and remaining limits. The whole A–E programme remains authorized. Do not ask for another phase-selection approval. D requires the actual offseason repository, which the user cannot identify until the workshop.
+**Latest planner correction:** Read [PLANNER_USABILITY_20260924.md](PLANNER_USABILITY_20260924.md) for actual-field route editing, continuous motion/intake, compact controls and explicit code-generation status. Then read [ENGINEERING_RELEASE_20260924.md](ENGINEERING_RELEASE_20260924.md) for underlying A/B/C/E capabilities and limits. The whole A–E programme remains authorized. D needs actual repository inputs AND generator implementation/build validation; it is not an existing hidden download.
 
 # Start next session — current checkpoint, 24 September 2026
 

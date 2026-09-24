@@ -73,8 +73,9 @@ assert.equal(routePoseAt(season,robot,draft.route,1.5).x,2,'cruise phase');
 assert.equal(routePoseAt(season,robot,draft.route,2.5).x,3.75,'braking phase');
 assert.equal(routePoseAt(season,robot,draft.route,99).done,true);
 const turnRoute=[point(0),{...point(4),heading:Math.PI/2,action:'wait',seconds:2}];
-assert.equal(routePoseAt(season,robot,turnRoute,3.5).phase,'turning');
-assert.equal(routePoseAt(season,robot,turnRoute,5).phase,'wait');
+assert.equal(routePoseAt(season,robot,turnRoute,1.5).phase,'moving');
+assert.ok(routePoseAt(season,robot,turnRoute,1.5).heading>0,'heading changes while travelling');
+assert.equal(routePoseAt(season,robot,turnRoute,3.5).phase,'wait');
 assert.throws(()=>routePoseAt(blocked,robot,draft.route,1),/constraints/);
 console.log('PASS route playback matches acceleration, cruise, braking, turn, action timing and refuses invalid routes.');
 const {clearancePath,generateRouteAlternatives}=await load('../src/lib/routeGeneration.ts');
@@ -111,3 +112,14 @@ const goals=generateGoalRoutines(season,inventoryRobot,[point(0),pickup,shoot,po
 assert.equal(goals.ranked[0].result.expectedPoints,2);assert.equal(goals.ranked[0].result.remainingPieces,0);
 assert.ok(goals.ranked.every(r=>!r.result.errors.length));
 console.log('PASS deterministic EN/HE scoring answers, autonomous contributions, unrelated-question isolation, timed partner reservations and goal-subset recommendations.');
+
+const through=[point(0),point(2),point(4)];
+assert.equal(evaluateRoute(season,robot,through).seconds,3,'adding a collinear waypoint does not add a stop');
+assert.ok(routePoseAt(season,robot,through,1.49).x<2 && routePoseAt(season,robot,through,1.51).x>2);
+const collect=[point(0),{...point(2),action:'intake',quantity:1,seconds:1},point(4)];
+assert.equal(evaluateRoute(season,robot,collect).seconds,3,'intake overlaps travel');
+assert.equal(routePoseAt(season,robot,collect,1).phase,'intake');
+assert.ok(routePoseAt(season,robot,collect,1.1).x>routePoseAt(season,robot,collect,1).x);
+const stoppedShotRoute=[point(0),{...point(2),action:'shoot',quantity:1,seconds:2},point(4)];
+assert.equal(routePoseAt(season,robot,stoppedShotRoute,2.5).x,2);assert.equal(routePoseAt(season,robot,stoppedShotRoute,3.5).phase,'shoot');
+console.log('PASS continuous waypoints, intake while travelling and shooting stops.');
