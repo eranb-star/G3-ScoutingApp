@@ -2,7 +2,7 @@
 
 # Current phases and handover authority — 24 September 2026
 
-This is the authoritative remaining-phase summary after the three-increment release and the future-season discussion. It supersedes status/order/remaining-effort statements in older roadmap documents. Detailed feature requirements remain in the linked records. This documentation update does not start a new feature or deployment. The user will choose the next increment.
+This is the authoritative remaining-phase summary after the three-increment release and the future-season discussion. It supersedes status/order/remaining-effort statements in older roadmap documents. Detailed feature requirements remain in the linked records. The user has since authorized A–E; its active implementation and remaining release gates are recorded in the programme linked above. Do not wait for another phase-selection approval.
 
 ## Read first / verified release boundary
 
