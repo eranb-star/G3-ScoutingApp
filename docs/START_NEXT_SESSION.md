@@ -1,3 +1,5 @@
+**Latest camera correction:** Read [CAMERA_ROTATION_SURVEY_20260925.md](CAMERA_ROTATION_SURVEY_20260925.md) for explicit route headings, mounted-camera playback/independent inspection, sampled CAD blind-zone survey and exact release evidence. Existing headings are preserved; new route direction controls do not infer shooter intent.
+
 **Latest team-first release (25 September):** [TEAM_PLANNING_PRACTICE_20260925.md](TEAM_PLANNING_PRACTICE_20260925.md) records shipped own-robot planning and structured practice work (source 9cac90f; production EFEivjaqgHeFGmxp134QQRW2aNce). This supersedes earlier alliance-first ordering; check its release status.
 
 **Next priorities clarified 25 September:** [NEXT_PRIORITIES_20260925.md](NEXT_PRIORITIES_20260925.md) supersedes earlier recommendation ordering. Read the mandatory recommendation reconciliation in [WORKING_EXPECTATIONS.md](WORKING_EXPECTATIONS.md). Delivered season setup/Check now and answer fixes must not be proposed again.
@@ -36,4 +38,3 @@ Read this entry point before planning or implementing. Do not rely on conversati
 Main working branch `codex/release-1-qa`; isolated release branch `codex/knowledge-protection-release` at `docs/staging/knowledge-release.local`. Inspect status before edits, preserve unrelated Android `.idea` edits and do not deploy accumulated working-tree changes wholesale. Never commit secrets, private backup objects/keys, downloaded corpora or signing credentials. Tests and documentation reduce regressions, not guarantee none.
 
 [Previous accumulated start notes](START_NEXT_SESSION_HISTORY_20260924.md) are preserved as historical evidence only. Their contradictory not-deployed/awaiting-selection/missing-ingestion statements are superseded. [Earlier session history](SESSION_HISTORY_20260921.md) remains available.
-
