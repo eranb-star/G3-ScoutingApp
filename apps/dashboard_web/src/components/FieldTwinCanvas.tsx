@@ -26,7 +26,7 @@ type Props={robotId:PublishedRobot;opponentId:'off'|PublishedRobot;practiceLabel
 const CACHE=TWIN_CACHE;
 const assets={field:{url:'/twin/2026/field-optimized.glb',bytes:19627748,hash:'088126b167906ca95e7b21a76a430a64199103d1ea184a121b1cf52e984b75e8'},robot:{url:'/twin/2026/robot-optimized.glb',bytes:16177620,hash:'053caf847815cb163632b8f858f5b261e589cb9abae3819b502c016fb57238b8'}};
 export async function clearTwinCache(){if('caches' in window)await Promise.all([caches.delete(CACHE),caches.delete('g3-twin-2026-v2'),caches.delete('g3-twin-2026-v3')]);}
-async function assetBuffer(which:keyof typeof assets,signal:AbortSignal,season:FieldSeason){
+export async function assetBuffer(which:keyof typeof assets,signal:AbortSignal,season:FieldSeason){
  const a=which==='field'?season:assets.robot;let cached:Cache|undefined;try{await Promise.all([caches.delete('g3-twin-2026-v2'),caches.delete('g3-twin-2026-v3')]);cached=await caches.open(CACHE);}catch{/* Private browsing may disable cache. */}
  let response=await cached?.match(a.url);if(!response){response=await fetch(a.url,{signal});if(!response.ok)throw Error('Asset download failed');}
  const data=await response.arrayBuffer();if(data.byteLength!==a.bytes)throw Error('Model size mismatch');
