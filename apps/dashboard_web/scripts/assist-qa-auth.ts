@@ -2,7 +2,7 @@ import {createClient} from '@supabase/supabase-js';
 const root=document.getElementById('root')!;
 root.innerHTML=`<main><h1>G3 Assist · authenticated QA</h1><p>Isolated project: <b>cyooubycafubbnkjcqlw</b>. No AI provider key. This checks the deployed server, not a mock.</p>
 <form id="login"><label>QA public API key<input id="key" required autocomplete="off"></label><label>Synthetic QA email<input id="email" type="email" value="mentor@g3-qa.invalid" required autocomplete="username"></label><label>Password<input id="password" type="password" required autocomplete="current-password"></label><button>Sign in to QA</button></form>
-<section id="tests" hidden><p id="identity"></p><button id="run">Run permission and request checks</button><button id="logout">Sign out</button></section><pre id="result" role="status">Sign in with a synthetic QA account. Never use a production account.</pre></main>`;
+<section id="tests" hidden><p id="identity"></p><button id="run">Run permission and request checks</button><button id="ingest">Check and ingest official 2026 documents</button><button id="logout">Sign out</button></section><pre id="result" role="status">Sign in with a synthetic QA account. Never use a production account.</pre></main>`;
 const input=(id:string)=>(document.getElementById(id) as HTMLInputElement);
 const result=document.getElementById('result')!;
 let client:ReturnType<typeof createClient>|null=null;
@@ -30,3 +30,13 @@ document.getElementById('run')!.addEventListener('click',async()=>{
  }catch{result.textContent='Network test interrupted. No automatic retry.';}finally{button.disabled=false;}
 });
 document.getElementById('logout')!.addEventListener('click',async()=>{await client?.auth.signOut();client=null;document.getElementById('tests')!.hidden=true;document.getElementById('login')!.hidden=false;result.textContent='Signed out. Select the next synthetic QA account.';});
+document.getElementById('ingest')!.addEventListener('click',async()=>{
+ if(!client)return;const button=document.getElementById('ingest') as HTMLButtonElement;button.disabled=true;
+ try{
+  async function invoke(body:object){const r=await client!.functions.invoke('knowledge-source-check',{body});if(r.error){const detail=r.error.context instanceof Response?await r.error.context.text():r.error.message;throw Error(detail);}if(r.data?.error)throw Error(r.data.error);return r.data;}
+  const {checkId}=await invoke({action:'start',season:2026});let status='running';
+  for(let i=0;i<90&&status==='running';i++){result.textContent=`Check ${checkId}: processing item ${i+1}`;status=(await invoke({action:'advance',checkId})).status;if(status==='busy')throw Error('Another request holds the lease; wait before resuming.');}
+  const docs=await client.from('frc_knowledge_documents').select('title,passage_count,indexed_sha256,sha256,ingestion_note');
+  result.textContent=JSON.stringify({checkId,status,documents:docs.data?.map(d=>({title:d.title,indexed:d.indexed_sha256===d.sha256,passages:d.passage_count,note:d.ingestion_note})),error:docs.error?.message},null,2);
+ }catch(e){result.textContent=String(e);}finally{button.disabled=false;}
+});

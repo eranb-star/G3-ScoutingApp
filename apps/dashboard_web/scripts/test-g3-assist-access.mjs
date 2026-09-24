@@ -52,7 +52,7 @@ try {
   const evidenceCode=ts.transpileModule(fs.readFileSync(new URL('../../../backend/supabase/functions/frc-assistant/evidence-context.ts',import.meta.url),'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText;
   const evidenceUrl='data:text/javascript;base64,'+Buffer.from(evidenceCode).toString('base64');
   const officialCode=ts.transpileModule(fs.readFileSync(new URL('../../../backend/supabase/functions/frc-assistant/official-season.ts',import.meta.url),'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText;
-  const officialUrl='data:text/javascript;base64,'+Buffer.from(officialCode).toString('base64');
+  const officialUrl='data:text/javascript;base64,'+Buffer.from(officialCode.replace("'./evidence-context.ts'",JSON.stringify(evidenceUrl))).toString('base64');
   const softwareCode=ts.transpileModule(fs.readFileSync(new URL('../../../backend/supabase/functions/frc-assistant/software-context.ts',import.meta.url),'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText;
   const softwareUrl='data:text/javascript;base64,'+Buffer.from(softwareCode).toString('base64');
   const code = original.replace("'./software-context.ts'",JSON.stringify(softwareUrl)).replace("'./official-season.ts'",JSON.stringify(officialUrl)).replace("'./evidence-context.ts'",JSON.stringify(evidenceUrl)).replace(/import \{ createClient \} from "[^"]+";/, 'const createClient=globalThis.__assistClient; const Deno=globalThis.__assistDeno;')

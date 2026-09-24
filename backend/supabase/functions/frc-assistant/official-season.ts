@@ -1,3 +1,4 @@
+import {retrievalQuery} from './evidence-context.ts';
 import type {Evidence} from './evidence-context.ts';
 
 // Reviewed publisher registry. Never fetch a URL supplied by a question or source.
@@ -20,9 +21,15 @@ export function selectManualEvidence(html:string,year:number,question:string,ver
  let remaining=14500;
  return scored.slice(0,6).flatMap(({s,index})=>{if(remaining<300)return [];const body=s.body.slice(0,Math.min(6000,remaining));remaining-=body.length;return [{id:9000000000000+year*1000+index,url:manuals[year]+(s.anchor?'#'+s.anchor:''),title:`${year} official FRC manual — ${s.title}`,body,version,seasons:[year],scope:body.length<s.body.length?'Section excerpt (truncated); consult full linked section':'Official section text; tables flattened into rows',source_class:'official'}];});
 }
-export async function officialSeasonEvidence(question:string,dependencies:{fetch?:typeof fetch;now?:()=>number}={}){
+export async function officialSeasonEvidence(question:string,dependencies:{fetch?:typeof fetch;now?:()=>number;caller?:any}={}){
  const now=dependencies.now??Date.now,year=seasonForQuestion(question,new Date(now()));
  if(year===null)return {year,rows:[] as Evidence[],status:'not_requested'};
+ if(dependencies.caller){
+  const expanded=question.replace(/\b20\d{2}\b/g,'').replace(/\b(frc|season|challenge|game)\b/gi,'')
+   .replace(/טיפוס/g,' climb tower traversal ').replace(/ניקוד|נקודות/g,' scoring points ').replace(/אסטרטגיה/g,' strategy ranking points ').replace(/חוקים|חוקיות/g,' rules ');
+  const {data,error}=await dependencies.caller.rpc('search_frc_official',{p_season:year,p_query:retrievalQuery(expanded)});
+  if(!error&&Array.isArray(data)&&data.some((r:Evidence)=>/\/manual\//i.test(r.url))){return {year,rows:data as Evidence[],status:'retrieved'};}
+ }
  if(!manuals[year])return {year,rows:[] as Evidence[],status:'not_configured'};
  try{
   let entry=cache.get(year);
