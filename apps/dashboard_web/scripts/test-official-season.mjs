@@ -1,6 +1,8 @@
 import fs from 'node:fs';import ts from 'typescript';import assert from 'node:assert/strict';
+const evidenceCode=ts.transpileModule(fs.readFileSync(new URL('../../../backend/supabase/functions/frc-assistant/evidence-context.ts',import.meta.url),'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText;
+const evidenceUrl='data:text/javascript;base64,'+Buffer.from(evidenceCode).toString('base64');
 const code=ts.transpileModule(fs.readFileSync(new URL('../../../backend/supabase/functions/frc-assistant/official-season.ts',import.meta.url),'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText;
-const {seasonForQuestion,officialSeasonEvidence,selectManualEvidence}=await import('data:text/javascript;base64,'+Buffer.from(code).toString('base64'));
+const {seasonForQuestion,officialSeasonEvidence,selectManualEvidence}=await import('data:text/javascript;base64,'+Buffer.from(code.replace("'./evidence-context.ts'",JSON.stringify(evidenceUrl))).toString('base64'));
 const question='Based on the 2026 challenge, from strategy perspective, should we build a climbing mechanism?';
 assert.equal(seasonForQuestion(question),2026);assert.equal(seasonForQuestion('Explain PID'),null);
 assert.equal(seasonForQuestion('What should we prioritize this season?',new Date('2027-01-11')),2027);
@@ -16,3 +18,5 @@ assert.equal((await officialSeasonEvidence(question,{fetch})).status,'retrieved'
 await officialSeasonEvidence(question,{fetch});assert.equal(calls,1);
 console.log(JSON.stringify(rows.map(r=>({title:r.title,length:r.body.length,body:r.body.slice(0,180)})),null,2));
 console.log('PASS: exact question retrieves official scoring/tower/RP sections; missing seasons and HTTP failures fail closed; bounded output and cached publisher fetch.');
+
+const indexed=await officialSeasonEvidence("2027 FRC climbing rules",{caller:{rpc:async()=>({data:[{id:42,url:"https://firstfrc.blob.core.windows.net/frc2027/Manual/test.pdf#page=2",body:"synthetic",source_class:"official"}],error:null})},fetch:async()=>{throw Error("Should use index");}});assert.equal(indexed.status,"retrieved");assert.equal(indexed.rows[0].id,42);

@@ -1,3 +1,5 @@
+import {getDocumentProxy} from 'npm:unpdf@1.4.0';
+import {extractPdf,extractHtml,fingerprint,EXTRACTOR_VERSION} from './extraction.mjs';
 import {createClient} from 'https://esm.sh/@supabase/supabase-js@2';
 import {assertPdf, discoverDocuments, fetchBounded, MAX_DOCUMENTS, MAX_PDF_BYTES, MAX_CHECK_BYTES} from './discovery.mjs';
 
@@ -27,7 +29,7 @@ Deno.serve(async request=>{
   if(!token)return json({status:'busy'});
   try{
    // Each request has a bounded budget. Durable pending items can resume after navigation/network loss.
-   const items=await checked(service.from('frc_knowledge_check_items').select('*').eq('check_id',run.id).eq('status','pending').order('kind',{ascending:false}).order('id').limit(3));
+   const items=await checked(service.from('frc_knowledge_check_items').select('*').eq('check_id',run.id).eq('status','pending').order('kind',{ascending:false}).order('id').limit(1));
    for(const item of items){
     // Recheck the actual caller's grants before each outbound operation.
     if(!await checked(caller.rpc('can_manage_frc_sources')))return json({error:'Access changed. Checking stopped.'},403);
@@ -38,8 +40,8 @@ Deno.serve(async request=>{
      const transfers=await checked(service.from('frc_knowledge_check_items').select('bytes').eq('check_id',run.id));
      const remainingBytes=MAX_CHECK_BYTES-transfers.reduce((sum:number,row:any)=>sum+Number(row.bytes??0),0);
      if(remainingBytes<=0)throw new Error('The 128 MB check budget was reached. Remaining sources were not downloaded.');
-     const previous=item.kind==='document'?await checked(service.from('frc_knowledge_documents').select('etag,last_modified').eq('season',run.season).eq('url',item.url).maybeSingle()):null;
-     const result=await fetchBounded(item.url,Math.min(remainingBytes,item.kind==='listing'?2*1024*1024:MAX_PDF_BYTES),fetch,(count:number)=>{bytes=count;},{etag:previous?.etag,modified:previous?.last_modified});
+     const previous=item.kind==='document'?await checked(service.from('frc_knowledge_documents').select('etag,last_modified,sha256,indexed_sha256').eq('season',run.season).eq('url',item.url).maybeSingle()):null;
+     const result=await fetchBounded(item.url,Math.min(remainingBytes,item.kind==='listing'?2*1024*1024:MAX_PDF_BYTES),fetch,(count:number)=>{bytes=count;},{etag:previous?.indexed_sha256===previous?.sha256?previous?.etag:null,modified:previous?.indexed_sha256===previous?.sha256?previous?.last_modified:null});
      etag=result.etag;modified=result.modified;
      if(item.kind==='listing'){
       if(!/text\/html/i.test(result.type))throw new Error('The publication page did not return HTML.');
@@ -55,9 +57,18 @@ Deno.serve(async request=>{
      }else{
       if(!new RegExp(`^/frc${run.season}/`,'i').test(new URL(result.url).pathname))throw new Error('The document redirected to another season; it was not accepted.');
       if(result.notModified){status='not_modified';bytes=0;note='Publisher confirms the document is unchanged. No PDF was downloaded.';}
-      else{assertPdf(result.data);bytes=result.data.byteLength;
-       sha=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',result.data)),b=>b.toString(16).padStart(2,'0')).join('');
-       status='fetched';note='Source fingerprint checked. Document content has not been indexed or reviewed.';}
+      else{bytes=result.data.byteLength;sha=await fingerprint(result.data);
+       let extracted:any=null,extractionError:string|null=null;
+       try{
+        if(/\.pdf$/i.test(new URL(result.url).pathname)){assertPdf(result.data);extracted=await extractPdf(result.data,getDocumentProxy);}
+        else if(/\.html?$/i.test(new URL(result.url).pathname)&&/text\/html/i.test(result.type))extracted=extractHtml(result.data);
+        else throw Error('Unsupported document format. No text was indexed.');
+       }catch(error){extractionError=error instanceof Error?error.message:'Document extraction failed; retry later.';}
+       if(!await checked(caller.rpc('can_manage_frc_sources')))return json({error:'Access changed. Indexing stopped.'},403);
+       const published=await checked(service.rpc('finish_frc_document_ingestion',{p_check:run.id,p_lease:token,p_item:item.id,p_sha:sha,p_bytes:bytes,p_etag:etag,p_modified:modified,p_chunks:extracted?.chunks??[],p_extraction:{extractor:EXTRACTOR_VERSION,pages:extracted?.pages??0,emptyPages:extracted?.emptyPages??0,format:extracted?.format??null},p_error:extractionError}));
+       if(!published)break;
+       continue;
+      }
      }
     }catch(error){status='failed';note=error instanceof Error?error.message:'Source could not be checked. Retry later.';}
     if(!await checked(caller.rpc('can_manage_frc_sources')))return json({error:'Access changed. Checking stopped.'},403);

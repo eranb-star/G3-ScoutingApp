@@ -22,7 +22,7 @@ export function discoverDocuments(html, base, season) {
       const url = safeSourceUrl(new URL(plain(match[2]), base).href);
       if (!new RegExp(`^/frc${season}/`, 'i').test(new URL(url).pathname)) continue;
       const title = plain(match[3]).slice(0, 180) || decodeURIComponent(new URL(url).pathname.split('/').pop()).slice(0, 180);
-      const supported = /\.pdf$/i.test(new URL(url).pathname);
+      const supported = /\.(?:pdf|html?)$/i.test(new URL(url).pathname);
       if (!documents.has(url)) documents.set(url, {url, title, supported});
     } catch { ignored++; }
   }
