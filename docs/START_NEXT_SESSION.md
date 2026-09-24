@@ -1,8 +1,8 @@
-**Active implementation:** The user authorized the complete A–E programme: reliable season/knowledge foundation, camera advisor, autonomous route editor, repository-bound code generation and route recommendations. Read [ENGINEERING_PROGRAMME_A_E_20260924.md](ENGINEERING_PROGRAMME_A_E_20260924.md) for required outcomes, local checkpoint and unimplemented gates. Earlier awaiting-selection/simulator-deferral text is superseded for this scope. No A–E production release yet.
+**Latest engineering release:** Read [ENGINEERING_RELEASE_20260924.md](ENGINEERING_RELEASE_20260924.md) first for deployed A/B/C/E capabilities, exact source/backend/deployment evidence and remaining limits. The whole A–E programme remains authorized. Do not ask for another phase-selection approval. D requires the actual offseason repository, which the user cannot identify until the workshop.
 
 # Start next session — current checkpoint, 24 September 2026
 
-Latest local A–E continuation adds tested rule-version authority/assistant calculation integration, browser draft persistence, timed route preview, obstacle-detour/order generation and inventory checks. See the continuation section in `ENGINEERING_PROGRAMME_A_E_20260924.md` for exact tests and open gates. This is not a production release or completion of A–E; continue the already-authorized programme without another selection question.
+Production now includes reviewed deterministic scoring, numeric autonomous policy, actual CAD camera analysis, revisioned cloud workspaces and bounded route recommendations. Exact scope, acceptance and follow-up deployment are in the release record above. Older local-only checkpoints are historical.
 
 Read this entry point before planning or implementing. Do not rely on conversation history or older “selected next / not deployed” banners.
 
@@ -16,7 +16,7 @@ Read this entry point before planning or implementing. Do not rely on conversati
 
 ## Current boundary
 
-- Website source `8fb99dc`; production Vercel `NefhtgnnVSdxYfQDPDRTYc3XbaRm`. Backend/documentation follow-ups through main `ac4688f`, release `8dc516a`; later documentation commits are not a new deployment. Exact final backend hash and migrations are in item 3. Check Git/external status before the next release.
+- Engineering website source `a776397`, production Vercel `BGCnXh9QXuPXJYEJibSTc9JsPaMV`, supersedes `8fb99dc`. Check the latest engineering release record for acceptance follow-ups and final source, not the earlier three-increment deployment.
 - Delivered knowledge/Gemini/budgets, selected-code Software Mentor, supported official ingestion, simulator milestones and existing mentor/task workflows must be extended, not rebuilt.
 - Decision UI and saved-answer task provenance deployed; synthetic workflow acceptance passed; permission tightening and local encrypted restore passed. AI mixed-level reasoning, portable/offsite/full-service recovery and physical acceptance remain open.
 - APK remains 2.2.0/code24 from September 21, predating later website features. Do not describe it as current with production.

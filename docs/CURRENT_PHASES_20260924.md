@@ -1,4 +1,4 @@
-**Active implementation:** The user authorized the complete A–E programme: reliable season/knowledge foundation, camera advisor, autonomous route editor, repository-bound code generation and route recommendations. Read [ENGINEERING_PROGRAMME_A_E_20260924.md](ENGINEERING_PROGRAMME_A_E_20260924.md) for required outcomes, local checkpoint and unimplemented gates. Earlier awaiting-selection/simulator-deferral text is superseded for this scope. No A–E production release yet.
+**Current release authority:** [ENGINEERING_RELEASE_20260924.md](ENGINEERING_RELEASE_20260924.md) supersedes the older local-only A–E status and production identifiers below. Reviewed scoring, CAD visibility, cloud plans and bounded recommendations are deployed; actual repository-bound code and physical validation remain distinct. The entire A–E programme remains authorized without another selection question.
 
 # Current phases and handover authority — 24 September 2026
 

@@ -5,6 +5,7 @@ const {scoringCombinations}=await load('../../../backend/supabase/functions/frc-
 const {parseSeasonPackage,seasonReadiness}=await load('../src/lib/seasonPackage.ts');
 const {evaluateRoute,rankRoutes,travelTime}=await load('../src/lib/autonomousPlanning.ts');
 const {cameraCoverage,rankCameraSets}=await load('../src/lib/cameraPlanning.ts');
+assert.deepEqual(rankCameraSets({},[{id:'forbidden',permitted:false}],[{x:0,y:0,heading:0}],2)[0].ids,[],'forbidden mounting locations never become recommendations');
 const rule={id:'tower',revision:'test',threshold:50,robots:3,levels:[{id:'none',points:0},{id:'low',points:10},{id:'middle',points:20},{id:'high',points:30}]};
 const combinations=scoringCombinations(rule);assert.equal(combinations.length,20);
 assert.equal(combinations.find(c=>c.levels.join()==='low,middle,middle').qualifies,true);
