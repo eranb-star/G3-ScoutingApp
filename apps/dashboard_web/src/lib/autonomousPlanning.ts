@@ -1,11 +1,13 @@
+import {traversalChecks} from './routeTraversal';
+import {sweptHits,sweptOutside} from './routeClearance';
 import {routeMotion} from './routeMotion';
 import type {SeasonPackage,Point2,Box3} from './seasonPackage';
 export type RoutePoint=Point2&{heading:number;action:'none'|'intake'|'shoot'|'wait';seconds:number;points:number;success:number;quantity?:number};
 export type Reservation={id:string;x:number;y:number;width:number;height:number;from:number;to:number};
 export type PlanningPolicy={seconds:number;maxPreload:number;pointsPerPiece:number};
-export type MotionProfile={length:number;width:number;speed:number;acceleration:number;turnRate:number;clearance:number;measured:boolean;policy?:PlanningPolicy;inventory?:{capacity:number;preload:number};constraints?:{reserveSeconds:number;reservations:Reservation[]}};
+export type MotionProfile={length:number;width:number;height?:number;speed:number;acceleration:number;turnRate:number;clearance:number;measured:boolean;policy?:PlanningPolicy;inventory?:{capacity:number;preload:number};constraints?:{reserveSeconds:number;reservations:Reservation[]}};
 
-/** Conservative straight segments with a full stop at each waypoint. No trajectory/controller claim. */
+/** Rest-to-rest travel estimate; routeMotion supplies continuous waypoint timing. */
 export function travelTime(distance:number,speed:number,acceleration:number){
  if(![distance,speed,acceleration].every(Number.isFinite)||distance<0||speed<=0||acceleration<=0)throw Error('Invalid motion limits');
  return distance<=speed*speed/acceleration?2*Math.sqrt(distance/acceleration):2*speed/acceleration+(distance-speed*speed/acceleration)/speed;
@@ -24,6 +26,7 @@ export function evaluateRoute(season:SeasonPackage,robot:MotionProfile,route:Rou
  if(route.some(p=>p.quantity!==undefined&&(!Number.isInteger(p.quantity)||p.quantity<0||p.quantity>1000)))throw Error('Invalid action quantity');
  const constraints=robot.constraints;
  if(constraints&&(!Number.isFinite(constraints.reserveSeconds)||constraints.reserveSeconds<0||constraints.reserveSeconds>120||!Array.isArray(constraints.reservations)||constraints.reservations.length>12||constraints.reservations.some(r=>!r.id||![r.x,r.y,r.width,r.height,r.from,r.to].every(Number.isFinite)||Math.abs(r.x)>50||Math.abs(r.y)>50||r.width<=0||r.width>100||r.height<=0||r.height>100||r.from<0||r.to<=r.from||r.to>120)))throw Error('Invalid partner reservations');
+ if(robot.height!==undefined&&(!Number.isFinite(robot.height)||robot.height<=0||robot.height>5))throw Error('Invalid robot height');
  const motion=routeMotion(robot,route);
  const radius=Math.hypot(robot.length,robot.width)/2+robot.clearance;
  const errors:string[]=[],warnings:string[]=[],segments:{seconds:number;distance:number}[]=[];let seconds=0,distance=0,expectedPoints=0;
@@ -44,12 +47,14 @@ export function evaluateRoute(season:SeasonPackage,robot:MotionProfile,route:Rou
   if(p.action==='intake'&&(i===0||!leg?.distance))errors.push(`Waypoint ${i+1}: on-the-move intake needs an incoming travel segment`);
   if(p.action==='none'&&(p.seconds!==0||p.points!==0))errors.push(`Waypoint ${i+1}: motion-only waypoint cannot award points or wait`);
   seconds=leg?.end??motion.initialHold;expectedPoints+=(robot.policy?(p.action==='shoot'?(p.quantity??0)*robot.policy.pointsPerPiece:0):p.points)*p.success;
-  if(!i){for(const r of constraints?.reservations??[])if(startTime<=r.to&&seconds>=r.from&&Math.abs(p.x-r.x)<=r.width/2+radius&&Math.abs(p.y-r.y)<=r.height/2+radius)errors.push(`Waypoint 1: partner reservation ${r.id}`);return;}const a=route[i-1],d=Math.hypot(p.x-a.x,p.y-a.y);
+  if(!i){for(const b of season.field.obstacles)if((robot.height===undefined||b.min.z<robot.height+robot.clearance)&&sweptHits(p,p,robot,b,robot.clearance)){const message=`Robot start overlaps obstacle ${b.id}. Move the robot start before planning.`;if(season.field.geometry==='proxy')warnings.push(message);else errors.push(message);}for(const r of constraints?.reservations??[])if(startTime<=r.to&&seconds>=r.from&&Math.abs(p.x-r.x)<=r.width/2+radius&&Math.abs(p.y-r.y)<=r.height/2+radius)errors.push(`Waypoint 1: partner reservation ${r.id}`);return;}const a=route[i-1],d=Math.hypot(p.x-a.x,p.y-a.y);
   const t=leg!.seconds;
   distance+=d;segments.push({seconds:t,distance:d});
-  for(const b of season.field.obstacles)if(segmentHitsBox(a,p,b,radius)){const names:Record<string,string>={'proxy-1':'Red hub','proxy-2':'Blue hub','proxy-3':'Red tower','proxy-4':'Blue tower'};const message=`Travel from point ${i-1} to ${i}: possible contact with ${names[b.id]??b.id}. This uses an approximate obstacle box and robot safety envelope; inspect the visible route.`;if(season.field.geometry==='proxy')warnings.push(message);else errors.push(message);}
+  if(sweptOutside(a,p,robot,season.field.length,season.field.width))errors.push(`Travel to point ${i}: the turning robot envelope reaches the field wall. Move this leg inward.`);
+  for(const b of season.field.obstacles)if((robot.height===undefined||b.min.z<robot.height+robot.clearance)&&sweptHits(a,p,robot,b,robot.clearance)){const names:Record<string,string>={'proxy-1':'Red hub','proxy-2':'Blue hub','proxy-3':'Red tower','proxy-4':'Blue tower'};const message=`Travel from point ${i-1} to ${i}: possible contact with ${names[b.id]??b.id}. Check the highlighted leg and robot footprint; obstacle geometry remains approximate.`;if(season.field.geometry==='proxy')warnings.push(message);else errors.push(message);}
   for(const r of constraints?.reservations??[]){const box={id:r.id,min:{x:r.x-r.width/2,y:r.y-r.height/2,z:0},max:{x:r.x+r.width/2,y:r.y+r.height/2,z:3}};if(startTime<=r.to&&startTime+t>=r.from&&segmentHitsBox(a,p,box,radius))errors.push(`Segment ${i}: partner reservation ${r.id}`);if(startTime+t<=r.to&&seconds>=r.from&&segmentHitsBox(p,p,box,radius))errors.push(`Waypoint ${i+1}: partner reservation ${r.id}`);}
  });
+ if(season.season===2026&&season.revision==='2026-planning-reference-v1'){for(const issue of traversalChecks(route,robot))if(issue.kind!=='bump')warnings.push(`Point ${issue.leg}: ${issue.message}`);}
  const margin=season.autonomous.seconds-seconds;if(margin<0)errors.push('Route exceeds autonomous duration');
  if(constraints&&margin<constraints.reserveSeconds)errors.push('Route does not preserve the requested time reserve');
  return {seconds,distance,margin,expectedPoints,remainingPieces,segments,warnings:[...new Set(warnings)],errors:[...new Set(errors)],finish:route[route.length-1],basis:robot.measured?'Measured motion limits; continuous polyline estimate':'Unmeasured motion assumptions; not match prediction'};

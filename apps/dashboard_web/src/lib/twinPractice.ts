@@ -2,15 +2,16 @@ import {DT,type Pose} from './conceptTwin';
 
 export const PRACTICE_SECONDS=60;
 export type PracticeFrame={pose:Pose;intake:boolean;seconds:number};
-export type PracticeResult={seconds:number;scored:number;shots:number;accuracy:number|null;distance:number;complete:boolean;input:string;settings:string};
+export type PracticeResult={seconds:number;scored:number;shots:number;collected?:number;accuracy:number|null;distance:number;complete:boolean;input:string;settings:string};
 /** One bounded, in-memory run. Recording is visual state, not physics re-simulation. */
 export class PracticeRun{
+ readonly id=crypto.randomUUID();readonly createdAt=new Date().toISOString();collected=0;private previousStored=0;private previousShots=0;
  frames:PracticeFrame[]=[];steps=0;active=true;result:PracticeResult|null=null;
- constructor(private initial:Pose,public input:string,readonly settings:string){this.initial=structuredClone(initial);this.save(initial,false);}
+ constructor(private initial:Pose,public input:string,readonly settings:string){this.initial=structuredClone(initial);this.previousStored=initial.collected??0;this.previousShots=initial.shots??0;this.save(initial,false);}
  get seconds(){return this.steps*DT;}
  private save(pose:Pose,intake:boolean){this.frames.push({pose:structuredClone(pose),intake,seconds:this.seconds});}
- step(pose:Pose,intake:boolean){if(!this.active)return;this.steps++;if(this.steps%6===0)this.save(pose,intake);if(this.steps>=PRACTICE_SECONDS/DT)this.finish(pose,true);}
- finish(pose:Pose,complete=false){if(!this.active)return;this.active=false;if(this.steps%6!==0)this.save(pose,false);const scored=Math.max(0,(pose.playerScored??(pose.scores??[]).reduce((a,b)=>a+b,0))-(this.initial.playerScored??(this.initial.scores??[]).reduce((a,b)=>a+b,0))),shots=Math.max(0,(pose.shots??0)-(this.initial.shots??0));this.result={seconds:this.seconds,scored,shots,accuracy:shots?scored/shots:null,distance:Math.max(0,pose.distance-this.initial.distance),complete,input:this.input,settings:this.settings};}
+ step(pose:Pose,intake:boolean){if(!this.active)return;this.collected+=Math.max(0,(pose.collected??0)-this.previousStored+Math.max(0,(pose.shots??0)-this.previousShots));this.previousStored=pose.collected??0;this.previousShots=pose.shots??0;this.steps++;if(this.steps%6===0)this.save(pose,intake);if(this.steps>=PRACTICE_SECONDS/DT)this.finish(pose,true);}
+ finish(pose:Pose,complete=false){if(!this.active)return;this.active=false;if(this.steps%6!==0)this.save(pose,false);const scored=Math.max(0,(pose.playerScored??(pose.scores??[]).reduce((a,b)=>a+b,0))-(this.initial.playerScored??(this.initial.scores??[]).reduce((a,b)=>a+b,0))),shots=Math.max(0,(pose.shots??0)-(this.initial.shots??0));this.result={seconds:this.seconds,scored,shots,collected:this.collected,accuracy:shots?scored/shots:null,distance:Math.max(0,pose.distance-this.initial.distance),complete,input:this.input,settings:this.settings};}
  frame(seconds:number):PracticeFrame{
   const time=Math.max(0,Math.min(this.seconds,seconds)),i=Math.min(Math.floor(time*10),this.frames.length-1),a=this.frames[i],b=this.frames[Math.min(i+1,this.frames.length-1)],t=b.seconds>a.seconds?Math.min(1,(time-a.seconds)/(b.seconds-a.seconds)):0;
   const lerp=(x:number,y:number)=>x+(y-x)*t,balls=new Map(b.pose.balls?.map(p=>[p.id,p]));

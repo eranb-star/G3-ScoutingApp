@@ -1,0 +1,8 @@
+import type {PracticeResult} from './twinPractice';
+export type Exercise='cycle'|'collection'|'shooting'|'visibility';
+export type Attempt={id:string;createdAt:string;exercise:Exercise;result:PracticeResult;reflection:string;nextTest:string};
+export const PROGRESS_KEY='g3-practice-progress-v1';
+export function readAttempts(storage:Pick<Storage,'getItem'>):Attempt[]{const raw=storage.getItem(PROGRESS_KEY);if(!raw)return [];const value=JSON.parse(raw);if(Array.isArray(value))for(const a of value){for(const key of ['id','createdAt','exercise','reflection','nextTest'])if(typeof a?.[key]!=='string')throw Error('Missing practice field: '+key);}
+if(!Array.isArray(value)||value.length>100||value.some(a=>!a||typeof a.id!=='string'||!['cycle','collection','shooting','visibility'].includes(a.exercise)||!a.result||![a.result.seconds,a.result.scored,a.result.shots,a.result.distance].every(n=>Number.isFinite(n)&&n>=0)||typeof a.result.complete!=='boolean'||typeof a.result.input!=='string'||(a.result.accuracy!==null&&(!Number.isFinite(a.result.accuracy)||a.result.accuracy<0||a.result.accuracy>1))||typeof a.createdAt!=='string'||!Number.isFinite(Date.parse(a.createdAt))||typeof a.result.settings!=='string'||typeof a.reflection!=='string'||typeof a.nextTest!=='string'))throw Error('Invalid practice history');return value;}
+export function recordAttempt(previous:Attempt[],attempt:Attempt){return [...previous.filter(a=>a.id!==attempt.id),attempt].slice(-100);}
+export function comparableAttempts(attempts:Attempt[],exercise:Exercise,settings:string,input:string){return attempts.filter(a=>a.exercise===exercise&&a.result.settings===settings&&a.result.input===input&&a.result.complete);}

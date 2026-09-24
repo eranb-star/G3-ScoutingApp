@@ -1,3 +1,4 @@
+import {TRENCH} from './fieldTraversal';
 import {intakeForRobot,shooterForRobot} from './robotPracticeDefaults';
 import {opponentCommand} from './twinOpponent';
 import {DEFAULT_SHOOTER,ShooterConfig,HUB_APOTHEM} from './shooter';
@@ -37,7 +38,7 @@ export class PhysicalDrive{
  const y=side*1.524,half=.564,depth=.927,height=.1654;
  const vertices=new Float32Array([-half,-depth,0,half,-depth,0,0,-depth,height,-half,depth,0,half,depth,0,0,depth,height]);
  this.world.createCollider(R.ColliderDesc.convexHull(vertices)!.setTranslation(x,y,0).setFriction(.8));
- const ty=side*3.24;box(x,ty,.6652,1.194,1.668,.2);for(const edge of [-1,1])box(x,ty+edge*.73675,.2826,1.194,.1945,.5652);
+ const ty=side*3.24;box(x,ty,TRENCH.underside+TRENCH.roofThickness/2,TRENCH.length,TRENCH.width,TRENCH.roofThickness);for(const edge of [-1,1])box(x,ty+edge*TRENCH.postOffset,TRENCH.underside/2,TRENCH.length,TRENCH.postWidth,TRENCH.underside);
  }}
  this.body=this.world.createRigidBody(R.RigidBodyDesc.dynamic().setTranslation(START.x,START.y,.31).setCcdEnabled(true).setAngularDamping(2));
  this.world.createCollider(R.ColliderDesc.cuboid(config.length/2,config.width/2,(config.height-.08)/2).setTranslation(0,0,(config.height+.08)/2-.3).setMass(50).setCollisionGroups((1<<16)|7).setFriction(.35).setRestitution(0),this.body);
