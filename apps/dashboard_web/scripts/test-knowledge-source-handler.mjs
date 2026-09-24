@@ -5,16 +5,18 @@ let permitted=true,signedIn=true,lease=null,fetchCount=0,handler;
 const id='00000000-0000-4000-8000-000000000001',token='00000000-0000-4000-8000-000000000002';
 const listing='https://www.firstinspires.org/resources/library/frc/season-materials',pdf='https://firstfrc.blob.core.windows.net/frc2026/Manual/example.pdf';
 const run={id,season:2026,status:'running'};let items=[{id:'listing',check_id:id,kind:'listing',url:listing,title:'Season materials',status:'pending'}];
-const clients={auth:{getUser:async()=>({data:{user:signedIn?{id}:null},error:null})},rpc:async(name,args)=>{
+let staged=[];const objects=new Map();
+const clients={storage:{from:()=>({upload:async(p,b)=>{objects.set(p,b);return{error:null};},download:async p=>({data:new Blob([objects.get(p)]),error:null}),remove:async paths=>{paths.forEach(p=>objects.delete(p));return{error:null};}})},auth:{getUser:async()=>({data:{user:signedIn?{id}:null},error:null})},rpc:async(name,args)=>{
  if(name==='can_manage_frc_sources')return{data:permitted,error:null};
  if(name==='start_frc_source_check'||name==='retry_frc_source_check')return{data:id,error:null};
  if(name==='lease_frc_source_check'){if(lease)return{data:null,error:null};lease=token;return{data:token,error:null};}
+ if(name==='stage_frc_document_batch'){const item=items.find(i=>i.id===args.p_item);item.ingestion_state=args.p_state;if(args.p_chunks.length)staged=[{item_id:args.p_item,chunks:args.p_chunks}];return{data:true,error:null};}
  if(name==='finish_frc_document_ingestion'){const item=items.find(i=>i.id===args.p_item);Object.assign(item,{status:args.p_error?'failed':'new',note:args.p_error??'Indexed',bytes:args.p_bytes,sha256:args.p_sha});return{data:true,error:null};}
  if(name==='finish_frc_check_item'){const item=items.find(i=>i.id===args.p_item);Object.assign(item,{status:args.p_status==='fetched'?'new':args.p_status,note:args.p_note,bytes:args.p_bytes,sha256:args.p_sha});return{data:true,error:null};}
  if(name==='release_frc_source_check'){lease=null;if(!items.some(i=>i.status==='pending'))run.status=items.some(i=>i.status==='failed'||i.status==='skipped')?'attention':'complete';return{data:null,error:null};}
  throw new Error('Unexpected RPC '+name);
-},from(table){let conditions=[],single=false,limit=Infinity,upsert;
- const q=new Proxy({}, {get(_,key){if(key==='then')return (done,fail)=>Promise.resolve().then(()=>{if(upsert){for(const row of upsert)if(!items.some(i=>i.url===row.url))items.push({...row,id:'item-'+items.length});return{data:null,error:null};}let rows=table==='frc_knowledge_checks'?[{...run,lease_token:lease}]:table==='frc_knowledge_documents'?[]:items;for(const [k,v]of conditions)rows=rows.filter(row=>row[k]===v);rows=rows.slice(0,limit);return{data:single?rows[0]:rows,error:null};}).then(done,fail);return(...args)=>{if(key==='eq')conditions.push(args);if(key==='single')single=true;if(key==='limit')limit=args[0];if(key==='upsert')upsert=args[0];return q;};}});return q;}};
+},from(table){let conditions=[],single=false,limit=Infinity,upsert,patch;
+ const q=new Proxy({}, {get(_,key){if(key==='then')return (done,fail)=>Promise.resolve().then(()=>{if(upsert){for(const row of upsert)if(!items.some(i=>i.url===row.url))items.push({...row,id:'item-'+items.length});return{data:null,error:null};}let rows=table==='frc_knowledge_checks'?[{...run,lease_token:lease}]:table==='frc_knowledge_documents'?[]:table==='frc_document_text_staging'?staged:items;for(const [k,v]of conditions)rows=rows.filter(row=>row[k]===v);rows=rows.slice(0,limit);if(patch)rows.forEach(row=>Object.assign(row,patch));return{data:single?rows[0]:rows,error:null};}).then(done,fail);return(...args)=>{if(key==='eq')conditions.push(args);if(key==='single'||key==='maybeSingle')single=true;if(key==='update')patch=args[0];if(key==='limit')limit=args[0];if(key==='upsert')upsert=args[0];return q;};}});return q;}};
 globalThis.__pdf=async()=>({numPages:1,getPage:async()=>({getTextContent:async()=>({items:[{str:'Synthetic official text for handler integration testing only.',hasEOL:true}]}),cleanup(){}}),destroy:async()=>{}});
 globalThis.__knowledgeClient=()=>clients;globalThis.__knowledgeDeno={env:{get:()=> 'test-only'},serve:fn=>{handler=fn;}};
 const originalFetch=globalThis.fetch;
@@ -31,7 +33,7 @@ try{
  assert.equal((await (await call({action:'start',season:2026})).json()).checkId,id);
  const first=await (await call({action:'advance',checkId:id})).json();assert.equal(first.status,'running');assert.equal(items.length,2);assert.equal(fetchCount,1);
  lease=token;assert.equal((await (await call({action:'advance',checkId:id})).json()).status,'busy');assert.equal(fetchCount,1);lease=null;
- const second=await (await call({action:'advance',checkId:id})).json();assert.equal(second.status,'complete');assert.equal(items[1].status,'new');assert.match(items[1].sha256,/^[0-9a-f]{64}$/);assert.equal(fetchCount,2);
+ const second=await (await call({action:'advance',checkId:id})).json();assert.equal(second.status,'running');await call({action:'advance',checkId:id});assert.equal(run.status,'complete');assert.equal(items[1].status,'new');assert.match(items[1].sha256,/^[0-9a-f]{64}$/);assert.equal(fetchCount,2);
  await call({action:'advance',checkId:id});assert.equal(fetchCount,2);
  run.status='running';items=[{id:'denied',check_id:id,kind:'document',url:pdf,title:'Example',status:'pending'}];permitted=false;assert.equal((await call({action:'advance',checkId:id})).status,403);assert.equal(fetchCount,2);
  permitted=true;globalThis.fetch=async()=>{fetchCount++;return new Response('<html>Maintenance</html>',{headers:{'content-type':'text/html'}});};

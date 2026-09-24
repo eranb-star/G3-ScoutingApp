@@ -4,6 +4,39 @@ alter table public.frc_knowledge_documents add column if not exists indexed_at t
 alter table public.frc_knowledge_documents add column if not exists ingestion_note text;
 alter table public.frc_knowledge_documents add column if not exists passage_count integer not null default 0;
 alter table public.frc_knowledge_document_versions add column if not exists extraction jsonb;
+alter table public.frc_knowledge_check_items add column if not exists ingestion_state jsonb;
+alter table public.frc_knowledge_check_items add column if not exists temp_object boolean not null default false;
+create table if not exists public.frc_document_text_staging(
+ item_id uuid not null references public.frc_knowledge_check_items(id),start_page integer not null,chunks jsonb not null,
+ primary key(item_id,start_page)
+);
+alter table public.frc_document_text_staging enable row level security;
+revoke all on public.frc_document_text_staging from public,anon,authenticated;
+grant all on public.frc_document_text_staging to service_role;
+-- Private temporary publisher bytes. Only the service worker has object access.
+-- Removal happens after publication/failure; interrupted jobs are cleaned on later checks.
+insert into storage.buckets(id,name,public,file_size_limit,allowed_mime_types)
+ values('frc-ingestion-temp','frc-ingestion-temp',false,25165824,array['application/pdf']) on conflict(id) do nothing;
+
+create or replace function public.stage_frc_document_batch(p_check uuid,p_lease uuid,p_item uuid,p_expected integer,p_state jsonb,p_chunks jsonb)
+returns boolean language plpgsql security definer set search_path=public,pg_temp as $$
+declare run public.frc_knowledge_checks; item public.frc_knowledge_check_items;
+begin
+ select * into run from public.frc_knowledge_checks where id=p_check for update;
+ if not found or run.status<>'running' or run.lease_token is distinct from p_lease or run.lease_until<now() then return false;end if;
+ select * into item from public.frc_knowledge_check_items where id=p_item and check_id=p_check and status='pending' for update;
+ if not found or coalesce((item.ingestion_state->>'cursor')::integer,0)<>p_expected then return false;end if;
+ if p_expected=0 then
+  update public.frc_corpus_sources set retired=true where url=item.url and version_hash<>p_state->>'sha';
+  update public.frc_knowledge_documents set indexed_sha256=null,ingestion_note='New revision is being indexed.' where season=run.season and url=item.url and sha256<>p_state->>'sha';
+ end if;
+ if jsonb_typeof(p_chunks)<>'array' or jsonb_array_length(p_chunks)>200 or octet_length(p_chunks::text)>500000 then raise exception 'Invalid batch';end if;
+ if p_expected>0 then insert into public.frc_document_text_staging values(p_item,p_expected,p_chunks) on conflict(item_id,start_page) do update set chunks=excluded.chunks where jsonb_array_length(excluded.chunks)>0;end if;
+ update public.frc_knowledge_check_items set ingestion_state=p_state,note='Indexing pages: '||coalesce(p_state->>'cursor','1')||' / '||coalesce(p_state->>'pages','pending'),bytes=coalesce(bytes,(p_state->>'bytes')::bigint) where id=p_item;
+ return true;
+end$$;
+revoke all on function public.stage_frc_document_batch(uuid,uuid,uuid,integer,jsonb,jsonb) from public,anon,authenticated;
+grant execute on function public.stage_frc_document_batch(uuid,uuid,uuid,integer,jsonb,jsonb) to service_role;
 create sequence if not exists public.frc_ingestion_source_id start 1000000;
 create sequence if not exists public.frc_ingestion_citation_id start 1000000;
 revoke all on sequence public.frc_ingestion_source_id,public.frc_ingestion_citation_id from public,anon,authenticated;
@@ -31,6 +64,8 @@ begin
  if p_error is not null then
   update public.frc_knowledge_documents set indexed_sha256=null,indexed_at=null,passage_count=0,ingestion_note=left(p_error,500) where id=doc.id;
   update public.frc_knowledge_check_items set status='failed',note=left(p_error,500) where id=p_item;
+  delete from public.frc_document_text_staging where item_id=p_item;
+  update public.frc_knowledge_check_items set ingestion_state=null where id=p_item;
   return true;
  end if;
  if jsonb_typeof(p_chunks) is distinct from 'array' or jsonb_array_length(p_chunks) not between 1 and 1500 then raise exception 'Invalid extracted passage count';end if;
@@ -63,6 +98,8 @@ begin
  update public.frc_knowledge_documents set indexed_sha256=p_sha,indexed_at=now(),passage_count=count_chunks,ingestion_note=publication_note where id=doc.id;
  update public.frc_knowledge_document_versions set extraction=p_extraction||jsonb_build_object('passages',count_chunks,'indexed_at',now()) where document_id=doc.id and sha256=p_sha;
  update public.frc_knowledge_check_items set note=publication_note where id=p_item;
+ delete from public.frc_document_text_staging where item_id=p_item;
+ update public.frc_knowledge_check_items set ingestion_state=null where id=p_item;
  -- Keep the existing generation reconciliation contract true for subsequent activation checks.
  update public.frc_corpus_generations set expected_sources=(select count(*) from public.frc_corpus_sources where generation=gen),
  expected_passages=(select count(*) from public.frc_corpus_passages where generation=gen),
