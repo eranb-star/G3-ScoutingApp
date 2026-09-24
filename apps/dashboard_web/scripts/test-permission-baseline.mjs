@@ -1,0 +1,28 @@
+import fs from 'node:fs';import assert from 'node:assert/strict';import {pathToFileURL} from 'node:url';
+const {PGlite}=await import(pathToFileURL(process.env.PGLITE_MODULE).href),db=new PGlite();
+const fixture=fs.readFileSync(new URL('./test-project-action-consistency.mjs',import.meta.url),'utf8');await db.exec(fixture.match(/await db.exec\(`([\s\S]*?)`\);/)[1]);
+await db.exec('create role service_role');
+const original=fs.readFileSync(new URL('../../../backend/supabase/unified_responsibility_engine_20260902.sql',import.meta.url),'utf8');await db.exec(original.slice(original.indexOf('create or replace function public.sync_team_action('),original.indexOf('create or replace function public.sync_project_task_action()')));
+await db.exec(fs.readFileSync(new URL('../../../backend/supabase/project_action_consistency_20260911.sql',import.meta.url),'utf8'));
+await db.exec(`create function public.rpc_upsert_event_teams(uuid,integer[]) returns void language plpgsql security definer as $$begin raise exception 'BODY EXECUTED';end$$;
+create function public.verify_guest_code(text) returns boolean language sql security definer as $$select false$$;
+create function public.review_legacy() returns boolean language sql security definer as $$select false$$;
+grant select,insert,update on team_projects,project_tasks to authenticated;`);
+const migration=fs.readFileSync(new URL('../../../backend/supabase/permission_baseline_20260924.sql',import.meta.url),'utf8');await db.exec(migration);await db.exec(migration);
+for(const role of ['anon','authenticated']){await db.exec('set role '+role);await assert.rejects(()=>db.query("select rpc_upsert_event_teams(null,'{}')"),/permission denied/);await assert.rejects(()=>db.query("select sync_team_action('x',gen_random_uuid(),'forged','','assignment','all','',null,'normal','/',null,false)"),/permission denied/);}
+await db.exec('set role anon');assert.equal((await db.query("select verify_guest_code('fake') ok")).rows[0].ok,false);await assert.rejects(()=>db.query('select review_legacy()'),/permission denied/);
+await db.exec('set role authenticated');assert.equal((await db.query('select review_legacy() ok')).rows[0].ok,false);
+const project=(await db.query("insert into team_projects(name,status)values('QA','active')returning id")).rows[0].id;
+const task=(await db.query("insert into project_tasks(project_id,title,assignee_id)values($1,'Check trigger',gen_random_uuid())returning id",[project])).rows[0].id;
+await db.exec('reset role');assert.equal((await db.query('select title from team_actions where source_id=$1',[task])).rows[0].title,'Check trigger');
+assert.equal((await db.query("select has_function_privilege('service_role','rpc_upsert_event_teams(uuid,integer[])','EXECUTE') ok")).rows[0].ok,true);
+assert.ok((await db.query("select proconfig from pg_proc where proname='rpc_upsert_event_teams'")).rows[0].proconfig.some(x=>x.includes('search_path=public, pg_temp')));
+await db.exec('reset role');
+await db.exec(`create function public.current_team_role() returns text language sql as $$select nullif(current_setting('test.role',true),'')$$;
+create function public.review_absence_request() returns text language plpgsql security definer as $$begin if public.current_team_role() not in ('admin','mentor') then raise exception 'DENIED';end if;return 'allowed';end$$;`);
+const nullRoles=fs.readFileSync(new URL('../../../backend/supabase/permission_null_roles_20260924.sql',import.meta.url),'utf8');await db.exec(nullRoles);await db.exec(nullRoles);
+await assert.rejects(()=>db.query('select review_absence_request()'),/DENIED/);
+await db.exec("set test.role='member'");await assert.rejects(()=>db.query('select review_absence_request()'),/DENIED/);
+await db.exec("set test.role='mentor'");assert.equal((await db.query('select review_absence_request() result')).rows[0].result,'allowed');
+console.log('PASS missing/inactive role fails closed while existing supervisor access remains');
+await db.close();console.log('PASS anonymous/member direct-helper denial, preserved existing member/guest/service access, task-trigger notifications, fixed search path, migration rerun');

@@ -1,0 +1,6 @@
+import {Fragment} from 'react';
+import {useLocalization} from '../lib/localization';
+import '../styles/assistDecision.css';
+import {answerBlocks} from '../lib/assistDecision';
+function inline(text:string){return text.split(/(\*\*[^*]+\*\*|`[^`]+`)/g).map((part,i)=>part.startsWith('**')?<strong key={i}>{part.slice(2,-2)}</strong>:part.startsWith('`')?<code key={i}>{part.slice(1,-1)}</code>:<Fragment key={i}>{part}</Fragment>);}
+export default function AssistAnswer({text}:{text:string}){const {pick}=useLocalization();return <div className="assist-answer-content">{answerBlocks(text).map((b,i)=>b.kind==='code'?<pre key={i} dir="ltr"><code>{b.lines.join('\n')}</code></pre>:b.kind==='heading'?<h3 key={i}>{inline(b.lines[0])}</h3>:b.kind==='list'?<ul key={i}>{b.lines.map((l,j)=><li key={j}>{inline(l.replace(/^(?:[-*]|\d+\.)\s+/,''))}</li>)}</ul>:b.kind==='table'?<div className="assist-answer-table" key={i} tabIndex={0} role="region" aria-label={pick("Comparison","השוואה")}><table><thead><tr>{b.lines[0].replace(/^\||\|$/g,'').split('|').map((v,j)=><th key={j}>{inline(v.trim())}</th>)}</tr></thead><tbody>{b.lines.slice(1).map((l,j)=><tr key={j}>{l.replace(/^\||\|$/g,'').split('|').map((v,k)=><td key={k}>{inline(v.trim())}</td>)}</tr>)}</tbody></table></div>:<p key={i}>{inline(b.lines.join(' '))}</p>)}</div>;}

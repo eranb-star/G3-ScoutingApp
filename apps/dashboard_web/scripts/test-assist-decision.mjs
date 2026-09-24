@@ -1,0 +1,17 @@
+import fs from 'node:fs';import ts from 'typescript';import assert from 'node:assert/strict';
+const load=async file=>import('data:text/javascript;base64,'+Buffer.from(ts.transpileModule(fs.readFileSync(new URL(file,import.meta.url),'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText).toString('base64'));
+const {answerBlocks,parseAssistTaskDraft}=await load('../src/lib/assistDecision.ts');
+const {contextualRetrievalQuestion}=await load('../../../backend/supabase/functions/frc-assistant/evidence-context.ts');
+const draft={version:1,member:'member-a',message:'10000000-0000-0000-0000-000000000001',request:'20000000-0000-0000-0000-000000000001',title:'Test climber'};
+assert.deepEqual(parseAssistTaskDraft(JSON.stringify(draft),'member-a'),draft);
+assert.equal(parseAssistTaskDraft(JSON.stringify(draft),'member-b'),null);assert.equal(parseAssistTaskDraft('{','member-a'),null);
+assert.equal(parseAssistTaskDraft(JSON.stringify({...draft,message:'-'.repeat(36)}),'member-a'),null);
+const blocks=answerBlocks('## Recommendation\nCompare options.\n| Choice | Trade-off |\n| --- | --- |\n| Simple | Less mass |\n\n```java\n  motor.set(0);\n```\n\n- Test\n- Measure');
+assert.deepEqual(blocks.map(x=>x.kind),['heading','paragraph','table','code','list']);assert.equal(blocks[3].lines[0],'  motor.set(0);');
+assert.deepEqual(answerBlocks('```\nunclosed code')[0],{kind:'code',lines:['unclosed code']});
+const history=[{role:'user',content:'For the 2026 challenge should we build a climber?'},{role:'assistant',content:'Invented 2027 guidance must not seed retrieval'}];
+assert.match(contextualRetrievalQuestion('What about a simpler one instead?',history),/2026/);assert.doesNotMatch(contextualRetrievalQuestion('What about it?',history),/2027/);
+assert.equal(contextualRetrievalQuestion('Compare 2025 climbing options',history),'Compare 2025 climbing options');
+assert.equal(contextualRetrievalQuestion('Explain PID tuning',history),'Explain PID tuning');
+assert.match(contextualRetrievalQuestion('ומה לגבי זה?',history),/2026/);
+console.log('PASS member-bound durable drafts, safe text blocks/code/table parsing, EN/HE follow-up evidence context, explicit season replacement and unrelated-question isolation');
