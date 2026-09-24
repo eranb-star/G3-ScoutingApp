@@ -26,8 +26,8 @@ const point=(x,y=0)=>({x,y,heading:0,action:'none',seconds:0,points:0,success:1}
 assert.equal(travelTime(4,2,2),3);assert.equal(travelTime(1,2,2),Math.sqrt(2));
 assert.equal(evaluateRoute(season,robot,[point(0),point(4)]).seconds,3);
 const blocked={...season,field:{...season.field,obstacles:[{id:'wall',min:{x:1.9,y:-1,z:0},max:{x:2.1,y:1,z:2}}]}};
-assert.match(evaluateRoute(blocked,robot,[point(0),point(4)]).errors.join(),/wall/);
-assert.match(evaluateRoute(season,robot,[point(0),point(9.9)]).errors.join(),/clearance/);
+assert.match(evaluateRoute(blocked,robot,[point(0),point(4)]).warnings.join(),/wall/);
+assert.match(evaluateRoute(season,robot,[point(0),point(9.9)]).errors.join(),/field wall/);
 assert.match(evaluateRoute({...season,autonomous:{seconds:1,reviewed:false}},robot,[point(0),point(4)]).errors.join(),/duration/);
 assert.equal(rankRoutes(blocked,robot,[{id:'blocked',points:[point(0),point(4)]}]).length,0);
 const cam={id:'front',x:0,y:0,z:1,yaw:0,pitch:0,hfov:Math.PI/2,vfov:Math.PI/2,maxDistance:8,pixelsWide:1280,minTagPixels:10},poses=[{x:0,y:0,heading:0}];
@@ -76,7 +76,8 @@ const turnRoute=[point(0),{...point(4),heading:Math.PI/2,action:'wait',seconds:2
 assert.equal(routePoseAt(season,robot,turnRoute,1.5).phase,'moving');
 assert.ok(routePoseAt(season,robot,turnRoute,1.5).heading>0,'heading changes while travelling');
 assert.equal(routePoseAt(season,robot,turnRoute,3.5).phase,'wait');
-assert.throws(()=>routePoseAt(blocked,robot,draft.route,1),/constraints/);
+assert.equal(routePoseAt(blocked,robot,draft.route,1).phase,'moving','approximate collision warnings do not block inspection playback');
+assert.throws(()=>routePoseAt({...blocked,field:{...blocked.field,geometry:'reviewed'}},robot,draft.route,1),/constraints/);
 console.log('PASS route playback matches acceleration, cruise, braking, turn, action timing and refuses invalid routes.');
 const {clearancePath,generateRouteAlternatives}=await load('../src/lib/routeGeneration.ts');
 const detour=clearancePath(blocked,robot,point(0),point(4));assert.ok(detour.length>2);
@@ -123,3 +124,12 @@ assert.ok(routePoseAt(season,robot,collect,1.1).x>routePoseAt(season,robot,colle
 const stoppedShotRoute=[point(0),{...point(2),action:'shoot',quantity:1,seconds:2},point(4)];
 assert.equal(routePoseAt(season,robot,stoppedShotRoute,2.5).x,2);assert.equal(routePoseAt(season,robot,stoppedShotRoute,3.5).phase,'shoot');
 console.log('PASS continuous waypoints, intake while travelling and shooting stops.');
+
+assert.equal(evaluateRoute(season,robot,[point(0)]).seconds,0);
+assert.equal(routePoseAt(season,robot,[point(0)],0).done,true);
+assert.equal(parsePlanningDraft(JSON.stringify({...draft,route:[point(0)]})).route.length,1);
+assert.throws(()=>evaluateRoute(season,robot,[]));
+assert.equal(evaluateRoute(season,robot,[point(9.45)]).errors.length,0,'rectangle fits where circumscribed circle did not');
+assert.ok(evaluateRoute(season,robot,[point(9.45)]).warnings.length,'safety margin is a warning');
+assert.equal(cameraCoverage(season,{...cam,model:'limelight4-stock'},poses).length,1);
+console.log('PASS robot-only workspace, zero-point rejection, rectangular wall clearance, soft proxy warnings, reviewed blocking and camera profile.');

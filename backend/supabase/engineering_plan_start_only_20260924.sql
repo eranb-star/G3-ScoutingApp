@@ -1,25 +1,5 @@
+-- Preserve existing access; allow a robot-start-only workspace.
 begin;
-create or replace function public.can_use_engineering_plans() returns boolean language sql stable security definer set search_path=public,pg_temp as $$
- select public.has_permission('view_field_twin') and exists(select 1 from public.team_members where id=auth.uid() and active)
-$$;
-revoke all on function public.can_use_engineering_plans() from public,anon;
-grant execute on function public.can_use_engineering_plans() to authenticated;
-create table if not exists public.engineering_plans(
- id uuid primary key default gen_random_uuid(),owner_id uuid not null,name text not null check(length(name) between 1 and 120),
- shared boolean not null default false,revision integer not null default 0,updated_at timestamptz not null default now()
-);
-create table if not exists public.engineering_plan_versions(
- plan_id uuid not null references public.engineering_plans,revision integer not null,workspace jsonb not null,
- created_at timestamptz not null default now(),primary key(plan_id,revision)
-);
-alter table public.engineering_plans enable row level security;
-alter table public.engineering_plan_versions enable row level security;
-revoke all on public.engineering_plans,public.engineering_plan_versions from public,anon,authenticated;
-grant select on public.engineering_plans,public.engineering_plan_versions to authenticated;
-drop policy if exists engineering_plan_read on public.engineering_plans;
-create policy engineering_plan_read on public.engineering_plans for select to authenticated using(public.can_use_engineering_plans() and (owner_id=auth.uid() or shared));
-drop policy if exists engineering_plan_version_read on public.engineering_plan_versions;
-create policy engineering_plan_version_read on public.engineering_plan_versions for select to authenticated using(public.can_use_engineering_plans() and exists(select 1 from public.engineering_plans p where p.id=plan_id and (p.owner_id=auth.uid() or p.shared)));
 create or replace function public.save_engineering_plan(p_id uuid,p_name text,p_workspace jsonb,p_expected integer,p_shared boolean)
 returns jsonb language plpgsql security definer set search_path=public,pg_temp as $$
 declare p public.engineering_plans;next_id uuid;
@@ -45,6 +25,4 @@ begin
  update public.engineering_plans set revision=p.revision+1,name=trim(p_name),shared=p_shared,updated_at=now() where id=p.id;
  return jsonb_build_object('id',p.id,'revision',p.revision+1);
 end$$;
-revoke all on function public.save_engineering_plan(uuid,text,jsonb,integer,boolean) from public,anon;
-grant execute on function public.save_engineering_plan(uuid,text,jsonb,integer,boolean) to authenticated;
 commit;
