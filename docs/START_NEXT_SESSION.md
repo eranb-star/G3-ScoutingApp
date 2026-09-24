@@ -18,7 +18,7 @@ Read this entry point before planning or implementing. Do not rely on conversati
 
 ## Current boundary
 
-- Engineering website source `d380f71`, production Vercel `3cqqGjoxw6HfLZWYREW4nhWeLtxL`, supersedes `a776397` and `8fb99dc`. See the engineering release record for exact acceptance, backend hash and rollback. Later documentation commits are separate from the running website source.
+- Engineering website source `5046a7f`, production Vercel `J4UXhWDK8ZAFxb8aiDxvVKNXptsc`, supersedes `a776397` and `8fb99dc`. See the engineering release record for exact acceptance, backend hash and rollback. Later documentation commits are separate from the running website source.
 - Delivered knowledge/Gemini/budgets, selected-code Software Mentor, supported official ingestion, simulator milestones and existing mentor/task workflows must be extended, not rebuilt.
 - Decision UI and saved-answer task provenance deployed; synthetic workflow acceptance passed; permission tightening and local encrypted restore passed. The supported mixed-level tower calculation now passes production acceptance through deterministic server authority. Broader strategy/follow-up/classifier evaluation, portable/offsite/full-service recovery and physical acceptance remain open.
 - APK remains 2.2.0/code24 from September 21, predating later website features. Do not describe it as current with production.
