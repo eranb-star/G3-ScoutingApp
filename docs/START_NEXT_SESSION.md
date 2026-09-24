@@ -1,3 +1,7 @@
+**Active phase — Software Mentor (24 September 2026):** User authorized implementation. The new offseason repository is not yet identified; use explicitly labelled public historical team code meanwhile. [Implemented first increment, QA evidence and remaining release gates](SOFTWARE_MENTOR_PHASE1_20260924.md). Production remains the simulator milestone; this phase is not yet released. This supersedes earlier awaiting-selection wording.
+
+**Current planning decision — 24 September 2026:** Further simulator development is deferred at the user’s request. [Remaining simulator work and recommended next priorities](NEXT_PRIORITY_20260924.md). Recommended next: repository-aware Software Mentor; awaiting user selection. This supersedes older “Graphics A + B selected next” wording. No new feature implementation is authorized by this planning update.
+
 **Latest simulator update:** Numeric keyboard editing, simultaneous single/double/triple shooting, KitBot capacity 40 and Darwin capacity 60/triple are deployed. Source `875ea52`, Vercel `A3xNMsgF3tGt7THHoGoxsiTKL1T8` (Ready). [Behavior, tests and rollback](SIMULATOR_SETTINGS_20260923.md).
 
 **Latest production release: simulator fidelity, source `b65e929`, Vercel `2t2Bh17M3CMKA24JmLapC4j6vyZY` (Ready).** [Delivered scope, CAD/tag sources, acceptance and rollback](SIMULATOR_FIDELITY_20260923.md): intake contacts/feeding, 32 official AprilTags, part inspection, published 6328 Darwin and one shared-world computer opponent. Physical Quest/phone acceptance and measured robot calibration remain open; APK unchanged.

@@ -1,3 +1,7 @@
+**Active phase — Software Mentor (24 September 2026):** User authorized implementation. The new offseason repository is not yet identified; use explicitly labelled public historical team code meanwhile. [Implemented first increment, QA evidence and remaining release gates](SOFTWARE_MENTOR_PHASE1_20260924.md). Production remains the simulator milestone; this phase is not yet released. This supersedes earlier awaiting-selection wording.
+
+**Current planning decision — 24 September 2026:** Further simulator development is deferred at the user’s request. [Remaining simulator work and recommended next priorities](NEXT_PRIORITY_20260924.md). Recommended next: repository-aware Software Mentor; awaiting user selection. This supersedes older “Graphics A + B selected next” wording. No new feature implementation is authorized by this planning update.
+
 **Latest simulator update:** Numeric keyboard editing, simultaneous single/double/triple shooting, KitBot capacity 40 and Darwin capacity 60/triple are deployed. Source `875ea52`, Vercel `A3xNMsgF3tGt7THHoGoxsiTKL1T8` (Ready). [Behavior, tests and rollback](SIMULATOR_SETTINGS_20260923.md).
 
 **Latest production release: simulator fidelity, source `b65e929`, Vercel `2t2Bh17M3CMKA24JmLapC4j6vyZY` (Ready).** [Delivered scope, CAD/tag sources, acceptance and rollback](SIMULATOR_FIDELITY_20260923.md): intake contacts/feeding, 32 official AprilTags, part inspection, published 6328 Darwin and one shared-world computer opponent. Physical Quest/phone acceptance and measured robot calibration remain open; APK unchanged.
@@ -24,7 +28,7 @@ Read [START_NEXT_SESSION.md](START_NEXT_SESSION.md) for recorded production stat
 
 ## Selected next increment
 
-**Graphics A + B**: focused lighting/materials/shadows/camera presentation and simple presets (3–5 engineering days), followed by Auto/Low/Medium/High, measured-performance adaptation, saved preference and device checks (3–5 additional days). Documentation is authorized; implementation awaits the user's start instruction. No code or deployment is included in this documentation checkpoint.
+Graphics A + B and subsequent simulator milestones are delivered. Further simulator development is deferred. See [current priorities](NEXT_PRIORITY_20260924.md); the next implementation awaits user selection.
 
 [Agreed next phases](NEXT_PHASES_AGREEMENT_20260921.md) is the authoritative detailed refinement: deliverables, dependencies, estimates, acceptance criteria and explicit non-goals. Read it before implementing. Estimates are not token budgets.
 

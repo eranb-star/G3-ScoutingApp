@@ -53,13 +53,15 @@ try {
   const evidenceUrl='data:text/javascript;base64,'+Buffer.from(evidenceCode).toString('base64');
   const officialCode=ts.transpileModule(fs.readFileSync(new URL('../../../backend/supabase/functions/frc-assistant/official-season.ts',import.meta.url),'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText;
   const officialUrl='data:text/javascript;base64,'+Buffer.from(officialCode).toString('base64');
-  const code = original.replace("'./official-season.ts'",JSON.stringify(officialUrl)).replace("'./evidence-context.ts'",JSON.stringify(evidenceUrl)).replace(/import \{ createClient \} from "[^"]+";/, 'const createClient=globalThis.__assistClient; const Deno=globalThis.__assistDeno;')
+  const softwareCode=ts.transpileModule(fs.readFileSync(new URL('../../../backend/supabase/functions/frc-assistant/software-context.ts',import.meta.url),'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText;
+  const softwareUrl='data:text/javascript;base64,'+Buffer.from(softwareCode).toString('base64');
+  const code = original.replace("'./software-context.ts'",JSON.stringify(softwareUrl)).replace("'./official-season.ts'",JSON.stringify(officialUrl)).replace("'./evidence-context.ts'",JSON.stringify(evidenceUrl)).replace(/import \{ createClient \} from "[^"]+";/, 'const createClient=globalThis.__assistClient; const Deno=globalThis.__assistDeno;')
     .replace('import("./budgeted-gemini.ts")','Promise.resolve(globalThis.__assistBudgetModule)')
     .replace("import('./team-purpose.ts')",'Promise.resolve(globalThis.__assistPurposeModule)');
   const compiled = ts.transpileModule(code,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}});
   await import('data:text/javascript;base64,'+Buffer.from(compiled.outputText).toString('base64'));
   const call = body => handler(new Request('https://test.invalid/assistant',{method:'POST',headers:{Authorization:'Bearer synthetic'},body:JSON.stringify(body)}));
-  for (const body of [{message:'PID'}, {conversationId:'saved',message:'follow-up'}, {contextIssueId:'issue',image:{data:'test'}}]) {
+  for (const body of [{action:'prepare-software',repository:'GlueGunAndGlitter/6740_robot_2024',ref:'main'},{message:'PID'}, {conversationId:'saved',message:'follow-up'}, {contextIssueId:'issue',image:{data:'test'}}]) {
     assert.equal((await call(body)).status,403);
   }
   rpcError=true; assert.equal((await call({message:'PID'})).status,503);
@@ -132,6 +134,21 @@ try {
   assert.equal(missingRules.status,503);assert.equal((await missingRules.json()).code,'OFFICIAL_EVIDENCE_UNAVAILABLE');
   globalThis.__assistBudgetModule.executeBudgetedText=async()=>({model:'synthetic',answer:'Test answer',usage:{inputTokens:10,outputTokens:10,thoughtTokens:0}});
   assert.equal((await call({message:'Explain PID',requestId:crypto.randomUUID()})).status,200);
+  // Real handler: code context persists, survives JSONB key reordering, and
+  // cannot silently switch revisions on an existing conversation.
+  const revision='a'.repeat(40),repository='GlueGunAndGlitter/6740_robot_2024';
+  const software={repository,revision,paths:['src/Intake.java'],mode:'explain'};
+  let savedContext=null,softwareCalls=0;
+  client.from=table=>{const result=table==='team_members'?{data:{active:true,role:'admin'}}:table==='ai_conversations'?{data:{id:'conversation',software_context:savedContext}}:{data:[],count:0};
+   const q=new Proxy({}, {get:(_,key)=>key==='insert'?rows=>{if(table==='ai_conversations')savedContext=rows.software_context;return q;}:key==='then'?(done,fail)=>Promise.resolve(result).then(done,fail):()=>q});return q;};
+  globalThis.fetch=async url=>{let data;if(url.endsWith(repository))data={private:false,full_name:repository};else if(url.includes('/commits/'))data={sha:revision,commit:{tree:{sha:revision}}};else if(url.includes('/git/trees/'))data={truncated:false,tree:[{path:'src/Intake.java',mode:'100644',type:'blob',sha:revision,size:20}]};else if(url.includes('/git/blobs/'))data={encoding:'base64',content:btoa('class Intake {}')};else throw Error('Unexpected network request');return Response.json(data);};
+  globalThis.__assistBudgetModule.executeBudgetedText=async options=>{softwareCalls++;assert.ok(options.prompt.includes('class Intake'));return {model:'synthetic',answer:'The selected class is empty [C1:L1].',usage:{inputTokens:10,outputTokens:10,thoughtTokens:0}};};
+  let result=await call({message:'Explain 2024 robot climb code',software,requestId:crypto.randomUUID()});assert.equal(result.status,200);assert.deepEqual(JSON.parse(JSON.stringify(savedContext)),software);assert.equal((await result.json()).citations[0].url.endsWith('#L1-L1'),true);
+  savedContext={mode:'explain',paths:software.paths,revision,repository};
+  result=await call({message:'Explain intake',software,conversationId:'conversation',requestId:crypto.randomUUID()});assert.equal(result.status,200);
+  result=await call({message:'Explain intake',software:{...software,revision:'b'.repeat(40)},conversationId:'conversation',requestId:crypto.randomUUID()});assert.equal(result.status,409);assert.equal(softwareCalls,2);
+  globalThis.__assistBudgetModule.executeBudgetedText=async()=>({model:'synthetic',answer:'Unsupported claim [C1:L999].',usage:{}});
+  result=await call({message:'Explain 2024 robot climb code',software,requestId:crypto.randomUUID()});assert.equal(result.status,502);
   trustedRole='mentor';
 
   client.rpc=async name=>({data:name==='claim_g3_assist_execution'?{claimed:false,state:'completed',result:{status:200,body:{answer:'recovered'}}}:true,error:null});

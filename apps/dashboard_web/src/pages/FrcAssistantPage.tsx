@@ -1,3 +1,5 @@
+import SoftwareReviewHandoff from '../components/SoftwareReviewHandoff';
+import SoftwareMentorContext,{type SoftwareSelection} from '../components/SoftwareMentorContext';
 import { useG3AssistAccess } from "../lib/useG3AssistAccess";
 import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -30,6 +32,7 @@ export default function FrcAssistantPage() {
   function clearEvidence(){setParams(current=>{const next=new URLSearchParams(current);next.delete('evidence');next.delete('generation');return next;},{replace:true});}
   const { language, pick } = useLocalization();
   const { profile } = useMemberAuth();
+  const [software,setSoftware]=useState<SoftwareSelection|null>(null);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -75,7 +78,7 @@ export default function FrcAssistantPage() {
         if(result.originalQuestion && !(next[next.length-1]?.role==='user'&&next[next.length-1]?.content===result.originalQuestion))next.push({id:`question-${pendingRequest}`,role:'user',content:result.originalQuestion});
         return [...next,{id:`recovered-${pendingRequest}`,role:'assistant',content:result.answer,citations:result.citations??[]}];
       });
-      setQuestion('');setRemaining(result.usage?.remainingToday??null);
+      setSoftware(result.softwareContext??null);setQuestion('');setRemaining(result.usage?.remainingToday??null);
       setStatus(pick('Recovered the saved answer without generating again.','התשובה השמורה שוחזרה ללא יצירה נוספת.'));
     }
     else setStatus(result?.error??pick('This request has stopped. A call already sent to the provider may still be charged.','הבקשה נעצרה. קריאה שכבר נשלחה לספק עשויה עדיין להיות מחויבת.'));
@@ -112,6 +115,9 @@ export default function FrcAssistantPage() {
       await refreshHistory();
       return;
     }
+    const context=await supabase.from('ai_conversations').select('software_context').eq('id',id).maybeSingle();
+    if(context.error){setStatus(pick('Could not load conversation code context. Try again.','לא ניתן לטעון את הקשר הקוד של השיחה. נסו שוב.'));setConversationLoading(false);return;}
+    setSoftware(context.data?.software_context??null);
     setConversationId(id);
     setMessages(((data ?? []) as ChatMessage[]).reverse());
     setHasEarlier((count ?? 0) > (data?.length ?? 0));
@@ -135,7 +141,7 @@ export default function FrcAssistantPage() {
   }
 
   function startNewConversation() {
-    clearEvidence();
+    clearEvidence();setSoftware(null);
     sessionStorage.removeItem(ACTIVE_CONVERSATION_KEY);
     setConversationId(null); setMessages([]); setQuestion(""); setImage(null); setPrivacyConfirmed(false); setRemaining(null); setStatus(""); setHistoryOpen(false); setHistoryMode("active"); void refreshHistory("active");
     window.setTimeout(() => questionRef.current?.focus(), 0);
@@ -216,7 +222,7 @@ export default function FrcAssistantPage() {
     const requestId=crypto.randomUUID();
     if(BUDGET_PILOT){requestRef.current=requestId;sessionStorage.setItem(pendingKey,requestId);setPendingRequest(requestId);}
     let outcome;
-    try{outcome=await supabase.functions.invoke("frc-assistant", { body: { requestId, conversationId, message: clean, language, evidence:params.get("evidence")&&params.get("generation")?{generation:params.get("generation"),ids:params.get("evidence")!.split(",").map(Number)}:null, contextIssueId:issueContext?.id??null, attachmentKind: pendingImage ? attachmentKind : null, privacyConfirmed: Boolean(pendingImage), image: pendingImage ? { name: pendingImage.name, mimeType: pendingImage.mimeType, data: pendingImage.data } : null } });}
+    try{outcome=await supabase.functions.invoke("frc-assistant", { body: { requestId, conversationId, software, message: clean, language, evidence:params.get("evidence")&&params.get("generation")?{generation:params.get("generation"),ids:params.get("evidence")!.split(",").map(Number)}:null, contextIssueId:issueContext?.id??null, attachmentKind: pendingImage ? attachmentKind : null, privacyConfirmed: Boolean(pendingImage), image: pendingImage ? { name: pendingImage.name, mimeType: pendingImage.mimeType, data: pendingImage.data } : null } });}
     catch{if(!BUDGET_PILOT||requestRef.current===requestId){setBusy(false);setStatus(BUDGET_PILOT?pick('Connection interrupted. Check request status before submitting another question.','החיבור נותק. בדקו את מצב הבקשה לפני שליחת שאלה נוספת.'):pick('Connection interrupted. Check conversation history for a saved answer before trying again.','החיבור נותק. בדקו בהיסטוריית השיחות אם נשמרה תשובה לפני ניסיון נוסף.'));}return;}
     if(BUDGET_PILOT&&requestRef.current!==requestId)return;
     const {data,error}=outcome;
@@ -242,8 +248,9 @@ export default function FrcAssistantPage() {
     <section className="assistant-safety" aria-label={pick("AI safety notice", "הודעת בטיחות לבינה מלאכותית")}><b>{pick("Verify before you build.", "בדקו לפני שבונים.")}</b><span>{pick("AI can be wrong. Confirm rules in the current FIRST manual and perform physical work with appropriate mentor supervision.", "בינה מלאכותית עלולה לטעות. יש לאמת חוקים במדריך FIRST העדכני ולבצע עבודה פיזית בהשגחת מנטור מתאימה.")}</span></section>
     {issueContext?<section className="assistant-context-card"><span>G3-{issueContext.issue_number}</span><div><strong>{pick("Working from robot issue context","עבודה מתוך הקשר של תקלה ברובוט")}</strong><small>{issueContext.title} · {issueContext.subsystem} · {issueContext.severity}</small></div><button onClick={()=>navigate(`/robot-issues?issue=${issueContext.id}`)}>{pick("Open issue","פתיחת תקלה")}</button></section>:null}
     {conversationId && activeConversation ? <section className="assistant-active-conversation" aria-label={pick("Active conversation", "שיחה פעילה")}><span>{pick("Continuing conversation", "ממשיכים שיחה")}</span><strong>{activeConversation.title}</strong><small>{pick(`${activeConversation.message_count} saved messages · Your next message continues this conversation`, `${activeConversation.message_count} הודעות שמורות · ההודעה הבאה תמשיך את השיחה`)}</small></section> : null}
+    {BUDGET_PILOT&&<SoftwareMentorContext value={software} onChange={setSoftware} locked={!canUseAssist||busy||conversationLoading||!!conversationId||!!pendingRequest}/>}
     <section className="assistant-chat" aria-live="polite">
-      {conversationLoading ? <div className="assistant-conversation-loading" role="status"><span aria-hidden="true">✦</span><b>{pick("Opening conversation…", "פותח את השיחה…")}</b><small>{pick("Loading its saved messages", "טוען את ההודעות השמורות")}</small></div> : messages.length === 0 ? <div className="assistant-welcome"><span className="assistant-spark">✦</span><h2>{pick("What are you working on?", "על מה אתם עובדים?")}</h2><p>{pick("Start a new FRC question or reopen a previous conversation when you need it.", "התחילו שאלה חדשה על FRC או פתחו שיחה קודמת בעת הצורך.")}</p><div>{(BUDGET_PILOT?suggestions.slice(0,3):suggestions).map(([en, he]) => <button key={en} disabled={!canUseAssist} type="button" onClick={() => setQuestion(pick(en, he))}>{pick(en, he)} <span>→</span></button>)}</div>{conversations.length > 0 ? <button className="assistant-recent" type="button" onClick={() => setHistoryOpen(true)}><span aria-hidden="true">◷</span><span><b>{pick("Recent conversations", "שיחות אחרונות")}</b><small>{pick(`${conversations.length} saved conversations`, `${conversations.length} שיחות שמורות`)}</small></span><strong aria-hidden="true">›</strong></button> : null}</div> : <>{hasEarlier ? <button className="assistant-load-earlier" type="button" onClick={() => void loadEarlier()} disabled={loadingEarlier}>{loadingEarlier ? pick("Loading…", "טוען…") : pick("Load earlier messages", "טעינת הודעות קודמות")}</button> : null}{messages.map((message) => <article key={message.id} className={`assistant-message is-${message.role}`}><div className="assistant-message-label">{message.role === "assistant" ? "G3 Assist" : pick("You", "אתם")}</div>{message.attachment_name ? <small>▧ {message.attachment_name}</small> : null}<div>{message.content}</div>{message.role==="assistant"?<>{message.citations?.length?<div className="assistant-citations"><b>{pick("Sources","מקורות")}</b>{message.citations.map(source=><a href={source.url} target="_blank" rel="noreferrer" key={source.url}>{source.title} ↗</a>)}</div>:null}<footer className="assistant-answer-actions"><button onClick={()=>void saveKnowledge(message)}>{pick("Save knowledge","שמירת ידע")}</button><button onClick={()=>void createIssue(message)}>{pick("Create issue","יצירת תקלה")}</button><button onClick={()=>createTaskDraft(message)}>{pick("Create task","יצירת משימה")}</button></footer></>:null}</article>)}</>}
+      {conversationLoading ? <div className="assistant-conversation-loading" role="status"><span aria-hidden="true">✦</span><b>{pick("Opening conversation…", "פותח את השיחה…")}</b><small>{pick("Loading its saved messages", "טוען את ההודעות השמורות")}</small></div> : messages.length === 0 ? <div className="assistant-welcome"><span className="assistant-spark">✦</span><h2>{pick("What are you working on?", "על מה אתם עובדים?")}</h2><p>{pick("Start a new FRC question or reopen a previous conversation when you need it.", "התחילו שאלה חדשה על FRC או פתחו שיחה קודמת בעת הצורך.")}</p><div>{(BUDGET_PILOT?suggestions.slice(0,3):suggestions).map(([en, he]) => <button key={en} disabled={!canUseAssist} type="button" onClick={() => setQuestion(pick(en, he))}>{pick(en, he)} <span>→</span></button>)}</div>{conversations.length > 0 ? <button className="assistant-recent" type="button" onClick={() => setHistoryOpen(true)}><span aria-hidden="true">◷</span><span><b>{pick("Recent conversations", "שיחות אחרונות")}</b><small>{pick(`${conversations.length} saved conversations`, `${conversations.length} שיחות שמורות`)}</small></span><strong aria-hidden="true">›</strong></button> : null}</div> : <>{hasEarlier ? <button className="assistant-load-earlier" type="button" onClick={() => void loadEarlier()} disabled={loadingEarlier}>{loadingEarlier ? pick("Loading…", "טוען…") : pick("Load earlier messages", "טעינת הודעות קודמות")}</button> : null}{messages.map((message) => <article key={message.id} className={`assistant-message is-${message.role}`}><div className="assistant-message-label">{message.role === "assistant" ? "G3 Assist" : pick("You", "אתם")}</div>{message.attachment_name ? <small>▧ {message.attachment_name}</small> : null}<div>{message.content}</div>{message.role==="assistant"?<>{message.citations?.length?<div className="assistant-citations"><b>{pick("Sources","מקורות")}</b>{message.citations.map(source=><a href={source.url} target="_blank" rel="noreferrer" key={source.url}>{source.title} ↗</a>)}</div>:null}<footer className="assistant-answer-actions"><button onClick={()=>void saveKnowledge(message)}>{pick("Save knowledge","שמירת ידע")}</button><button onClick={()=>void createIssue(message)}>{pick("Create issue","יצירת תקלה")}</button><button onClick={()=>createTaskDraft(message)}>{pick("Create task","יצירת משימה")}</button></footer>{software&&<SoftwareReviewHandoff answer={message.content} context={software} citations={message.citations??[]}/>}</>:null}</article>)}</>}
       {busy ? <div className="assistant-thinking"><span></span><span></span><span></span>{pick("Working through it…", "בודק את הנושא…")}</div> : null}<div ref={endRef} />
     </section>
     {!canUseAssist ? <section className="assistant-safety" role="status"><b>{accessLoading ? pick("Checking G3 Assist access…", "בודק הרשאת גישה ל-G3 Assist…") : pick("Paid AI access is not enabled for your role.", "גישה לבינה מלאכותית בתשלום אינה מופעלת לתפקיד שלכם.")}</b><span>{pick("An administrator can enable access in Roles & permissions. Your saved conversations remain available.", "מנהל יכול להפעיל גישה במסך תפקידים והרשאות. השיחות השמורות שלכם נשארות זמינות.")}</span></section> : null}
