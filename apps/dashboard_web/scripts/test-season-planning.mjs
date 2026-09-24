@@ -133,3 +133,17 @@ assert.equal(evaluateRoute(season,robot,[point(9.45)]).errors.length,0,'rectangl
 assert.ok(evaluateRoute(season,robot,[point(9.45)]).warnings.length,'safety margin is a warning');
 assert.equal(cameraCoverage(season,{...cam,model:'limelight4-stock'},poses).length,1);
 console.log('PASS robot-only workspace, zero-point rejection, rectangular wall clearance, soft proxy warnings, reviewed blocking and camera profile.');
+
+const {sweptHits}=await load('../src/lib/routeClearance.ts');
+const {traversalChecks}=await load('../src/lib/routeTraversal.ts');
+const {roundedRoute}=await load('../src/lib/routeSmoothing.ts');
+const tiny={id:'thin',min:{x:.999,y:-.01,z:0},max:{x:1.001,y:.01,z:1}};
+assert.equal(sweptHits(point(0),point(2),{length:.1,width:.1},tiny),true,'thin obstacles cannot fall between sweep samples');
+assert.equal(sweptHits(point(0),point(2),{length:1,width:.2},{...tiny,min:{x:.99,y:.3,z:0},max:{x:1.01,y:.31,z:1}}),false,'long narrow robot fits beside obstacle that its enclosing circle would hit');
+const rotating=[point(0),{...point(0),heading:Math.PI/2}];assert.equal(sweptHits(...rotating,{length:2,width:.1},{id:'turn',min:{x:.65,y:.65,z:0},max:{x:.7,y:.7,z:1}}),true,'in-place rotation sweeps corners');
+const trenchRoute=[point(-5,3.24),point(-2,3.24)];
+assert.ok(traversalChecks(trenchRoute,{...robot,width:.5,height:.7}).some(i=>i.kind==='height'));
+assert.ok(!traversalChecks(trenchRoute,{...robot,width:.5,height:.4,clearance:0}).some(i=>i.kind==='height'||i.kind==='post'));
+assert.ok(traversalChecks([point(-5,1.524),point(-2,1.524)],robot).some(i=>i.kind==='bump'));
+const corner=[point(0),point(1),{...point(1,1),action:'shoot',seconds:1,quantity:1}];const rounded=roundedRoute(corner);assert.deepEqual(rounded[0],corner[0]);assert.deepEqual(rounded.at(-1),corner.at(-1));assert.equal(rounded.filter(p=>p.action==='shoot').length,1);assert.ok(rounded.length>corner.length);
+console.log('PASS swept footprint, thin obstacles, in-place turns, trench height, traversable bumps and action-preserving rounding');
