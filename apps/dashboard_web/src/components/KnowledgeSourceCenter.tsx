@@ -15,6 +15,7 @@ export default function KnowledgeSourceCenter({season,admin,onSeasonAdded,onEvid
  function itemNote(item:CheckItem){
   if(!item.note)return pick('Waiting to be checked','ממתין לבדיקה');
   if(language!=='he')return item.note;
+  if(item.note.startsWith('Indexing pages:'))return item.note.replace('Indexing pages:','אינדוקס עמודים:').replace('pending','ממתין');
   if(item.note.startsWith('Indexed '))return `${item.note.match(/Indexed (\d+)/)?.[1]??''} קטעים אונדקסו וזמינים בחיפוש וב-G3 Assist. הטקסט שחולץ אינו פרשנות שנבדקה.`;
   if(item.note.startsWith('Source fingerprint checked.'))return 'גרסת המקור נבדקה. תוכן המסמך עדיין לא אונדקס או נסקר.';
   if(item.note.startsWith('Publisher confirms'))return 'האתר המפרסם אישר שהמסמך לא השתנה. קובץ ה-PDF לא הורד שוב.';

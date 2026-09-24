@@ -35,7 +35,7 @@ document.getElementById('ingest')!.addEventListener('click',async()=>{
  try{
   async function invoke(body:object){const r=await client!.functions.invoke('knowledge-source-check',{body});if(r.error){const detail=r.error.context instanceof Response?await r.error.context.text():r.error.message;throw Error(detail);}if(r.data?.error)throw Error(r.data.error);return r.data;}
   const {checkId}=await invoke({action:'start',season:2026});let status='running';
-  for(let i=0;i<90&&status==='running';i++){result.textContent=`Check ${checkId}: processing item ${i+1}`;status=(await invoke({action:'advance',checkId})).status;if(status==='busy')throw Error('Another request holds the lease; wait before resuming.');}
+  for(let i=0;i<400&&status==='running';i++){result.textContent=`Check ${checkId}: processing item ${i+1}`;status=(await invoke({action:'advance',checkId})).status;if(status==='busy')throw Error('Another request holds the lease; wait before resuming.');}
   const docs=await client.from('frc_knowledge_documents').select('title,passage_count,indexed_sha256,sha256,ingestion_note');
   result.textContent=JSON.stringify({checkId,status,documents:docs.data?.map(d=>({title:d.title,indexed:d.indexed_sha256===d.sha256,passages:d.passage_count,note:d.ingestion_note})),error:docs.error?.message},null,2);
  }catch(e){result.textContent=String(e);}finally{button.disabled=false;}
