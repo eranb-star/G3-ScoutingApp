@@ -1,3 +1,5 @@
+**Active phase — Software Mentor (24 September 2026):** User authorized implementation. The new offseason repository is not yet identified; use explicitly labelled public historical team code meanwhile. [Implemented first increment, QA evidence and remaining release gates](SOFTWARE_MENTOR_PHASE1_20260924.md). Production remains the simulator milestone; this phase is not yet released. This supersedes earlier awaiting-selection wording.
+
 # Next priorities after simulator milestone — 24 September 2026
 
 ## User direction
