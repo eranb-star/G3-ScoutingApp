@@ -35,6 +35,13 @@ const fourth=await job();assert.equal(await publish(fourth,'b'),true);await db.q
 await db.exec('reset role');assert.equal((await db.query('select count(*) n from frc_corpus_citations')).rows[0].n,2,'retries must not duplicate passages/citations');
 await db.query("select activate_frc_corpus('test')");
 const cancelled=await job();await db.exec('set role authenticated');await db.query('select cancel_frc_source_check($1)',[cancelled.run]);await db.exec('set role service_role');assert.equal(await publish(cancelled,'c'),false);
+// A continued table without the query word must accompany its matching preceding page.
+const continuation=await job();
+assert.equal(await publish(continuation,'d',[...chunks,{body:'The required numerical threshold is fifty in this synthetic fixture.',locator:{page:8}}]),true);
+await db.query('select release_frc_source_check($1,$2)',[continuation.run,continuation.token]);
+await db.exec(`set role authenticated;set test.allowed='yes';set test.uid='${researchMember}'`);
+const contextual=(await db.query("select search_frc_official(2026,'climb') result")).rows[0].result;
+assert.equal(contextual.length,2);assert.ok(contextual.some(r=>r.body.includes('threshold is fifty')),'include adjacent table continuation even without matching query words');
 await db.close();
 assert.ok(textChunks('word '.repeat(1500),{page:1}).every(c=>c.body.length<=2800));
 const html=extractHtml(new TextEncoder().encode('<html><h1 id="rules">Rules</h1><p>'+('climbing rules '.repeat(30))+'</p><h2>Updates</h2><p>'+('updated rules '.repeat(30))+'</p></html>'));assert.equal(html.chunks[0].locator.anchor,'rules');

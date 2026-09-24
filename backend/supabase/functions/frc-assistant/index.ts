@@ -1,7 +1,7 @@
 import {prepareSoftware,softwareEvidence,softwareCitations,validateSoftware,SoftwareError} from './software-context.ts';
 import {officialSeasonEvidence} from './official-season.ts';
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import {retrieveEvidence,retrievalQuery,evidencePrompt,validatedCitations,type Evidence} from './evidence-context.ts';
+import {historyWithoutCitationIds,retrieveEvidence,retrievalQuery,evidencePrompt,validatedCitations,type Evidence} from './evidence-context.ts';
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -178,7 +178,7 @@ Deno.serve(async (request) => {
       caller.rpc('search_frc_team_knowledge',{p_query:retrievalQuery(message),p_limit:6}),
       contextIssueId?caller.from("robot_issues").select("issue_number,title,description,subsystem,severity,status,resolution").eq("id",contextIssueId).maybeSingle():Promise.resolve({data:null})
     ]);
-    const history = (historyRows ?? []).reverse().map((row) => `${row.role === "assistant" ? "G3 Assist" : "Team member"}: ${row.content}`).join("\n\n");
+    const history = (historyRows ?? []).reverse().map((row) => `${row.role === "assistant" ? "G3 Assist" : "Team member"}: ${historyWithoutCitationIds(row.content)}`).join("\n\n");
     const prompt = message || (language === "he" ? "נתח את התמונה הזו בהקשר של FRC." : "Analyze this image in an FRC context.");
     const internalKnowledge=(Array.isArray(teamRows)?teamRows:[]).map((row,index)=>`K${index+1}. [${row.kind}/${row.subsystem}] ${row.title}${row.verified?" (mentor/admin verified)":" (not independently verified)"}: ${row.body}`).join("\n");
     const activeIssue=contextIssue?`ACTIVE ROBOT ISSUE G3-${contextIssue.issue_number} [${contextIssue.subsystem}/${contextIssue.severity}/${contextIssue.status}]\n${contextIssue.title}\n${contextIssue.description}\nCurrent resolution: ${contextIssue.resolution||"none"}`:"(none)";

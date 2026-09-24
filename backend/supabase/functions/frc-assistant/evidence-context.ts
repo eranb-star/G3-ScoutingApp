@@ -25,3 +25,6 @@ export function validatedCitations(answer:string,rows:Evidence[]){
  if(ids.some(id=>!allowed.has(id)))throw new Error('UNSUPPORTED_CITATION');
  return [...new Set(ids)].map(id=>({id:'S'+id,url:allowed.get(id)!.url,title:allowed.get(id)!.title,version:allowed.get(id)!.version}));
 }
+
+// Prior-turn citation IDs are not proof in the newly retrieved evidence set.
+export function historyWithoutCitationIds(text:string){return text.replace(/\[S\d+(?:\s*[,;]\s*S?\d+)*\]/g,"[prior source reference; recheck current evidence]");}
