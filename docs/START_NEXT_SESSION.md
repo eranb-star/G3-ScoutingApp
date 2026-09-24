@@ -10,18 +10,18 @@ Read this entry point before planning or implementing. Do not rely on conversati
 
 1. [Working expectations and regression lessons](WORKING_EXPECTATIONS.md).
 2. [Authoritative current phases, delivered scope, season architecture, APK and open inputs](CURRENT_PHASES_20260924.md).
-3. [Latest production release: implementation, exact source/deployment/hash, acceptance failures/fixes, cost and rollback](THREE_INCREMENT_PROGRAMME_20260924.md).
+3. [Latest engineering production release: exact source/deployment/hash, acceptance and limits](ENGINEERING_RELEASE_20260924.md), then [previous three-increment release and recovery evidence](THREE_INCREMENT_PROGRAMME_20260924.md).
 4. The selected feature's linked release/design documents and actual code. Use [official ingestion](OFFICIAL_INGESTION_20260924.md), [Software Mentor](SOFTWARE_MENTOR_PHASE1_20260924.md), [latest simulator settings](SIMULATOR_SETTINGS_20260923.md), and [APK milestone](APK_MILESTONE_20260921.md) as applicable.
 5. For longer-term requirements, [agreed feature details](NEXT_PHASES_AGREEMENT_20260921.md), [connected knowledge design](CONNECTED_KNOWLEDGE_DESIGN_20260920.md), [master programme](PAUSE_HANDOVER_20260913.md) and [collection coverage](research/FULL_COLLECTION_20260920.md). Current status/order in item 2 overrides older status language.
 
 ## Current boundary
 
-- Engineering website source `a776397`, production Vercel `BGCnXh9QXuPXJYEJibSTc9JsPaMV`, supersedes `8fb99dc`. Check the latest engineering release record for acceptance follow-ups and final source, not the earlier three-increment deployment.
+- Engineering website source `f2c3f41`, production Vercel `6TZsuSvJKCpKcmkNGTfH8unQ13oH`, supersedes `a776397` and `8fb99dc`. See the engineering release record for exact acceptance, backend hash and rollback. Later documentation commits are separate from the running website source.
 - Delivered knowledge/Gemini/budgets, selected-code Software Mentor, supported official ingestion, simulator milestones and existing mentor/task workflows must be extended, not rebuilt.
-- Decision UI and saved-answer task provenance deployed; synthetic workflow acceptance passed; permission tightening and local encrypted restore passed. AI mixed-level reasoning, portable/offsite/full-service recovery and physical acceptance remain open.
+- Decision UI and saved-answer task provenance deployed; synthetic workflow acceptance passed; permission tightening and local encrypted restore passed. The supported mixed-level tower calculation now passes production acceptance through deterministic server authority. Broader strategy/follow-up/classifier evaluation, portable/offsite/full-service recovery and physical acceptance remain open.
 - APK remains 2.2.0/code24 from September 21, predating later website features. Do not describe it as current with production.
 - Future-season architecture is now captured: shared engines plus versioned season packages; separate knowledge/field/simulation readiness. Check now does not currently generate a full playable future field. The user agreed direction; no new feature phase is started by this documentation update.
-- Recommended next: close known answer-quality/allowance-UX gaps, then reusable season foundation. Recovery can proceed alongside once destination/key custody is supplied. Further simulator work remains deferred unless selected.
+- Active authorized programme: A–E. Preserve the delivered reviewed rules/policies, CAD camera analysis, cloud plans and bounded route recommendations; continue the specific remaining software scope in the engineering release record. Actual repository integration awaits the team's repository identity; recovery awaits destination/key custody. Do not treat the earlier phase table as an instruction to rebuild delivered features.
 
 ## Repository discipline
 
