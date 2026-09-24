@@ -1,9 +1,10 @@
 import fs from 'node:fs';import assert from 'node:assert/strict';
 import {createResearchFixture,researchAdmin,researchMember} from './robot-research-fixture.mjs';
 const db=await createResearchFixture(),sql=fs.readFileSync(new URL('../../../backend/supabase/engineering_plans_20260924.sql',import.meta.url),'utf8');await db.exec(sql);await db.exec(sql);
-const workspace={schema:1,draft:{status:'unverified-planning-draft',route:[{},{}]},candidates:[]};
+const workspace={schema:1,draft:{status:'unverified-planning-draft',route:[{}]},candidates:[]};
 const save=async(id=null,rev=0,shared=false)=>(await db.query("select save_engineering_plan($1,'Synthetic plan',$2,$3,$4) result",[id,workspace,rev,shared])).rows[0].result;
 await db.exec(`set role authenticated;set test.allowed='yes';set test.uid='${researchAdmin}'`);
+workspace.draft.route=[];await assert.rejects(()=>save(),/Draft limit/);workspace.draft.route=[{}];
 const p=await save();assert.equal(p.revision,1);await save(p.id,1);
 await assert.rejects(()=>save(p.id,1),/another device/);
 await db.exec(`set test.uid='${researchMember}'`);assert.equal((await db.query('select * from engineering_plans')).rows.length,0);

@@ -19,14 +19,14 @@ export function segmentHitsBox(a:Point2,b:Point2,box:Box3,padding=0){
 }
 export function evaluateRoute(season:SeasonPackage,robot:MotionProfile,route:RoutePoint[]){
  if(![robot.length,robot.width,robot.speed,robot.acceleration,robot.turnRate].every(n=>Number.isFinite(n)&&n>0&&n<=20)||!Number.isFinite(robot.clearance)||robot.clearance<0||robot.clearance>2||typeof robot.measured!=='boolean')throw Error('Invalid robot profile');
- if(!Array.isArray(route)||route.length<2||route.length>100||route.some(p=>![p.x,p.y,p.heading,p.seconds,p.points,p.success].every(Number.isFinite)||p.seconds<0||p.seconds>120||p.points<0||p.points>100000||p.success<0||p.success>1||!['none','intake','shoot','wait'].includes(p.action)))throw Error('Invalid route');
+ if(!Array.isArray(route)||route.length<1||route.length>100||route.some(p=>![p.x,p.y,p.heading,p.seconds,p.points,p.success].every(Number.isFinite)||p.seconds<0||p.seconds>120||p.points<0||p.points>100000||p.success<0||p.success>1||!['none','intake','shoot','wait'].includes(p.action)))throw Error('Invalid route');
  if(robot.inventory&&(!Number.isInteger(robot.inventory.capacity)||robot.inventory.capacity<1||robot.inventory.capacity>1000||!Number.isInteger(robot.inventory.preload)||robot.inventory.preload<0||robot.inventory.preload>robot.inventory.capacity))throw Error('Invalid inventory profile');
  if(route.some(p=>p.quantity!==undefined&&(!Number.isInteger(p.quantity)||p.quantity<0||p.quantity>1000)))throw Error('Invalid action quantity');
  const constraints=robot.constraints;
  if(constraints&&(!Number.isFinite(constraints.reserveSeconds)||constraints.reserveSeconds<0||constraints.reserveSeconds>120||!Array.isArray(constraints.reservations)||constraints.reservations.length>12||constraints.reservations.some(r=>!r.id||![r.x,r.y,r.width,r.height,r.from,r.to].every(Number.isFinite)||Math.abs(r.x)>50||Math.abs(r.y)>50||r.width<=0||r.width>100||r.height<=0||r.height>100||r.from<0||r.to<=r.from||r.to>120)))throw Error('Invalid partner reservations');
  const motion=routeMotion(robot,route);
  const radius=Math.hypot(robot.length,robot.width)/2+robot.clearance;
- const errors:string[]=[],segments:{seconds:number;distance:number}[]=[];let seconds=0,distance=0,expectedPoints=0;
+ const errors:string[]=[],warnings:string[]=[],segments:{seconds:number;distance:number}[]=[];let seconds=0,distance=0,expectedPoints=0;
  if(robot.policy){const p=robot.policy;if(!Number.isInteger(p.seconds)||p.seconds<1||p.seconds>120||![p.maxPreload,p.pointsPerPiece].every(n=>Number.isInteger(n)&&n>=0&&n<=999))throw Error('Invalid planning policy');if(season.autonomous.seconds!==p.seconds)errors.push('Duration differs from the current official policy');if((robot.inventory?.preload??0)>p.maxPreload)errors.push(`Official preload limit is ${p.maxPreload}`);}
  let remainingPieces=robot.inventory?.preload??null;
  route.forEach((p,i)=>{
@@ -37,7 +37,9 @@ export function evaluateRoute(season:SeasonPackage,robot:MotionProfile,route:Rou
     else{remainingPieces+=p.action==='intake'?p.quantity:-p.quantity;if(remainingPieces<0)errors.push(`Waypoint ${i+1}: shooting more game pieces than available`);if(remainingPieces>robot.inventory!.capacity)errors.push(`Waypoint ${i+1}: hopper capacity exceeded`);}
    }else if(p.quantity)errors.push(`Waypoint ${i+1}: only intake/shoot actions can move game pieces`);
   }
-  if(Math.abs(p.x)+radius>season.field.length/2||Math.abs(p.y)+radius>season.field.width/2)errors.push(`Waypoint ${i+1} exceeds the conservative field clearance`);
+  const hx=(Math.abs(Math.cos(p.heading))*robot.length+Math.abs(Math.sin(p.heading))*robot.width)/2,hy=(Math.abs(Math.sin(p.heading))*robot.length+Math.abs(Math.cos(p.heading))*robot.width)/2;
+  if(Math.abs(p.x)+hx>season.field.length/2||Math.abs(p.y)+hy>season.field.width/2)errors.push(`Point ${i}: part of the robot extends beyond the field wall. Move its center farther inside the field.`);
+  else if(Math.abs(p.x)+hx+robot.clearance>season.field.length/2||Math.abs(p.y)+hy+robot.clearance>season.field.width/2)warnings.push(`Point ${i}: the robot fits, but is closer to the wall than your ${robot.clearance.toFixed(2)} m safety margin.`);
   if(p.action!=='none'&&!season.supportedInteractions.includes(p.action))errors.push(`Unsupported action: ${p.action}`);
   if(p.action==='intake'&&(i===0||!leg?.distance))errors.push(`Waypoint ${i+1}: on-the-move intake needs an incoming travel segment`);
   if(p.action==='none'&&(p.seconds!==0||p.points!==0))errors.push(`Waypoint ${i+1}: motion-only waypoint cannot award points or wait`);
@@ -45,14 +47,14 @@ export function evaluateRoute(season:SeasonPackage,robot:MotionProfile,route:Rou
   if(!i){for(const r of constraints?.reservations??[])if(startTime<=r.to&&seconds>=r.from&&Math.abs(p.x-r.x)<=r.width/2+radius&&Math.abs(p.y-r.y)<=r.height/2+radius)errors.push(`Waypoint 1: partner reservation ${r.id}`);return;}const a=route[i-1],d=Math.hypot(p.x-a.x,p.y-a.y);
   const t=leg!.seconds;
   distance+=d;segments.push({seconds:t,distance:d});
-  for(const b of season.field.obstacles)if(segmentHitsBox(a,p,b,radius))errors.push(`Segment ${i}: clearance intersects ${b.id}`);
+  for(const b of season.field.obstacles)if(segmentHitsBox(a,p,b,radius)){const names:Record<string,string>={'proxy-1':'Red hub','proxy-2':'Blue hub','proxy-3':'Red tower','proxy-4':'Blue tower'};const message=`Travel from point ${i-1} to ${i}: possible contact with ${names[b.id]??b.id}. This uses an approximate obstacle box and robot safety envelope; inspect the visible route.`;if(season.field.geometry==='proxy')warnings.push(message);else errors.push(message);}
   for(const r of constraints?.reservations??[]){const box={id:r.id,min:{x:r.x-r.width/2,y:r.y-r.height/2,z:0},max:{x:r.x+r.width/2,y:r.y+r.height/2,z:3}};if(startTime<=r.to&&startTime+t>=r.from&&segmentHitsBox(a,p,box,radius))errors.push(`Segment ${i}: partner reservation ${r.id}`);if(startTime+t<=r.to&&seconds>=r.from&&segmentHitsBox(p,p,box,radius))errors.push(`Waypoint ${i+1}: partner reservation ${r.id}`);}
  });
  const margin=season.autonomous.seconds-seconds;if(margin<0)errors.push('Route exceeds autonomous duration');
  if(constraints&&margin<constraints.reserveSeconds)errors.push('Route does not preserve the requested time reserve');
- return {seconds,distance,margin,expectedPoints,remainingPieces,segments,errors:[...new Set(errors)],finish:route[route.length-1],basis:robot.measured?'Measured motion limits; continuous polyline estimate':'Unmeasured motion assumptions; not match prediction'};
+ return {seconds,distance,margin,expectedPoints,remainingPieces,segments,warnings:[...new Set(warnings)],errors:[...new Set(errors)],finish:route[route.length-1],basis:robot.measured?'Measured motion limits; continuous polyline estimate':'Unmeasured motion assumptions; not match prediction'};
 }
 export function rankRoutes(season:SeasonPackage,robot:MotionProfile,routes:{id:string;points:RoutePoint[]}[]){
  if(routes.length>200)throw Error('Too many candidate routes');
- return routes.map(r=>({id:r.id,route:r.points,result:evaluateRoute(season,robot,r.points)})).filter(r=>!r.result.errors.length).sort((a,b)=>b.result.expectedPoints-a.result.expectedPoints||b.result.margin-a.result.margin||a.id.localeCompare(b.id));
+ return routes.map(r=>({id:r.id,route:r.points,result:evaluateRoute(season,robot,r.points)})).filter(r=>!r.result.errors.length&&!r.result.warnings.length).sort((a,b)=>b.result.expectedPoints-a.result.expectedPoints||b.result.margin-a.result.margin||a.id.localeCompare(b.id));
 }

@@ -1,0 +1,20 @@
+# Robot-first route and connected camera workflow — 24 September 2026
+
+## Delivered scope
+- New plans start with only the robot. Place robot start moves its pose on the field; subsequent clicks add waypoints. All non-start points are removable, including the final waypoint. Reset route keeps the chosen start pose and clears actions and other points. Existing saved routes are preserved.
+- One-point plans evaluate, export, import and save. Empty routes remain invalid. Playback and route alternatives need travel points; a robot-only plan is a valid setup, not an error.
+- Expanded field uses most of the viewport; the selected-point editor is an optional floating panel.
+- Wall checks use the oriented rectangular footprint instead of a circumscribed circle. Physically out-of-field poses still block. Safety-margin proximity is a warning. Approximate hub/tower box intersections have understandable names and allow manual preview, but are excluded from recommendations. Reviewed obstacles remain blocking. Bumps are not solid obstacle proxies. Preview is not certified collision-free driving; swept chassis, ramp traversal and actual collection remain separate simulation limitations.
+- One Camera setup & visibility panel combines candidate configuration, selected CAD camera, click-to-place lens coordinates, camera view and mesh coverage. Coordinates are relative to the robot planning origin at floor height: X forward, Y left, Z up. Axes are shown. Custom CAD must be aligned; do not assume its original CAD origin is correct. Click placement gives a surface position; verify actual lens clearance and use numeric offsets for the real mount.
+- Limelight 4 stock optics preset: horizontal 82°, vertical 56.2°, processing width 1280. Official source: https://docs.limelightvision.io/docs/docs-limelight/getting-started/limelight-4 . Custom/measured settings support other cameras and lens/crop changes. Range and minimum tag pixels are assumptions. This does not model calibrated detector accuracy, latency, exposure or distortion.
+- Coverage reports sampled robot positions with visible tags, multi-tag coverage and camera-loss resilience. Approximate-box estimate is explicitly distinct from CAD mesh analysis. No claim of guaranteed localization, game-piece detection or optimal mounts over all possible positions.
+
+## Database and regression protection
+Narrow migration backend/supabase/engineering_plan_start_only_20260924.sql replaces only save_engineering_plan to accept 1–100 points. No permission/grant/policy changes. Base migration updated too. Tests retain empty-route rejection, private/shared RLS, immutable history and optimistic concurrency. Do not deploy UI alone without this migration.
+
+TypeScript, production build, season-planning and database planning tests passed. Browser verified start placement, final-waypoint deletion, reset, expanded actual-field view, Limelight preset, click-to-place coordinate updates and one-position CAD coverage analysis. Physical camera measurements and on-robot acceptance remain required. Existing build size warnings remain.
+
+## Status
+Implementation pending commit/release at writing; production migration and release verification are recorded below before completion. Previous production d380f71649f682626e63bbbf3547f6b73c4be902 / 3cqqGjoxw6HfLZWYREW4nhWeLtxL.
+
+Robot-code generation remains unimplemented. Repository identity/library/command bindings plus implementation/build validation are required. APK remains 2.2.0/code24; this is a website update.
