@@ -1,3 +1,5 @@
+**Superseding team-first release:** See [TEAM_PLANNING_PRACTICE_20260925.md](TEAM_PLANNING_PRACTICE_20260925.md): source 9cac90f / production EFEivjaqgHeFGmxp134QQRW2aNce. Own-robot clearance/corner rounding and structured local practice reviews are delivered; the release below is historical. APK remains unchanged.
+
 **Next priorities clarified 25 September:** [NEXT_PRIORITIES_20260925.md](NEXT_PRIORITIES_20260925.md) supersedes earlier recommendation ordering. Read the mandatory recommendation reconciliation in [WORKING_EXPECTATIONS.md](WORKING_EXPECTATIONS.md). Delivered season setup/Check now and answer fixes must not be proposed again.
 
 # Current checkpoint — 25 September 2026
@@ -58,3 +60,4 @@ Inspect existing competition, scouting, tasks, inventory and analytics first; ex
 
 ## Success standard
 The ambition is a world-class team engineering and competition system. Judge it by measured team outcomes, reproducible results, usable workflows and reliable operation. No software can guarantee a World Championship, permanent superiority, zero regressions, exact uncalibrated physics or unlimited scale. These are reasons to measure and improve, not to substitute disclaimers for completing authorized work.
+

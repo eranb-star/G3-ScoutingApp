@@ -21,3 +21,9 @@ Real repository-bound code generation, measured dynamics, camera calibration and
 
 No new paid AI calls, permission expansion, database migration or APK rebuild required. Current production before this release: 5046a7f / J4UXhWDK8ZAFxb8aiDxvVKNXptsc. Record exact released source separately from later documentation commits.
 
+
+## Release
+Implementation: main 37e64af; isolated release 9cac90f167dcb0906bb11a107be98335e48e52d0. Both contain the same implementation. Vercel production EFEivjaqgHeFGmxp134QQRW2aNce is Ready and assigned to g3-6740.com (25 September, 01:07 Israel). Preview 41qGosxJ4HGdWyD1275NbNuaoeVw. Rollback: 5046a7f / J4UXhWDK8ZAFxb8aiDxvVKNXptsc. No database or APK change.
+Browser rounding operation created corner samples and Undo restored the original start + two points. No browser errors recorded in fresh preview. Narrow-device/physical VR acceptance is not claimed.
+
+Production acceptance: authenticated g3-6740.com/field-twin loaded new planner rounding control and all four exercises. A complete 60-second shooting attempt produced 8 shots / 8 scored, saved successfully, then survived a cold reload with one comparable baseline. No console errors observed. This is reference-simulation acceptance, not physical robot accuracy.
