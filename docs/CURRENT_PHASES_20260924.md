@@ -22,7 +22,9 @@ This is the authoritative remaining-phase summary after the three-increment rele
 - Simulator graphics/quality presets, carpet/hall, driver views/eye height/fullscreen, arrow movement, VR prototype, timed practice/results and recorded visual replay; intake contacts, official welded-field tags, inspection, published 6328 Darwin and one computer opponent. Numeric keyboard editing and parallel 1/2/3 shooting; KitBot 40 and Darwin 60/triple defaults. See [remaining simulator scope](NEXT_PRIORITY_20260924.md#deferred-simulator-backlog-not-unfinished-delivered-features) and [latest settings release](SIMULATOR_SETTINGS_20260923.md).
 - Focused production permission tightening and fresh encrypted local Storage backup/restore. Full disaster recovery is not complete.
 
-## Recommended next phases / remaining scope
+## Earlier phase estimates — reconcile with the current engineering release
+
+The table below predates this day's A–E implementation. Its rows are programme context, not current outstanding task lists or remaining effort estimates. Supported mixed-level calculations, versioned rule/policy authority, manual camera placement plus actual-CAD ranking, cloud planning and bounded route recommendations have since shipped. Use ENGINEERING_RELEASE_20260924.md for delivered scope and concrete remaining limits; do not quote these older totals as work still required.
 
 These are workstreams, not a requirement to finish every row before receiving value. Estimates are provisional focused engineering days, not Codex tokens or guaranteed elapsed times. Do not add overlapping estimates. Re-estimate after inspecting the selected subset.
 
