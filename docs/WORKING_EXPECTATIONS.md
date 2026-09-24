@@ -36,3 +36,16 @@ Regression prevention is mandatory engineering work, not a guarantee that no fut
 - Simulator fidelity: keep visible mechanisms and their collision/feeding behavior aligned; distinguish reference proxies from calibrated hardware. AprilTags require official artwork, family, dimensions, field variant and poses. If a requested public CAD source cannot be exported, investigate a licensed usable alternative before making the user solve access. Preserve source versions and original part names for inspection. Opponent inventories and scoring must not contaminate the driver’s practice results. Verify the real asset and visible gameplay, not only a selector or a loading message.
 
 - Simulator settings: validate numeric input on commit without rejecting intermediate typing. Parallel shooters must launch separate balls simultaneously with one volley cooldown, conserved identities and ball-based result counts. User-requested profile defaults are not independently verified hardware specifications.
+
+## Mandatory recommendation reconciliation — 25 September 2026
+Failure: after saying the handover was complete, the assistant recommended season setup/Check now and answer corrections in terms that implied they were unfinished. They were already delivered and recorded. A new checkpoint alone did not resolve contradictory historical statements. This wasted user effort and damaged confidence.
+
+Before every next-phase recommendation:
+1. Read START_NEXT_SESSION.md, current checkpoint and the latest relevant feature release, then inspect the relevant current code. Use production evidence for deployment claims; if not freshly audited, say the status is recorded evidence.
+2. For each proposed item explicitly establish: existing delivered behavior; exact additional missing behavior; evidence/path supporting that distinction; dependency; acceptance outcome. Do not offer a broad phase name with already-shipped work hidden inside it.
+3. Reconcile conflicting historical statements against later acceptance; amend the active summary and mark historical records superseded. Never treat the oldest open issue as authoritative over a later verified fix.
+4. Separate feature implementation, regression/quality evaluation, deployment and physical acceptance. A broader evaluation gap does not reopen a fixed issue without a failing case.
+5. Keep the user's current constraints: private offseason repo not connected; representative logs unavailable until next week; camera/robot/device validation needs real hardware. Do not keep requesting the same missing inputs or prioritize blocked work as immediately executable.
+6. Label proposed next priorities versus authorized active work. A discussion about priorities does not start implementation. Preserve earlier A–E authorization but do not silently expand scope.
+
+Required fixed facts: season setup and Check now are shipped; supported official ingestion/versioning is shipped; supported answer/retrieval/mixed-scoring corrections are shipped and tested; chat budgets/permissions and task mentor workflow are shipped. Remaining autonomous code generation is genuinely unimplemented. Do not claim documentation ensures perfect recall or zero future errors: perform this reconciliation, cite the evidence and correct contradictions.

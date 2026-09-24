@@ -1,3 +1,5 @@
+**Next priorities clarified 25 September:** [NEXT_PRIORITIES_20260925.md](NEXT_PRIORITIES_20260925.md) supersedes earlier recommendation ordering. Read the mandatory recommendation reconciliation in [WORKING_EXPECTATIONS.md](WORKING_EXPECTATIONS.md). Delivered season setup/Check now and answer fixes must not be proposed again.
+
 **Current checkpoint (25 September):** Read [CHECKPOINT_20260925.md](CHECKPOINT_20260925.md) first for the latest release, delivered capabilities, actual remaining work, APK and required inputs. Earlier phase estimates and release identifiers below are historical where superseded.
 
 **Latest robot-first and camera workflow:** Read [PLANNER_START_CAMERA_20260924.md](PLANNER_START_CAMERA_20260924.md) first for current behavior, migration and release status.

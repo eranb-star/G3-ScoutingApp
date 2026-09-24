@@ -1,3 +1,5 @@
+**Next priorities clarified 25 September:** [NEXT_PRIORITIES_20260925.md](NEXT_PRIORITIES_20260925.md) supersedes earlier recommendation ordering. Read the mandatory recommendation reconciliation in [WORKING_EXPECTATIONS.md](WORKING_EXPECTATIONS.md). Delivered season setup/Check now and answer fixes must not be proposed again.
+
 # Current checkpoint — 25 September 2026
 
 This is the current status and next-work index. Read with START_NEXT_SESSION.md and the linked feature records. Older numbered phases and estimates are historical, not a list of features to rebuild. This checkpoint authorizes no new deployment or feature work beyond existing user authorization.
