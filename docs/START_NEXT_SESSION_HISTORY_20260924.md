@@ -1,6 +1,6 @@
-**Current authority:** Read [CURRENT_PHASES_20260924.md](CURRENT_PHASES_20260924.md) and [START_NEXT_SESSION.md](START_NEXT_SESSION.md). The status, selected-next and remaining-effort statements below are historical wherever superseded; detailed feature requirements remain useful. The reusable future-season agreement and current APK/AI/recovery gaps are captured in the current authority.
-
 **Latest production release — 24 September 2026:** All three authorized increments have progressed: decision-support UI and saved-answer task provenance are deployed; focused production permission fixes are applied; the existing student/mentor review and dependency flow passed synthetic end-to-end acceptance. Website source `8fb99dc`, Vercel `NefhtgnnVSdxYfQDPDRTYc3XbaRm` (Ready). Backend scoring retrieval and answer-quality follow-ups are recorded in [the authoritative programme and release record](THREE_INCREMENT_PROGRAMME_20260924.md). Fresh encrypted local backup/restoration passed. Full disaster recovery remains incomplete: approved offsite destination/key custody, portable/full-service restore and physical acceptance are still pending. Older production/awaiting-selection notices below are historical; do not restart delivered work.
+
+**Active programme — 24 September 2026:** User authorized all three: recovery/permissions, existing-knowledge decision support, and acceptance of the existing engineering workflow. [Authoritative scope, implementation, checks and remaining blockers](THREE_INCREMENT_PROGRAMME_20260924.md). Earlier “no next increment selected” statements are historical. Offsite backup destination/key custody and physical acceptance remain open; do not claim full recovery. Do not rebuild delivered knowledge, budgets, permissions or review features.
 
 **Current production release — 24 September 2026:** The accepted compact Software Mentor first increment and supported official-document ingestion are deployed. Website source `3e67735`, Vercel `GoEEZfFZGZ33xRFrAR1kUHmwbasb` (Ready); backend-only acceptance fixes followed through main `b86cbf7`. [Exact deployment, checks, counts, cost, limitations and rollback](OFFICIAL_INGESTION_20260924.md). Production holds 18 indexed document entries / 17 distinct files / 1,686 passages; unsupported or over-limit files remain explicit attention items. Real rules and selected-code answers, citations, history and settled costs were verified. This supersedes older “Software Mentor not released” / “official ingestion proposed” statements below.
 
@@ -30,37 +30,34 @@
 
 **Graphics update (2026-09-21):** The user subsequently authorized graphics A + B and default arrow-key movement. See [implementation and acceptance checkpoint](GRAPHICS_AB_20260921.md). Implemented locally, not deployed; this supersedes the earlier awaiting-start status below.
 
-# Current release and roadmap — 2026-09-21
+# Start the next G3 session
 
-Read [START_NEXT_SESSION.md](START_NEXT_SESSION.md) for recorded production status and [WORKING_EXPECTATIONS.md](WORKING_EXPECTATIONS.md) for execution rules.
+Read this file first. Current status below supersedes historical disabled, undeployed and candidate-only wording elsewhere.
 
-## Selected next increment
+1. Read [working expectations](WORKING_EXPECTATIONS.md).
+   Read [agreed next phases and detailed acceptance scope](NEXT_PHASES_AGREEMENT_20260921.md) before planning new work. Graphics A + B is the user's selected next increment; this checkpoint authorizes documentation only, with implementation awaiting the user's start instruction. Existing knowledge, review workflows and chat governance must not be rebuilt.
+2. Read [verified production release and acceptance](staging/KNOWLEDGE_CONNECTED_RELEASE_20260921.md).
+3. Read [controlling knowledge design](CONNECTED_KNOWLEDGE_DESIGN_20260920.md), [master programme handover](PAUSE_HANDOVER_20260913.md), and [collection coverage](research/FULL_COLLECTION_20260920.md) for wider scope.
+4. Earlier session checkpoints are preserved in [session history](SESSION_HISTORY_20260921.md); they are historical evidence, not current deployment status.
 
-Graphics A + B and subsequent simulator milestones are delivered. Further simulator development is deferred. See [current priorities](NEXT_PRIORITY_20260924.md); the next implementation awaits user selection.
+## Current production state — 2026-09-21
 
-[Agreed next phases](NEXT_PHASES_AGREEMENT_20260921.md) is the authoritative detailed refinement: deliverables, dependencies, estimates, acceptance criteria and explicit non-goals. Read it before implementing. Estimates are not token budgets.
+- Website g3-6740.com: commit 73dee1d, Vercel JBcqaNToZxoiQvFXzKwfHBuPFwr4, verified Ready/Current. Connected FRC knowledge workspace and popup loading/error boundary deployed.
+- Assistant Edge function: latest code c754f5d on codex/knowledge-protection-release; persisted deployed source matched the bundle. This includes official 2026 manual retrieval, Admin topic exemption and the message-history insertion fix.
+- Gemini G3-6740-AI project verified Tier 1 Prepay. Production enabled=true, activation_approved=true, monthly budget 25 USD. Existing other spending/access controls remain. Admins can ask general-topic questions; other roles retain the purpose restriction. Do not re-disable or narrow Admin access without a reason and user discussion.
+- Exact production Admin question about building a climber for 2026 completed HTTP 200, cited official scoring/tower sections, and settled 0.010543 USD. The completed answer was restored to conversation history without another paid call; two messages were verified in the UI. This is one live quality case, not comprehensive acceptance.
+- Active corpus in QA and production: 1,716 sources, 48,797 distinct passages, 50,157 citations; body hashes and citation mapping verified. Production indexed corpus footprint 137,609,216 bytes. Corpus is not exhaustive top-500 or 10-year coverage. Imported passages are not verified robot configurations.
 
-## Existing production foundation
+## Remaining gaps — do not claim these complete
 
-Recorded web release: 73dee1d; Assistant Edge code: c754f5d. Paid Gemini, Admin topic exemption, $25 monthly application cap, source search and one successful official-cited 2026 climbing answer are recorded in [production acceptance](staging/KNOWLEDGE_CONNECTED_RELEASE_20260921.md). This documentation update makes no new live-verification claim.
+- Live official-manual registry covers 2026 only. Broader season discovery/registration, automatic PDF extraction/indexing, Q&A/update completeness and robust conversational season tracking remain.
+- Reviewed robot catalogue is empty in production. Its filters return zero; populated source search is separate. Default search UX still needs correction to avoid directing users into an empty catalogue.
+- Non-Admin purpose classifier has produced malformed/ambiguous outputs. Admin bypass is tested; broader Mentor classification quality and structured-output improvements remain.
+- No broad paid answer-quality evaluation, real Mentor/Student browser acceptance, full recovery rehearsal or physical-device acceptance has been claimed.
+- The successful response uses source citations; numerical targets proposed by the model (e.g. test-cycle targets) are recommendations, not official rules or measured team capability.
 
-Corpus: 1,716 sources / 48,797 distinct passages / 50,157 citations. Not exhaustive top-500 or ten-year coverage. Reviewed production robot catalogue remains empty. Existing task/review/dependency flows and chat budgets are not rebuild projects.
+## Repository and data handling
 
-## Programme index
+Release branch codex/knowledge-protection-release is isolated at docs/staging/knowledge-release.local. Main working branch codex/release-1-qa contains the accumulated implementation/research checkpoint; it is not automatically the production version. Consult git log/status before edits and do not deploy this branch wholesale merely because it contains more files.
 
-| Workstream | Remaining scope |
-|---|---|
-| 0 Recovery | Portable/offsite recovery, permissions and demonstrated restore. |
-| 1 Engineering controls | Acceptance and demonstrated fixes to existing mentor/review/configuration/test/offline flows. |
-| 2 Knowledge | Populated search UX, season document lifecycle, quality evaluation and answers linked to existing team decisions/tests; selective historical curation. |
-| 3 Simulator | Replay/comparison, measured calibration and complete match/multi-robot behavior. Historical playable seasons are separate optional work. |
-| AI extensions | Existing chat protections stay; extend governance for future paid background jobs and external actions before enabling them. |
-| 4 Engineering Twin | Measured subsystem models; camera placement/count analysis; parameterized robot concepts with explicit assumptions and physical validation. |
-| Software Mentor | Exact-version repository understanding/review, logs, bounded tested patches, simulation/tuning and learning through existing workflows. |
-| 5 CAD/Onshape | Read-only version-linked review, then controlled approved edits. GitHub CAD and Onshape access are separate; labeled public/sample demos are possible. |
-| 6 Manufacturing | BOM/materials, manufacture/QC/install lineage and reviewed machine-specific CAM. |
-| 7 Orchestration | Authorized durable cross-system workflows, human gates, budgets and recovery. |
-| Mobile | Current builds/distribution and real-device acceptance; deferred checkout separately validated. |
-| Optional finance | Audited reversals, bank reconciliation, restricted funds, receipts and period close. Existing repayments already work. |
-
-The [master handover](PAUSE_HANDOVER_20260913.md) preserves detailed programme/V5.2 scope and historical evidence. Older deployment/disabled/undeployed notes are historical and are superseded by START_NEXT_SESSION.md. In particular, the old ordering of all paid AI after Phase 3 no longer describes the already deployed protected assistant.
+Research scripts, census/selection reports, attribution metadata, migrations, tests and design records belong in Git. Downloaded source corpora, local transport SQL/CSV, credentials and publisher manual downloads stay ignored; the corpus is already in Supabase. No credentials should enter documentation. Preserve personal Android .idea edits. Do not re-fetch/re-import the completed corpus or rerun every historical test without a concrete reason.
