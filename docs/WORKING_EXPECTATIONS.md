@@ -15,6 +15,7 @@ These requirements summarize the user's explicit preferences across this session
 - Avoid wasteful polling. Official document checks should be manual/event/season-appropriate; no five-minute recurring checks. Current 15-minute in-process cache is on-demand reuse, not scheduled polling.
 - Preserve source provenance/version/hash and honest coverage. Counts must distinguish sources, distinct passages, citation occurrences and robot configurations. Never invent verified robot facts or claim all top-500 teams/10 years are covered.
 - Save durable handovers with exact release commits, deployment IDs, migrations, acceptance evidence, remaining gaps and rollback context. Keep one authoritative current summary; retain superseded notes as history. Never commit credentials, private account details or ignored downloaded corpora.
+- Decision-support acceptance must inspect the actual retrieved passages before spending on repeated provider tests. Long queries can displace decisive scoring tables; preserve table continuations and verify numerical thresholds. Read the complete answer: a correct citation or successful API response does not prove the strategic conclusion. Check mixed-level arithmetic, sufficient versus necessary conditions, unsupported engineering estimates and physically meaningful test criteria in both English and Hebrew. Record failures and corrections; never present a proposed target as measured performance or one successful answer as universal accuracy.
 
 ## Concrete failures to prevent
 
