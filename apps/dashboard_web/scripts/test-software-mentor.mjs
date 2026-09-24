@@ -13,7 +13,8 @@ const prepared=await prepareSoftware(repository,'main',send);assert.equal(prepar
 const selection={repository,revision,paths:['src/Intake.java'],mode:'explain'};
 const evidence=await softwareEvidence(selection,send);assert.equal(evidence.rows.length,1);assert.match(evidence.prompt,/No code was executed/);assert.match(evidence.rows[0].text,/2:  void stop/);
 assert.equal(softwareCitations('The method is empty [C1:L2-L2]',evidence.rows)[0].url,'https://github.com/'+repository+'/blob/'+revision+'/src/Intake.java#L2-L2');
-for(const bad of ['[C9:L1]','[C1:L0]','[C1:L4]','[C1:L3-L1]','[C1]','no sources'])assert.throws(()=>softwareCitations(bad,evidence.rows));
+assert.equal(softwareCitations('File [C1]; two locations [C1:L1, C1:L2-L3]',evidence.rows).length,2);
+for(const bad of ['[C9] [C1:L1]','[C1:L1, C9:L1]','[C1:L1, C1:L999]','[C9:L1]','[C1:L0]','[C1:L4]','[C1:L3-L1]','[C1]','no sources'])assert.throws(()=>softwareCitations(bad,evidence.rows));
 for(const bad of [{repository:'evil/repo'},{revision:'main'},{paths:['../secret.java']},{paths:['.env']},{paths:Array(7).fill('src/Intake.java')},{mode:'review'}])assert.throws(()=>validateSoftware({...selection,...bad}));
 const review=await softwareEvidence({...selection,mode:'review',base},send);assert.equal(review.rows.length,2);assert.equal(review.rows[1].revision,base);
 privateRepo=true;await assert.rejects(softwareEvidence(selection,send),/public/);privateRepo=false;
