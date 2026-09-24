@@ -1,0 +1,22 @@
+.assist-answer-content{min-width:0;line-height:1.65;overflow-wrap:anywhere;white-space:normal}
+.assist-answer-content h3{font-size:1.08rem;margin:1.2em 0 .4em;color:inherit}
+.assist-answer-content h3:first-child,.assist-answer-content p:first-child{margin-top:0}
+.assist-answer-content p{margin:.65em 0}
+.assist-answer-content ul{padding-inline-start:1.4em;margin:.6em 0}
+.assist-answer-content li+li{margin-top:.35em}
+.assist-answer-content pre{white-space:pre;overflow:auto;padding:1rem;background:#201b29;color:#fff;border-radius:12px;text-align:left;max-width:100%}
+.assist-answer-content code{font-size:.9em}
+.assist-answer-table{overflow-x:auto;max-width:100%;margin:1rem 0;border:1px solid #ded4e3;border-radius:12px}
+.assist-answer-table:focus-visible{outline:3px solid #bf008c;outline-offset:3px}
+.assist-answer-table table{border-collapse:collapse;width:100%;font-size:.95em}
+.assist-answer-table th,.assist-answer-table td{text-align:start;padding:.65rem .85rem;border-bottom:1px solid #ded4e3;min-width:8rem;vertical-align:top}
+.assist-answer-table th{background:#f7eff7;color:#43213c}
+.task-assist-context{flex-basis:100%;min-width:0;padding:.8rem;border:1px solid #e5d4e5;border-radius:12px;background:#fff}
+.task-assist-context summary{cursor:pointer;font-weight:700;color:#a6007e}
+.task-assist-context nav{display:flex;flex-wrap:wrap;gap:.65rem}
+.assist-draft-notice{border-inline-start:4px solid #bd008b;padding:.6rem .9rem;background:#faf1f8;color:#43213c}
+.assistant-message details.assistant-citations{display:block}
+.assistant-message .assistant-citations summary{cursor:pointer;font-weight:700;font-size:.9rem;padding:.5rem 0}
+.assistant-message .assistant-citations a{display:block;font-size:.85rem;white-space:normal;overflow-wrap:anywhere;margin-block:.35rem;padding:.5rem}
+.assistant-message .assistant-answer-actions button{font-size:.85rem;min-height:44px;padding:.5rem .7rem}
+@media(max-width:480px){.assistant-message .assistant-answer-actions{display:flex}.assistant-message .assistant-answer-actions button{flex:1 1 110px}}

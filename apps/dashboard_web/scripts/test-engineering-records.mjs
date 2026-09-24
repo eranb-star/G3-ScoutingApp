@@ -180,4 +180,4 @@ assert.equal((await db.query("select count(*)::int n from team_actions where sou
 assert.equal((await db.query('select count(*)::int n from project_task_dependencies where task_id=$1 or prerequisite_id=$1',[task])).rows[0].n,0);
 assert.deepEqual((await db.query('select id,status from project_tasks order by id')).rows,survivingTasks);
 console.log('PASS permanent deletion: active admin only, transaction rollback, review records and assignments removed, other tasks retained, repeat safe');
-await db.close();console.log('PASS engineering records, lineage, permissions, two-person exceptions, pause, conflicts, artifacts, assets, sequential reviews and numeric ranges');
+if(process.env.G3_ENGINEERING_FIXTURE!=='1')await db.close();console.log('PASS engineering records, lineage, permissions, two-person exceptions, pause, conflicts, artifacts, assets, sequential reviews and numeric ranges');
