@@ -48,7 +48,7 @@ create or replace function public.finish_frc_document_ingestion(
  p_chunks jsonb,p_extraction jsonb,p_error text default null
 ) returns boolean language plpgsql security definer set search_path=public,pg_temp as $$
 declare item public.frc_knowledge_check_items; run public.frc_knowledge_checks; doc public.frc_knowledge_documents;
- gen text; sid integer; row jsonb; body_hash text; destination text; count_chunks integer; publication_note text;
+ gen text; sid integer; row jsonb; body_hash text; destination text; count_chunks integer; publication_note text; needs_extraction boolean;
 begin
  select * into run from public.frc_knowledge_checks where id=p_check for update;
  if not found or run.status<>'running' or run.lease_token is distinct from p_lease or run.lease_until<now() then return false;end if;
@@ -71,13 +71,16 @@ begin
  if jsonb_typeof(p_chunks) is distinct from 'array' or jsonb_array_length(p_chunks) not between 1 and 1500 then raise exception 'Invalid extracted passage count';end if;
  if octet_length(p_chunks::text)>4000000 then raise exception 'Extracted document exceeds publication limit';end if;
  count_chunks:=jsonb_array_length(p_chunks);
- select id into sid from public.frc_corpus_sources where generation=gen and url=item.url and version_hash=p_sha;
+ select id,metadata->>'extractor' is distinct from 'official-text-v1' into sid,needs_extraction from public.frc_corpus_sources where generation=gen and url=item.url and version_hash=p_sha;
  if sid is null then
   sid:=nextval('public.frc_ingestion_source_id');
   insert into public.frc_corpus_sources(generation,id,url,version_hash,title,seasons,teams,source_class,scope,metadata)
   values(gen,sid,item.url,p_sha,item.title,array[run.season],'{}','official',
    'Extracted publisher text, not reviewed interpretation. Tables/diagrams must be checked in the original.',
    jsonb_build_object('document_id',doc.id,'extractor','official-text-v1','extraction',p_extraction));
+  needs_extraction:=true;
+ end if;
+ if needs_extraction then
   for row in select value from jsonb_array_elements(p_chunks) loop
    if jsonb_typeof(row->'body') is distinct from 'string' or length(row->>'body') not between 20 and 3000 then raise exception 'Invalid passage text';end if;
    if row#>>'{locator,page}' is not null then
@@ -92,6 +95,7 @@ begin
    insert into public.frc_corpus_citations(generation,id,source,hash,url,locator)
    values(gen,nextval('public.frc_ingestion_citation_id'),sid,body_hash,destination,row->'locator');
   end loop;
+  update public.frc_corpus_sources set metadata=metadata||jsonb_build_object('extractor','official-text-v1','extraction',p_extraction) where generation=gen and id=sid;
  end if;
  update public.frc_corpus_sources set retired=false where generation=gen and id=sid;
  publication_note:='Indexed '||count_chunks||' passages. Available in search and G3 Assist; extracted text is not a reviewed interpretation.';
@@ -109,6 +113,8 @@ end$$;
 revoke all on function public.finish_frc_document_ingestion(uuid,uuid,uuid,text,bigint,text,text,jsonb,jsonb,text) from public,anon,authenticated;
 grant execute on function public.finish_frc_document_ingestion(uuid,uuid,uuid,text,bigint,text,text,jsonb,jsonb,text) to service_role;
 
+update public.frc_knowledge_documents d set indexed_sha256=null,ingestion_note='Existing source requires page-linked extraction on the next check.' where indexed_sha256 is not null and not exists(select 1 from public.frc_corpus_sources s where s.url=d.url and s.version_hash=d.indexed_sha256 and s.metadata->>'extractor'='official-text-v1');
+
 create or replace function public.search_frc_official(p_season integer,p_query text) returns jsonb
 language plpgsql stable security definer set search_path=public,pg_temp set statement_timeout='5s' as $$
 declare q tsquery;
@@ -118,12 +124,12 @@ begin
  q:=websearch_to_tsquery('english',p_query);
  return (with available as (
  select c.id,c.url,s.title,p.body,s.version_hash version,s.seasons,s.scope,s.source_class,s.id source,c.hash,c.locator,
- case when s.url ~* '/manual/' then 'manual' else 'supplement' end kind,ts_rank_cd(p.search,q) rank
+ case when s.url ~* '/manual/' then 'manual' else 'supplement' end kind,(select count(*) from unnest(tsvector_to_array(to_tsvector('english',p_query))) term where p.search@@plainto_tsquery('english',term))*100 + ts_rank_cd(p.search,q) rank
  from public.frc_corpus_sources s join public.frc_corpus_generations g on g.id=s.generation and g.status='active'
  join public.frc_knowledge_documents d on d.url=s.url and d.season=p_season and d.indexed_sha256=s.version_hash and d.sha256=d.indexed_sha256
  join public.frc_corpus_citations c on c.generation=s.generation and c.source=s.id
  join public.frc_corpus_passages p on p.generation=c.generation and p.hash=c.hash
- where not s.retired
+ where not s.retired and s.metadata->>'extractor'='official-text-v1' and c.id>=1000000
  and s.title !~* '(French|Spanish|Turkish|Chinese|Portuguese|Hebrew|Translation)'
  and (s.url !~* '/manual/' or s.url ~* '/Manual/(HTML/)?[0-9]{4}GameManual\.(pdf|html?)($|[?#])')
  ), matched as (select distinct on(hash) * from available where rank>0 order by hash,rank desc,id),
