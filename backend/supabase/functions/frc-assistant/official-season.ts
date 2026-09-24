@@ -27,7 +27,10 @@ export async function officialSeasonEvidence(question:string,dependencies:{fetch
  if(dependencies.caller){
   const expanded=question.replace(/\b20\d{2}\b/g,'').replace(/\b(frc|season|challenge|game)\b/gi,'')
    .replace(/טיפוס/g,' climb tower traversal ').replace(/ניקוד|נקודות/g,' scoring points ').replace(/אסטרטגיה/g,' strategy ranking points ').replace(/חוקים|חוקיות/g,' rules ');
-  const {data,error}=await dependencies.caller.rpc('search_frc_official',{p_season:year,p_query:retrievalQuery(expanded)});
+  // Long design questions must not push the decisive scoring/RP concepts past
+  // the bounded query limit. Season-specific vocabulary stays explicitly scoped.
+  const priorities=/climb|טיפוס/i.test(question)?`climb scoring points ranking ${year===2026?'tower traversal ':''}`:/strateg|ranking|scoring|אסטרטג|ניקוד/i.test(question)?'scoring points ranking thresholds ':'';
+  const {data,error}=await dependencies.caller.rpc('search_frc_official',{p_season:year,p_query:retrievalQuery(priorities+expanded)});
   if(!error&&Array.isArray(data)&&data.some((r:Evidence)=>/\/manual\//i.test(r.url))){return {year,rows:data as Evidence[],status:'retrieved'};}
  }
  if(!manuals[year])return {year,rows:[] as Evidence[],status:'not_configured'};

@@ -16,6 +16,8 @@ const answer='20000000-0000-0000-0000-000000000002',request='30000000-0000-0000-
 const create=(message=answer,identity=request,members=[student])=>db.query('select create_task_from_assist($1,$2,$3,$4,$5,$6,$7) id',[message,identity,project,'Prototype climb test',student,null,members]);
 await as(student);await assert.rejects(()=>create(),/Not authorized/);
 await as(admin);const task=(await create()).rows[0].id;assert.equal((await create()).rows[0].id,task);
+await assert.rejects(()=>create(answer,request,[student,other]),/changed inputs/);
+await assert.rejects(()=>db.query('select create_task_from_assist($1,$2,$3,$4,$5,$6,$7)',[answer,request,project,'Different intent',student,null,[]]),/changed inputs/);
 const context=(await db.query('select * from project_task_assist_context where task_id=$1',[task])).rows[0];
 assert.equal(context.question,'Should we build a climber?');assert.equal(context.citations[0].version,'sha256:test');assert.equal(context.software_context.revision,'exact-commit');
 assert.equal((await db.query('select status from project_tasks where id=$1',[task])).rows[0].status,'todo');

@@ -20,3 +20,8 @@ console.log(JSON.stringify(rows.map(r=>({title:r.title,length:r.body.length,body
 console.log('PASS: exact question retrieves official scoring/tower/RP sections; missing seasons and HTTP failures fail closed; bounded output and cached publisher fetch.');
 
 const indexed=await officialSeasonEvidence("2027 FRC climbing rules",{caller:{rpc:async()=>({data:[{id:42,url:"https://firstfrc.blob.core.windows.net/frc2027/Manual/test.pdf#page=2",body:"synthetic",source_class:"official"}],error:null})},fetch:async()=>{throw Error("Should use index");}});assert.equal(indexed.status,"retrieved");assert.equal(indexed.rows[0].id,42);
+let indexedQuery;
+await officialSeasonEvidence('For the 2026 FRC challenge, should we prioritize a simple reliable climber or a more complex higher climb? Use the official scoring and ranking-point rules, compare trade-offs, state missing robot measurements, and propose one measurable acceptance test.',{caller:{rpc:async(_,args)=>{indexedQuery=args;return {data:[{id:42,url:'https://firstfrc.blob.core.windows.net/frc2026/Manual/2026GameManual.pdf',body:'synthetic'}]};}}});
+assert.match(indexedQuery.p_query,/"scoring"/);assert.match(indexedQuery.p_query,/"ranking"/);assert.match(indexedQuery.p_query,/"traversal"/);assert.ok(indexedQuery.p_query.length<=200);
+await officialSeasonEvidence('2027 FRC climbing rules',{caller:{rpc:async(_,args)=>{indexedQuery=args;return {data:[{id:42,url:'https://firstfrc.blob.core.windows.net/frc2027/Manual/2027GameManual.pdf',body:'synthetic'}]};}}});assert.doesNotMatch(indexedQuery.p_query,/traversal|tower/);
+console.log('PASS long decision questions retain decisive scoring/RP concepts without leaking 2026 vocabulary into other seasons');

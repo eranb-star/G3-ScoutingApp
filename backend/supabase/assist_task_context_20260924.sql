@@ -21,7 +21,10 @@ begin
  perform pg_advisory_xact_lock(hashtextextended(auth.uid()::text||p_request::text,0));
  select task_id into result from public.project_task_assist_context where created_by=auth.uid() and request_id=p_request;
  if found then
-  if not exists(select 1 from public.project_task_assist_context x join public.project_tasks t on t.id=x.task_id where x.task_id=result and x.source_message=p_message and t.project_id=p_project) then raise exception 'This request was already used for a different task';end if;
+  if not exists(select 1 from public.project_task_assist_context x join public.project_tasks t on t.id=x.task_id where x.task_id=result and x.source_message=p_message and t.project_id=p_project and t.title=trim(p_title) and t.assignee_id=p_owner and t.due_at is not distinct from p_due)
+   or array(select member_id::text from public.project_task_collaborators where task_id=result order by member_id::text)
+      <>array(select distinct selected_member.member_id::text from unnest(coalesce(p_members,'{}'::uuid[])) selected_member(member_id) where selected_member.member_id<>p_owner order by selected_member.member_id::text)
+  then raise exception 'This request was already used for a different task or changed inputs. Check the existing task before retrying.';end if;
   return result;
  end if;
  select * into m from public.ai_messages where id=p_message and member_id=auth.uid() and role='assistant';
