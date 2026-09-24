@@ -1,3 +1,5 @@
+**Current checkpoint (25 September):** Read [CHECKPOINT_20260925.md](CHECKPOINT_20260925.md) first for the latest release, delivered capabilities, actual remaining work, APK and required inputs. Earlier phase estimates and release identifiers below are historical where superseded.
+
 **Current release authority:** [ENGINEERING_RELEASE_20260924.md](ENGINEERING_RELEASE_20260924.md) supersedes the older local-only A–E status and production identifiers below. Reviewed scoring, CAD visibility, cloud plans and bounded recommendations are deployed; actual repository-bound code and physical validation remain distinct. The entire A–E programme remains authorized without another selection question.
 
 # Current phases and handover authority — 24 September 2026

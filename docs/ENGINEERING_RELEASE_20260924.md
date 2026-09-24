@@ -1,3 +1,5 @@
+**Current checkpoint (25 September):** Read [CHECKPOINT_20260925.md](CHECKPOINT_20260925.md) first for the latest release, delivered capabilities, actual remaining work, APK and required inputs. Earlier phase estimates and release identifiers below are historical where superseded.
+
 # Engineering release work — 24 September 2026
 
 This is the current A–E implementation record. Final website source is `f2c3f416e23729ec12348c82f563fed56663913e`, deployed to production on 24 September 2026. Earlier checkpoints in ENGINEERING_PROGRAMME_A_E_20260924.md are history, not the current feature inventory.

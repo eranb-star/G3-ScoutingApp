@@ -1,3 +1,5 @@
+**Current checkpoint (25 September):** Read [CHECKPOINT_20260925.md](CHECKPOINT_20260925.md) first for the latest release, delivered capabilities, actual remaining work, APK and required inputs. Earlier phase estimates and release identifiers below are historical where superseded.
+
 # Authorized A–E engineering programme — 24 September 2026
 
 **Current implementation/deployment:** [Engineering release and acceptance](ENGINEERING_RELEASE_20260924.md) supersedes all checkpoint status below. The requirement descriptions remain applicable; the first/continuation checkpoints are preserved history, not a claim that the newly deployed work is still local-only.

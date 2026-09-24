@@ -1,3 +1,5 @@
+**Current checkpoint (25 September):** Read [CHECKPOINT_20260925.md](CHECKPOINT_20260925.md) first for the latest release, delivered capabilities, actual remaining work, APK and required inputs. Earlier phase estimates and release identifiers below are historical where superseded.
+
 **Latest robot-first and camera workflow:** Read [PLANNER_START_CAMERA_20260924.md](PLANNER_START_CAMERA_20260924.md) first for current behavior, migration and release status.
 
 **Latest planner correction:** Read [PLANNER_USABILITY_20260924.md](PLANNER_USABILITY_20260924.md) for actual-field route editing, continuous motion/intake, compact controls and explicit code-generation status. Then read [ENGINEERING_RELEASE_20260924.md](ENGINEERING_RELEASE_20260924.md) for underlying A/B/C/E capabilities and limits. The whole A–E programme remains authorized. D needs actual repository inputs AND generator implementation/build validation; it is not an existing hidden download.
