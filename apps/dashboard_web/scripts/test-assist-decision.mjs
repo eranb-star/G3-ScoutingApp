@@ -14,4 +14,9 @@ assert.match(contextualRetrievalQuestion('What about a simpler one instead?',his
 assert.equal(contextualRetrievalQuestion('Compare 2025 climbing options',history),'Compare 2025 climbing options');
 assert.equal(contextualRetrievalQuestion('Explain PID tuning',history),'Explain PID tuning');
 assert.match(contextualRetrievalQuestion('ומה לגבי זה?',history),/2026/);
+const chained=[...history,{role:'user',content:'ומה ההבדל בניקוד בין שתי האפשרויות?'},{role:'assistant',content:'Wrong unsupported claim 2027'}];
+assert.match(contextualRetrievalQuestion('ומה לגבי זה?',chained),/2026/);
+assert.doesNotMatch(contextualRetrievalQuestion('ומה לגבי זה?',chained),/2027|unsupported/);
+assert.doesNotMatch(contextualRetrievalQuestion('What about it?',[...chained,{role:'user',content:'Explain PID tuning'}]),/2026/);
+assert.doesNotMatch(contextualRetrievalQuestion('What about it?',[...chained,{role:'user',content:'Compare 2025 climbing options'}]),/2026/);
 console.log('PASS member-bound durable drafts, safe text blocks/code/table parsing, EN/HE follow-up evidence context, explicit season replacement and unrelated-question isolation');

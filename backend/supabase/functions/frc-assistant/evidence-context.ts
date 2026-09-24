@@ -1,11 +1,15 @@
 export type Evidence={id:number;url:string;title:string;body:string;version:string;seasons:number[];scope?:string;source_class:string};
-// Carry only a recent user question into short follow-up retrieval. Assistant text
+// Carry a bounded chain of user follow-ups back to its topic anchor. Assistant text
 // is never evidence, and an explicit new season must replace the old season.
 export function contextualRetrievalQuestion(question:string,history:{role:string;content:string}[]){
  if(/\b20\d{2}\b|(?:this|current)\s+(?:season|year|game)|העונה|השנה/i.test(question))return question;
  if(question.length>350||! /\b(that|those|these|it|them|instead|also|what if|what about|how about|compare)\b|(?:ומה|ואם|במקום|אותו|אותם|אלה|זה|השווה)/i.test(question))return question;
- const previous=[...history].reverse().find(r=>r.role==='user');
- return previous?`${question}\nPrevious user question for retrieval context: ${previous.content.slice(0,1200)}`:question;
+ const context:string[]=[];
+ for(const previous of [...history].reverse().filter(r=>r.role==='user').slice(0,5)){
+  context.push(previous.content.slice(0,1200));
+  if(/\b20\d{2}\b|(?:this|current)\s+(?:season|year|game)|העונה|השנה/i.test(previous.content)||previous.content.length>350||! /\b(that|those|these|it|them|instead|also|what if|what about|how about|compare)\b|(?:ומה|ואם|במקום|אותו|אותם|אלה|זה|השווה)/i.test(previous.content))break;
+ }
+ return context.length?`${question}\nPrior user topic and follow-ups for retrieval context: ${context.reverse().join('\n').slice(0,3000)}`:question;
 }
 export function retrievalQuery(question:string){
  const stop=new Set('how can could would should do does did i we our my the a an to for with and or is are was were of in on it this that what why help please robot robots'.split(' '));
