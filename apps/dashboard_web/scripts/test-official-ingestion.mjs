@@ -42,6 +42,14 @@ await db.query('select release_frc_source_check($1,$2)',[continuation.run,contin
 await db.exec(`set role authenticated;set test.allowed='yes';set test.uid='${researchMember}'`);
 const contextual=(await db.query("select search_frc_official(2026,'climb') result")).rows[0].result;
 assert.equal(contextual.length,2);assert.ok(contextual.some(r=>r.body.includes('threshold is fifty')),'include adjacent table continuation even without matching query words');
+const legacy=await job();
+await db.exec('reset role');
+await db.query("insert into frc_corpus_sources(generation,id,url,version_hash,title,seasons,teams,source_class,scope,metadata)values('test',900,$1,$2,'Legacy manual',array[2026],'{}','official','old collection','{}')",[url,'e'.repeat(64)]);
+await db.exec('set role service_role');
+assert.equal(await publish(legacy,'e'),true,'upgrade existing same-hash legacy source with page-linked extraction');
+await db.exec('reset role');
+assert.equal((await db.query("select count(*) n from frc_corpus_citations where source=900 and locator->>'page'='7'")).rows[0].n,1);
+assert.equal((await db.query("select metadata->>'extractor' extractor from frc_corpus_sources where id=900")).rows[0].extractor,'official-text-v1');
 await db.close();
 assert.ok(textChunks('word '.repeat(1500),{page:1}).every(c=>c.body.length<=2800));
 const html=extractHtml(new TextEncoder().encode('<html><h1 id="rules">Rules</h1><p>'+('climbing rules '.repeat(30))+'</p><h2>Updates</h2><p>'+('updated rules '.repeat(30))+'</p></html>'));assert.equal(html.chunks[0].locator.anchor,'rules');
