@@ -65,9 +65,14 @@ begin
   or (level->>'points')::integer>100000 then raise exception 'Invalid scoring level';end if;
  end loop;
  if (select count(distinct l->>'id') from jsonb_array_elements(p_rule->'levels') l)<>jsonb_array_length(p_rule->'levels') then raise exception 'Duplicate scoring level';end if;
+ if p_rule ? 'keywords' then
+  if jsonb_typeof(p_rule->'keywords')<>'array' or jsonb_array_length(p_rule->'keywords')>20 then raise exception 'Invalid rule keywords';end if;
+  if exists(select 1 from jsonb_array_elements(p_rule->'keywords') k where jsonb_typeof(k)<>'string' or length(k#>>'{}') not between 3 and 80) then raise exception 'Invalid rule keyword';end if;
+ end if;
+ if p_rule ? 'autonomous' and (jsonb_typeof(p_rule->'autonomous')<>'object' or coalesce(p_rule#>>'{autonomous,pointsPerRobot}','') !~ '^[0-9]{1,5}$' or coalesce(p_rule#>>'{autonomous,maxRobots}','') !~ '^[0-6]$' or (p_rule#>>'{autonomous,maxRobots}')::integer>(p_rule->>'robots')::integer) then raise exception 'Invalid autonomous scoring';end if;
  if public.frc_rule_sources_current(p_season,p_sources) is not true then raise exception 'Sources must reference current indexed documents and page excerpts';end if;
  insert into public.frc_scoring_rule_versions(season,rule_key,revision,rule,sources,created_by)
- values(p_season,p_key,rev+1,jsonb_build_object('id',p_key,'revision',(rev+1)::text,'threshold',(p_rule->>'threshold')::integer,'robots',(p_rule->>'robots')::integer,'levels',p_rule->'levels'),p_sources,auth.uid()) returning id into result;
+ values(p_season,p_key,rev+1,jsonb_build_object('id',p_key,'revision',(rev+1)::text,'threshold',(p_rule->>'threshold')::integer,'robots',(p_rule->>'robots')::integer,'levels',p_rule->'levels','keywords',coalesce(p_rule->'keywords',jsonb_build_array(p_key)))||case when p_rule ? 'autonomous' then jsonb_build_object('autonomous',jsonb_build_object('pointsPerRobot',(p_rule#>>'{autonomous,pointsPerRobot}')::integer,'maxRobots',(p_rule#>>'{autonomous,maxRobots}')::integer)) else '{}'::jsonb end,p_sources,auth.uid()) returning id into result;
  return result;
 end$$;
 
@@ -91,7 +96,7 @@ returns jsonb language plpgsql stable security definer set search_path=public,pg
 declare result jsonb;
 begin
  if public.can_read_frc_research() is not true then raise exception 'Evidence access required' using errcode='42501';end if;
- select coalesce(jsonb_agg(jsonb_build_object('versionId',v.id,'rule',v.rule,'sources',v.sources)),'[]'::jsonb) into result
+ select coalesce(jsonb_agg(jsonb_build_object('versionId',v.id,'rule',v.rule,'sources',(select jsonb_agg(s||jsonb_build_object('url',d.url)) from jsonb_array_elements(v.sources) s join public.frc_knowledge_documents d on d.id::text=s->>'documentId'))),'[]'::jsonb) into result
  from (select distinct on(rule_key) rule_key,version_id from public.frc_scoring_rule_activations where season=p_season order by rule_key,id desc) a
  join public.frc_scoring_rule_versions v on v.id=a.version_id
  where public.frc_rule_sources_current(p_season,v.sources);

@@ -1,0 +1,18 @@
+import fs from 'node:fs';import assert from 'node:assert/strict';
+import {createResearchFixture,researchAdmin,researchMember} from './robot-research-fixture.mjs';
+const db=await createResearchFixture(),sql=fs.readFileSync(new URL('../../../backend/supabase/engineering_plans_20260924.sql',import.meta.url),'utf8');await db.exec(sql);await db.exec(sql);
+const workspace={schema:1,draft:{status:'unverified-planning-draft',route:[{},{}]},candidates:[]};
+const save=async(id=null,rev=0,shared=false)=>(await db.query("select save_engineering_plan($1,'Synthetic plan',$2,$3,$4) result",[id,workspace,rev,shared])).rows[0].result;
+await db.exec(`set role authenticated;set test.allowed='yes';set test.uid='${researchAdmin}'`);
+const p=await save();assert.equal(p.revision,1);await save(p.id,1);
+await assert.rejects(()=>save(p.id,1),/another device/);
+await db.exec(`set test.uid='${researchMember}'`);assert.equal((await db.query('select * from engineering_plans')).rows.length,0);
+assert.equal((await db.query('select * from engineering_plan_versions')).rows.length,0);
+await assert.rejects(()=>save(p.id,2),/owner/);
+await db.exec(`set test.uid='${researchAdmin}'`);await save(p.id,2,true);
+await db.exec(`set test.uid='${researchMember}'`);assert.equal((await db.query('select * from engineering_plans')).rows.length,1);assert.equal((await db.query('select * from engineering_plan_versions')).rows.length,3);
+await assert.rejects(()=>save(p.id,3),/owner/);const copy=await save();assert.notEqual(copy.id,p.id);
+await assert.rejects(()=>db.exec("update engineering_plan_versions set workspace='{}'"),/permission/);
+await db.exec("set test.allowed='no'");assert.equal((await db.query('select * from engineering_plans')).rows.length,0);await assert.rejects(()=>save(),/access/);
+await db.exec("set test.allowed='yes';set test.uid=''");await assert.rejects(()=>save(),/access/);
+await db.close();console.log('PASS private/shared planning RLS, immutable revisions, optimistic concurrency, copy isolation and revoked/null access.');

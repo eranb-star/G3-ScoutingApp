@@ -1,5 +1,5 @@
 /** Pure, season-independent arithmetic. Publication/authority is a caller concern. */
-export type ScoringRule = {id:string;revision:string;threshold:number;robots:number;levels:{id:string;points:number}[]};
+export type ScoringRule = {id:string;revision:string;threshold:number;robots:number;levels:{id:string;points:number}[];keywords?:string[];autonomous?:{pointsPerRobot:number;maxRobots:number}};
 export function scoringCombinations(rule:ScoringRule,autonomousPoints=0){
  if(!rule||!rule.id||!rule.revision||!Number.isSafeInteger(rule.threshold)||rule.threshold<1||rule.threshold>100000||!Number.isInteger(rule.robots)||rule.robots<1||rule.robots>6||!Array.isArray(rule.levels)||rule.levels.length<1||rule.levels.length>8||!Number.isSafeInteger(autonomousPoints)||autonomousPoints<0||autonomousPoints>100000)throw Error('Invalid scoring rule');
  const levels=rule.levels;

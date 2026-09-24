@@ -1,5 +1,5 @@
 import fs from 'node:fs';import assert from 'node:assert/strict';import ts from 'typescript';
-const moduleUrl=file=>{let code=ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText;code=code.replace(/from ['"](\.[^'"]+)['"]/g,(_,p)=>'from '+JSON.stringify(moduleUrl(new URL(p.endsWith('.ts')?p:p+'.ts',file))));return 'data:text/javascript;base64,'+Buffer.from(code).toString('base64');};
+const moduleUrl=file=>{const compiled=ts.transpileModule(fs.readFileSync(file,'utf8'),{reportDiagnostics:true,compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}});assert.equal(compiled.diagnostics?.length??0,0,JSON.stringify(compiled.diagnostics?.map(d=>d.messageText)));let code=compiled.outputText;code=code.replace(/from ['"](\.[^'"]+)['"]/g,(_,p)=>'from '+JSON.stringify(moduleUrl(new URL(p.endsWith('.ts')?p:p+'.ts',file))));return 'data:text/javascript;base64,'+Buffer.from(code).toString('base64');};
 const load=async p=>import(moduleUrl(new URL(p,import.meta.url)));
 const {scoringCombinations}=await load('../../../backend/supabase/functions/frc-assistant/season-calculations.ts');
 const {parseSeasonPackage,seasonReadiness}=await load('../src/lib/seasonPackage.ts');
@@ -16,6 +16,11 @@ const season=parseSeasonPackage({schema:1,season:2031,revision:'synthetic-only',
 assert.deepEqual(seasonReadiness(season),{knowledge:false,field:false,simulation:false});
 assert.throws(()=>parseSeasonPackage({...season,units:'inches'}));assert.throws(()=>parseSeasonPackage({...season,field:{...season.field,tags:[season.field.tags[0],season.field.tags[0]]}}));
 const robot={length:1,width:1,speed:2,acceleration:2,turnRate:1,clearance:.1,measured:false};
+const policyRobot={...robot,inventory:{capacity:40,preload:9},policy:{seconds:15,maxPreload:8,pointsPerPiece:1}};
+const policyRoute=[{x:0,y:0,heading:0,action:'none',seconds:0,points:0,success:1},{x:1,y:0,heading:0,action:'shoot',seconds:1,quantity:2,points:999,success:.5}];
+assert.ok(evaluateRoute(season,policyRobot,policyRoute).errors.some(e=>e.includes('preload')));
+assert.equal(evaluateRoute(season,{...policyRobot,inventory:{capacity:40,preload:8}},policyRoute).expectedPoints,1,'reviewed policy overrides invented manual points');
+assert.ok(evaluateRoute({...season,autonomous:{seconds:20,reviewed:false}},policyRobot,policyRoute).errors.some(e=>e.includes('Duration')));
 const point=(x,y=0)=>({x,y,heading:0,action:'none',seconds:0,points:0,success:1});
 assert.equal(travelTime(4,2,2),3);assert.equal(travelTime(1,2,2),Math.sqrt(2));
 assert.equal(evaluateRoute(season,robot,[point(0),point(4)]).seconds,3);
@@ -90,3 +95,18 @@ assert.match(evaluateRoute(season,inventoryRobot,[point(0),{...pickup,quantity:4
 assert.match(evaluateRoute(season,inventoryRobot,[point(0),{...shoot,quantity:undefined}]).errors.join(),/quantity/);
 assert.equal(generateRouteAlternatives(season,inventoryRobot,[point(0),pickup,shoot,point(3)],true).feasible,1,'invalid shoot-before-pickup permutation excluded');
 console.log('PASS route inventory: capacity/preload, shoot-before-pickup, missing quantities and generated-order validation.');
+const {scoringAnswer}=await load('../../../backend/supabase/functions/frc-assistant/scoring-answer.ts');
+const officialFixture=await verifiedCalculations({rpc:async()=>({data:[{versionId:'fixture',rule:{...rule,keywords:['climb','טיפוס'],autonomous:{pointsPerRobot:15,maxRobots:2}},sources:[{url:'https://example.invalid/manual.pdf',page:47,sha256:'a'.repeat(64)}]}]})},2026);
+assert.equal(scoringAnswer('Do all three need middle level for the ranking point?','2026 climb',officialFixture,'en').direct,true);
+assert.match(scoringAnswer('האם כולם צריכים רמה שתיים?','טיפוס 2026',officialFixture,'he').text,/low \+ middle \+ middle.*50/);
+assert.equal(scoringAnswer('Should we build a climbing mechanism?','2026 climb',officialFixture,'en').direct,false);
+assert.equal(scoringAnswer('How do I tune PID?','PID',officialFixture,'en'),null);
+assert.ok(officialFixture.calculations[0].alternatives.some(a=>a.contribution===30));
+const reservedRobot={...robot,constraints:{reserveSeconds:1,reservations:[{id:'partner',x:2,y:0,width:1,height:1,from:0,to:10}]}};
+assert.match(evaluateRoute(season,reservedRobot,draft.route).errors.join(),/partner reservation/);
+assert.equal(evaluateRoute(season,{...reservedRobot,constraints:{...reservedRobot.constraints,reservations:[{...reservedRobot.constraints.reservations[0],from:10,to:12}]}},draft.route).errors.length,0);
+const {generateGoalRoutines}=await load('../src/lib/routeGeneration.ts');
+const goals=generateGoalRoutines(season,inventoryRobot,[point(0),pickup,shoot,point(3)],[cam]);
+assert.equal(goals.ranked[0].result.expectedPoints,2);assert.equal(goals.ranked[0].result.remainingPieces,0);
+assert.ok(goals.ranked.every(r=>!r.result.errors.length));
+console.log('PASS deterministic EN/HE scoring answers, autonomous contributions, unrelated-question isolation, timed partner reservations and goal-subset recommendations.');

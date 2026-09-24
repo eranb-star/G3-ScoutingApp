@@ -11,7 +11,10 @@ export async function verifiedCalculations(caller:any,season:number|null){
   // Zero autonomous contribution is explicit. No unstated eligibility assumptions.
   const qualifying=combinations.filter(c=>c.qualifies);
   const minimum=qualifying[0]?.points??null;
-  return {versionId:v.versionId,rule:v.rule,autonomousContribution:0,
+  const autonomous=v.rule.autonomous;
+  if(autonomous&&(!Number.isSafeInteger(autonomous.pointsPerRobot)||autonomous.pointsPerRobot<0||autonomous.pointsPerRobot>100000||!Number.isInteger(autonomous.maxRobots)||autonomous.maxRobots<0||autonomous.maxRobots>ruleRobotLimit(v.rule)))throw Error('Invalid reviewed autonomous scoring');
+  const alternatives=autonomous?Array.from({length:autonomous.maxRobots},(_,i)=>{const contribution=(i+1)*autonomous.pointsPerRobot,valid=scoringCombinations(v.rule,contribution).filter(c=>c.qualifies),minimum=valid[0]?.points;return {autonomousRobots:i+1,contribution,combinations:valid.filter(c=>c.points===minimum).slice(0,20)};}):[];
+  return {versionId:v.versionId,rule:v.rule,sources:v.sources.map((s:any)=>({documentId:s.documentId,sha256:s.sha256,page:s.page,url:s.url})),autonomousContribution:0,alternatives,
    combinationCount:combinations.length,qualifyingCount:qualifying.length,
    minimumQualifyingPoints:minimum,
    minimumCombinations:qualifying.filter(c=>c.points===minimum).slice(0,20),
@@ -21,3 +24,4 @@ export async function verifiedCalculations(caller:any,season:number|null){
  const bounded=calculations.filter(c=>{const size=JSON.stringify(c).length;if(bytes+size>18000)return false;bytes+=size;return true;});
  return {status:calculations.length?'available':'no_current_reviewed_rules',calculations:bounded,omittedRules:calculations.length-bounded.length};
 }
+function ruleRobotLimit(rule:ScoringRule){return Math.min(rule.robots,6);}
