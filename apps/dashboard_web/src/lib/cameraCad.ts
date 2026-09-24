@@ -13,10 +13,16 @@ export function occlusionSnapshot(source:THREE.Object3D){
 }
 export function meshVisibility(field:THREE.Object3D,robot:THREE.Object3D):VisibilityGeometry{
  const ray=new THREE.Raycaster(),a=new THREE.Vector3(),b=new THREE.Vector3();
+ const index=(root:THREE.Object3D)=>{root.updateMatrixWorld(true);const entries:{mesh:THREE.Mesh;box:THREE.Box3}[]=[];root.traverse(o=>{if(o instanceof THREE.Mesh){if(!o.geometry.boundingBox)o.geometry.computeBoundingBox();entries.push({mesh:o,box:o.geometry.boundingBox!.clone().applyMatrix4(o.matrixWorld)});}});return entries;};
+ const fields=index(field),robots=index(robot);
+ type Entry=typeof fields[number];type Node={box:THREE.Box3;items?:Entry[];left?:Node;right?:Node};
+ const tree=(items:Entry[]):Node=>{const box=new THREE.Box3();items.forEach(i=>box.union(i.box));if(items.length<=8)return {box,items};const size=box.getSize(new THREE.Vector3()),axis=size.x>=size.y&&size.x>=size.z?'x':size.y>=size.z?'y':'z';items.sort((a,b)=>(a.box.min[axis]+a.box.max[axis])-(b.box.min[axis]+b.box.max[axis]));const middle=Math.floor(items.length/2);return {box,left:tree(items.slice(0,middle)),right:tree(items.slice(middle))};};
+ const fieldTree=tree(fields),robotTree=tree(robots),entryPoint=new THREE.Vector3();
+ const hit=(node:Node):boolean=>{if(!ray.ray.intersectBox(node.box,entryPoint)||entryPoint.distanceTo(ray.ray.origin)>ray.far&&!node.box.containsPoint(ray.ray.origin))return false;if(node.items)return node.items.some(item=>ray.ray.intersectsBox(item.box)&&ray.intersectObject(item.mesh,false).length>0);return hit(node.left!)||hit(node.right!);};
  const clear=(root:THREE.Object3D,from:{x:number;y:number;z:number},to:{x:number;y:number;z:number})=>{
   a.set(from.x,from.y,from.z);b.set(to.x,to.y,to.z).sub(a);const length=b.length();if(length<.04)return false;
   ray.set(a,b.normalize());ray.near=.002;ray.far=length-.025;
-  return ray.intersectObject(root,true).length===0;
+  return !hit(root===field?fieldTree:robotTree);
  };
  return (eye,target,localEye,localTarget)=>clear(field,eye,target)&&clear(robot,localEye,localTarget);
 }

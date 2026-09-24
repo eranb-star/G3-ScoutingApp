@@ -1,4 +1,5 @@
 import type {Box3,SeasonPackage} from './seasonPackage';
+import {mountedCameraPose} from './cameraPose';
 export type CameraMount={id:string;x:number;y:number;z:number;yaw:number;pitch:number;hfov:number;vfov:number;maxDistance:number;pixelsWide:number;minTagPixels:number;model?:string;permitted?:boolean};
 export type CameraSample={x:number;y:number;heading:number};
 type V={x:number;y:number;z:number};
@@ -14,8 +15,7 @@ export function cameraCoverage(season:SeasonPackage,camera:CameraMount,samples:C
  if(camera?.permitted!==undefined&&typeof camera.permitted!=='boolean')throw Error('Invalid mount permission');
  if(!camera||!camera.id||![camera.x,camera.y,camera.z,camera.yaw,camera.pitch,camera.hfov,camera.vfov,camera.maxDistance,camera.pixelsWide,camera.minTagPixels].every(Number.isFinite)||camera.z<0||camera.z>3||Math.abs(camera.x)>3||Math.abs(camera.y)>3||camera.hfov<=0||camera.hfov>=Math.PI||camera.vfov<=0||camera.vfov>=Math.PI||camera.maxDistance<=0||camera.maxDistance>100||camera.pixelsWide<1||camera.pixelsWide>16000||camera.minTagPixels<1||camera.minTagPixels>camera.pixelsWide||samples.length>1000||samples.some(p=>![p.x,p.y,p.heading].every(Number.isFinite)))throw Error('Invalid camera evaluation');
  return samples.map(p=>{
-  const c=Math.cos(p.heading),s=Math.sin(p.heading),eye={x:p.x+c*camera.x-s*camera.y,y:p.y+s*camera.x+c*camera.y,z:camera.z};
-  const yaw=p.heading+camera.yaw,cy=Math.cos(yaw),sy=Math.sin(yaw),cp=Math.cos(camera.pitch),sp=Math.sin(camera.pitch);
+  const c=Math.cos(p.heading),s=Math.sin(p.heading),{eye,yaw}=mountedCameraPose(p,camera),cy=Math.cos(yaw),sy=Math.sin(yaw),cp=Math.cos(camera.pitch),sp=Math.sin(camera.pitch);
   const seen=season.field.tags.filter(tag=>{
    const dx=tag.x-eye.x,dy=tag.y-eye.y,dz=tag.z-eye.z,d=Math.hypot(dx,dy,dz);if(d<.01||d>camera.maxDistance)return false;
    const forward=cp*(cy*dx+sy*dy)+sp*dz,right=-sy*dx+cy*dy,up=-sp*(cy*dx+sy*dy)+cp*dz;
