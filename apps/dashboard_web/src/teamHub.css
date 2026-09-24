@@ -17,7 +17,7 @@
 .assistant-fab>img { width:100%; height:100%; border-radius:50%; object-fit:contain; background:#fff3fa; }
 .assistant-avatar { position:relative; display:grid; place-items:center; width:100%; height:100%; border-radius:50%; background:linear-gradient(145deg,#4d153b,#e10096); }
 .assistant-avatar img { width:94%; height:94%; object-fit:contain; filter:drop-shadow(0 5px 5px rgba(55,0,37,.2)); }
-.assistant-page { display:grid; grid-template-rows:auto auto minmax(280px,1fr) auto; gap:12px; width:min(100%,980px); min-height:calc(100dvh - 150px); margin:0 auto; padding:22px 20px 34px; }
+.assistant-page { display:flex; flex-direction:column; gap:12px; width:min(100%,980px); min-height:calc(100dvh - 150px); margin:0 auto; padding:22px 20px 34px; }
 .assistant-header { position:relative; display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:14px; overflow:hidden; padding:18px 20px; border-radius:24px; color:#fff; background:repeating-linear-gradient(120deg,transparent 0 32px,rgba(255,255,255,.035) 32px 34px),linear-gradient(135deg,#211620,#4d153b 70%,#a90071); box-shadow:var(--g3-shadow); }
 .assistant-identity { display:grid; grid-template-columns:76px minmax(0,1fr); align-items:center; gap:16px; min-width:0; }
 .assistant-back { display:grid; place-items:center; width:42px; height:42px; padding:0; border:1px solid rgba(255,255,255,.2); border-radius:13px; color:#fff; background:rgba(255,255,255,.1); font-size:1.9rem; cursor:pointer; }
@@ -1139,3 +1139,11 @@ details.review-evidence-editor[open]>summary{margin-bottom:14px}
 .task-collaborators label{display:flex!important;align-items:center;gap:8px;margin:0!important;padding:6px}
 .task-collaborators input[type=checkbox]{width:18px!important;height:18px!important;min-height:18px!important;flex:0 0 18px;margin:0;accent-color:#db008c}
 .finance-history{overflow-x:auto}.finance-history table{width:100%;border-collapse:collapse;text-align:start}.finance-history th,.finance-history td{padding:12px;text-align:start;border-bottom:1px solid #eadde6;vertical-align:top}.finance-history small{display:block;color:#6b6170;margin-top:4px}
+
+/* Context sections size to content regardless of their position. */
+.assistant-page>.assistant-chat { flex:1; }
+.assistant-page>.assistant-chat.is-empty { flex:0; min-height:0; }
+.assistant-chat.is-empty .assistant-welcome { min-height:0; gap:8px; }
+.assistant-chat.is-empty .assistant-spark { display:none; }
+.assistant-question-label { display:block; margin-block:12px 8px; font-weight:750; }
+.assistant-composer>.software-mentor { margin:0; box-shadow:none; }

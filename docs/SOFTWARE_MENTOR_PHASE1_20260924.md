@@ -40,3 +40,11 @@ This is the first selected-file implementation, not a completed autonomous softw
 ## Review artifacts
 
 Local UI preview: http://127.0.0.1:4240/ (synthetic responses). Local release transport: http://127.0.0.1:4241/handler (reviewed source, no credentials). These are development helpers, not production endpoints.
+
+## Flow clarification — 24 September 2026
+
+User found the oversized Software Mentor card and separate welcome/composer confusing. Fixed positional grid sizing (third child was incorrectly given remaining height), moved the optional code picker into the composer immediately above the labelled question, collapsed attached revision/file details, added close-picker and explicit non-submit buttons, and focused the question after attaching files. Selecting repository/purpose/files never starts paid analysis; a question and Send are required. Existing question text is preserved.
+
+Verified TypeScript and diff checks; desktop synthetic browser selection through attachment confirmed no answer is generated and question receives focus. This follow-up has not been deployed. Real-model and mobile acceptance gates above remain. User will identify current offseason software with the team at the workshop; do not repeatedly request that information remotely.
+
+Phase 2 refers to log diagnosis. Sample-based importer development is possible without team logs, but actual team diagnosis cannot be validated without logs, signal definitions/units and relevant code/configuration. Recommended alternative (not yet selected for implementation): extend the existing official season-document lifecycle. Source inspection confirms knowledge-source-check currently discovers links and hashes PDFs but explicitly does not index/review their content. Bounded next deliverable: supported-document extraction, version/page provenance, searchable publication, retry/progress and stale-version handling feeding existing search/Assist. Reuse Check now and existing controls; no frequent polling, second knowledge system or historical-corpus rebuild. Broad existing estimate 6–10 engineering days remains provisional.
