@@ -17,3 +17,7 @@ TypeScript and production Vite build passed; existing bundle-size warnings remai
 Browser checked actual field/balls aligned to the route, expanded planning view and checkbox dimensions (18×18px, row label). This does not prove physical trajectory feasibility or device acceptance. No database/backend/budget change is required.
 
 Release identifiers are recorded after deployment. Previous production is f2c3f41 / 6TZsuSvJKCpKcmkNGTfH8unQ13oH.
+
+## Production release
+
+Website source `d380f71649f682626e63bbbf3547f6b73c4be902` (main implementation `4c2d20a`) is deployed as Vercel `3cqqGjoxw6HfLZWYREW4nhWeLtxL`, Ready/Production on g3-6740.com. Rebuilt with production environment. Authenticated cold reload verified the actual field CAD, expanded view, revised behavior labels, reviewed scoring policy and explicit code-generation status; no captured console errors. EN/HE labels checked locally. Previous source f2c3f41 remains the rollback target. No new APK or backend change.
