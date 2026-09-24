@@ -2,6 +2,8 @@
 
 # Start next session — current checkpoint, 24 September 2026
 
+Latest local A–E continuation adds tested rule-version authority/assistant calculation integration, browser draft persistence, timed route preview, obstacle-detour/order generation and inventory checks. See the continuation section in `ENGINEERING_PROGRAMME_A_E_20260924.md` for exact tests and open gates. This is not a production release or completion of A–E; continue the already-authorized programme without another selection question.
+
 Read this entry point before planning or implementing. Do not rely on conversation history or older “selected next / not deployed” banners.
 
 ## Required reading order
