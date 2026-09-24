@@ -1,3 +1,5 @@
+**Production status — 24 September 2026:** First increment and compact composer are deployed with [official ingestion release](OFFICIAL_INGESTION_20260924.md). Real public-repository prepare/attachment, one real-model selected-file explanation, immutable citations, saved history after reload and settled cost passed. The new offseason repository is still unknown; the acceptance used explicitly historical 2024 code. Earlier no-production/no-paid-acceptance statements below are historical checkpoints, superseded here. Broader compare-revision question evaluations, actual Projects draft consumption, full live EN/HE mobile and physical-device acceptance remain follow-ups; no autonomous coding or log diagnosis is implied.
+
 # Software Mentor phase 1 — implementation checkpoint, 24 September 2026
 
 ## Authorization and repository decision
