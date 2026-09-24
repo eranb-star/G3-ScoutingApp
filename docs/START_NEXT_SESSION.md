@@ -1,3 +1,5 @@
+**Active implementation:** The user authorized the complete A–E programme: reliable season/knowledge foundation, camera advisor, autonomous route editor, repository-bound code generation and route recommendations. Read [ENGINEERING_PROGRAMME_A_E_20260924.md](ENGINEERING_PROGRAMME_A_E_20260924.md) for required outcomes, local checkpoint and unimplemented gates. Earlier awaiting-selection/simulator-deferral text is superseded for this scope. No A–E production release yet.
+
 # Start next session — current checkpoint, 24 September 2026
 
 Read this entry point before planning or implementing. Do not rely on conversation history or older “selected next / not deployed” banners.
