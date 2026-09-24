@@ -50,6 +50,14 @@ assert.equal(await publish(legacy,'e'),true,'upgrade existing same-hash legacy s
 await db.exec('reset role');
 assert.equal((await db.query("select count(*) n from frc_corpus_citations where source=900 and locator->>'page'='7'")).rows[0].n,1);
 assert.equal((await db.query("select metadata->>'extractor' extractor from frc_corpus_sources where id=900")).rows[0].extractor,'official-text-v1');
+await db.exec('reset role');await db.exec(fs.readFileSync(new URL('../../../backend/supabase/official_scoring_retrieval_20260924.sql',import.meta.url),'utf8'));
+await db.query('select release_frc_source_check($1,$2)',[legacy.run,legacy.token]);
+const scoring=await job();
+await publish(scoring,'f',[...Array.from({length:8},(_,i)=>({body:'Overview '+i+' climb scoring points ranking tower traversal robot season.',locator:{page:i+1}})),{body:'6.5.3 Point Values. Synthetic table: level one ten, level two twenty, level three thirty.',locator:{page:47}},{body:'Synthetic continued table threshold: fifty points for traversal.',locator:{page:48}}]);
+await db.query('select release_frc_source_check($1,$2)',[scoring.run,scoring.token]);await db.exec(`set role authenticated;set test.allowed='yes';set test.uid='${researchMember}'`);
+const numerical=(await db.query("select search_frc_official(2026,'climb OR scoring OR points OR ranking OR tower OR traversal') result")).rows[0].result;
+assert.match(numerical[0].body,/Point Values/);assert.ok(numerical.some(r=>r.body.includes('fifty points')));assert.ok(numerical.length<=8);
+console.log('PASS actual scoring table and adjacent threshold outrank generic overview pages with more keyword matches');
 await db.close();
 assert.ok(textChunks('word '.repeat(1500),{page:1}).every(c=>c.body.length<=2800));
 const html=extractHtml(new TextEncoder().encode('<html><h1 id="rules">Rules</h1><p>'+('climbing rules '.repeat(30))+'</p><h2>Updates</h2><p>'+('updated rules '.repeat(30))+'</p></html>'));assert.equal(html.chunks[0].locator.anchor,'rules');
