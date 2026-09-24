@@ -12,3 +12,7 @@ assert.deepEqual(result[0].ids,['a','b']);assert.equal(result[0].covered,3);asse
 assert.equal(compareCoverageSets(['a','b'],[[[1],[1],[1]],[[1],[],[]]],2,1)[0].ids.length,1,'fewest cameras meeting goal');
 assert.throws(()=>compareCoverageSets(['a'],[[]],1),/Incomplete/);
 [f,r,r2,empty].forEach(disposeSnapshot);console.log('PASS actual mesh occlusion, independent robot/field transforms, hidden parts, camera count target and single-camera failure coverage.');
+
+const grid=new THREE.Group();for(let i=0;i<40;i++){const mesh=new THREE.Mesh(new THREE.BoxGeometry(.2,.4,.8),new THREE.MeshBasicMaterial());mesh.position.set((i%8)-3.5,Math.floor(i/8)-2,.7);grid.add(mesh);}const snapshot=occlusionSnapshot(grid),accelerated=meshVisibility(snapshot,new THREE.Group());
+for(let i=0;i<120;i++){const from=new THREE.Vector3(-5,Math.sin(i*.71)*4,.2+(i%5)*.3),to=new THREE.Vector3(5,Math.cos(i*.37)*4,1);const ray=new THREE.Raycaster(from,to.clone().sub(from).normalize(),.002,from.distanceTo(to)-.025);const expected=ray.intersectObject(snapshot,true).length===0;assert.equal(accelerated(from,to,from,to),expected,'accelerated CAD must match direct triangles');}
+disposeSnapshot(snapshot);console.log('PASS accelerated mesh hierarchy matches direct raycasting across 120 rays');

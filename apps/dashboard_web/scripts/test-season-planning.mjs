@@ -147,3 +147,13 @@ assert.ok(!traversalChecks(trenchRoute,{...robot,width:.5,height:.4,clearance:0}
 assert.ok(traversalChecks([point(-5,1.524),point(-2,1.524)],robot).some(i=>i.kind==='bump'));
 const corner=[point(0),point(1),{...point(1,1),action:'shoot',seconds:1,quantity:1}];const rounded=roundedRoute(corner);assert.deepEqual(rounded[0],corner[0]);assert.deepEqual(rounded.at(-1),corner.at(-1));assert.equal(rounded.filter(p=>p.action==='shoot').length,1);assert.ok(rounded.length>corner.length);
 console.log('PASS swept footprint, thin obstacles, in-place turns, trench height, traversable bumps and action-preserving rounding');
+
+const {mountedCameraPose,cameraRouteSamples,faceNext}=await load('../src/lib/cameraPose.ts');
+const mounted=mountedCameraPose({x:2,y:3,heading:Math.PI/2},{...cam,x:.3,y:.1,yaw:0});
+assert.ok(Math.abs(mounted.eye.x-1.9)<1e-9);assert.ok(Math.abs(mounted.eye.y-3.3)<1e-9);assert.ok(Math.abs(mounted.direction.x)<1e-9);assert.ok(Math.abs(mounted.direction.y-1)<1e-9);
+assert.deepEqual(cameraCoverage(season,cam,[{x:0,y:0,heading:Math.PI}])[0].tagIds,[],'rear-facing robot must not see forward tags');
+const spinSamples=cameraRouteSamples([{x:0,y:0,heading:0},{x:0,y:0,heading:Math.PI}]);assert.equal(spinSamples.length,19);assert.ok(spinSamples.some(p=>Math.abs(p.heading-Math.PI/2)<1e-9),'in-place turn is sampled');
+assert.ok(cameraRouteSamples(Array.from({length:100},(_,i)=>({x:i%2?100:0,y:0,heading:i%2?Math.PI:0}))).length<=1000);
+const wrap=cameraRouteSamples([{x:0,y:0,heading:170*Math.PI/180},{x:1,y:0,heading:-170*Math.PI/180}]);assert.ok(Math.abs(wrap[1].heading)>3,'use short angle across wrap');
+assert.equal(faceNext([{x:0,y:0,heading:0},{x:0,y:2,heading:0}],0),Math.PI/2);
+console.log('Mounted camera rotation, visibility and turn-sampling regressions passed');
