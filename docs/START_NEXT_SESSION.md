@@ -1,3 +1,5 @@
+**Latest Studio UI:** Read [STUDIO_UX_IMPLEMENTATION_20260925.md](STUDIO_UX_IMPLEMENTATION_20260925.md) for the approved Figma implementation, real CAD preservation, viewport expansion and exact release status.
+
 **Latest camera correction:** Read [CAMERA_ROTATION_SURVEY_20260925.md](CAMERA_ROTATION_SURVEY_20260925.md) for explicit route headings, mounted-camera playback/independent inspection, sampled CAD blind-zone survey and exact release evidence. Existing headings are preserved; new route direction controls do not infer shooter intent.
 
 **Latest team-first release (25 September):** [TEAM_PLANNING_PRACTICE_20260925.md](TEAM_PLANNING_PRACTICE_20260925.md) records shipped own-robot planning and structured practice work (source 9cac90f; production EFEivjaqgHeFGmxp134QQRW2aNce). This supersedes earlier alliance-first ordering; check its release status.
