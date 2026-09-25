@@ -35,3 +35,4 @@
 @media(max-width:760px){.ep-studio.ep-focused .ep-camera-cameras .ep-cad-view{order:-5;height:calc(100dvh - 185px);min-height:240px}.ep-studio.ep-focused .ep-camera-cameras .ep-camera-visual>.ep-controls{flex-shrink:0}.ep-studio.ep-focused .ep-camera-cameras .ep-camera-visual{gap:8px}}
 .ep-studio .ep-body button[aria-pressed=true]:hover:not(:disabled),.ep-studio .ep-body .ep-primary:hover:not(:disabled),.ep-studio .ep-playback>button:first-child:hover:not(:disabled){background:#980065;color:#fff}
 .ep-studio .ep-camera-coverage .ep-camera-visual>h3,.ep-studio .ep-camera-coverage .ep-camera-visual>.ep-controls:has(>button[aria-pressed]){display:none}
+.ep-studio.ep-focused .ep-body{height:100dvh;min-height:100dvh}
