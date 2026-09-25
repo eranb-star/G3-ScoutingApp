@@ -18,3 +18,9 @@ Implements the approved field-first structure with existing native controls/syst
 
 ## Release
 Implementation/release identifiers and production acceptance are recorded after release below. Previous production: 31d6d33 / Fxr2DFCLxK4QiPnipCzVHxkP3tGU. Preserve unrelated Android IDE edits. APK remains unchanged.
+
+## Production sizing regression caught during release
+The first hosted release (d65f936 / EPbYF139Yu21w4W7PLypTcyhBKpC) exposed a details-content percentage-height difference: the expanded outer panel filled the viewport but its inner body resolved to content height, collapsing the field. The local preview had not reproduced it. Corrected with explicit 100dvh height/min-height on the expanded body (main 0ce44d9 / isolated 0022aa1). Always measure the actual production field rectangle after expanding; checking the outer panel or local preview alone is insufficient. This first deployment is superseded by the corrected release below.
+
+## Final production acceptance
+Main implementation 1d33f92 + f98832f + 0ce44d9. Isolated release 0022aa17b35b74e35148b97af3a5fa41afff99e0. Production deployment FRyUTAwdn2L3sTtxYkE3M5BiTiT7 is Ready, Current and assigned to g3-6740.com. Authenticated production page reloaded: expanded body measured 720px and real field 511.34px at a 1280x720 viewport; screenshot verified actual CAD rendering and compact controls. Camera mode loaded its geometry and exposed camera preview/analysis; coverage mode exposed the actual-field map and survey action. No production plan was edited during smoke acceptance. Local browser acceptance above covers route edits and playback. Rollback to pre-change 31d6d33 / Fxr2DFCLxK4QiPnipCzVHxkP3tGU if necessary. Documentation commits after the implementation do not change the running source. APK unchanged.

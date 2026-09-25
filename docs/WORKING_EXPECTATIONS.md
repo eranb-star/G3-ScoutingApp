@@ -53,3 +53,8 @@ Required fixed facts: season setup and Check now are shipped; supported official
 - Team-first direction (25 September): prioritize our robot and student improvement before alliance planning. The delivered planning/practice increment is recorded in TEAM_PLANNING_PRACTICE_20260925.md. Validate complete browser save/reload, not only a successful save message; restart stale preview servers when served modules do not match source. Inspect expanded history tables as well as summary cards for dark-panel contrast. Local simulated history is not measured team performance or cloud synchronization.
 
 - Camera planning regression: distinguish chassis heading from route tangent. A swerve path curve does not imply yaw. Test stationary rotations and shortest-angle interpolation; rendering and coverage must share the mount transform. Show configured heading clearly and preserve saved plans. Sampled tag visibility is not guaranteed localization. Field surveys must be cancellable, bounded and explicit about occupied positions, angle/grid gaps and fixed-pose CAD assumptions.
+
+### Studio design acceptance — 25 September
+- Approved Figma is a layout reference. Keep real production field/robot CAD, current transforms, calculations and saved workspaces. Never substitute the illustrative field or sample metrics from a mockup.
+- Expanded field means the browser viewport with compact controls and optional inspector, not a modestly larger card. Check desktop, portrait/mobile and RTL. Preserve aspect ratio between real CAD and editable overlays.
+- Keep route, camera placement and coverage connected through shared state/playback; hide complexity progressively while preserving access to existing imports, cloud plans, rules and generation status.
