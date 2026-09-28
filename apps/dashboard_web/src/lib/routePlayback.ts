@@ -1,9 +1,11 @@
+import {preparedRoute} from './routeSmoothing';
 import {evaluateRoute,type MotionProfile,type RoutePoint} from './autonomousPlanning';
 import {routeMotion,legDistance} from './routeMotion';
 import type {SeasonPackage} from './seasonPackage';
 export function routePoseAt(season:SeasonPackage,robot:MotionProfile,route:RoutePoint[],elapsed:number){
  if(!Number.isFinite(elapsed))throw Error('Invalid playback time');
  const result=evaluateRoute(season,robot,route);if(result.errors.length)throw Error('Correct route constraints before playback');
+ route=preparedRoute(route,robot);
  const timeline=routeMotion(robot,route),t=Math.max(0,Math.min(elapsed,result.seconds));
  if(t<timeline.initialHold)return {...route[0],phase:route[0].action,waypoint:0,done:false};
  for(let i=0;i<timeline.legs.length;i++){const leg=timeline.legs[i],a=route[i],p=route[i+1];

@@ -16,6 +16,7 @@ const first=trajectory(),second=trajectory();let delta=0;for(let i=0;i<first.len
 single();let sawHub=false;
 for(let i=0;i<210;i++){d.step(idle,DEFAULT_INTAKE,{...DEFAULT_SHOOTER,on:true});sawHub ||= d.fuel.transit.length>0;conserved();}
 console.log('shot result',d.fuel.scores,d.fuel.snapshot());assert.equal(d.fuel.shots,1);assert.equal(d.fuel.collected,0);assert.equal(d.fuel.scores[0],1,'shot enters red hub');assert.ok(sawHub,'ball is processed inside hub');assert.ok(d.fuel.snapshot()[0].x>-3.0,'scored ball exits toward neutral');
+single();d.fuel.scoringEnabled=[false,false];for(let i=0;i<210;i++){d.step(idle,DEFAULT_INTAKE,{...DEFAULT_SHOOTER,on:true});conserved();}assert.equal(d.fuel.scores[0],0,'inactive hub returns ball without points');assert.equal(d.fuel.credits.get('player')??0,0,'inactive hub does not credit player');d.fuel.scoringEnabled=[true,true];
 single(1.2);for(let i=0;i<180;i++){d.step(idle,DEFAULT_INTAKE,{...DEFAULT_SHOOTER,on:true});conserved();}assert.equal(d.fuel.scores[0]+d.fuel.scores[1],0,'miss does not score');assert.equal(d.fuel.balls.size,1,'miss remains physical');assert.ok(d.fuel.snapshot()[0].x>-5,'miss travels');
 d.reset(-6,0);d.fuel.reset([]);d.fuel.total=1;d.fuel.spawn(0,{x:-3.644+.8,y:0,z:2.1});for(let i=0;i<90;i++){d.step(idle);conserved();}assert.equal(d.fuel.scores[0],0,'outside opening is not a goal');
 d.fuel.reset([]);for(let i=0;i<60;i++)d.step(idle,DEFAULT_INTAKE,{...DEFAULT_SHOOTER,on:true});assert.equal(d.fuel.shots,0,'empty storage cannot create balls');

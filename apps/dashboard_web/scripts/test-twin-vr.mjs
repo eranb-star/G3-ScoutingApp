@@ -37,6 +37,7 @@ right.gamepad.buttons[5].pressed=false;right.gamepad.buttons[1].pressed=false;aw
 const yaw=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),.6);pose.transform.orientation=yaw;vr.update(600,frame);
 const aimed=new THREE.Vector3(0,0,-1).applyQuaternion(yaw).applyQuaternion(camera.parent.quaternion);assert.ok(aimed.distanceTo(new THREE.Vector3(1,0,0))<1e-9);
 vr.dispose();assert.equal(vr.active,false);
+const blueCamera=new THREE.PerspectiveCamera(),blueScene=new THREE.Scene();const blueVR=createTwinVR(renderer,blueCamera,blueScene,()=>{},()=>'',()=>({alliance:'blue',index:2}));await blueVR.enter(false);blueVR.update(700,frame);blueScene.updateMatrixWorld(true);const blueHead=new THREE.Vector3(1,1.65,2).applyMatrix4(blueCamera.parent.matrixWorld);assert.ok(Math.abs(blueHead.x-(DRIVER_STATIONS_2026.blue[2][0]+.6))<1e-9);assert.ok(Math.abs(blueHead.y-DRIVER_STATIONS_2026.blue[2][1])<1e-9);const blueForward=new THREE.Vector3(0,0,-1).applyQuaternion(yaw).applyQuaternion(blueCamera.parent.quaternion);assert.ok(blueForward.distanceTo(new THREE.Vector3(-1,0,0))<1e-9);blueVR.dispose();
 console.log('VR: input/deadman, duplicate entry, floor scale/head origin/yaw, tracking/focus/gap/recenter disarming, exit and quality passed');
 `,resolveDir:process.cwd(),loader:'ts'},bundle:true,platform:'node',format:'esm',write:false,logLevel:'silent'});
 const file=path.join(os.tmpdir(),'g3-vr-test.mjs');await fs.writeFile(file,result.outputFiles[0].text);await import(pathToFileURL(file));

@@ -28,13 +28,24 @@ export function competitionVenue(length:number,width:number){
  const rails:number[][]=[];for(const side of [-1,1]){rails.push([0,side*(standY-1),.9,length+5,.05,.05]);for(let x=-10;x<=10;x+=2)rails.push([x,side*(standY-1),.45,.05,.05,.9]);}
  blocks(rails,materials.steel);blocks([[-hx+1,0,1.1,.1,width+7,2.2]],materials.red);blocks([[hx-1,0,1.1,.1,width+7,2.2]],materials.blue);
  blocks([[-hx+.6,0,4.8,.1,9,3.4],[hx-.6,0,4.8,.1,9,3.4]],materials.drape);
+ // Team-pride banner on the hall wall, outside official field geometry.
+ let disposed=false;
+ if(typeof document!=='undefined'){
+  const canvas=document.createElement('canvas');canvas.width=1024;canvas.height=512;
+  const ctx=canvas.getContext('2d');if(ctx){
+   const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;
+   const material=new THREE.MeshBasicMaterial({map:texture});
+   const banner=new THREE.Mesh(new THREE.PlaneGeometry(8,4),material);banner.name='G3 team pride — not an award';banner.position.set(0,hy-.15,4.8);banner.up.set(0,0,1);banner.lookAt(0,0,4.8);group.add(banner);
+   const logo=new Image();const paint=()=>{if(disposed)return;ctx.fillStyle='#240c24';ctx.fillRect(0,0,1024,512);ctx.fillStyle='#db008b';ctx.fillRect(0,0,18,512);ctx.fillRect(1006,0,18,512);if(logo.complete&&logo.naturalWidth)ctx.drawImage(logo,40,40,500,340);ctx.textAlign='center';ctx.fillStyle='#ff71ca';ctx.font='bold 82px sans-serif';ctx.fillText('G3',770,155);ctx.fillStyle='#ffffff';ctx.font='bold 100px sans-serif';ctx.fillText('6740',770,275);ctx.font='bold 42px sans-serif';ctx.fillText('Glued by Passion',512,450);texture.needsUpdate=true;};logo.onload=paint;logo.src='/logoG3.png';paint();
+  }
+ }
  let paintScores:((scores:number[])=>void)|undefined;
  if(typeof document!=='undefined'){
   const canvas=document.createElement('canvas');canvas.width=1024;canvas.height=384;const ctx=canvas.getContext('2d');
   if(ctx){const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;const material=new THREE.MeshBasicMaterial({map:texture});
    for(const side of [-1,1]){const screen=new THREE.Mesh(new THREE.PlaneGeometry(8.8,3.2),material);screen.position.set(side*(hx-.7),0,4.8);screen.up.set(0,0,1);screen.lookAt(0,0,4.8);group.add(screen);}
-   let previous='';paintScores=(scores)=>{const key=scores.join(',');if(key===previous)return;previous=key;ctx.fillStyle='#0c1725';ctx.fillRect(0,0,1024,384);ctx.textAlign='center';ctx.fillStyle='#c4d7e7';ctx.font='600 38px sans-serif';ctx.fillText('G3  /  DRIVER PRACTICE',512,65);ctx.fillStyle='#f16c86';ctx.font='bold 95px monospace';ctx.fillText(`RED ${scores[0]??0}`,270,205);ctx.fillStyle='#68b9ff';ctx.fillText(`BLUE ${scores[1]??0}`,755,205);ctx.fillStyle='#8cabbc';ctx.font='26px sans-serif';ctx.fillText('BALLS SCORED  ·  TRAINING SESSION',512,310);texture.needsUpdate=true;};
+   let previous='';paintScores=(scores)=>{const key=scores.join(',');if(key===previous)return;previous=key;ctx.fillStyle='#0c1725';ctx.fillRect(0,0,1024,384);ctx.textAlign='center';ctx.fillStyle='#c4d7e7';ctx.font='600 38px sans-serif';ctx.fillText('G3  /  DRIVER PRACTICE',512,65);ctx.fillStyle='#f16c86';ctx.font='bold 95px monospace';ctx.fillText(`RED ${scores[0]??0}`,270,205);ctx.fillStyle='#68b9ff';ctx.fillText(`BLUE ${scores[1]??0}`,755,205);ctx.fillStyle='#8cabbc';ctx.font='26px sans-serif';ctx.fillText('BALLS SCORED  Â·  TRAINING SESSION',512,310);texture.needsUpdate=true;};
   }
  }
- return {group,update(mode:VenueMode,tier:QualityTier,driver:boolean,scores:number[]=[]){group.visible=mode==='competition';detail.visible=tier!=='low';overhead.visible=driver&&tier!=='low';if(group.visible)paintScores?.(scores);}};
+ return {group,dispose(){disposed=true;},update(mode:VenueMode,tier:QualityTier,driver:boolean,scores:number[]=[]){group.visible=mode==='competition';detail.visible=tier!=='low';overhead.visible=driver&&tier!=='low';if(group.visible)paintScores?.(scores);}};
 }

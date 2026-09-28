@@ -10,7 +10,7 @@ export function vrInput(sources:Iterable<XRInputSource>,ready:boolean):VRInput{
  if(!drive)return {vx:0,vy:0,omega:0,shoot:false,intake:false,drive:false};
  return {vx:-axis(a!.axes[3]),vy:-axis(a!.axes[2]),omega:-axis(b!.axes[2]),shoot:!!b!.buttons[0]?.pressed,intake:!!a!.buttons[0]?.pressed,drive:true};
 }
-export function createTwinVR(renderer:THREE.WebGLRenderer,camera:THREE.PerspectiveCamera,scene:THREE.Scene,changed:(active:boolean)=>void,practiceLabel:()=>string=()=>''){
+export function createTwinVR(renderer:THREE.WebGLRenderer,camera:THREE.PerspectiveCamera,scene:THREE.Scene,changed:(active:boolean)=>void,practiceLabel:()=>string=()=>'',station:()=>{alliance:'red'|'blue';index:0|1|2}=()=>({alliance:'red',index:0})){
  renderer.xr.enabled=true;renderer.xr.setReferenceSpaceType('local-floor');
  const rig=new THREE.Group();scene.add(rig);rig.add(camera);
  const label=document.createElement('canvas');label.width=1024;label.height=192;const ctx=label.getContext('2d')!;
@@ -28,7 +28,7 @@ export function createTwinVR(renderer:THREE.WebGLRenderer,camera:THREE.Perspecti
  renderer.xr.setFramebufferScaleFactor(high?1:.8);renderer.xr.setFoveation(high?0:1);
  const next=await navigator.xr.requestSession('immersive-vr',{requiredFeatures:['local-floor']});
  if(disposed){await next.end();return;}session=next;visible=true;center=true;armed=false;previousCenter=previousExit=false;frames=0;start=last=total=worst=slow=0;next.addEventListener('end',ended,{once:true});next.addEventListener('visibilitychange',visibility);
- camera.position.set(0,0,0);camera.quaternion.identity();camera.up.set(0,1,0);hud.visible=true;paint('VR prototype · Red station 1\nRelease right grip, then hold it to drive.');
+ camera.position.set(0,0,0);camera.quaternion.identity();camera.up.set(0,1,0);hud.visible=true;paint(`VR · ${station().alliance} station ${station().index+1}\nRelease right grip, then hold it to drive.`);
  try{await renderer.xr.setSession(next);changed(true);}catch(e){await next.end();throw e;}
  }finally{pending=false;}
  },
@@ -42,8 +42,8 @@ export function createTwinVR(renderer:THREE.WebGLRenderer,camera:THREE.Perspecti
  if(exit&&!previousExit){void session.end();return zero;}previousExit=exit;
  if(recenter&&!previousCenter)center=true;previousCenter=recenter;
  if(center){const t=pose.transform,forward=new THREE.Vector3(0,0,-1).applyQuaternion(new THREE.Quaternion(t.orientation.x,t.orientation.y,t.orientation.z,t.orientation.w));const yaw=Math.atan2(-forward.x,-forward.z);
- rig.rotation.set(Math.PI/2,0,-Math.PI/2-yaw,'ZXY');rig.position.set(0,0,0);rig.updateMatrixWorld(true);
- const offset=new THREE.Vector3(t.position.x,0,t.position.z).applyQuaternion(rig.quaternion);const [x,y]=DRIVER_STATIONS_2026.red[0];rig.position.set(x-.6-offset.x,y-offset.y,0);center=false;armed=false;
+ const selected=station();rig.rotation.set(Math.PI/2,0,(selected.alliance==='red'?-Math.PI/2:Math.PI/2)-yaw,'ZXY');rig.position.set(0,0,0);rig.updateMatrixWorld(true);
+ const offset=new THREE.Vector3(t.position.x,0,t.position.z).applyQuaternion(rig.quaternion);const [x,y]=DRIVER_STATIONS_2026[selected.alliance][selected.index];rig.position.set(x+(selected.alliance==='red'?-.6:.6)-offset.x,y-offset.y,0);center=false;armed=false;
  }
  eye=pose.transform.position.y;if(last){const dt=now-last;worst=Math.max(worst,dt);if(dt>250)armed=false;if(dt>20)slow++;}last=now;if(!start)start=now;frames++;total++;
  if(tracked.length===2&&right&&left&&!right.buttons[1]?.pressed&&!right.buttons[0]?.pressed&&!left.buttons[0]?.pressed&&[...left.axes,...right.axes].every(a=>Number.isFinite(a)&&Math.abs(a)<.15))armed=true;

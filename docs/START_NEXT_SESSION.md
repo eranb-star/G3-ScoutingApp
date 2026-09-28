@@ -1,3 +1,17 @@
+**Latest integrated Studio release (28 September):** Read [STUDIO_INTEGRATED_20260928.md](STUDIO_INTEGRATED_20260928.md) FIRST for the actual Drive/Practice/Engineering implementation, full-match rehearsal, smooth route/headings, Java scaffold, team banner, acceptance, limitations and deployment status. It supersedes the design-only status below.
+
+**Main Studio design proposal (28 September):** [STUDIO_MAIN_UX_20260928.md](STUDIO_MAIN_UX_20260928.md) records the outer Studio redesign request and browser prototype. Figma tool quota blocked editing; no production change this turn.
+
+**Latest Studio UI:** Read [STUDIO_UX_IMPLEMENTATION_20260925.md](STUDIO_UX_IMPLEMENTATION_20260925.md) for the approved Figma implementation, real CAD preservation, viewport expansion and exact release status.
+
+**Latest camera correction:** Read [CAMERA_ROTATION_SURVEY_20260925.md](CAMERA_ROTATION_SURVEY_20260925.md) for explicit route headings, mounted-camera playback/independent inspection, sampled CAD blind-zone survey and exact release evidence. Existing headings are preserved; new route direction controls do not infer shooter intent.
+
+**Latest team-first release (25 September):** [TEAM_PLANNING_PRACTICE_20260925.md](TEAM_PLANNING_PRACTICE_20260925.md) records shipped own-robot planning and structured practice work (source 9cac90f; production EFEivjaqgHeFGmxp134QQRW2aNce). This supersedes earlier alliance-first ordering; check its release status.
+
+**Next priorities clarified 25 September:** [NEXT_PRIORITIES_20260925.md](NEXT_PRIORITIES_20260925.md) supersedes earlier recommendation ordering. Read the mandatory recommendation reconciliation in [WORKING_EXPECTATIONS.md](WORKING_EXPECTATIONS.md). Delivered season setup/Check now and answer fixes must not be proposed again.
+
+**Current checkpoint (25 September):** Read [CHECKPOINT_20260925.md](CHECKPOINT_20260925.md) first for the latest release, delivered capabilities, actual remaining work, APK and required inputs. Earlier phase estimates and release identifiers below are historical where superseded.
+
 **Latest robot-first and camera workflow:** Read [PLANNER_START_CAMERA_20260924.md](PLANNER_START_CAMERA_20260924.md) first for current behavior, migration and release status.
 
 **Latest planner correction:** Read [PLANNER_USABILITY_20260924.md](PLANNER_USABILITY_20260924.md) for actual-field route editing, continuous motion/intake, compact controls and explicit code-generation status. Then read [ENGINEERING_RELEASE_20260924.md](ENGINEERING_RELEASE_20260924.md) for underlying A/B/C/E capabilities and limits. The whole A–E programme remains authorized. D needs actual repository inputs AND generator implementation/build validation; it is not an existing hidden download.
@@ -18,7 +32,7 @@ Read this entry point before planning or implementing. Do not rely on conversati
 
 ## Current boundary
 
-- Engineering website source `d380f71`, production Vercel `3cqqGjoxw6HfLZWYREW4nhWeLtxL`, supersedes `a776397` and `8fb99dc`. See the engineering release record for exact acceptance, backend hash and rollback. Later documentation commits are separate from the running website source.
+- Engineering website source `5046a7f`, production Vercel `J4UXhWDK8ZAFxb8aiDxvVKNXptsc`, supersedes `a776397` and `8fb99dc`. See the engineering release record for exact acceptance, backend hash and rollback. Later documentation commits are separate from the running website source.
 - Delivered knowledge/Gemini/budgets, selected-code Software Mentor, supported official ingestion, simulator milestones and existing mentor/task workflows must be extended, not rebuilt.
 - Decision UI and saved-answer task provenance deployed; synthetic workflow acceptance passed; permission tightening and local encrypted restore passed. The supported mixed-level tower calculation now passes production acceptance through deterministic server authority. Broader strategy/follow-up/classifier evaluation, portable/offsite/full-service recovery and physical acceptance remain open.
 - APK remains 2.2.0/code24 from September 21, predating later website features. Do not describe it as current with production.
