@@ -1,5 +1,5 @@
 # Latest robot learning release
-Read `ROBOT_LEARNING_CAN_RELEASE_20260929.md` first for the CAN workshop and production acceptance. It supersedes earlier not-deployed lab status once the acceptance below is recorded.
+Read `ROBOT_LEARNING_CAN_RELEASE_20260929.md` first for the CAN workshop and production acceptance. Live production: source `531dc0a`, deployment `65JDMRsnRkW3kz8YRmrBbvMt3VH6`. It supersedes earlier not-deployed lab status.
 
 **Latest robot learning update (29 September):** [ROBOT_LEARNING_SUBSYSTEMS_20260929.md](ROBOT_LEARNING_SUBSYSTEMS_20260929.md) supersedes the single-robot status: Darwin + Limestone work in-app locally; subsystem highlighting and electrical guidance delivered. 2910 remains view-only/external. Not deployed; actual cable wiring remains undocumented.
 
