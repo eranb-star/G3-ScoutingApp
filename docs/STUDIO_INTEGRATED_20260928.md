@@ -1,6 +1,6 @@
 # Studio integrated release — 28 September 2026
 
-Status: implementation and local acceptance complete; production deployment pending. Do not infer production status from the commit. Release identifiers and live verification are appended after deployment.
+Status: deployed and live-verified on g3-6740.com. Final source `0fe362c01b08ea0577c966f35e6113957b98ef29`; Vercel production `BEawEmN8ZSAYsdciqeVyXA2ySG5p` (Ready), rebuilding preview `8QfV6rvxLraDofjaeMvvZwhfTcQe` with production configuration.
 
 ## User-approved scope and delivered implementation
 - Main Studio now uses Drive / Practice / Engineering activity navigation. Engineering opens the existing real CAD route/camera workspace, not the earlier iframe mockup. Existing physics, saved workspaces, robot imports, drills and VR remain the shared foundation. Secondary robot/display controls are grouped; compact fullscreen retains driving/mechanism/status/exit controls and the planner retains editing, playback and export access.
@@ -34,3 +34,11 @@ The earlier prototype Engineering/Practice tabs were design-only. This release m
 
 ## Release discipline
 Preserve unrelated Android IDE changes and the local prototype server file. Isolated production release starts from 0022aa1 on codex/knowledge-protection-release. Promote only reviewed Studio changes; record exact source and deployment here. Rollback reference: 0022aa17b35b74e35148b97af3a5fa41afff99e0 / FRyUTAwdn2L3sTtxYkE3M5BiTiT7.
+
+## Production acceptance — 28 September
+- Implementation working commits: `b330876`, `48bea70`; isolated release commits `15d9de0`, `0fe362c01b08ea0577c966f35e6113957b98ef29`.
+- Initial production rebuild `GxkjLFw8mcDD9VnUvRXbDVvNcQbk` successfully served the new Studio from `15d9de0`. Authenticated production acceptance verified Drive/Practice/Engineering navigation, real CAD loading/checksum, blue G3 identity, magenta full-wordmark banner, 1280×672 field in a 1280×720 fullscreen viewport, countdown/AUTO/transition/SHIFT 1, pause/end and replay seeking to 42.1 seconds. No browser console errors were reported. The full 169-second rehearsal acceptance was local, not a full production match run.
+- Final fullscreen correction: the new shooting-stop section occupied space below the expanded planner. Hide that secondary section while expanded; keep header export and route editing/playback. Local expanded field measured 1116×477 in 1280×720. Final production cold-load confirmed the same 1116×477 field, hidden secondary suggestions in fullscreen, real CAD, header export and editing controls. No browser errors. Screenshot: `docs/staging/studio-production-planner-20260928.png`.
+- Desktop screenshot evidence: `docs/staging/studio-production-replay-20260928.png` (local, ignored release artifact). No student data or credentials are included.
+
+- Final deployment URL: https://g3-scouting-app-5qpe-kwm048e8x-eranbos-projects.vercel.app ; production https://g3-6740.com/field-twin . Final field screenshot: `docs/staging/studio-production-final-20260928.png`. Documentation-only commits after this do not change the running website.
