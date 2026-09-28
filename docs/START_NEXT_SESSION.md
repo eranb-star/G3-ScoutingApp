@@ -1,4 +1,4 @@
-**Latest integrated Studio release (28 September):** Read [STUDIO_INTEGRATED_20260928.md](STUDIO_INTEGRATED_20260928.md) FIRST for the actual Drive/Practice/Engineering implementation, full-match rehearsal, smooth route/headings, Java scaffold, team banner, acceptance, limitations and deployment status. It supersedes the design-only status below.
+**Latest integrated Studio release (28 September):** Read [STUDIO_INTEGRATED_20260928.md](STUDIO_INTEGRATED_20260928.md) FIRST for the actual Drive/Practice/Engineering implementation, full-match rehearsal, smooth route/headings, Java scaffold, team banner, acceptance, limitations and deployment status. Production source `0fe362c`, deployment `BEawEmN8ZSAYsdciqeVyXA2ySG5p`, live-verified. It supersedes the design-only status below.
 
 **Main Studio design proposal (28 September):** [STUDIO_MAIN_UX_20260928.md](STUDIO_MAIN_UX_20260928.md) records the outer Studio redesign request and browser prototype. Figma tool quota blocked editing; no production change this turn.
 
