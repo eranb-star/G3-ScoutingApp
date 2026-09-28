@@ -28,6 +28,7 @@ export class FuelPhysics {
   transit:{id:number;hub:number;ready:number}[]=[];
   outOfPlay:number[]=[];
   scores=[0,0];total=0;
+  scoringEnabled:[boolean,boolean]=[true,true];
   get collected(){return this.stored.length;}
 
   private previous=new Map<number,{x:number;y:number;z:number}>();
@@ -87,7 +88,7 @@ export class FuelPhysics {
       if(last&&last.z>=HUB_ENTRY_Z&&p.z<HUB_ENTRY_Z){
         const t=(last.z-HUB_ENTRY_Z)/(last.z-p.z),x=last.x+(p.x-last.x)*t,y=last.y+(p.y-last.y)*t;
         for(let h=0;h<2;h++)if(insideHub(x-HUB_X[h],y)){
-          this.remove(id);this.scores[h]++;const owner=this.owners.get(id);if(owner)this.credits.set(owner,(this.credits.get(owner)??0)+1);this.owners.delete(id);this.transit.push({id,hub:h,ready:tick+60});scored=true;break;
+          this.remove(id);if(this.scoringEnabled[h])this.scores[h]++;const owner=this.owners.get(id);if(owner&&this.scoringEnabled[h])this.credits.set(owner,(this.credits.get(owner)??0)+1);this.owners.delete(id);this.transit.push({id,hub:h,ready:tick+60});scored=true;break;
         }
       }
       if(scored)continue;

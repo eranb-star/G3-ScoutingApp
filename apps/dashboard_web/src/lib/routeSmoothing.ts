@@ -6,5 +6,14 @@ export function roundedRoute(route:RoutePoint[],radius=.3):RoutePoint[]{
  const a=route[i-1],b=route[i+1],d1=Math.hypot(p.x-a.x,p.y-a.y),d2=Math.hypot(b.x-p.x,b.y-p.y);if(d1<.05||d2<.05){out.push({...p});return;}
  const cut=Math.min(radius,d1*.3,d2*.3),u=lerp(p,a,cut/d1),v=lerp(p,b,cut/d2);out.push(u);
  for(let j=1;j<=4;j++){const t=j/4,q=lerp(lerp(u,p,t),lerp(p,v,t),t);out.push({...q,action:'none',seconds:0,points:0,quantity:0});}
- });if(out.length>100)throw Error('Too many points to round; use a shorter route.');return out;
+ });if(out.length>500)throw Error('Too many points to round; use a shorter route.');return out;
+}
+
+/** Generated samples never replace authored points. Shared by evaluation, export and cameras. */
+export function preparedRoute(route:RoutePoint[],robot:{shooterYaw?:number;smoothCorners?:boolean;headingMode?:'manual'|'travel'|'center'}):RoutePoint[]{
+ const points=robot.smoothCorners?roundedRoute(route):route.map(p=>({...p}));
+ return points.map((p,i)=>{const next=points[i+1]??p,previous=points[i-1]??p;
+ const mode=robot.headingMode&&robot.headingMode!=='manual'?robot.headingMode:p.orientation;
+ const heading=mode==='red-hub'||mode==='blue-hub'?Math.atan2(-p.y,(mode==='red-hub'?-3.644:3.644)-p.x)+(robot.shooterYaw??0):mode==='center'?Math.atan2(-p.y,-p.x):mode==='travel'?Math.atan2(next.y-previous.y,next.x-previous.x):p.heading;
+ return {...p,heading};});
 }

@@ -1,3 +1,5 @@
+**Implementation update:** The approved design has now been implemented in the application. See [STUDIO_INTEGRATED_20260928.md](STUDIO_INTEGRATED_20260928.md) for exact release status and acceptance. The prototype account below is historical; Figma itself remains unchanged.
+
 # Main Studio UX redesign — 28 September 2026
 
 Status: browser design prototype, not production. User requested Figma redesign of the confusing outer Field & Robot Studio, following the engineering-only redesign. Figma read/edit tools hit the connected Starter MCP limit before any canvas mutation. Existing file is unchanged. Do not claim this proposal was saved in Figma or shipped.
