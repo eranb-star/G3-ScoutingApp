@@ -1,0 +1,28 @@
+import {createRequire} from 'node:module';
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import {pathToFileURL} from 'node:url';
+const req=createRequire(import.meta.url),{build}=createRequire(req.resolve('vite'))('esbuild');
+const result=await build({stdin:{contents:`
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {inStudyArea,loadLearningRobot} from './src/lib/robotLearning';
+assert.equal(inStudyArea('can','6328-26C-0113 Trash Can','darwin'),false,'CAN is not a substring match for Trash Can');
+assert.equal(inStudyArea('electrical','Hex_nut / 6328-26C-2300_Intake','darwin'),false);
+assert.equal(inStudyArea('intake','Hex_nut / 6328-26C-2300_Intake','darwin'),true,'anonymous assembly hardware inherits subsystem');
+assert.equal(inStudyArea('power','Simplified_PDP_2.0','darwin'),true);
+assert.equal(inStudyArea('network','Robot_Radio_(VH-109)','darwin'),true);
+assert.equal(inStudyArea('hopper','Part_1 / Limestone component 2','limestone'),true);
+const data=fs.readFileSync('public/twin/robots/6328-2026/model.glb');
+const gltf=JSON.parse(data.subarray(20,20+data.readUInt32LE(12)).toString());
+const names=gltf.nodes.map(n=>n.name||'');
+for(const area of ['electrical','power','can','network','intake','shooter','hopper','drive'])assert(names.some(n=>inStudyArea(area,n,'darwin')),'real Darwin data supports '+area);
+const original=globalThis.fetch;
+let requests=0;globalThis.fetch=async()=>{requests++;return new Response(new Uint8Array([1,2,3]));};
+await assert.rejects(loadLearningRobot('limestone',new AbortController().signal),/integrity/);
+assert.equal(requests,1,'bad first file stops loading');
+globalThis.fetch=original;
+console.log('PASS real-CAD subsystem mapping, ancestor membership, false CAN match, remote integrity rejection');
+`,resolveDir:process.cwd(),loader:'ts'},bundle:true,platform:'node',format:'esm',write:false,logLevel:'silent'});
+const file=path.join(os.tmpdir(),'g3-robot-learning-test.mjs');await fs.writeFile(file,result.outputFiles[0].text);await import(pathToFileURL(file));

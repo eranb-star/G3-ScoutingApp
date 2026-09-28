@@ -1,0 +1,140 @@
+{
+  "revision": "0f403dd8f3ad1f7d0dbe0c1bd23b24c210f41677",
+  "source": "https://github.com/frc1678/C2026-Public/tree/0f403dd8f3ad1f7d0dbe0c1bd23b24c210f41677/assets/Robot_Comp",
+  "config": {
+    "name": "Comp",
+    "rotations": [
+      {
+        "axis": "x",
+        "degrees": 0
+      },
+      {
+        "axis": "y",
+        "degrees": 180
+      },
+      {
+        "axis": "z",
+        "degrees": 0
+      }
+    ],
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "cameras": [],
+    "components": [
+      {
+        "zeroedRotations": [
+          {
+            "axis": "x",
+            "degrees": 180
+          },
+          {
+            "axis": "y",
+            "degrees": 0
+          },
+          {
+            "axis": "z",
+            "degrees": -180
+          }
+        ],
+        "zeroedPosition": [
+          -0.309296,
+          0.309,
+          -0.16901
+        ]
+      },
+      {
+        "zeroedRotations": [
+          {
+            "axis": "x",
+            "degrees": 180
+          },
+          {
+            "axis": "y",
+            "degrees": 0
+          },
+          {
+            "axis": "z",
+            "degrees": 180
+          }
+        ],
+        "zeroedPosition": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "zeroedRotations": [
+          {
+            "axis": "x",
+            "degrees": 0
+          },
+          {
+            "axis": "y",
+            "degrees": 180
+          },
+          {
+            "axis": "z",
+            "degrees": 0
+          }
+        ],
+        "zeroedPosition": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "zeroedRotations": [
+          {
+            "axis": "x",
+            "degrees": 180
+          },
+          {
+            "axis": "y",
+            "degrees": 0
+          },
+          {
+            "axis": "z",
+            "degrees": 180
+          }
+        ],
+        "zeroedPosition": [
+          0.295275,
+          0,
+          -0.45095
+        ]
+      }
+    ]
+  },
+  "files": {
+    "model.glb": {
+      "url": "https://raw.githubusercontent.com/frc1678/C2026-Public/0f403dd8f3ad1f7d0dbe0c1bd23b24c210f41677/assets/Robot_Comp/model.glb",
+      "bytes": 36765564,
+      "sha256": "4f9bcd9b3489e3347ab3056462e0e96b614f34039a7d60d9bed72513838c4712"
+    },
+    "model_0.glb": {
+      "url": "https://raw.githubusercontent.com/frc1678/C2026-Public/0f403dd8f3ad1f7d0dbe0c1bd23b24c210f41677/assets/Robot_Comp/model_0.glb",
+      "bytes": 3413276,
+      "sha256": "67a74cdffaac3f0970831993a931c3a2c0e4dcc187d221419417ea7107c58435"
+    },
+    "model_1.glb": {
+      "url": "https://raw.githubusercontent.com/frc1678/C2026-Public/0f403dd8f3ad1f7d0dbe0c1bd23b24c210f41677/assets/Robot_Comp/model_1.glb",
+      "bytes": 3037000,
+      "sha256": "23723af38eb3cfd47d30bff248fbed49a60c872392573ee0ac247a01f0323503"
+    },
+    "model_2.glb": {
+      "url": "https://raw.githubusercontent.com/frc1678/C2026-Public/0f403dd8f3ad1f7d0dbe0c1bd23b24c210f41677/assets/Robot_Comp/model_2.glb",
+      "bytes": 228852,
+      "sha256": "bc5947a48b425a18dc76aada0a40213f68d6c1356bcc3fb9def2c05e152cc165"
+    },
+    "model_3.glb": {
+      "url": "https://raw.githubusercontent.com/frc1678/C2026-Public/0f403dd8f3ad1f7d0dbe0c1bd23b24c210f41677/assets/Robot_Comp/model_3.glb",
+      "bytes": 1161844,
+      "sha256": "1219af9cb8f252c9b9232fe0d09e9cded080df51868e0755786b63c9e56a401a"
+    }
+  }
+}

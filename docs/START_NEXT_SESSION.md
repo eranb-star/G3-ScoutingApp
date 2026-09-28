@@ -1,3 +1,5 @@
+**Latest robot learning update (29 September):** [ROBOT_LEARNING_SUBSYSTEMS_20260929.md](ROBOT_LEARNING_SUBSYSTEMS_20260929.md) supersedes the single-robot status: Darwin + Limestone work in-app locally; subsystem highlighting and electrical guidance delivered. 2910 remains view-only/external. Not deployed; actual cable wiring remains undocumented.
+
 **Latest authorized learning work (29 September):** [ROBOT_LEARNING_LAB_20260929.md](ROBOT_LEARNING_LAB_20260929.md) records the implemented local Darwin inspection lab, exact model research/import gaps and acceptance. User authorized starting the multi-robot visual learning direction; it is no longer only proposed. Not deployed; 2–3 in-app models are not yet complete.
 
 **Proposed next priorities (28 September):** [TEAM_FIRST_ROADMAP_20260928.md](TEAM_FIRST_ROADMAP_20260928.md) reconciles the latest release with the low-mentor team objective. Prioritize guided student engineering plus measured robot improvement; discussion does not authorize new implementation.
