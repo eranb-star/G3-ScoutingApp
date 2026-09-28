@@ -1,3 +1,5 @@
+**Main Studio design proposal (28 September):** [STUDIO_MAIN_UX_20260928.md](STUDIO_MAIN_UX_20260928.md) records the outer Studio redesign request and browser prototype. Figma tool quota blocked editing; no production change this turn.
+
 **Latest Studio UI:** Read [STUDIO_UX_IMPLEMENTATION_20260925.md](STUDIO_UX_IMPLEMENTATION_20260925.md) for the approved Figma implementation, real CAD preservation, viewport expansion and exact release status.
 
 **Latest camera correction:** Read [CAMERA_ROTATION_SURVEY_20260925.md](CAMERA_ROTATION_SURVEY_20260925.md) for explicit route headings, mounted-camera playback/independent inspection, sampled CAD blind-zone survey and exact release evidence. Existing headings are preserved; new route direction controls do not infer shooter intent.
