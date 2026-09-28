@@ -1,0 +1,34 @@
+# Robot learning lab — 29 September 2026
+
+## Authorization and exact status
+User authorized starting interactive visual engineering learning and requires 2–3 real best-in-class robot designs, with useful differences, rather than KitBot or invented approximations. Season-independent learning remains the objective. This is the first implemented increment, NOT completion of the multi-robot curriculum. Local review only; no production deployment or APK release in this increment.
+
+Implemented in Skills Academy → Robot learning lab (`?view=robot-lab`): lazy-loaded real 6328 Darwin 2026 CAD; click/search/select mesh parts; zoom to part; isolate; restore whole robot; reversible radial visual separation; full-window inspection; three authored EN/HE exploration prompts; downloadable observation notes for an existing Academy assignment. No AI calls, new entitlement, database migration or automatic qualification. Notes are transient, explicitly labelled; download before leaving.
+
+Local actual-component review: `node scripts/preview-robot-learning.mjs` from apps/dashboard_web, http://127.0.0.1:4254/. This uses actual CAD and controls, not a mockup. Academy integration compiles; authenticated Academy navigation has not been live-tested in production.
+
+## Models and selection evidence
+- **6328 Darwin 2026: installed and working.** Reuses existing hash-verified local GLBs and MIT attribution from `public/twin/robots/6328-2026/provenance.json`; revision `a6239fd90e8de72a7c1870c3c189820fcef6552d`. https://github.com/Mechanical-Advantage/RobotCode2026Public/tree/a6239fd90e8de72a7c1870c3c189820fcef6552d/ascope_assets/Robot_Darwin . Browser renders 1,090 mesh instances (not a bill of materials or count of unique manufactured parts). Named hood plates, carbon tubes, intake plates and fasteners are present. FIRST 2026 results show two district wins and Innovation in Control: https://frc-events.firstinspires.org/2026/team/6328 . Selection supports detailed mechanism/control learning; do not claim it was the 2026 World Champion or rank #1.
+- **2910 Blitz / Re•Blitz 2026: linked external CAD, NOT imported.** Team-authored CAD/binders and redesign discussion: https://www.chiefdelphi.com/t/2910-cad-and-tech-binder-release-2026/521705 . FIRST records 2026 Championship Finalist, Newton Division Winner and Excellence in Engineering: https://frc-events.firstinspires.org/2026/team/2910 . Original Blitz is a contrasting iteration, not a claim both revisions were equally successful. Onshape document IDs `28894ad47d9c63a665e2a36b` and `dfb391aac173a4555d00a5b5`. Public code repository FRCTeam2910/2026CompetitionRobot-Public had no GLBs in inspected tree. Need export/format and reuse confirmation, assembly QA, then integrate; original browser links do not satisfy the user's requested 2–3 in-app models.
+- **1678 Limestone 2026: promising import candidate.** https://github.com/frc1678/C2026-Public contains assets/Robot_Comp/model.glb (~36.8 MB), model_0..3.glb plus Robot_Beta with seven articulated files. Inspected public repository contains WPILib-License.md but no separately established team asset license; do not label its CAD MIT. Need clarify applicable reuse terms and verify team-published articulation/configuration before bundling. No files copied or permission request sent to team.
+- **1690 Kepler 2026: public source, conversion unresolved.** https://www.chiefdelphi.com/t/frc-orbit-1690-2026-robot-cad-release/520673 . Public Onshape and Drive Parasolid folder https://drive.google.com/drive/folders/12x8BS28Hf7YlxVM24ocRf43Jw6wtTlyj . Team explicitly notes not everything modelled / changes may be absent. User previously has no export access; do not repeatedly ask for it or pretend x_t is a browser-ready GLB.
+- 4414 binder https://2026.team4414.com/ remains candidate, not installed. 254/1323 current-season suitable exports were not established. Fame alone is insufficient; geometry detail, supported reuse, authored explanation and contrasting lessons are selection gates.
+
+## Acceptance and fixes
+- TypeScript project build and Vite production bundle passed. Existing bundle-size warning persists; lab dynamically imported and CAD explicitly loaded on demand.
+- Existing `verify-skills-assessment-engine.mjs` passed; no grading/answer-key changes.
+- Actual browser: downloaded/verified Darwin, 1,090 mesh instances; search Hood returned 32; selected/isolate hood left plate rendered real geometry; restore whole robot and full-window worked; keyboard End on separation slider visibly separates assembly. Slider fill alone did not commit in automation; keyboard interaction used to test actual change.
+- EN and HE RTL screens inspected; 390px Hebrew layout inspected (not physical-device GPU performance acceptance).
+- Fixed selection while isolated to show the newly chosen part. Added environment lighting so metallic geometry is not black. Fit uses horizontal as well as vertical view angle for narrow layouts.
+- Inspection is a dedicated scene, disposing renderer/materials/geometry/textures on unmount. Existing publishedRobot loader, physics, driving, intake, shooting and VR source files are unchanged. Headset acceptance was not rerun; do not claim it was.
+
+## Remaining work in this authorized direction
+1. Import and validate another 1–2 suitable elite designs. Present installed vs external-source status accurately. Prefer distinct architectures/teams; a team's alternate revision is useful comparison but not a substitute for all diversity.
+2. Versioned model registry and per-model authored assembly/lesson mapping; do not assume every season has this intake/shooter architecture. This first component is explicitly Darwin-specific.
+3. Editable placement variants, undo, persistent student evidence, assembly constraints and measured clearance checks. Current separation slider is purely visual, not physically correct disassembly order or placement analysis.
+4. Manufacturer-specific electrical components/ports/wiring exercises and mechanical assembly sequence lessons; sourced diagrams/specs, component versions, physical checklists and mentor assessment. No automatic certification from CAD.
+5. Bilingual full curriculum/quiz pack and reviewed Academy publishing. Current three exploration prompts are not the promised six-module/60-question/12-practical curriculum.
+6. Uploaded team CAD semantic mapping and constrained placement recommendations; requires actual geometry, components and constraints. CAD alone cannot establish torque, tolerances, crimp quality, electrical correctness or structural safety.
+7. Authenticated integration/production acceptance and release before claiming available to the team. APK stays 2.2.0/code24, unchanged and behind web.
+
+Do not reopen delivered VR, ingestion, permissions/budgets, route planner or Academy as missing foundations. Preserve unrelated Android IDE files, local preview and prior screenshots.

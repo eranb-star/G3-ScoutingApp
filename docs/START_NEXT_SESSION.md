@@ -1,3 +1,5 @@
+**Latest authorized learning work (29 September):** [ROBOT_LEARNING_LAB_20260929.md](ROBOT_LEARNING_LAB_20260929.md) records the implemented local Darwin inspection lab, exact model research/import gaps and acceptance. User authorized starting the multi-robot visual learning direction; it is no longer only proposed. Not deployed; 2–3 in-app models are not yet complete.
+
 **Proposed next priorities (28 September):** [TEAM_FIRST_ROADMAP_20260928.md](TEAM_FIRST_ROADMAP_20260928.md) reconciles the latest release with the low-mentor team objective. Prioritize guided student engineering plus measured robot improvement; discussion does not authorize new implementation.
 
 **Latest integrated Studio release (28 September):** Read [STUDIO_INTEGRATED_20260928.md](STUDIO_INTEGRATED_20260928.md) FIRST for the actual Drive/Practice/Engineering implementation, full-match rehearsal, smooth route/headings, Java scaffold, team banner, acceptance, limitations and deployment status. Production source `0fe362c`, deployment `BEawEmN8ZSAYsdciqeVyXA2ySG5p`, live-verified. It supersedes the design-only status below.
