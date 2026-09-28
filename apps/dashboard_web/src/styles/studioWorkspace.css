@@ -16,3 +16,4 @@
 
 @media(max-width:850px){.studio-workspace .twin-toolbar{flex-wrap:wrap;gap:4px}.studio-workspace .twin-toolbar>div{flex-wrap:wrap;overflow:visible}.studio-workspace .twin-toolbar .twin-team-score{padding:3px}.studio-workspace .twin-toolbar button,.studio-workspace .twin-toolbar select{min-height:34px}.studio-workspace .twin-toolbar>div:last-child{width:100%}}
 @media(max-width:850px){.intel-page.studio-workspace.twin-expanded .twin-toolbar{height:auto;min-height:48px;flex-wrap:wrap}.intel-page.studio-workspace.twin-expanded .twin-toolbar>div{flex-basis:100%;flex-wrap:wrap;overflow:visible}.studio-workspace.twin-expanded .studio-fullscreen-replay{bottom:105px}}
+.ep-studio.ep-focused .ep-shooting-stops{display:none}
