@@ -1,3 +1,6 @@
+# Practical learning and measured trials — current release
+Read [TEAM_LEARNING_TRIALS_RELEASE_20261002.md](TEAM_LEARNING_TRIALS_RELEASE_20261002.md) first. Priorities 1 and 2 are implemented; its release status supersedes the recommendation-only entries below. Preserve existing reliability tables, explicit enrollment, private quiz keys and human practical review.
+
 # Current remaining priorities — 2 October 2026
 Read [REMAINING_PRIORITIES_20261002.md](REMAINING_PRIORITIES_20261002.md) for reconciled delivered scope, exact remaining increments, dependencies, estimates and team-first order. This is a recommendation/documentation update, not a new feature release or live infrastructure audit. It supersedes older priority orderings below.
 
