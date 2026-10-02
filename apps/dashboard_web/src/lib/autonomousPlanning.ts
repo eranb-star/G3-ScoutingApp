@@ -6,7 +6,7 @@ import type {SeasonPackage,Point2,Box3} from './seasonPackage';
 export type RoutePoint=Point2&{heading:number;action:'none'|'intake'|'shoot'|'wait';seconds:number;points:number;success:number;quantity?:number;orientation?:'manual'|'travel'|'center'|'red-hub'|'blue-hub'};
 export type Reservation={id:string;x:number;y:number;width:number;height:number;from:number;to:number};
 export type PlanningPolicy={seconds:number;maxPreload:number;pointsPerPiece:number};
-export type MotionProfile={length:number;width:number;height?:number;speed:number;acceleration:number;turnRate:number;clearance:number;measured:boolean;shooterYaw?:number;smoothCorners?:boolean;headingMode?:'manual'|'travel'|'center';policy?:PlanningPolicy;inventory?:{capacity:number;preload:number};constraints?:{reserveSeconds:number;reservations:Reservation[]}};
+export type MotionProfile={alliance?:0|1;length:number;width:number;height?:number;speed:number;acceleration:number;turnRate:number;clearance:number;measured:boolean;shooterYaw?:number;smoothCorners?:boolean;headingMode?:'manual'|'travel'|'center';policy?:PlanningPolicy;inventory?:{capacity:number;preload:number};constraints?:{reserveSeconds:number;reservations:Reservation[]}};
 
 /** Rest-to-rest travel estimate; routeMotion supplies continuous waypoint timing. */
 export function travelTime(distance:number,speed:number,acceleration:number){
@@ -21,6 +21,7 @@ export function segmentHitsBox(a:Point2,b:Point2,box:Box3,padding=0){
  }return true;
 }
 export function evaluateRoute(season:SeasonPackage,robot:MotionProfile,route:RoutePoint[]){
+ if(robot.alliance!==undefined&&robot.alliance!==0&&robot.alliance!==1)throw Error('Invalid alliance');
  if(![robot.length,robot.width,robot.speed,robot.acceleration,robot.turnRate].every(n=>Number.isFinite(n)&&n>0&&n<=20)||!Number.isFinite(robot.clearance)||robot.clearance<0||robot.clearance>2||typeof robot.measured!=='boolean')throw Error('Invalid robot profile');
  if(!Array.isArray(route)||route.length<1||route.length>100||route.some(p=>![p.x,p.y,p.heading,p.seconds,p.points,p.success].every(Number.isFinite)||p.seconds<0||p.seconds>120||p.points<0||p.points>100000||p.success<0||p.success>1||!['none','intake','shoot','wait'].includes(p.action)))throw Error('Invalid route');
  if(robot.inventory&&(!Number.isInteger(robot.inventory.capacity)||robot.inventory.capacity<1||robot.inventory.capacity>1000||!Number.isInteger(robot.inventory.preload)||robot.inventory.preload<0||robot.inventory.preload>robot.inventory.capacity))throw Error('Invalid inventory profile');

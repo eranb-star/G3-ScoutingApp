@@ -3,7 +3,8 @@ import {DEFAULT_SHOOTER,HUB_ENTRY_Z} from './shooter';
 import type {BallPose} from './intake';
 const clamp=(n:number)=>Math.max(-1,Math.min(1,n));
 /** Local practice controller. It does not reproduce a published team's software. */
-export function opponentCommand(p:{x:number;y:number;heading:number;speed:number},balls:BallPose[],stored:number,length:number,tick:number,rearShot=false){
+export function opponentCommand(p:{x:number;y:number;heading:number;speed:number},balls:BallPose[],stored:number,length:number,tick:number,rearShot=false,redSide=false):{command:Command;state:string;intake:boolean;shooter:typeof DEFAULT_SHOOTER}{
+ if(redSide){const result=opponentCommand({...p,x:-p.x,y:-p.y,heading:Math.atan2(-Math.sin(p.heading),-Math.cos(p.heading))},balls.map(b=>({...b,x:-b.x,y:-b.y})),stored,length,tick,rearShot,false);return {...result,command:{...result.command,vx:-result.command.vx,vy:-result.command.vy}};}
  let x=5.7,y=1.55,state='Return to shoot',aim=0,shoot=false;
  if(stored===0){
   const candidates=balls.filter(b=>b.z<.2&&b.x>-.8&&b.x<7.4&&Math.abs(b.y)<3.4);
