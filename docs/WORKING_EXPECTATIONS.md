@@ -2,6 +2,8 @@
 
 These requirements summarize the user's explicit preferences across this session. Read alongside current task instructions; do not infer new authorization from historical documents.
 
+- October 2 learning release: inspect live table columns and function bodies before migrations; similarly named reliability tables may already exist, and deployed graders/publishers may differ from old migration files. Use transactional QA first, assert no unintended student enrollment, and preserve existing task/qualification workflows. Verify every cross-screen link against registered routes in production. Detailed findings are in TEAM_LEARNING_TRIALS_RELEASE_20261002.md.
+
 - Use [the agreed phase details](NEXT_PHASES_AGREEMENT_20260921.md) when planning next work. Separate acceptance of delivered functionality from new capabilities. Do not describe knowledge collection, Gemini integration, mentor/task review or chat budgets as work to repeat. Graphics quality is separate from physics fidelity; historical knowledge is separate from playable historical simulation. State estimate boundaries and never equate engineering days with remaining Codex tokens. Record future refinements when authorized; discussion alone is not implementation permission.
 
 - Be precise and concrete. State what works, what failed, what changed, what was actually tested, and what remains. Use ordinary language; avoid vague phases, architecture slogans, superlatives and promises of infinite scale or zero regressions.
@@ -36,3 +38,25 @@ Regression prevention is mandatory engineering work, not a guarantee that no fut
 - Simulator fidelity: keep visible mechanisms and their collision/feeding behavior aligned; distinguish reference proxies from calibrated hardware. AprilTags require official artwork, family, dimensions, field variant and poses. If a requested public CAD source cannot be exported, investigate a licensed usable alternative before making the user solve access. Preserve source versions and original part names for inspection. Opponent inventories and scoring must not contaminate the driver’s practice results. Verify the real asset and visible gameplay, not only a selector or a loading message.
 
 - Simulator settings: validate numeric input on commit without rejecting intermediate typing. Parallel shooters must launch separate balls simultaneously with one volley cooldown, conserved identities and ball-based result counts. User-requested profile defaults are not independently verified hardware specifications.
+
+## Mandatory recommendation reconciliation — 25 September 2026
+Failure: after saying the handover was complete, the assistant recommended season setup/Check now and answer corrections in terms that implied they were unfinished. They were already delivered and recorded. A new checkpoint alone did not resolve contradictory historical statements. This wasted user effort and damaged confidence.
+
+Before every next-phase recommendation:
+1. Read START_NEXT_SESSION.md, current checkpoint and the latest relevant feature release, then inspect the relevant current code. Use production evidence for deployment claims; if not freshly audited, say the status is recorded evidence.
+2. For each proposed item explicitly establish: existing delivered behavior; exact additional missing behavior; evidence/path supporting that distinction; dependency; acceptance outcome. Do not offer a broad phase name with already-shipped work hidden inside it.
+3. Reconcile conflicting historical statements against later acceptance; amend the active summary and mark historical records superseded. Never treat the oldest open issue as authoritative over a later verified fix.
+4. Separate feature implementation, regression/quality evaluation, deployment and physical acceptance. A broader evaluation gap does not reopen a fixed issue without a failing case.
+5. Keep the user's current constraints: private offseason repo not connected; representative logs unavailable until next week; camera/robot/device validation needs real hardware. Do not keep requesting the same missing inputs or prioritize blocked work as immediately executable.
+6. Label proposed next priorities versus authorized active work. A discussion about priorities does not start implementation. Preserve earlier A–E authorization but do not silently expand scope.
+
+Required fixed facts: season setup and Check now are shipped; supported official ingestion/versioning is shipped; supported answer/retrieval/mixed-scoring corrections are shipped and tested; chat budgets/permissions and task mentor workflow are shipped. Update from 28 September: Java trajectory scaffold export is delivered; repository-bound adapter/build/calibration is still outstanding. Do not describe scaffold export as missing or as robot-ready code. Do not claim documentation ensures perfect recall or zero future errors: perform this reconciliation, cite the evidence and correct contradictions.
+
+- Team-first direction (25 September): prioritize our robot and student improvement before alliance planning. The delivered planning/practice increment is recorded in TEAM_PLANNING_PRACTICE_20260925.md. Validate complete browser save/reload, not only a successful save message; restart stale preview servers when served modules do not match source. Inspect expanded history tables as well as summary cards for dark-panel contrast. Local simulated history is not measured team performance or cloud synchronization.
+
+- Camera planning regression: distinguish chassis heading from route tangent. A swerve path curve does not imply yaw. Test stationary rotations and shortest-angle interpolation; rendering and coverage must share the mount transform. Show configured heading clearly and preserve saved plans. Sampled tag visibility is not guaranteed localization. Field surveys must be cancellable, bounded and explicit about occupied positions, angle/grid gaps and fixed-pose CAD assumptions.
+
+### Studio design acceptance — 25 September
+- Approved Figma is a layout reference. Keep real production field/robot CAD, current transforms, calculations and saved workspaces. Never substitute the illustrative field or sample metrics from a mockup.
+- Expanded field means the browser viewport with compact controls and optional inspector, not a modestly larger card. Check desktop, portrait/mobile and RTL. Preserve aspect ratio between real CAD and editable overlays.
+- Keep route, camera placement and coverage connected through shared state/playback; hide complexity progressively while preserving access to existing imports, cloud plans, rules and generation status.

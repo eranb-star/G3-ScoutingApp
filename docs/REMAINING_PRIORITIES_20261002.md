@@ -1,3 +1,6 @@
+# Implementation update — priorities 1 and 2
+The user subsequently authorized both complete increments. Six-module practical learning and shared manual/CSV trials are implemented; read [TEAM_LEARNING_TRIALS_RELEASE_20261002.md](TEAM_LEARNING_TRIALS_RELEASE_20261002.md) for release status and acceptance. The estimates and recommended first-two-module selection below are historical, not remaining implementation. Real student workshop and physical measurement acceptance remain required. Next product priority is 3, pit/workshop readiness, unless private repository access makes 4 actionable.
+
 # Remaining work and team-first priorities — 2 October 2026
 
 This is the current recommendation order, not authorization to implement a new phase. It supersedes older next-priority orderings. Status is reconciled against current source and recorded production acceptance through 29 September, not a new live database/deployment audit. Existing implementation authorizations remain separate. Private repository, logs and hardware inputs remain unconfirmed; elapsed time does not establish their availability.
