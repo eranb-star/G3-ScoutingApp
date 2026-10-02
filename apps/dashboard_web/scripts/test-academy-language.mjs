@@ -6,6 +6,10 @@ const {academyText,academyFeedback,authorText,updateAuthorText,LANGUAGE_SEPARATO
 const en=(a,b)=>a,he=(a,b)=>b,option=`Disconnect power${S}נתקו מתח`;
 assert.equal(academyText(option,en),'Disconnect power');
 assert.equal(academyText(option,he),'נתקו מתח');
+for(const separator of ['\r\n---HE---\r\n',' ---HE--- ','\n---HE---\n']){
+  assert.equal(academyText(`Disconnect power${separator}נתקו מתח`,he),'נתקו מתח');
+  assert.equal(updateAuthorText(`Disconnect power${separator}נתקו מתח`,'נתקו סוללה','he'),`Disconnect power${separator}נתקו סוללה`);
+}
 assert.equal(option,`Disconnect power${S}נתקו מתח`,'display must preserve stored option identity');
 assert.equal(authorText(option,'he'),'נתקו מתח');
 assert.equal(updateAuthorText(option,'נתקו סוללה','he'),`Disconnect power${S}נתקו סוללה`);
