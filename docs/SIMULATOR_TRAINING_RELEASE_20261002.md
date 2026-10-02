@@ -1,7 +1,7 @@
 # Simulator training and autonomous robustness — 2 October 2026
 
 ## Scope and release status
-User authorized improving existing simulator training, autonomous robustness, alliance behavior and Studio UX. This extends delivered VR, CAD, cameras, match rehearsal, replay and Java scaffold; it does not rebuild those foundations. Implementation verified locally; production release identity will be recorded below after acceptance.
+User authorized improving existing simulator training, autonomous robustness, alliance behavior and Studio UX. This extends delivered VR, CAD, cameras, match rehearsal, replay and Java scaffold; it does not rebuild those foundations. Production Ready at https://g3-6740.com: deployment `3SC96qomfb5Rj5FGFh4HEMe2FEkj`, source `7d67507940ce3df5440078aaf6017095d43a7b4b`. Main implementation `b739d11`, contrast follow-up `f268254`; release equivalents `d23df59` / `7d67507`. Initial feature deployment `JA1pEWhxbdsevjBbHRqj3LAangMs` was superseded by the hover contrast correction. Both branches pushed. Authenticated production mission/task list and actual full-screen CAD verified; no browser console errors observed.
 
 ## Delivered increment
 - Practice mission target, shareable exercise/target/format/alliance link, existing Work task association, immutable shared simulated trial record and coach feedback through Work. Local history/replay remain. One mission is one attempt; partial runs cannot pass. Sharing retries reuse the run ID. Shared comparisons require identical simulation settings. No automatic physical qualification.
@@ -17,7 +17,7 @@ Engineering: plan route → inspect camera coverage as needed → test route rob
 
 ## Validation
 Passed: TypeScript, production Vite build; simulator-training tests (half-turn/inverse, fixed tags, code alliance, deterministic perturbations, mission boundaries, identical-setting comparisons, opposite-side AI); isolated PostgreSQL repeatable protocol migration and physical-mislabel rejection; existing team-learning permission/immutable-evidence suite; season-planning, studio-match/Java compilation, practice-progress, practice-venue, twin-VR, physical-drive, fuel-intake and shooting suites.
-Browser: actual CAD rendered; blue start x/y/headings confirmed; eight robustness cards; completed 60-second local no-input run correctly fails target; expanded field, baseline controls and responsive Hebrew inspection. Physical headset and phone device acceptance not performed; viewport checks are not hardware certification.
+Browser: actual CAD rendered; blue start x/y/headings confirmed; eight robustness cards; completed 60-second local no-input run correctly fails target; expanded field, baseline controls and responsive Hebrew inspection. Mission URL restored full-match format, collection target 15 and blue alliance; saved side persisted on reload. Live shared-history insertion was not exercised with fabricated student data. Physical headset and phone device acceptance not performed; viewport checks are not hardware certification.
 
 ## Database / compatibility
 Applied `backend/supabase/simulator_training_20261002.sql` to production hnqwhuuxlqfyawqymaaz successfully on 2 October. Adds driver protocol and enforces simulated evidence for it. Existing RLS, immutable history and permissions unchanged. No fabricated production student result inserted. Old web build remains compatible with additive protocol, though old clients do not label new driver records correctly.
