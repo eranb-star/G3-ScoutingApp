@@ -19,4 +19,4 @@ Local browser: actual Limestone cold load, blue/red bumpers, deployed intake, sa
 `test-published-robots.mjs` uses the hash-verified Limestone GLBs already downloaded in ignored `docs/staging/limestone-learning.local`; these are not committed. Other checks do not require that download.
 
 ## Release
-Pending production promotion and live acceptance. Previous production: `3SC96qomfb5Rj5FGFh4HEMe2FEkj`, source `7d67507`; rollback may promote that deployment. Record final source/deployment after acceptance.
+Production Ready: `DpXyJJtun9zxCG4PxQubQDCRycnt` at https://g3-6740.com, source `14279b1e0839014dff166371277c528b02bb7b47` (main implementation `6bec51b`). Live signed-in acceptance passed: Limestone selector, actual full-screen CAD, red and blue bumpers, deployed intake, eight preloads / 60 capacity. Local same-model opponent confirmed opposite-colored bumpers. Screenshot: `docs/staging/limestone-production-20261002.png` (local evidence, not committed). Previous production: `3SC96qomfb5Rj5FGFh4HEMe2FEkj`, source `7d67507`; rollback may promote that deployment.
