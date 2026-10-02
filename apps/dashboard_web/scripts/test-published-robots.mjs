@@ -25,7 +25,7 @@ for(const id of ['darwin','limestone']){
  group.position.x=5;setAllianceBumpers(group,id,'red');assert.equal(bumper.material.color.getHexString(),new THREE.Color(ALLIANCE_COLORS.red).getHexString(),'crossing center preserves alliance');
  setAllianceBumpers(group,id,'blue');setAllianceBumpers(opponent,id,'red');assert.equal(bumper.material.color.getHexString(),new THREE.Color(ALLIANCE_COLORS.blue).getHexString(),'independent clones');
  group.position.x=0;posePublishedRobot(id,group,false);group.updateMatrixWorld(true);console.log(id,'stowed',new THREE.Box3().setFromObject(group).getSize(new THREE.Vector3()));
- posePublishedRobot(id,group,true);group.updateMatrixWorld(true);console.log(id,'deployed',new THREE.Box3().setFromObject(group).getSize(new THREE.Vector3()));
+ posePublishedRobot(id,group,true);group.updateMatrixWorld(true);console.log(id,'deployed',new THREE.Box3().setFromObject(group).getSize(new THREE.Vector3()));if(id==='limestone'){const hopper=group.getObjectByName('Limestone component 2');assert.equal(hopper.position.x,.303211,'published Epsilon hopper extends with intake');posePublishedRobot(id,group,false);assert.equal(hopper.position.x,0,'hopper retracts with intake');posePublishedRobot(id,group,true);assert.equal(hopper.position.x,.303211,'repeated toggles do not accumulate translation');}
 }
 globalThis.fetch=original;
 const d=await createPhysicalDrive(LIMESTONE_PROFILE);d.reset(0,0);d.fuel.reset([{x:LIMESTONE_PROFILE.length/2+.16,y:0}]);for(let i=0;i<180;i++)d.step({vx:0,vy:0,omega:0},{...intakeForRobot('limestone'),on:true});assert.equal(d.fuel.collected,1,'Limestone intake feeds a physical ball');d.reset();d.fuel.reset();d.setOpponent(true,LIMESTONE_PROFILE);

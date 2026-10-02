@@ -1,3 +1,17 @@
+# Authoritative remaining order — after 2 October releases
+This section supersedes all numbered recommendations below; those are retained as scope/estimate history. Delivered: six practical modules and shared manual/CSV trials; Academy/Knowledge UX reconciliation; shared simulator missions and deterministic route sensitivity; Limestone simulator and alliance bumpers. Latest corrective increment: HOPPER_ABSENCE_RELEASE_20261002.md. Their release records, not older proposal wording, determine status.
+
+1. CAD mentor: constrained geometric fit, interference and service-access findings tied to a design revision; authored assembly/electronics placement exercise. Current CAD inspection and camera advisor are foundations, not whole-robot engineering validation. Can start remotely with public CAD; private uploads and constraints need actual inputs.
+2. Repository-connected software/autonomous integration when private access arrives: one supported adapter, compilation and WPILib simulation, then supervised robot acceptance. Existing Java scaffold is delivered; deployable team-specific code is not. Real log diagnosis follows representative logs.
+3. Extend student/driver training from the delivered six modules and missions using actual student feedback, reproducible scenarios and coach remediation. Calibrate simulator intake/shooting/drive one measured subsystem at a time. Physical student, phone and VR acceptance remains open.
+4. Measured camera/autonomous validation: calibration, pose-error/dropout and repeated-run metrics. Geometry-based coverage and eight sensitivity cases already exist. Physical camera/robot observations are required to establish accuracy or reliability.
+5. Future-season package/readiness validation before kickoff: supported document Check now already works. Remaining reusable assets/transforms/colliders/game interactions, reviewed activation, compatibility/rollback and synthetic-season tests are not automatic complete-field generation.
+6. Pit/workshop repair-to-retest readiness and manufacturing lineage after team/software capability; preserve current task/ownership/review and inventory flows.
+7. Alliance/scouting-compatible match planning after own-robot baselines exist.
+
+Parallel obligations: evidence/answer regression evaluations, independent recovery rehearsal, permission regression checks and signed APK refresh (currently 2.2.0/code24). Workshop/repository/log availability must be checked, never inferred from elapsed dates. User prioritizes own-team improvement over pit/alliance polish. No championship result, zero defects or fully validated physics is promised.
+
+# Historical scope and estimate details
 # Latest user priority and implemented increment
 The user moved simulator training/autonomous robustness ahead of pit work. Read [SIMULATOR_TRAINING_RELEASE_20261002.md](SIMULATOR_TRAINING_RELEASE_20261002.md) for the delivered bounded increment and exact remaining gaps. Do not follow the earlier pit-first sentence below as current priority. Team development, software, simulator and CAD mentor come first; private repository/log/hardware availability must be confirmed rather than assumed. CAD mentor remains explicitly in scope of the roadmap, not delivered by camera placement or mesh viewing alone.
 
@@ -46,3 +60,4 @@ A complete practical loop: two high-value CAN/mechanical learning modules + manu
 
 ## Evidence inspected
 START_NEXT_SESSION; WORKING_EXPECTATIONS; TEAM_FIRST_ROADMAP_20260928; ROBOT_LEARNING_CAN_RELEASE_20260929; STUDIO_INTEGRATED_20260928; TEAM_PLANNING_PRACTICE_20260925; CAMERA_ROTATION_SURVEY_20260925; CURRENT_PHASES/ENGINEERING_RELEASE/THREE_INCREMENT_PROGRAMME_20260924; NEXT_PHASES_AGREEMENT_20260921. Current code: TrainingCenterPage, CanWorkshop, SoftwareMentorContext, autonomousExport, practiceProgress, cameraCad and CompetitionOperationsPage. Later records override dated earlier open-item statements. No application code, database, deployment or APK changed in this reconciliation.
+

@@ -1,3 +1,6 @@
+# Latest checkpoint — hopper linkage and absence dates
+Read [HOPPER_ABSENCE_RELEASE_20261002.md](HOPPER_ABSENCE_RELEASE_20261002.md) first for the latest fix, migration, validation, release status and APK boundary. Earlier deployment IDs below are historical.
+
 # Limestone simulator / alliance bumpers — latest increment
 Read [LIMESTONE_SIMULATOR_RELEASE_20261002.md](LIMESTONE_SIMULATOR_RELEASE_20261002.md) first for this increment, exact material mappings, estimates and release status. Live: `DpXyJJtun9zxCG4PxQubQDCRycnt`, source `14279b1`; production visual acceptance passed. No database or APK change.
 
@@ -74,3 +77,4 @@ Read this entry point before planning or implementing. Do not rely on conversati
 Main working branch `codex/release-1-qa`; isolated release branch `codex/knowledge-protection-release` at `docs/staging/knowledge-release.local`. Inspect status before edits, preserve unrelated Android `.idea` edits and do not deploy accumulated working-tree changes wholesale. Never commit secrets, private backup objects/keys, downloaded corpora or signing credentials. Tests and documentation reduce regressions, not guarantee none.
 
 [Previous accumulated start notes](START_NEXT_SESSION_HISTORY_20260924.md) are preserved as historical evidence only. Their contradictory not-deployed/awaiting-selection/missing-ingestion statements are superseded. [Earlier session history](SESSION_HISTORY_20260921.md) remains available.
+

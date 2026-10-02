@@ -1,0 +1,24 @@
+import {createRequire} from 'node:module';
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import {pathToFileURL} from 'node:url';
+const req=createRequire(import.meta.url),{build}=createRequire(req.resolve('vite'))('esbuild');
+const result=await build({stdin:{contents:`
+import assert from 'node:assert/strict';
+import {absenceEventRange,absenceOverlaps,csvText} from './src/lib/absenceDates';
+import {israelDayStart,israelDayEnd} from './src/lib/attendanceReporting';
+const event={title:'Workshop',starts_at:'2026-10-08T21:30:00Z',ends_at:'2026-10-09T01:00:00Z'};
+assert.match(absenceEventRange(event,'en'),/9 October 2026/,'Israel date, not UTC date');
+assert.ok(absenceEventRange(event,'he').includes('2026'));
+assert.equal(absenceOverlaps(event,israelDayStart('2026-10-09'),israelDayEnd('2026-10-09')),true);
+assert.equal(absenceOverlaps(event,undefined,israelDayEnd('2026-10-08')),false);
+assert.equal(absenceOverlaps(undefined,israelDayStart('2026-10-09')),false);
+assert.equal(absenceOverlaps(undefined),true,'unknown events stay visible without a date filter');
+assert.equal(absenceEventRange(undefined,'en'),'Event date unavailable');
+const multi={...event,ends_at:'2026-10-10T01:00:00Z'};assert.match(absenceEventRange(multi,'en'),/10 October 2026/);
+assert.ok(csvText([['=SUM(A1:A9)','a,b','a"b']]).includes("'=SUM"),'spreadsheet formulas escaped');
+assert.equal(israelDayEnd('2026-10-25').getTime()-israelDayStart('2026-10-25').getTime()+1,25*3600000,'DST date filter covers the whole Israel day');
+console.log('PASS Israel dates, overnight ranges, missing dates, DST reporting boundaries and CSV safety');
+`,resolveDir:process.cwd(),loader:'ts'},bundle:true,platform:'node',format:'esm',write:false,logLevel:'silent'});
+const file=path.join(os.tmpdir(),'g3-absence-dates-test.mjs');await fs.writeFile(file,result.outputFiles[0].text);await import(pathToFileURL(file));
