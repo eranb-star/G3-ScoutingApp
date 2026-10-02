@@ -4,20 +4,22 @@ export function academyLabel(value:string,pick:Pick):string {
   return labels[value]?pick(...labels[value]):value;
 }
 export const LANGUAGE_SEPARATOR = '\n---HE---\n';
+const separatorPattern=/[\r\n\t ]*---HE---[\r\n\t ]*/;
 export function authorText(value:string,language:'en'|'he'):string {
-  if(!value.includes(LANGUAGE_SEPARATOR))return value;
-  return value.split(LANGUAGE_SEPARATOR)[language==='en'?0:1]??'';
+  if(!separatorPattern.test(value))return value;
+  return value.split(separatorPattern)[language==='en'?0:1]??'';
 }
 export function updateAuthorText(value:string,next:string,language:'en'|'he'):string {
-  if(!value.includes(LANGUAGE_SEPARATOR))return next;
-  const parts=value.split(LANGUAGE_SEPARATOR);parts[language==='en'?0:1]=next;
-  return parts.slice(0,2).join(LANGUAGE_SEPARATOR);
+  const separator=value.match(separatorPattern)?.[0];
+  if(!separator)return next;
+  const parts=value.split(separatorPattern);parts[language==='en'?0:1]=next;
+  return parts.slice(0,2).join(separator);
 }
 /** Display only; never use this result as a stored quiz option or answer key. */
 export function academyText(value: string | null | undefined, pick: Pick): string {
   const text = value ?? '';
-  if (!text.includes(LANGUAGE_SEPARATOR)) return text;
-  const [en, he] = text.split(LANGUAGE_SEPARATOR);
+  if (!separatorPattern.test(text)) return text;
+  const [en, he] = text.split(separatorPattern);
   const preferred = pick(en, he ?? '');
   return preferred.trim() ? preferred : `${en || he || ''} (${pick('translation unavailable', 'תרגום אינו זמין')})`;
 }
