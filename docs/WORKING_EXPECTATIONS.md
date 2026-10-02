@@ -2,6 +2,8 @@
 
 These requirements summarize the user's explicit preferences across this session. Read alongside current task instructions; do not infer new authorization from historical documents.
 
+- Academy UX: use Settings as the single production language preference. Role/language controls in review prototypes are testing tools, not product navigation. Separate My learning, Explore and My progress from Instructor workspace. Course creation belongs with instructor course/assignment management. Preserve persisted bilingual source content and quiz answer identity; localize display only. See ACADEMY_UX_RELEASE_20261002.md for what was actually shipped versus prototype concepts.
+
 - October 2 learning release: inspect live table columns and function bodies before migrations; similarly named reliability tables may already exist, and deployed graders/publishers may differ from old migration files. Use transactional QA first, assert no unintended student enrollment, and preserve existing task/qualification workflows. Verify every cross-screen link against registered routes in production. Detailed findings are in TEAM_LEARNING_TRIALS_RELEASE_20261002.md.
 
 - Use [the agreed phase details](NEXT_PHASES_AGREEMENT_20260921.md) when planning next work. Separate acceptance of delivered functionality from new capabilities. Do not describe knowledge collection, Gemini integration, mentor/task review or chat budgets as work to repeat. Graphics quality is separate from physics fidelity; historical knowledge is separate from playable historical simulation. State estimate boundaries and never equate engineering days with remaining Codex tokens. Record future refinements when authorized; discussion alone is not implementation permission.
