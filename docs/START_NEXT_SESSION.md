@@ -1,3 +1,6 @@
+# Latest APK milestone — 2.3.0 / code 25
+Signed APK built and verified on 2 October. Read [APK_MILESTONE_20261002.md](APK_MILESTONE_20261002.md) for artifact, hashes, source and physical acceptance. Older APK 2.2.0 statements below are historical. Website remains the verified hopper/absence production release below.
+
 # Latest checkpoint — hopper linkage and absence dates
 Read [HOPPER_ABSENCE_RELEASE_20261002.md](HOPPER_ABSENCE_RELEASE_20261002.md) first for the latest fix, migration, validation, release status and APK boundary. Live production: 56T93uBBkRtDMJQYcJX4bCejHDBu, source 35ab794; authenticated acceptance passed. Earlier deployment IDs below are historical.
 

@@ -9,7 +9,7 @@ This section supersedes all numbered recommendations below; those are retained a
 6. Pit/workshop repair-to-retest readiness and manufacturing lineage after team/software capability; preserve current task/ownership/review and inventory flows.
 7. Alliance/scouting-compatible match planning after own-robot baselines exist.
 
-Parallel obligations: evidence/answer regression evaluations, independent recovery rehearsal, permission regression checks and signed APK refresh (currently 2.2.0/code24). Workshop/repository/log availability must be checked, never inferred from elapsed dates. User prioritizes own-team improvement over pit/alliance polish. No championship result, zero defects or fully validated physics is promised.
+Parallel obligations: evidence/answer regression evaluations, independent recovery rehearsal, permission regression checks and physical acceptance of the signed APK 2.3.0/code25 (built 2 October; see APK_MILESTONE_20261002.md). Workshop/repository/log availability must be checked, never inferred from elapsed dates. User prioritizes own-team improvement over pit/alliance polish. No championship result, zero defects or fully validated physics is promised.
 
 # Historical scope and estimate details
 # Latest user priority and implemented increment
