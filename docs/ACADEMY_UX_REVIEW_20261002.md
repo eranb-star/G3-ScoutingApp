@@ -1,5 +1,7 @@
 # Academy UX proposal — review only
 
+**Superseded:** User subsequently authorized implementation and production release. Read [ACADEMY_UX_RELEASE_20261002.md](ACADEMY_UX_RELEASE_20261002.md) for delivered behavior and exact release status. The proposal below is historical; its draft/publish separation is not a new shipped backend workflow.
+
 Figma Starter MCP quota blocked new screens after read-only discovery. User accepted an interactive local prototype instead. File: apps/dashboard_web/scripts/designs/academy-review.html. Serve through the existing Vite preview on port 4252. Query parameters support lang=he, role=mentor or leader, view=instructor.
 
 Proposed navigation: My learning (default next action/assigned learning/feedback), Explore (library and existing real CAD), My progress. Instructor workspace groups courses/assignments, cross-course review queue, team progress and course creation. Publish and assign remain separate; team leader scope and practical review permission remain separate. Robot trials belong primarily with engineering/reliability and are attached contextually to assignments.
