@@ -1,3 +1,6 @@
+# Knowledge / Academy review — planned, not implemented
+Read [KNOWLEDGE_ACADEMY_RECONCILIATION_20261002.md](KNOWLEDGE_ACADEMY_RECONCILIATION_20261002.md) for the accepted workflow direction, confirmed existing connections and remaining integration gaps. User requested analysis/documentation only; do not confuse this with the deployed Academy navigation below.
+
 # Academy navigation and language — latest release
 Read [ACADEMY_UX_RELEASE_20261002.md](ACADEMY_UX_RELEASE_20261002.md) first for the Academy redesign, actual release identity, validation and boundaries. Language is controlled in Settings only. The older prototype document is design history, not current deployment status.
 
