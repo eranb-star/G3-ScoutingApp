@@ -1,3 +1,6 @@
+# Latest user priority and implemented increment
+The user moved simulator training/autonomous robustness ahead of pit work. Read [SIMULATOR_TRAINING_RELEASE_20261002.md](SIMULATOR_TRAINING_RELEASE_20261002.md) for the delivered bounded increment and exact remaining gaps. Do not follow the earlier pit-first sentence below as current priority. Team development, software, simulator and CAD mentor come first; private repository/log/hardware availability must be confirmed rather than assumed. CAD mentor remains explicitly in scope of the roadmap, not delivered by camera placement or mesh viewing alone.
+
 # Implementation update — priorities 1 and 2
 The user subsequently authorized both complete increments. Six-module practical learning and shared manual/CSV trials are implemented; read [TEAM_LEARNING_TRIALS_RELEASE_20261002.md](TEAM_LEARNING_TRIALS_RELEASE_20261002.md) for release status and acceptance. The estimates and recommended first-two-module selection below are historical, not remaining implementation. Real student workshop and physical measurement acceptance remain required. Next product priority is 3, pit/workshop readiness, unless private repository access makes 4 actionable.
 
