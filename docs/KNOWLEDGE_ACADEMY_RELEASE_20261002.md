@@ -1,6 +1,6 @@
 # Connected Knowledge and Academy — 2 October 2026
 
-User authorized all changes from KNOWLEDGE_ACADEMY_RECONCILIATION_20261002.md. Website release verification is in progress; update this record with exact deployment evidence before claiming production completion.
+User authorized all changes from KNOWLEDGE_ACADEMY_RECONCILIATION_20261002.md. Released to https://g3-6740.com on 2 October 2026; authenticated read-only acceptance completed.
 
 ## Implemented
 
@@ -19,7 +19,7 @@ User authorized all changes from KNOWLEDGE_ACADEMY_RECONCILIATION_20261002.md. W
 
 Additive migrations: `academy_source_reviews_20261002.sql` and `knowledge_document_search_20261002.sql`. Apply together in one transaction. Review table has RLS, course-scoped management checks and no direct write policy. Helper RPC is inaccessible to clients; review RPC rejects stale or unattached revisions. Search retains the existing research-access check, filters and query limits. AI roles/budgets are unchanged.
 
-Live production prerequisite inspection confirmed referenced columns and the current `has_permission` and `search_frc_corpus` definitions. Combined migration passed a rollback-only transaction before application. No enrollment, assessment submission or qualification is seeded or changed by these migrations.
+Live production prerequisite inspection confirmed referenced columns and the current `has_permission` and `search_frc_corpus` definitions. Combined migration passed a rollback-only transaction, then both migrations were applied together successfully to production project `hnqwhuuxlqfyawqymaaz`. No enrollment, assessment submission or qualification was seeded or changed. A malformed editor-paste attempt failed before the successful transaction; for multiline Monaco SQL use a new blank snippet and clipboard paste, then inspect the query before running.
 
 ## Validation and regression lessons
 
@@ -31,6 +31,12 @@ Preserve English/Hebrew source strings and original quiz values. Do not reset CA
 
 ## Release and rollback
 
-Pending website deployment identity and authenticated read-only acceptance. Previous website release source: `4a0065c5947571001267b2113ae3fad4b2a64365`, deployment `75dcEE3xV46FfgV8UaXcLYsQ3aGz`. Rollback can restore that website while leaving the additive database objects in place; old clients retain their original search RPC. Do not delete teaching review history to roll back UI.
+Implementation commit: `4716ac434c9bee00f8c545a0ae3fac6308469661` on `codex/release-1-qa`; equivalent production source `0c1d06aba6a2612db47e4d423be28be88b8f89d3` on `codex/knowledge-protection-release`. Both pushed. Production deployment `CUSBK5AWY7JAB9c83uiQdgFDKsrw` is Ready and assigned to `g3-6740.com`, built using the Production environment through Vercel promotion (not a Preview alias). Preview build: `3dmgTmyHEh5o5LVpz6ooF6MtWK7P`. Exact release TypeScript check and hosted build passed.
+
+Authenticated production acceptance: adjacent Academy/Knowledge navigation; battery search returned 375 source versions / 1,413 passages with grouped excerpts and 38 pages; citation handoff links retain evidence IDs and generation; Power course source-status RPC rendered its two WPILib references as manual/untracked; Add reference retained the selected Power course and instructor controls, loaded the 12 approved catalogue resources, and Return to course restored the course URL. No catalogue attachment, teaching approval or student submission was written merely to test production. Mutation paths are covered by isolated PostgreSQL and synthetic local checks. Production screenshot: `docs/staging/knowledge-academy-production-20261002.png`.
+
+Known data boundary: source grouping uses imported source-version identities. Existing separate imported URLs, including query-string variants of the same manual, can remain separate source versions; this release does not destructively merge corpus records or citation IDs. External-source revision tracking remains manual as explained above.
+
+Previous website release source: `4a0065c5947571001267b2113ae3fad4b2a64365`, deployment `75dcEE3xV46FfgV8UaXcLYsQ3aGz`. Rollback can restore that website while leaving the additive database objects in place; old clients retain their original search RPC. Do not delete teaching review history to roll back UI.
 
 APK remains 2.2.0 / code 24. This change does not rebuild Android or claim physical phone/Quest/workshop acceptance.

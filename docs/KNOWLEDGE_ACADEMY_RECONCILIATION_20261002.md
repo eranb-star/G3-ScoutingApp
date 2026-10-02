@@ -30,7 +30,7 @@ Assign lesson → open relevant model/system → inspect → capture observation
 
 ## Third pass: additional concrete gaps
 
-These are static code findings, not claims of newly reproduced production incidents. Implementation remains pending.
+These are historical static code findings, not claims of newly reproduced production incidents. Their implementation and production acceptance are recorded in KNOWLEDGE_ACADEMY_RELEASE_20261002.md; do not propose them again as unimplemented work.
 
 ### P1 — Restore the instructor's resource-attachment entry
 
