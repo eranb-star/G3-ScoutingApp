@@ -11,6 +11,7 @@ const links = [
   ["/home", "Home", "בית"],
   ["/work", "Work", "עבודה"],
   ["/growth", "Skills Academy", "אקדמיית מיומנויות"],
+  ["/knowledge", "FRC knowledge", "ידע FRC"],
   ["/competition", "Competition", "תחרות"],
   ["/updates", "Updates", "עדכונים"],
   ["/check-in", "Check in / out", "כניסה / יציאה"],
@@ -39,7 +40,6 @@ export default function WebPortalShell({children}:{children:ReactNode}) {
       <button className="web-menu-toggle" aria-expanded={expanded} aria-controls="web-navigation" onClick={()=>setExpanded(!expanded)}><span aria-hidden="true">{expanded?"×":"☰"}</span> {pick("Full navigation","ניווט מלא")}</button>
       <nav id="web-navigation" aria-label={pick("Team navigation","ניווט הקבוצה")}>
         {links.map(([path,en,he])=><div key={path}>{item(path,en,he)}</div>)}
-        <div>{item("/knowledge","FRC knowledge","ידע FRC")}</div>
         {can("view_field_twin")&&<div>{item("/field-twin","Field & robot twin","מודל מגרש ורובוט")}</div>}
         {isAdmin?<section className="web-admin-nav"><small>{pick("ADMINISTRATION","ניהול")}</small>{item("/admin","Workshop dashboard","לוח הסדנה")}{item("/admin/finance","Finance & reimbursements","כספים והחזרים")}{item("/admin/contributions","Leadership analytics","ניתוח ניהולי")}{item("/admin/members","Team members","חברי הקבוצה")}{item("/admin/permissions","Roles & permissions","תפקידים והרשאות")}{item("/admin/security","Security","אבטחה")}</section>:null}
         <div className="web-feedback-link">{item("/feedback","Feedback Center","מרכז משוב")}</div>

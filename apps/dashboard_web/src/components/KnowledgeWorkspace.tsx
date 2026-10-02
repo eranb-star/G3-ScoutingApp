@@ -1,3 +1,5 @@
+import './academyWorkspace.css';
+import RelatedLearning from './RelatedLearning';
 import {Link,useSearchParams} from 'react-router-dom';
 import {useLocalization} from '../lib/localization';
 import {useAccessControl} from '../lib/accessControl';
@@ -20,7 +22,8 @@ export default function KnowledgeWorkspace(){
   <header className="connected-knowledge-heading"><div><span className="hub-eyebrow">G3 6740 · ENGINEERING</span><h1>{pick('FRC knowledge','ידע FRC')}</h1><p>{pick('Find the evidence. Compare the options. Build on what the team knows.','מצאו מקורות. השוו אפשרויות. התקדמו עם הידע של הקבוצה.')}</p></div><Link className="connected-assist-link" to={'/assistant'+(params.get('q')?'?question='+encodeURIComponent(params.get('q')!):'')}>{pick('Ask G3 Assist','שאלו את G3 Assist')} <span aria-hidden="true">↗</span></Link></header>
   <nav className="connected-knowledge-tabs" aria-label={pick('Knowledge workspace','סביבת הידע')}>{tabs.filter(([id])=>id==='library'||evidenceAccess).map(([id,en,he])=><Link key={id} to={'/knowledge?'+new URLSearchParams({...Object.fromEntries(params),view:id,article:''})} aria-current={view===id?'page':undefined}>{pick(en,he)}</Link>)}</nav>
   <div className="connected-knowledge-content">
-   {view==='library'?<FrcKnowledgeWorkspace/>:!evidenceAccess?<section className="research-empty"><h2>{pick('Source search access is restricted','הגישה לחיפוש מקורות מוגבלת')}</h2><p>{pick('Your team library remains available. An administrator can manage evidence-search access in Roles & permissions.','ספריית הקבוצה זמינה. מנהל יכול לעדכן הרשאת חיפוש מקורות במסך התפקידים וההרשאות.')}</p><Link to="/knowledge?view=library">{pick('Open team library','פתיחת ספריית הקבוצה')}</Link></section>:view==='search'||view==='robots'?<RobotResearch key={view} admin={admin} sourceSearch={searchProductionSources} initialView={view==='robots'?'robots':'sources'} teamResults={view==='search'?<TeamKnowledgeResults query={(params.get('q')??'').slice(0,200)}/>:undefined}/>:<KnowledgeEvidencePage sourceSearch={searchProductionSources}/>}
+   {view==='library'?<FrcKnowledgeWorkspace embedded/>:!evidenceAccess?<section className="research-empty"><h2>{pick('Source search access is restricted','הגישה לחיפוש מקורות מוגבלת')}</h2><p>{pick('Your team library remains available. An administrator can manage evidence-search access in Roles & permissions.','ספריית הקבוצה זמינה. מנהל יכול לעדכן הרשאת חיפוש מקורות במסך התפקידים וההרשאות.')}</p><Link to="/knowledge?view=library">{pick('Open team library','פתיחת ספריית הקבוצה')}</Link></section>:view==='search'||view==='robots'?<RobotResearch key={view} admin={admin} sourceSearch={searchProductionSources} initialView={view==='robots'?'robots':'sources'} teamResults={view==='search'?<TeamKnowledgeResults query={(params.get('q')??'').slice(0,200)}/>:undefined}/>:<KnowledgeEvidencePage embedded sourceSearch={searchProductionSources}/>}
+   {evidenceAccess&&view==='search'&&<RelatedLearning query={(params.get('q')??'').slice(0,200)}/>}
   </div>
  </div>;
 }
