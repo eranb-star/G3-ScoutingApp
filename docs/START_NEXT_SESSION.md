@@ -1,9 +1,15 @@
+# Practical learning and measured trials — current release
+Read [TEAM_LEARNING_TRIALS_RELEASE_20261002.md](TEAM_LEARNING_TRIALS_RELEASE_20261002.md) first. Priorities 1 and 2 are implemented; its release status supersedes the recommendation-only entries below. Preserve existing reliability tables, explicit enrollment, private quiz keys and human practical review.
+
+# Current remaining priorities — 2 October 2026
+Read [REMAINING_PRIORITIES_20261002.md](REMAINING_PRIORITIES_20261002.md) for reconciled delivered scope, exact remaining increments, dependencies, estimates and team-first order. This is a recommendation/documentation update, not a new feature release or live infrastructure audit. It supersedes older priority orderings below.
+
 # Latest robot learning release
 Read `ROBOT_LEARNING_CAN_RELEASE_20260929.md` first for the CAN workshop and production acceptance. Live production: source `531dc0a`, deployment `65JDMRsnRkW3kz8YRmrBbvMt3VH6`. It supersedes earlier not-deployed lab status.
 
-**Latest robot learning update (29 September):** [ROBOT_LEARNING_SUBSYSTEMS_20260929.md](ROBOT_LEARNING_SUBSYSTEMS_20260929.md) supersedes the single-robot status: Darwin + Limestone work in-app locally; subsystem highlighting and electrical guidance delivered. 2910 remains view-only/external. Not deployed; actual cable wiring remains undocumented.
+**Latest robot learning update (29 September):** [ROBOT_LEARNING_SUBSYSTEMS_20260929.md](ROBOT_LEARNING_SUBSYSTEMS_20260929.md) supersedes the single-robot status: Darwin + Limestone, subsystem highlighting and electrical guidance are deployed via the 29 September CAN release above. 2910 remains external; actual robot harness mapping is not established.
 
-**Latest authorized learning work (29 September):** [ROBOT_LEARNING_LAB_20260929.md](ROBOT_LEARNING_LAB_20260929.md) records the implemented local Darwin inspection lab, exact model research/import gaps and acceptance. User authorized starting the multi-robot visual learning direction; it is no longer only proposed. Not deployed; 2–3 in-app models are not yet complete.
+**Latest authorized learning work (29 September):** [ROBOT_LEARNING_LAB_20260929.md](ROBOT_LEARNING_LAB_20260929.md) records the implemented local Darwin inspection lab, exact model research/import gaps and acceptance. Historical first increment, superseded by the deployed two-model lab and CAN workshop above. Do not treat its former single-model/local-only status as current.
 
 **Proposed next priorities (28 September):** [TEAM_FIRST_ROADMAP_20260928.md](TEAM_FIRST_ROADMAP_20260928.md) reconciles the latest release with the low-mentor team objective. Prioritize guided student engineering plus measured robot improvement; discussion does not authorize new implementation.
 
