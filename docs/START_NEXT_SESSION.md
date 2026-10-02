@@ -1,3 +1,6 @@
+# Academy navigation and language — latest release
+Read [ACADEMY_UX_RELEASE_20261002.md](ACADEMY_UX_RELEASE_20261002.md) first for the Academy redesign, actual release identity, validation and boundaries. Language is controlled in Settings only. The older prototype document is design history, not current deployment status.
+
 # Practical learning and measured trials — current release
 Read [TEAM_LEARNING_TRIALS_RELEASE_20261002.md](TEAM_LEARNING_TRIALS_RELEASE_20261002.md) first. Priorities 1 and 2 are implemented; its release status supersedes the recommendation-only entries below. Preserve existing reliability tables, explicit enrollment, private quiz keys and human practical review.
 
