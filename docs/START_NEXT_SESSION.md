@@ -1,10 +1,10 @@
-# Knowledge / Academy implementation — 2 October 2026
-Read [KNOWLEDGE_ACADEMY_RELEASE_20261002.md](KNOWLEDGE_ACADEMY_RELEASE_20261002.md) for this authorized implementation, validation, database release and exact website deployment status. It supersedes the review-only status immediately below.
+# Knowledge / Academy — production release, 2 October 2026
+Read [KNOWLEDGE_ACADEMY_RELEASE_20261002.md](KNOWLEDGE_ACADEMY_RELEASE_20261002.md) first. Production deployment `CUSBK5AWY7JAB9c83uiQdgFDKsrw`, source `0c1d06a`, is Ready at g3-6740.com. Both additive migrations are applied; authenticated read-only acceptance passed. Implementation, tests, boundaries and rollback are recorded there. APK remains 2.2.0/code 24.
 
-# Knowledge / Academy review — planned, not implemented
-Read [KNOWLEDGE_ACADEMY_RECONCILIATION_20261002.md](KNOWLEDGE_ACADEMY_RECONCILIATION_20261002.md) for the accepted workflow direction, confirmed existing connections and remaining integration gaps. User requested analysis/documentation only; do not confuse this with the deployed Academy navigation below.
+# Knowledge / Academy review — historical rationale
+Read [KNOWLEDGE_ACADEMY_RECONCILIATION_20261002.md](KNOWLEDGE_ACADEMY_RECONCILIATION_20261002.md) for the accepted workflow direction and pre-change gaps. The user subsequently authorized implementation, now released as recorded above. Do not re-propose those repaired flows as missing.
 
-# Academy navigation and language — latest release
+# Academy navigation and language — preceding release
 Read [ACADEMY_UX_RELEASE_20261002.md](ACADEMY_UX_RELEASE_20261002.md) first for the Academy redesign, actual release identity, validation and boundaries. Language is controlled in Settings only. The older prototype document is design history, not current deployment status.
 
 # Practical learning and measured trials — current release
