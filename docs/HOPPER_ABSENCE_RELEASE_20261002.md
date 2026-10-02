@@ -14,7 +14,7 @@ Browser CSV download-event confirmation timed out; CSV serialization tests passe
 Hopper motion is sourced; mass, traction, storage packing and shooting remain declared simulator estimates, not measured team-1678 behavior. Existing large-bundle build warnings remain.
 
 ## Release / recovery
-Web release identity and authenticated acceptance will be recorded after deployment. Prior production: DpXyJJtun9zxCG4PxQubQDCRycnt, source 14279b1. Web rollback remains compatible with the additive notification date migration. Do not remove requests/history to roll back. SQL rollback, if necessary, removes only the two added triggers/functions; existing stamped details are harmless.
+Production Ready at https://g3-6740.com: deployment 56T93uBBkRtDMJQYcJX4bCejHDBu, source 35ab7947d8bfa3ffeca83809da466c8c7ce7e530 (main implementation 944623e). Both branches pushed. Authenticated production acceptance confirmed Limestone hopper open/closed and existing absence records with distinct meeting, submission and review timestamps. Proof: docs/staging/hopper-production-20261002.png. Prior production: DpXyJJtun9zxCG4PxQubQDCRycnt, source 14279b1. Web rollback remains compatible with the additive notification date migration. Do not remove requests/history to roll back. SQL rollback, if necessary, removes only the two added triggers/functions; existing stamped details are harmless.
 
 ## APK and next-session entry
 APK remains signed version 2.2.0 / code 24 (21 September). No APK built in this increment: user said a refresh may be needed. Next milestone should use the production release checkout, existing signing identity, next version code and actual Android acceptance; see APK_MILESTONE_20260921.md.
