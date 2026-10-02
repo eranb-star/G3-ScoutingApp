@@ -26,4 +26,8 @@ TypeScript, Vite production build (existing large-chunk warnings), team-learning
 
 Actual component local browser checks: student has three primary destinations and no instructor tools; Continue opens the guided course; Hebrew instructor entry exposes course authoring/review/progress; course creation opens and submits against synthetic local data. No real student assignments or results were created for acceptance.
 
-Production verification and release hashes: pending deployment.
+Live acceptance caught CRLF/whitespace variants around the legacy `---HE---` separator in production records. The shared parser now accepts LF, CRLF and space-delimited legacy records; editing preserves their separator and other translation. The added regression cases cover each format. Do not regress to a literal LF-only split or trust synthetic fixtures as proof of live stored-data format.
+
+Final production deployment: `75dcEE3xV46FfgV8UaXcLYsQ3aGz`, source `4a0065c5947571001267b2113ae3fad4b2a64365`, Ready and aliased to https://g3-6740.com on 2 October 2026 at 16:09 Asia/Jerusalem. Main implementation commits: `6da5672` and `b307297`. Rebuilt using production environment through Vercel promotion; no database migration.
+
+Initial navigation release b1b72fc / BhNTnsicVtJbVJdEfUhoceaWRYX8 is superseded. Final live acceptance: cold My learning landing; authorized Instructor workspace and cross-course review; Settings Hebrew switch; all six prepared course titles/descriptions without mixed-language separators; Explore → real guided lesson → ten-question Hebrew quiz. Submission correctly disabled for an unassigned account. Settings restored to the original English preference. No production course, assignment, quiz attempt or practical evidence was created by these checks.
