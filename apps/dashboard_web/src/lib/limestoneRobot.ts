@@ -34,5 +34,11 @@ export async function loadLimestone(signal:AbortSignal){
  }catch(error){disposeLearningModel(root);throw error;}
 }
 
-// Pinned CompConstants pivot and IntakeDeployConstants angles (0 deployed, 130 stowed).
-export function poseLimestone(root:THREE.Group,on:boolean){const intake=root.getObjectByName('Limestone component 0');if(intake)intake.rotation.y=-(on?0:130)*Math.PI/180;}
+// Pinned RobotConstants selects Epsilon. HopperTracker couples horizontal extension
+// to the intake angle; vertical expansion is independently driven by the climber.
+export const LIMESTONE_HOPPER_TRAVEL=.303211;
+export function poseLimestone(root:THREE.Group,on:boolean){
+ const angle=on?0:130;
+ const intake=root.getObjectByName('Limestone component 0');if(intake)intake.rotation.y=-angle*Math.PI/180;
+ const extension=root.getObjectByName('Limestone component 2');if(extension)extension.position.x=LIMESTONE_HOPPER_TRAVEL*(1-angle/130);
+}
