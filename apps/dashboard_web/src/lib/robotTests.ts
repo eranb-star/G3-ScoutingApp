@@ -1,10 +1,12 @@
 export type Trial={seconds:number;attempted:number;successful:number;faults:number;passed:boolean;note:string};
-export type TestSetup={robot:string;mechanism:string;codeRevision:string|null;batteryId:string|null;batteryVolts:number|null;conditions:string;procedure:string;criterion:string;units:'seconds/counts/volts'};
-export type TestRun={id:string;created_at:string;created_by:string;title:string;protocol:'can'|'intake'|'shooting'|'auto';protocol_version:number;test_plan_id?:string|null;evidence_kind:'physical'|'simulated';setup:TestSetup;trials:Trial[];baseline_id:string|null;change_note:string;repair_task_id:string|null;correction_of:string|null};
+export type TestSetup={robot:string;mechanism:string;codeRevision:string|null;batteryId:string|null;batteryVolts:number|null;conditions:string;procedure:string;criterion:string;units:'seconds/counts/volts';simulation?:unknown};
+export type TestRun={id:string;created_at:string;created_by:string;title:string;protocol:'can'|'intake'|'shooting'|'auto'|'driver';protocol_version:number;test_plan_id?:string|null;evidence_kind:'physical'|'simulated';setup:TestSetup;trials:Trial[];baseline_id:string|null;change_note:string;repair_task_id:string|null;correction_of:string|null};
 export const protocols={
+ driver:['Simulator driver mission','משימת נהיגה בסימולטור'],
  can:['CAN fault reproduction','שחזור תקלות CAN'],intake:['Intake pickup / jams','איסוף / תקיעות'],shooting:['Shooting accuracy / throughput','דיוק / קצב ירי'],auto:['Autonomous completion','השלמת אוטונומי'],
 } as const;
 export const protocolHelp={
+ driver:['One attempt is one complete mission; success means the declared target was reached. Simulation only; no physical qualification.','ניסיון אחד הוא תרגיל מלא; הצלחה פירושה שהיעד שהוגדר הושג. סימולציה בלבד; ללא הסמכה פיזית.'],
  can:['Count observation cycles and cycles without the defined fault; record error occurrences as faults. Keep robot disabled during supervised electrical checks.','ספרו מחזורי תצפית ומחזורים ללא התקלה המוגדרת; רשמו מופעי שגיאה כתקלות. השאירו רובוט מושבת בבדיקות חשמל מפוקחות.'],
  intake:['Count presented and collected pieces, jams and elapsed time. Repeat the same approach, placement and piece condition.','ספרו חלקים שהוצגו ונאספו, תקיעות וזמן. חזרו על אותה גישה, מיקום ומצב חלקים.'],
  shooting:['Count attempted and successful shots, faults and elapsed time. Record distance, target and shooter settings in the procedure.','ספרו יריות שנוסו והצליחו, תקלות וזמן. תעדו מרחק, מטרה והגדרות ירי בנוהל.'],
@@ -46,6 +48,7 @@ export function comparisonIssues(a:TestRun,b:TestRun):string[]{
  const issues:string[]=[];
  for(const key of ['protocol','protocol_version','evidence_kind'] as const)if(a[key]!==b[key])issues.push(key);
  for(const key of ['robot','mechanism','conditions','procedure','criterion','units'] as const)if(a.setup[key].trim()!==b.setup[key].trim())issues.push(key);
+ if(a.protocol==='driver'||b.protocol==='driver'){if(!a.setup.simulation||!b.setup.simulation||JSON.stringify(a.setup.simulation)!==JSON.stringify(b.setup.simulation))issues.push('simulation settings');return issues;}
  // Voltage and code may be the deliberate changed factor; disclose them separately in the UI.
  if(a.setup.batteryVolts===null||b.setup.batteryVolts===null)issues.push('battery voltage unknown');
  if(!a.setup.batteryId||!b.setup.batteryId)issues.push('battery identity unknown');

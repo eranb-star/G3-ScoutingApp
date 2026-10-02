@@ -6,6 +6,7 @@ export function autonomousScaffold(plan:AutoPlan){
  const result=evaluateRoute(plan.season,plan.robot,plan.route);if(result.errors.length)throw Error(result.errors.join('; '));if(plan.route.length<2||result.seconds<=0)throw Error('Add a route before exporting');
  const samples=Array.from({length:Math.ceil(result.seconds/.02)+1},(_,i)=>{const time=Math.min(i*.02,result.seconds),p=routePoseAt(plan.season,plan.robot,plan.route,time);return [time,p.x,p.y,p.heading,p.phase==='intake'?1:0,p.phase==='shoot'?1:0].map(n=>Number(n.toFixed(6)));});
  return `/** G3 autonomous integration scaffold. NOT verified against your robot repository.
+ * Alliance: ${plan.robot.alliance===1?'BLUE':'RED'}. Coordinates already transformed; do NOT flip them again.
  * Frame: field CENTER origin, +X/+Y as Studio; metres and radians.
  * Adapter MUST transform to your odometry frame, follow poses with feedback,
  * enforce physical speed/acceleration limits, and map intake/shooter commands.

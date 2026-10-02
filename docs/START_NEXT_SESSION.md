@@ -1,3 +1,6 @@
+# Simulator training / robustness — latest increment
+Read [SIMULATOR_TRAINING_RELEASE_20261002.md](SIMULATOR_TRAINING_RELEASE_20261002.md) first for current scope, validation, alliance behavior, boundaries and deployment status. Earlier priorities below are historical when they conflict with the user’s team/software/simulator-first direction.
+
 # Knowledge / Academy — production release, 2 October 2026
 Read [KNOWLEDGE_ACADEMY_RELEASE_20261002.md](KNOWLEDGE_ACADEMY_RELEASE_20261002.md) first. Production deployment `CUSBK5AWY7JAB9c83uiQdgFDKsrw`, source `0c1d06a`, is Ready at g3-6740.com. Both additive migrations are applied; authenticated read-only acceptance passed. Implementation, tests, boundaries and rollback are recorded there. APK remains 2.2.0/code 24.
 

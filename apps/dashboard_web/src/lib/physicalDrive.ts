@@ -14,7 +14,7 @@ export async function createPhysicalDrive(config:Concept){await(initialized??=R.
 export class PhysicalDrive{
  world=new R.World({x:0,y:0,z:-9.81});body:R.RigidBody;tick=0;distance=0;collisions=0;contacts=0;
  fuel=new FuelPhysics(this.world);mechanism:IntakeMechanism;
- opponent?:{body:R.RigidBody;mechanism:IntakeMechanism;state:string;intake:boolean;config:Concept};
+ opponent?:{body:R.RigidBody;mechanism:IntakeMechanism;state:string;intake:boolean;config:Concept;redSide:boolean};
  constructor(public config:Concept){
  this.world.timestep=DT;
  const box=(x:number,y:number,z:number,w:number,d:number,h:number)=>this.world.createCollider(R.ColliderDesc.cuboid(w/2,d/2,h/2).setTranslation(x,y,z).setFriction(.8));
@@ -52,7 +52,7 @@ export class PhysicalDrive{
  if(deployed)this.fuel.capture(this.body,this.config.length,this.tick,intake);
  const before=this.body.translation();this.contacts=this.driveBody(this.body,command,this.config);
  if(this.opponent){const o=this.opponent;this.fuel.prepareOpponent();const p=o.body.translation(),r=o.body.rotation(),v=o.body.linvel();const state={x:p.x,y:p.y,heading:Math.atan2(2*(r.w*r.z+r.x*r.y),1-2*(r.y*r.y+r.z*r.z)),speed:Math.hypot(v.x,v.y)};
-  this.fuel.withActor('computer',()=>{const ai=opponentCommand(state,this.fuel.snapshot(),this.fuel.collected,o.config.length,this.tick,o.config.robotId==='darwin');o.state=ai.state;o.intake=ai.intake;const intake={...intakeForRobot(o.config.robotId??'kitbot'),on:ai.intake};if(o.mechanism.update(intake,this.fuel.collected<intake.capacity))this.fuel.capture(o.body,o.config.length,this.tick,intake);this.fuel.shoot(o.body,o.config.length,this.tick,{...ai.shooter,lanes:shooterForRobot(o.config.robotId??'kitbot').lanes});this.driveBody(o.body,ai.command,o.config);});
+  this.fuel.withActor('computer',()=>{const ai=opponentCommand(state,this.fuel.snapshot(),this.fuel.collected,o.config.length,this.tick,o.config.robotId==='darwin',o.redSide);o.state=ai.state;o.intake=ai.intake;const intake={...intakeForRobot(o.config.robotId??'kitbot'),on:ai.intake};if(o.mechanism.update(intake,this.fuel.collected<intake.capacity))this.fuel.capture(o.body,o.config.length,this.tick,intake);this.fuel.shoot(o.body,o.config.length,this.tick,{...ai.shooter,lanes:shooterForRobot(o.config.robotId??'kitbot').lanes});this.driveBody(o.body,ai.command,o.config);});
  }
  this.world.step();this.tick++;this.fuel.afterStep(this.tick);const p=this.body.translation(),v=this.body.linvel();this.distance+=Math.hypot(p.x-before.x,p.y-before.y);if(Math.hypot(command.vx,command.vy)>.2&&Math.hypot(v.x,v.y)<.05)this.collisions++;
  return this.snapshot();
@@ -69,17 +69,17 @@ export class PhysicalDrive{
  }}
  return contacts;
  }
- setOpponent(enabled:boolean,config:Concept=DEFAULT_CONCEPT){
+ setOpponent(enabled:boolean,config:Concept=DEFAULT_CONCEPT,redSide=false){
   if(this.opponent){this.fuel.releaseOpponent(this.opponent.body.translation());this.world.removeRigidBody(this.opponent.body);this.opponent=undefined;}
   if(!enabled)return;
-  const body=this.world.createRigidBody(R.RigidBodyDesc.dynamic().setTranslation(6,-2.7,.31).setCcdEnabled(true).setAngularDamping(2));
+  const body=this.world.createRigidBody(R.RigidBodyDesc.dynamic().setTranslation(redSide?-6:6,redSide?2.7:-2.7,.31).setCcdEnabled(true).setAngularDamping(2));
   this.world.createCollider(R.ColliderDesc.cuboid(config.length/2,config.width/2,(config.height-.08)/2).setTranslation(0,0,(config.height+.08)/2-.3).setMass(50).setCollisionGroups((1<<16)|7).setFriction(.35),body);
-  this.opponent={body,mechanism:new IntakeMechanism(this.world,body,config),state:'Ready',intake:false,config};this.fuel.prepareOpponent();
+  this.opponent={body,mechanism:new IntakeMechanism(this.world,body,config),state:'Ready',intake:false,config,redSide};this.fuel.prepareOpponent();
  }
  snapshot():PhysicalPose{const p=this.body.translation(),r=this.body.rotation(),v=this.body.linvel();
  const opponent=this.opponent?(()=>{const o=this.opponent!,p=o.body.translation(),r=o.body.rotation();return {x:p.x,y:p.y,z:p.z-.3,rotation:{...r},heading:Math.atan2(2*(r.w*r.z+r.x*r.y),1-2*(r.y*r.y+r.z*r.z)),state:o.state,intake:o.intake,stored:this.fuel.withActor('computer',()=>this.fuel.collected),scored:this.fuel.credits.get('computer')??0};})():undefined;
  return {opponent,playerScored:this.fuel.credits.get('player')??0,storedIds:[...this.fuel.stored],fuelVisualEpoch:this.fuel.visualEpoch,fuelVisualEvents:[...this.fuel.visualEvents],velocity:{...v},angularVelocity:{...this.body.angvel()},ledger:this.fuel.ledger(),scores:[...this.fuel.scores],shots:this.fuel.shots,balls:this.fuel.snapshot(),collected:this.fuel.collected,x:p.x,y:p.y,z:p.z-.3,rotation:{...r},heading:Math.atan2(2*(r.w*r.z+r.x*r.y),1-2*(r.y*r.y+r.z*r.z)),tick:this.tick,distance:this.distance,collisions:this.collisions,contacts:this.contacts,speed:Math.hypot(v.x,v.y)};
  }
- reset(x=START.x,y=START.y,heading=0){if(this.opponent){const config=this.opponent.config;this.setOpponent(false);this.setOpponent(true,config);}this.body.setTranslation({x,y,z:.31},true);this.body.setRotation({x:0,y:0,z:Math.sin(heading/2),w:Math.cos(heading/2)},true);this.body.setLinvel({x:0,y:0,z:0},true);this.body.setAngvel({x:0,y:0,z:0},true);this.body.resetForces(true);this.body.resetTorques(true);this.contacts=0;this.tick=0;this.distance=0;this.collisions=0;}
+ reset(x=START.x,y=START.y,heading=0){if(this.opponent){const {config,redSide}=this.opponent;this.setOpponent(false);this.setOpponent(true,config,redSide);}this.body.setTranslation({x,y,z:.31},true);this.body.setRotation({x:0,y:0,z:Math.sin(heading/2),w:Math.cos(heading/2)},true);this.body.setLinvel({x:0,y:0,z:0},true);this.body.setAngvel({x:0,y:0,z:0},true);this.body.resetForces(true);this.body.resetTorques(true);this.contacts=0;this.tick=0;this.distance=0;this.collisions=0;}
  dispose(){this.world.free();}
 }
