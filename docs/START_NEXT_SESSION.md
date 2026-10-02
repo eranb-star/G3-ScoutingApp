@@ -1,3 +1,6 @@
+# Limestone simulator / alliance bumpers — latest increment
+Read [LIMESTONE_SIMULATOR_RELEASE_20261002.md](LIMESTONE_SIMULATOR_RELEASE_20261002.md) first for this increment, exact material mappings, estimates and release status.
+
 # Simulator training / robustness — latest increment
 Read [SIMULATOR_TRAINING_RELEASE_20261002.md](SIMULATOR_TRAINING_RELEASE_20261002.md) first for current scope, validation, alliance behavior and boundaries. Production Ready: `3SC96qomfb5Rj5FGFh4HEMe2FEkj`, source `7d67507`; database migration applied. APK remains 2.2.0/code 24. Earlier priorities below are historical when they conflict with the user’s team/software/simulator-first direction.
 

@@ -1,9 +1,10 @@
+import {loadLimestone,poseLimestone} from './limestoneRobot';
 import {TWIN_CACHE,storeModel} from './twinCache';
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
 import config from '../../public/twin/robots/6328-2026/config.json';
 import provenance from '../../public/twin/robots/6328-2026/provenance.json';
-export type PublishedRobot='kitbot'|'darwin';
+export type PublishedRobot='kitbot'|'darwin'|'limestone';
 export const DARWIN_PROFILE={robotId:'darwin' as const,length:.8763,width:.8509,height:.5592,speed:2,turn:1.8};
 export async function loadDarwin(signal:AbortSignal){
  const root=new THREE.Group();root.name='6328 Darwin 2026 · published CAD';const components:THREE.Group[]=[];
@@ -18,3 +19,10 @@ export async function loadDarwin(signal:AbortSignal){
  update(false);return {group:root,update};
 }
 export function poseDarwin(root:THREE.Group,on:boolean){const components=[0,1,2,3].map(i=>root.getObjectByName(`Darwin component ${i}`)!);const a=(on?17.4088627799:145.8170667799)*Math.PI/180;components[0].position.set(-.273,0,.486);components[1].position.set(12.480*.0254,0,.186);components[1].rotation.y=-a;components[2].position.set((12.480+7.204*Math.cos(a)+(7.204*Math.sin(a)-2.393)/Math.tan(70*Math.PI/180)+6.789)*.0254,0,.37);components[3].position.set(.01,0,.554692);}
+
+// CAD bumper envelope; speed and mechanisms are editable practice estimates.
+export const LIMESTONE_PROFILE={robotId:'limestone' as const,length:.8128,width:.81915,height:.59,speed:2,turn:1.8};
+export const robotLabel=(id:string)=>id==='limestone'?'1678 Limestone':id==='darwin'?'6328 Darwin':'KitBot';
+export const publishedProfile=(id:string)=>id==='limestone'?LIMESTONE_PROFILE:DARWIN_PROFILE;
+export const loadPublishedRobot=(id:Exclude<PublishedRobot,'kitbot'>,signal:AbortSignal)=>id==='limestone'?loadLimestone(signal):loadDarwin(signal);
+export const posePublishedRobot=(id:Exclude<PublishedRobot,'kitbot'>,root:THREE.Group,on:boolean)=>id==='limestone'?poseLimestone(root,on):poseDarwin(root,on);
