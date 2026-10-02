@@ -1,6 +1,6 @@
 # Knowledge and Academy workflow review — 2 October 2026
 
-Status: user accepted the direction and requested documentation plus further analysis. No application implementation, database change, permission expansion or deployment authorized by this review. Findings are code-based; duplicate-resource counts, live policy settings and learner frequency have not been audited.
+Status: the user subsequently authorized all documented changes. Implementation/release evidence is tracked in KNOWLEDGE_ACADEMY_RELEASE_20261002.md. The review findings below describe the pre-change state. Findings are code-based; duplicate-resource counts, live policy settings and learner frequency have not been audited.
 
 ## Agreed direction
 

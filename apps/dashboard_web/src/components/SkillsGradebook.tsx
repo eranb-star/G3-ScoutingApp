@@ -1,3 +1,4 @@
+import {learningProgress} from '../lib/academyProgress';
 import {academyText,academyFeedback} from '../lib/academyLanguage';
 import { useMemo, useState } from "react";
 
@@ -28,13 +29,14 @@ export default function SkillsGradebook({pick,profileId,canReview,courses,module
     const required=assessments.filter(item=>item.course_id===enrollment.course_id&&item.required);
     const attempts=submissions.filter(item=>item.enrollment_id===enrollment.id);
     const passedCount=required.filter(item=>attempts.some(row=>row.assessment_id===item.id&&passed(item,row))).length;
-    const waiting=attempts.some(item=>item.status==="submitted");
-    const changes=attempts.some(item=>item.status==="changes_requested");
+    const current=learningProgress(enrollment,modules,evidence,assessments,submissions);
+    const waiting=current.waiting;
+    const changes=current.changes;
     const overdue=(enrollment.due_at?new Date(`${enrollment.due_at}T23:59:59`).getTime()<Date.now():false)||required.some(item=>item.due_at&&new Date(item.due_at).getTime()<Date.now()&&!attempts.some(row=>row.assessment_id===item.id&&passed(item,row)));
     const complete=courseModules.length+required.length>0&&approved===courseModules.length&&passedCount===required.length;
     const status:ProgressStatus=enrollment.status==="qualified"?"qualified":complete?"passed":waiting?"submitted":changes?"changes_requested":overdue?"overdue":approved||attempts.length?"in_progress":"not_started";
     const total=courseModules.length+required.length,done=approved+passedCount;
-    const exhausted=required.some(item=>{const itemAttempts=attempts.filter(row=>row.assessment_id===item.id);const latest=itemAttempts[0];return itemAttempts.length>=item.max_attempts&&latest?.status==="reviewed"&&!passed(item,latest);});
+    const exhausted=current.exhausted;
     return{status,total,done,percent:total?Math.round(done/total*100):0,approved,moduleTotal:courseModules.length,passedCount,assessmentTotal:required.length,attempts,exhausted};
   }
 
