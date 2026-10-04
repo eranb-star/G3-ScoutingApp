@@ -2,3 +2,9 @@ export const filamentHebrew:Record<string,string>={Black:'שחור',White:'לב�
 export type FilamentDetails={material:string;brand:string;colour:string;diameter:string;net_weight_g:string;spool_price:string;empty_spool_g:string;finish:string;product_url:string};
 export const emptyFilament=():FilamentDetails=>({material:'PLA',brand:'',colour:'',diameter:'1.75',net_weight_g:'1000',spool_price:'',empty_spool_g:'',finish:'Standard',product_url:''});
 export function filamentCost(value:FilamentDetails){const grams=Number(value.net_weight_g),price=Number(value.spool_price);return value.spool_price.trim()!==''&&Number.isFinite(price)&&price>=0&&Number.isFinite(grams)&&grams>0?price*1000/grams:null;}
+export function filamentStockKg(spools:string,gramsPerSpool:string,openedGrams:string){
+ const count=Number(spools),weight=Number(gramsPerSpool),opened=Number(openedGrams||'0');
+ if(!spools.trim()||!Number.isSafeInteger(count)||count<0||!Number.isFinite(weight)||weight<=0||!Number.isFinite(opened)||opened<0)return null;
+ const kg=(count*weight+opened)/1000;
+ return Number.isFinite(kg)&&kg<1e10?Math.round(kg*10000)/10000:null;
+}
