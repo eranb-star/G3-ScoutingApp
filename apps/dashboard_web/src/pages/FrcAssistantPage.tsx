@@ -221,13 +221,24 @@ export default function FrcAssistantPage() {
     if ((!clean && !image) || busy || !canUseAssist || (BUDGET_PILOT&&pendingRequest)) return;
     if (image && !privacyConfirmed) { setStatus(pick("Confirm the image contains no people or personal student information.", "יש לאשר שאין בתמונה אנשים או מידע אישי על תלמידים.")); return; }
     setBusy(true); setStatus("");
+    let requestSoftware=software;
+    const repository=params.get('robotRepository');
+    if(repository&&!requestSoftware){
+      if(conversationId){setStatus(pick('This older conversation has no code. Press New to analyze the repository with actual source files.','בשיחה הישנה אין קוד. לחצו חדש כדי לנתח את המאגר עם קבצי המקור.'));setBusy(false);return;}
+      setStatus(pick('Reading the repository and selecting source files for your question…','קורא את המאגר ובוחר קבצי מקור לשאלה…'));
+      try{
+        const selected=await supabase.functions.invoke('frc-assistant',{body:{action:'select-software',repository,question:clean}});
+        if(selected.error||selected.data?.error){let reason=selected.data?.error; if(selected.error&&'context' in selected.error){try{reason=(await (selected.error.context as Response).clone().json()).error;}catch{}}throw Error(reason||pick('Could not read repository code. No generic answer was generated.','לא ניתן לקרוא קוד מהמאגר. לא נוצרה תשובה כללית.'));}
+        requestSoftware=selected.data as SoftwareSelection;setSoftware(requestSoftware);setStatus('');
+      }catch(error){setStatus((error as Error).message);setBusy(false);return;}
+    }
     const optimistic: ChatMessage = { id: `pending-${Date.now()}`, role: "user", content: clean || pick("Analyze this image in an FRC context.", "נתחו את התמונה בהקשר של FRC."), attachment_name: image?.name, created_at: new Date().toISOString() };
     setMessages((current) => [...current, optimistic]); setQuestion("");
     const pendingImage = image; setImage(null); setPrivacyConfirmed(false);
     const requestId=crypto.randomUUID();
     if(BUDGET_PILOT){requestRef.current=requestId;sessionStorage.setItem(pendingKey,requestId);setPendingRequest(requestId);}
     let outcome;
-    try{outcome=await supabase.functions.invoke("frc-assistant", { body: { requestId, conversationId, software, message: clean, language, evidence:params.get("evidence")&&params.get("generation")?{generation:params.get("generation"),ids:params.get("evidence")!.split(",").map(Number)}:null, contextIssueId:issueContext?.id??null, attachmentKind: pendingImage ? attachmentKind : null, privacyConfirmed: Boolean(pendingImage), image: pendingImage ? { name: pendingImage.name, mimeType: pendingImage.mimeType, data: pendingImage.data } : null } });}
+    try{outcome=await supabase.functions.invoke("frc-assistant", { body: { requestId, conversationId, software:requestSoftware, repository:requestSoftware?.repository??repository, message: clean, language, evidence:params.get("evidence")&&params.get("generation")?{generation:params.get("generation"),ids:params.get("evidence")!.split(",").map(Number)}:null, contextIssueId:issueContext?.id??null, attachmentKind: pendingImage ? attachmentKind : null, privacyConfirmed: Boolean(pendingImage), image: pendingImage ? { name: pendingImage.name, mimeType: pendingImage.mimeType, data: pendingImage.data } : null } });}
     catch{if(!BUDGET_PILOT||requestRef.current===requestId){setBusy(false);setStatus(BUDGET_PILOT?pick('Connection interrupted. Check request status before submitting another question.','החיבור נותק. בדקו את מצב הבקשה לפני שליחת שאלה נוספת.'):pick('Connection interrupted. Check conversation history for a saved answer before trying again.','החיבור נותק. בדקו בהיסטוריית השיחות אם נשמרה תשובה לפני ניסיון נוסף.'));}return;}
     if(BUDGET_PILOT&&requestRef.current!==requestId)return;
     const {data,error}=outcome;
@@ -235,6 +246,7 @@ export default function FrcAssistantPage() {
     if (error && "context" in error) { try { const details = await (error as { context: Response }).context.clone().json(); functionError = details?.error || functionError; } catch { /* Use SDK message. */ } }
     if (error || data?.error) { setMessages((current) => current.filter((item) => item.id !== optimistic.id)); setQuestion(clean); setImage(pendingImage); setPrivacyConfirmed(Boolean(pendingImage)); setStatus(functionError || error?.message || pick("G3 Assist is unavailable.", "G3 Assist אינו זמין כרגע.")); setBusy(false); return; }
     if(BUDGET_PILOT)clearPending();
+    setSoftware(data.softwareContext??requestSoftware);
     setConversationId(data.conversationId); sessionStorage.setItem(ACTIVE_CONVERSATION_KEY, data.conversationId); setRemaining(data.usage?.remainingToday ?? null);
     setMessages((current) => [...current, { id: data.answerMessageId??`answer-${Date.now()}`, role: "assistant", content: data.answer, citations:data.citations??[], created_at: new Date().toISOString() }]); setBusy(false);
     await refreshHistory();

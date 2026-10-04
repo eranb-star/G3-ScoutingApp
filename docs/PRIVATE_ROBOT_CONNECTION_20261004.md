@@ -1,3 +1,10 @@
+# Repository entry-flow correction — 4 October
+The initial private-connection release passed manual attachment acceptance but missed the natural Engineering Hub → Ask G3 Assist → type question flow. User SysId conversation was verified in production with software_context NULL; its answer was generic. This is a UX/context-routing defect, not a token failure. Prior statements that the full entry flow was verified are superseded.
+
+Correction implemented: repository entry reads current default-branch commit, ranks supported source files from question terms/subsystem hints plus Robot/RobotContainer, selects at most six files within 21 KB, then sends actual evidence through the existing protected adapter. Retrieval failure prevents generation. Backend also rejects repository-bound requests with missing/mismatched code context. Exact revision and included files are shown and saved. Manual selection remains available. This is bounded deterministic filename/subsystem retrieval, not semantic whole-repository indexing; answers must lead with real code findings and ask which mechanism when ambiguous. Follow-ups retain pinned selected files; new conversations refresh current code. Existing no-code histories require New before attaching code.
+
+Acceptance must exercise the repository button without manually opening the picker. No source read is itself a paid Gemini call. Existing budgets, private role permission, no shared source cache and citation validation remain unchanged. Deployment and live verification for this correction pending.
+
 # Private robot connection — 4 October 2026
 
 ## Status
