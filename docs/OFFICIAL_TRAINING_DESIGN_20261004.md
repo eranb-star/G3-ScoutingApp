@@ -1,0 +1,47 @@
+# Official training in Skills Academy — proposed design, 4 October 2026
+
+Status: design only, awaiting user review. No application/schema changes, enrollments or FIRST communication authorized by this document. Based on existing AcademyHome, academyProgress, TrainingCenterPage and Academy/Knowledge release records. Do not force external courses into the prepared four-step local-course contract.
+
+## Product contract
+One Academy; one reusable official completion record per member/provider/course/version or renewal cycle. FIRST records official completion on its own platform. G3 records verification of that evidence and separately validates practical skills. Never imply a G3 review writes to FIRST, an external-link click proves progress, or certificate completion proves safe workshop competence.
+
+## Existing capabilities to reuse
+My learning / Explore / My progress / Instructor workspace; course-scoped assignments and deadlines; current review queue, notifications, gradebook and Work linkage; preferred-language Settings; server-side role/scope enforcement. Existing courses and evidence remain unchanged. Certificate storage and provider-equivalence rules are new, not already delivered.
+
+## Student journey
+My learning shows one official-course card: provider, source language, due date, completion status and one primary action. Detail uses a compact three-step strip: Complete on FIRST -> Submit certificate -> Verification. Before starting, show 'Already completed? Add your certificate'. After verified credit is found, open the evidence record instead of showing Start again.
+Official training opens externally under the member's own FIRST identity (system browser for Android); return restores assignment context. Mark only 'Opened on FIRST', not in progress/completed. Student may explicitly self-report in progress, labelled self-reported. No embedded login, saved FIRST password or invented percentage.
+Submit one certificate PDF/JPEG/PNG, proposed 10 MB limit, or a supported official verification URL. Show preview, selected member/course, completion date and optional identifier; missing certificate means guidance/contact reviewer, never an automatic pass. Do not request DOB, password, full profile screenshot or screening records. Automated extraction may suggest fields but cannot approve evidence. Certificate correction replaces the active submission by appending history, not erasing prior review.
+Review pending has a receipt and no repeat-submission reminder. Corrections name the precise issue and reopen evidence submission, not the official lesson. Reuse existing review queue with Official certificates filter. Verified -> 'FIRST completion evidence verified by G3', source/date/reviewer visible. No numeric grade fabricated from a completion certificate.
+
+## No-repeat rules
+1. Stable provider/course identifiers, version applicability and explicit equivalence mapping; never title similarity alone.
+2. Before assigning, preview counts: new assignment, already verified, awaiting review, renewal due, blocked/unmatched identity. Default skips satisfied requirements and reuses pending evidence.
+3. The same certificate can satisfy explicitly mapped requirements across onboarding, department pathways and Work tasks without upload/quiz repetition. Keep one evidence identity and multiple requirement links.
+4. Bundle/pathway certificate credits child modules only when authoritative provider information establishes coverage; reviewer sees and approves the exact mapping.
+5. G3 quizzes with the same objectives can be waived only through an authorized, documented equivalence decision. Certificate does not automatically waive unrelated practical rubrics. Prepared course contracts are immutable today: implement separate approved credit records in server qualification logic, not rewrite historical answers or generic-editor contracts.
+6. An approved internal course cannot be relabelled FIRST-certified. If official credential is newly required, explain that distinction before assigning it; optional official credentials must not reopen completed local courses.
+7. New season, new assignment, translated title, URL change or minor course revision alone does not force retaking. Renewal requires explicit applicable provider policy or a named team requirement with reason and deadline. Preserve past achievements; no silent retroactive invalidation.
+8. Prior training completed before joining G3 can be submitted from My progress -> Add existing certificate and reused after verification. Concurrent reviewers/import retries are idempotent. Unmatched identities remain unresolved, never guessed.
+
+## Instructor workflow and team operations
+Instructor workspace -> Courses -> Add official training: select curated course/provider URL, eligible audience, actual language, certificate availability, version and sourced renewal rule; optionally link a distinct practical demonstration. Reuse assignment UI, choose members/subteam and deadline, review no-repeat preview, then explicitly assign. Catalogue publication does not enroll anyone.
+Team progress adds an Official training filter and member/course matrix with provider completion evidence, G3 verification, practical status and renewal separately. Include overdue outstanding action, not just overdue assignment. Review notifications go to authorized reviewers; students awaiting review stop receiving completion reminders. Work tasks link to the Academy requirement, never maintain another completion checkbox. Existing quiz attempts/qualification remain authoritative for unmapped requirements.
+Use role scope: authorized leaders may assign within existing scope; certificate verification requires explicit review permission, no self-verification. Admin exceptions record evidence and reason, not pretend FIRST issued a credential. Certificate documents restricted to learner and scoped reviewers; instructor summary need not expose full documents. Access-controlled storage, file validation/scanning, short-lived download links, audit/history and deletion/retention policy required before production.
+
+## UI boundaries
+No additional top-level navigation. Explore: Official FIRST provider filter/badge; references without certification remain Resources. My progress: official certificates alongside, but distinct from, practical qualifications. Instructor workspace: Courses / existing Reviews / existing Team progress. Use one primary button per state, aligned actions, responsive cards, keyboard-accessible upload/review and EN/HE labels from Settings. Original official titles/language and documents remain identifiable; G3 Hebrew support is not represented as official translated training.
+
+## Data and integration design
+Add provider course identity/catalogue metadata, versioned equivalence rules, private evidence/submission versions, append-only verification/withdrawal records and requirement-to-credit links. Extend existing assignments/progress computation and server-side qualification atomically; no duplicate enrollment system. Verification withdrawal explains affected requirements without deleting history. Renewal and certificate validity are distinct from local review state.
+FIRST API/team student export remains unverified. Documented VMS training CSV is event-volunteer reporting, not proof of lead-coach student-course export. Do not build synchronization against inferred endpoints or scrape private sessions. Future authorized import stores source/time/course/member mapping and uses same idempotent verification model, with preview and unresolved rows. No external API credential access is implied by design approval.
+
+## Launch and acceptance
+Pilot official onboarding plus mechanical/electrical modules after verifying exact current catalogue identifiers and certificate coverage. Use a returning member's prior certificate and a new learner, plus optional associated practical work. Then assign by role/department, not the entire library to everyone.
+Must pass: prior certificate reused; duplicate assignment suppressed; one certificate mapped across two pathways; no copied local quiz when approved equivalence applies; unrelated practical still required; pending/rejected evidence not credited; account mismatch denied; unauthorized/self-review denied; mobile external-browser return restores context; EN/HE and file upload/download; notification idempotency; sourced renewal affects only intended requirement; existing local courses and grades unchanged; FIRST record never falsely claimed updated. Hardware acceptance separately recorded. FIRST confirmation is not a prerequisite to manual evidence design; automated sync is gated on actual authorization/report.
+
+## Official evidence consulted on 4 October
+- https://www.firstinspires.org/hubfs/lms/frc-guided-experience/general/frc-ge-course-overview.pdf?hsLang=en — module/path certificates.
+- https://community.firstinspires.org/2025-new-first-robotics-competition-trainings — individual FIRST access and training.
+- https://info.firstinspires.org/hubfs/web/volunteer/guides/making-the-most-of-the-training-and-certifications-report.pdf — VMS event-volunteer report; not confirmed team/student export.
+- https://info.firstinspires.org/hubfs/web/volunteer/mentor-ready-faq.pdf — distinguish pathway badge from component renewals; check current regional applicability before assigning requirements.
