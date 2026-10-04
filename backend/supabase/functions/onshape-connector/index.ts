@@ -6,9 +6,15 @@ const headers={'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':
 const env=(name:string)=>Deno.env.get(name)||'';
 const reply=(body:unknown,status=200)=>Response.json(body,{status,headers});
 function configuration(){
- const clientId=env('G3_ONSHAPE_CLIENT_ID'),clientSecret=env('G3_ONSHAPE_CLIENT_SECRET'),encryption=env('G3_ONSHAPE_ENCRYPTION_KEY');
- if(!clientId||!clientSecret||!encryption)throw new CadError('SETUP_REQUIRED','The Onshape connector is not configured yet.',503);
- return {clientId,clientSecret,encryption,redirect:`${env('SUPABASE_URL')}/functions/v1/onshape-connector`};
+ const clientId=env('G3_ONSHAPE_CLIENT_ID'),clientSecret=env('G3_ONSHAPE_CLIENT_SECRET');
+ if(!clientId||!clientSecret)throw new CadError('SETUP_REQUIRED','The Onshape connector is not configured yet.',503);
+ return {clientId,clientSecret,redirect:`${env('SUPABASE_URL')}/functions/v1/onshape-connector`};
+}
+async function encryptionKey(db:any){
+ const configured=env('G3_ONSHAPE_ENCRYPTION_KEY');if(configured)return configured;
+ const result=await db.rpc('cad_envelope_key');
+ if(result.error||typeof result.data!=='string')throw new CadError('SETUP_REQUIRED','CAD encryption is not configured.',503);
+ return result.data;
 }
 async function exchange(values:Record<string,string>){
  const config=configuration();
@@ -27,21 +33,21 @@ async function connection(db:any,memberId:string){
  return result.data;
 }
 async function accessToken(db:any,row:any){
- const config=configuration();
- const credential=await unseal(row.credential,config.encryption,row.id);
+ const encryption=await encryptionKey(db);
+ const credential=await unseal(row.credential,encryption,row.id);
  if(Date.parse(row.expires_at)>Date.now()+90000)return credential.access_token;
  const lock=await db.rpc('claim_cad_refresh',{p_id:row.id});
  if(lock.error||lock.data!==true)throw new CadError('CONNECTION_BUSY','The connection is refreshing. Retry shortly.',409);
  try{
   const latest=await db.from('cad_connections').select('*').eq('id',row.id).is('disconnected_at',null).single();
   if(latest.error||!latest.data)throw new CadError('RECONNECT_REQUIRED','Reconnect Onshape.',409);
-  const current=await unseal(latest.data.credential,config.encryption,row.id);
+  const current=await unseal(latest.data.credential,encryption,row.id);
   if(Date.parse(latest.data.expires_at)>Date.now()+90000){
    await db.from('cad_connections').update({refresh_lock_until:null}).eq('id',row.id);
    return current.access_token;
   }
   const tokens=await exchange({grant_type:'refresh_token',refresh_token:current.refresh_token});
-  const updated=await db.from('cad_connections').update({credential:await seal(tokens,config.encryption,row.id),expires_at:new Date(Date.now()+tokens.expires_in*1000).toISOString(),refresh_lock_until:null,updated_at:new Date().toISOString()}).eq('id',row.id).is('disconnected_at',null).select('id').maybeSingle();
+  const updated=await db.from('cad_connections').update({credential:await seal(tokens,encryption,row.id),expires_at:new Date(Date.now()+tokens.expires_in*1000).toISOString(),refresh_lock_until:null,updated_at:new Date().toISOString()}).eq('id',row.id).is('disconnected_at',null).select('id').maybeSingle();
   if(updated.error||!updated.data)throw new CadError('RECONNECT_REQUIRED','Reconnect Onshape to restore access.',409);
   return tokens.access_token;
  }catch(error){
@@ -69,7 +75,7 @@ Deno.serve(async request=>{
    const previous=await db.from('cad_connections').select('id').eq('member_id',consumed.data.member_id).maybeSingle();
    if(previous.error)throw new CadError('STORAGE_UNAVAILABLE','Connection could not be saved.',503);
    const id=previous.data?.id||crypto.randomUUID();
-   const stored=await db.from('cad_connections').upsert({id,member_id:consumed.data.member_id,credential:await seal(tokens,config.encryption,id),expires_at:new Date(Date.now()+tokens.expires_in*1000).toISOString(),disconnected_at:null,refresh_lock_until:null,updated_at:new Date().toISOString()},{onConflict:'member_id'});
+   const stored=await db.from('cad_connections').upsert({id,member_id:consumed.data.member_id,credential:await seal(tokens,await encryptionKey(db),id),expires_at:new Date(Date.now()+tokens.expires_in*1000).toISOString(),disconnected_at:null,refresh_lock_until:null,updated_at:new Date().toISOString()},{onConflict:'member_id'});
    if(stored.error)throw new CadError('STORAGE_UNAVAILABLE','Connection could not be saved. Reconnect from G3.',503);
    return new Response(null,{status:303,headers:{...headers,Location:'https://g3-6740.com/engineering/cad?connected=1'}});
   }
@@ -82,7 +88,8 @@ Deno.serve(async request=>{
   if(body.action==='status'){
    const result=await db.from('cad_connections').select('id,updated_at,disconnected_at').eq('member_id',user.id).maybeSingle();
    if(result.error)throw new CadError('STORAGE_UNAVAILABLE','CAD connection storage is unavailable.',503);
-   return reply({configured:!!(env('G3_ONSHAPE_CLIENT_ID')&&env('G3_ONSHAPE_CLIENT_SECRET')&&env('G3_ONSHAPE_ENCRYPTION_KEY')),connected:!!result.data&&!result.data.disconnected_at,updatedAt:result.data?.updated_at});
+   await encryptionKey(db);
+   return reply({configured:!!(env('G3_ONSHAPE_CLIENT_ID')&&env('G3_ONSHAPE_CLIENT_SECRET')),connected:!!result.data&&!result.data.disconnected_at,updatedAt:result.data?.updated_at});
   }
   if(body.action==='connect'){
    const config=configuration();
