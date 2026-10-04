@@ -1,6 +1,6 @@
 # CAD Mentor / Onshape — implementation design, 4 October 2026
 
-Status: Onshape read-only connection is live; viewer/review release acceptance is in progress. The historical checkpoint below records the earlier staging state and is superseded by this section.
+Current status: the Onshape viewer and evidence-grounded review workflow are deployed and accepted on actual sketches/parts. Read [CAD_MENTOR_RELEASE_20261005.md](CAD_MENTOR_RELEASE_20261005.md) for authoritative release status, regression corrections and remaining scope. Checkpoints below are implementation history; the later design sections remain the broader roadmap.
 
 ## Live checkpoint — 4 October, late evening
 - 5 October acceptance: actual master sketch 71270ccd5fbee4219735a811 and insert Part Studio 06c55245ad4c0ccd4340d507 imported and rendered. Insert mesh envelope 46.9 × 46.9 × 10.0 mm; actual hole visible. User explicitly authorized these two designs' selected CAD data/questions to Google Gemini. Keep this distinct from any future team-wide disclosure.
