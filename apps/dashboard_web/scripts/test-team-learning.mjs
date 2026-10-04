@@ -35,8 +35,9 @@ if(process.argv.includes('--official')){
  await db.exec(`alter table team_members add column subteam text,add column subteams text[],add column leader_subteams text[];create schema storage;create table storage.objects(id uuid,bucket_id text,name text);alter table storage.objects enable row level security;create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);`);
  await db.exec(await sql('official_training_20261004'));
  await db.exec(await sql('official_training_links_20261004'));
+ await db.exec(await sql('official_training_complete_20261004'));
 }
-assert.equal((await db.query('select count(*)::int n from training_courses')).rows[0].n,process.argv.includes('--official')?10:6);
+assert.equal((await db.query('select count(*)::int n from training_courses')).rows[0].n,process.argv.includes('--official')?19:6);
 assert.equal((await db.query('select count(*)::int n from training_assessments')).rows[0].n,18);
 assert.equal((await db.query("select sum(jsonb_array_length(questions))::int n from training_assessments where assessment_type='quiz'")).rows[0].n,60);
 const student='00000000-0000-4000-8000-000000000001',other='00000000-0000-4000-8000-000000000002',mentor='00000000-0000-4000-8000-000000000003',enrollment='00000000-0000-4000-8000-000000000004',course='67402026-1002-4000-8000-000001000001',quiz='67402026-1002-4000-8000-000001000002',practical='67402026-1002-4000-8000-000001000003';

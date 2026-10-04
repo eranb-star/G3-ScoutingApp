@@ -13,6 +13,9 @@ await db.exec(`grant select on training_courses,training_modules,training_enroll
 const sql=await readFile('../../backend/supabase/official_training_20261004.sql','utf8');
 await db.exec(sql);await db.exec(sql);
 const links=await readFile('../../backend/supabase/official_training_links_20261004.sql','utf8');await db.exec(links);await db.exec(links);
+const complete=await readFile('../../backend/supabase/official_training_complete_20261004.sql','utf8');await db.exec(complete);await db.exec(complete);
+assert.equal((await db.query('select count(*)::integer n from training_official_catalog')).rows[0].n,13,'twelve modules and one separate path');
+assert.equal((await db.query('select count(*)::integer n from training_enrollments')).rows[0].n,0,'publishing never enrolls learners');
 const student='00000000-0000-4000-8000-000000000001',other='00000000-0000-4000-8000-000000000002',mentor='00000000-0000-4000-8000-000000000003',course='67402026-1004-4000-8000-000000000008',local='00000000-0000-4000-8000-000000000010',quiz='00000000-0000-4000-8000-000000000011',practical='00000000-0000-4000-8000-000000000012',enrollment='00000000-0000-4000-8000-000000000013';
 await db.exec(`insert into team_members(id,role) values('${student}','member'),('${other}','member'),('${mentor}','mentor');insert into training_courses(id,title,active) values('${local}','Local',true);insert into training_assessments(id,course_id,title,instructions,assessment_type,required,graded) values('${quiz}','${local}','Theory','Explain','quiz',true,false),('${practical}','${local}','Demonstrate','Build','practical',true,false);insert into training_enrollments(id,course_id,member_id) values('${enrollment}','${local}','${student}');insert into storage.objects(bucket_id,name) values('training-certificates','${student}/one.png'),('training-certificates','${other}/two.png'),('training-certificates','${mentor}/three.png');`);
 const as=async id=>db.exec(`reset role;set test.uid='${id}';set role authenticated;`);
@@ -53,7 +56,7 @@ const bundle='67402026-1004-4000-8000-000000000099';
 const bundleId=(await db.query('select submit_training_certificate($1,$2,$3,$4,$5) id',[bundle,'2026-09-01','FULL-PATH',[`${other}/two.png`],crypto.randomUUID()])).rows[0].id;
 await as(mentor);
 await db.query('select review_training_certificate($1,$2,$3,$4)',[bundleId,'verified','Required path modules, member, date and coverage verified.',[true,true,true,true]]);
-assert.equal((await db.query('select * from training_official_completions where member_id=$1 and status=$2',[other,'verified'])).rows.length,2,'path certificate covers only the required Intro module, not optional 8 or 9');
+assert.equal((await db.query('select * from training_official_completions where member_id=$1 and status=$2',[other,'verified'])).rows.length,10,'path covers nine required modules plus itself, not optional 8, 9 or 10');
 const reuse=(await db.query('select * from assign_official_training($1,$2,null,false)',['67402026-1004-4000-8000-000000000001',[other]])).rows[0];
 assert.equal(reuse.outcome,'already_verified');
 await as(other);await assert.rejects(db.query('select submit_training_certificate($1,$2,$3,$4,$5)',['67402026-1004-4000-8000-000000000001','2026-09-01','DUPLICATE',[`${other}/two.png`],crypto.randomUUID()]),/already pending/);
@@ -62,6 +65,11 @@ assert.equal((await db.query('select * from training_official_credits')).rows.le
 await assert.rejects(db.query('select submit_training_certificate($1,$2,$3,$4,$5)',['67402026-1004-4000-8000-000000000009','2026-09-01','UNAVAILABLE',[`${other}/two.png`],crypto.randomUUID()]),/unavailable/);
 await as(mentor);await assert.rejects(db.query('select assign_official_training($1,$2,null,true)',['67402026-1004-4000-8000-000000000009',[other]]),/permission/);
 const destinations=(await db.query('select launch_url from training_official_catalog where active')).rows;
-assert.equal(destinations.length,3);assert.ok(destinations.every(r=>!r.launch_url.endsWith('/catalog')),'all available courses have direct destinations');
+assert.equal(destinations.length,12);assert.ok(destinations.every(r=>!r.launch_url.endsWith('/catalog')),'all available courses have direct destinations');
+for(const n of [2,3,4,5,6,7,10,11,12]){
+ const added=`67402026-1004-4000-8000-${String(n).padStart(12,'0')}`;
+ const result=(await db.query('select * from assign_official_training($1,$2,null,true)',[added,[other]])).rows[0];
+ assert.equal(result.outcome,n===10?'new_assignment':'already_verified',`module ${n} uses sourced required/optional path credit`);
+}
 await db.close();console.log('PASS official training: repeatable migration, RLS, private files, ownership, idempotency, duplicate suppression, correction/resubmission/history, qualified status, explicit theory credit, practical preserved, withdrawal, self-review denied.');
 
