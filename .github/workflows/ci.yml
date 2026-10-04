@@ -33,6 +33,7 @@ jobs:
           node scripts/test-project-archive.mjs
           node scripts/test-review-queue.mjs
           node scripts/test-review-draft.mjs
+          node scripts/test-fundraising.mjs
           node scripts/verify-mobile-notification-stability.mjs
       # Exercise the current permission-controlled catalogue, not obsolete token/URL strings.
       - name: Private repository access boundaries

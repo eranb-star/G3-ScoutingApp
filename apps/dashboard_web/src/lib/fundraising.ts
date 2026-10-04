@@ -1,0 +1,9 @@
+export type Material={part_id:string;grams:number;name?:string;cost_per_kg?:number};
+export type Product={id:string;name:string;model_url:string|null;notes:string;materials:Material[];operating_cost:number;other_cost:number;sale_price:number;archived:boolean;revision:number};
+export type PrintJob={id:string;product_id:string;event_id:string|null;quantity:number;status:string;owner_id:string|null;due_date:string|null;printer:string;notes:string;snapshot:{name:string;materials:Material[];unit_cost:number;operating_cost:number;other_cost:number;sale_price:number};good_units:number;failed_units:number;actual_cost:number|null;result_note:string;created_at:string};
+export type FundEvent={id:string;name:string;event_date:string;location:string;notes:string;status:string;income_id:string|null};
+export type Sale={id:string;event_id:string;product_id:string;quantity:number;unit_price:number;payment_method:string;voided:boolean;created_at:string};
+export type Filament={id:string;name:string;quantity:number;unit_cost:number;filament_details:{net_weight_g:string;brand:string;material:string;colour:string}};
+export function productCost(p:Pick<Product,'materials'|'operating_cost'|'other_cost'>,stock:Filament[]){return p.materials.reduce((s,m)=>s+m.grams*Number(stock.find(f=>f.id===m.part_id)?.unit_cost??0)/1000,0)+Number(p.operating_cost)+Number(p.other_cost);}
+export function finishedStock(id:string,jobs:PrintJob[],sales:Sale[]){return jobs.filter(j=>j.product_id===id).reduce((s,j)=>s+j.good_units,0)-sales.filter(s=>s.product_id===id&&!s.voided).reduce((n,s)=>n+s.quantity,0);}
+export function materialDemand(id:string,jobs:PrintJob[],statuses:string[]){return jobs.filter(j=>statuses.includes(j.status)).reduce((s,j)=>s+j.snapshot.materials.filter(m=>m.part_id===id).reduce((n,m)=>n+m.grams*j.quantity/1000,0),0);}
