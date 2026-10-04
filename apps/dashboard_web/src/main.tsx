@@ -62,6 +62,7 @@ const PitAssignmentsPage=lazy(()=>import("./pages/PitAssignmentsPage"));
 const TeamMediaPage=lazy(()=>import("./pages/TeamMediaPage"));
 const FeedbackCenterPage=lazy(()=>import("./pages/FeedbackCenterPage"));
 const EngineeringHubPage=lazy(()=>import("./pages/EngineeringHubPage"));
+const CadMentorPage=lazy(()=>import("./pages/CadMentorPage"));
 const FieldTwinPage=lazy(()=>import("./pages/FieldTwinPage"));
 const KnowledgeWorkspace=lazy(()=>import("./components/KnowledgeWorkspace"));
 
@@ -852,6 +853,7 @@ function AppShell() {
         <Route path="/media" element={<MemberGate><TeamMediaPage /></MemberGate>} />
         <Route path="/feedback" element={<MemberGate><FeedbackCenterPage /></MemberGate>} />
         <Route path="/engineering" element={<MemberGate><EngineeringHubPage /></MemberGate>} />
+        <Route path="/engineering/cad" element={<MemberGate><CadMentorPage /></MemberGate>} />
         <Route path="/field-twin" element={<MemberGate><LabScreenGate permission="view_field_twin"><FieldTwinPage /></LabScreenGate></MemberGate>} />
         <Route path="/knowledge" element={<MemberGate><KnowledgeWorkspace /></MemberGate>} />
         <Route path="/season-planning" element={<MemberGate><SeasonPlanningPage /></MemberGate>} />
