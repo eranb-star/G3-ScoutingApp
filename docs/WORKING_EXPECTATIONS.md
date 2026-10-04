@@ -1,3 +1,5 @@
+- October 4 repository regression: test Engineering Hub → Ask G3 Assist → type → Send without manually attaching code. A prepared picker is not evidence attached to a request. Inspect saved software_context, actual retrieved implementation files and full answer, not just valid citations. Whole-file size budgets can silently prefer tiny constants over the required subsystem; preserve bounded source excerpts with original line numbers and reject citations to omitted lines. Never equate a cited AI example with a compiled patch.
+
 # Working expectations and lessons
 
 These requirements summarize the user's explicit preferences across this session. Read alongside current task instructions; do not infer new authorization from historical documents.
