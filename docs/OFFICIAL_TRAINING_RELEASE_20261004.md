@@ -1,5 +1,17 @@
 # Official FIRST training — implementation and release, 4 October 2026
 
+## Direct-link correction — supersedes initial catalogue/coverage assumptions
+Verified the live FIRST catalogue and course/path pages on 4 October after the user reported the generic destination. The initial PDF-only mapping was insufficient: always verify the live provider page, its availability and required/optional milestones before publishing links or credit coverage.
+
+- Intro: https://training.firstinspires.org/courses/module-1-intro-first-robotics-competition
+- Design & Mechanical: https://training.firstinspires.org/courses/module-8-design-mechanical
+- Full path: https://training.firstinspires.org/learning-paths/first-robotics-competition-guided-experience
+- Module 9 currently has a placeholder, https://training.firstinspires.org/courses/module-9-coming-next-season . It is explicitly unavailable, with new assignments/submissions blocked by the existing server-side active flag. Keep its identity/history; do not invent a live Electrical course URL or assume a release date.
+- Course landing pages expose FIRST sign-in links with a course-specific `return_to`. The signed-out destination and return parameter were verified; successful sign-in through a student's own FIRST account was not performed. Do not collect FIRST credentials or claim an authenticated provider session was tested.
+- The path lists Module 1 required and Modules 8/9 optional. Disabled the two optional coverage mappings without deleting their audit rows. A path certificate alone now covers only the required Intro pilot module; optional module credit requires separate evidence. Existing practical assessment behavior is preserved.
+- Applied `official_training_links_20261004.sql` to production. Deploy the matching UI after this additive migration. Regression tests apply both migrations, repeat the correction, reject Module 9 assignment/submission and reject optional-module credit from a path certificate. UI guidance is English/Hebrew and opens the actual course rather than asking users to search the catalogue.
+- Follow-up frontend release verification is recorded below when promotion completes.
+
 User approved the design and authorized implementation. This extends Skills Academy, not a second LMS. See OFFICIAL_TRAINING_DESIGN_20261004.md for the agreed product contract. Release verification is recorded below; do not infer deployment from a successful local build.
 
 ## Delivered implementation

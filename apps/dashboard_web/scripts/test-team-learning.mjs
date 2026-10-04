@@ -34,6 +34,7 @@ for(let n=0;n<2;n++)for(const name of ['team_learning_trials_20261002','practica
 if(process.argv.includes('--official')){
  await db.exec(`alter table team_members add column subteam text,add column subteams text[],add column leader_subteams text[];create schema storage;create table storage.objects(id uuid,bucket_id text,name text);alter table storage.objects enable row level security;create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);`);
  await db.exec(await sql('official_training_20261004'));
+ await db.exec(await sql('official_training_links_20261004'));
 }
 assert.equal((await db.query('select count(*)::int n from training_courses')).rows[0].n,process.argv.includes('--official')?10:6);
 assert.equal((await db.query('select count(*)::int n from training_assessments')).rows[0].n,18);

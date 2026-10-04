@@ -1,4 +1,5 @@
 # Official training — latest implementation, 4 October
+Direct-link correction: read the first section of OFFICIAL_TRAINING_RELEASE_20261004.md. Verified course/path URLs replace the catalogue fallback. FIRST Module 9 is currently a coming-next-season placeholder, not an available course. Path completion does NOT prove optional Modules 8/9; their automatic coverage is disabled. Apply official_training_links_20261004.sql after the base migration. The live LMS takes precedence over the earlier PDF-based availability/coverage assumptions.
 Read [OFFICIAL_TRAINING_RELEASE_20261004.md](OFFICIAL_TRAINING_RELEASE_20261004.md) first for current implementation, verification, release status and remaining boundaries. Live production: `2St5uDzrPb5SAQUPsrXCNghxn9M8`, source `c4956de`; implementation `240c808`. Database, private upload service and authenticated student/reviewer acceptance passed. Official completion stays on FIRST; G3 verifies reusable evidence, preserves practical checks and prevents duplicate theory work. Do not claim FIRST API synchronization. APK remains 2.3.0/code25 and does not include this new bundled UI.
 
 # Latest APK milestone — 2.3.0 / code 25
