@@ -46,7 +46,17 @@ function compactEvidence(value:any):any {
  return Object.fromEntries(Object.entries(value).filter(([key,item])=>!bookkeeping.has(key)&&item!==''&&item!==null&&item!==undefined&&!(Array.isArray(item)&&!item.length)).map(([key,item])=>[key,compactEvidence(item)]));
 }
 export function validateReviewCitations(answer:string,citations:{id:string}[]){
- const used=[...new Set([...answer.matchAll(/\[((?:C\d+)(?:\s*,\s*C\d+)*)\]/g)].flatMap(match=>match[1].split(/\s*,\s*/)))];
+ const ids:string[]=[];
+ for(const match of answer.matchAll(/\[([^\]]+)\]/g)){
+  if(!/^C\d/.test(match[1]))continue;
+  for(const token of match[1].split(/\s*[,;]\s*/)){
+   const range=token.trim().match(/^C(\d+)\s*[-–—]\s*C?(\d+)$/);
+   if(range){const first=Number(range[1]),last=Number(range[2]);if(last<first||last-first>100)throw new CadError('REVIEW_EVIDENCE_INVALID','Invalid citation range.',502);for(let n=first;n<=last;n++)ids.push(`C${n}`);}
+   else if(/^C\d+$/.test(token.trim()))ids.push(token.trim());
+   else throw new CadError('REVIEW_EVIDENCE_INVALID','Unsupported citation format.',502);
+  }
+ }
+ const used=[...new Set(ids)];
  if(!used.length||used.some(id=>!citations.some(c=>c.id===id)))throw new CadError('REVIEW_EVIDENCE_INVALID','The review did not reference the supplied design evidence. No review was accepted.',502);
  return used;
 }
