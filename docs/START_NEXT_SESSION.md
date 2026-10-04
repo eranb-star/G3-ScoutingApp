@@ -1,3 +1,6 @@
+# Official training design — 4 October, proposed only
+Read [OFFICIAL_TRAINING_DESIGN_20261004.md](OFFICIAL_TRAINING_DESIGN_20261004.md). User requested design first: reusable FIRST completion evidence within existing Academy, no duplicate courses/quizzes, separate practical qualification. Not implemented; API/student export unverified. No FIRST messages sent.
+
 # Latest APK milestone — 2.3.0 / code 25
 Signed APK built and verified on 2 October. Read [APK_MILESTONE_20261002.md](APK_MILESTONE_20261002.md) for artifact, hashes, source and physical acceptance. Older APK 2.2.0 statements below are historical. Website remains the verified hopper/absence production release below.
 
