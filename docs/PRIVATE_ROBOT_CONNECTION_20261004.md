@@ -1,7 +1,7 @@
 # Private robot connection — 4 October 2026
 
 ## Status
-Implementation ready; deployment and authenticated production acceptance pending. User approved GitHub access and saved G3_ROBOT_GITHUB_TOKEN in production Edge Function secrets (verified name and update time only). Never read or commit its value. User screenshot establishes expiry 5 October 2027; GitHub approval was reported by user.
+Released and live-verified at https://g3-6740.com. Implementation f3c6a52, isolated production source a4ae283, Ready production deployment 9khhmRw58GZXFJnRPwPt64oTeiRG (preview G3Uxf4QfXYWGN8C3ycSTjUg4pZ5c). User approved GitHub access and saved G3_ROBOT_GITHUB_TOKEN in production Edge Function secrets (verified name and update time only). Never read or commit its value. User screenshot establishes expiry 5 October 2027; GitHub approval was reported by user.
 
 ## Authoritative robot identities
 - GlueGunAndGlitter/Rebuilt_2026, main: season robot source, confirmed by user. No season log available.
@@ -24,3 +24,19 @@ Use private_robot_access_20261004.sql (additive, rerunnable, preserves explicit 
 
 ## Next work after connection
 Repository-bound build/code-generation adapter and real robot/log acceptance remain distinct work. Do not repeat delivered Software Mentor, official ingestion, training, budgets or VR foundation. The old assumption that private source and all logs are unavailable is superseded by the identities and limited log evidence above.
+
+## Production acceptance — completed 4 October
+- User explicitly confirmed enabling private reads and selected-code Gemini processing for existing Admins. Production SQL rollback preview passed, then additive migration committed. Live role check: Admin true; Member, Mentor and Team leader false. No broad student grant.
+- Both github-repositories and frc-assistant bundles deployed through Supabase; editor contents matched prepared bundles before deployment. Existing JWT verification retained. Website built and promoted from the isolated release branch, source a4ae283; live production domain and Ready deployment verified.
+- Authenticated Engineering Hub showed 13 accessible repositories, including all three private projects with correct purposes, connection-success status and Ask G3 Assist links.
+- Actual server file-picker reads resolved main to Rebuilt_2026 419a7aa105e9635d7b512dea4cd4334c1fd13488, Rebuilt_Practise c63c78904f5ea7f831918e496b63d17f28c34569, OFFSEASON_2026 a8b2524a7687a08ac36c66d9204a351651f482fe. Offseason advanced since the earlier browser check: preserve commit pinning, never assume the old SHA is current.
+- One live paid request selected OFFSEASON_2026 Robot.java and RobotContainer.java, asking how autonomous starts and teleop cancels it. The answer correctly described the hardcoded Autos.exampleAuto selection, scheduler start, cancellation and missing implementation evidence; seven exact-commit line citations. Relevant GitHub source was independently inspected. No claim of a dashboard chooser or executed robot build.
+- Reload and reopen from History restored the two saved messages and private code context. Shared publish/task/issue controls were absent. The budget ledger recorded one settled gemini-3.6-flash attempt, 7,946 micro-USD ($0.007946); no repeat paid test.
+- TypeScript, production Vite build, Software Mentor, private-catalogue and G3 Assist access regressions passed. Existing large-bundle warnings remain. Desktop production layout had no horizontal overflow. Viewport emulation did not apply to the target tab, so this run does not establish a fresh mobile/RTL acceptance; existing responsive styles/localization are reused, with no layout changes.
+- Screenshots: docs/staging/private-robot-production-20261004.png and private-assist-production-20261004.png (local proof; private-code-derived answer is not published as shared knowledge).
+
+## Operational instructions
+Use Engineering Hub → desired robot → Ask G3 Assist → Choose robot code → Read revision & choose files → Attach files → type question → Send. Code selection itself makes no Gemini call. Start a new conversation to read a newer commit. Each private GitHub citation still requires the reader's own GitHub access to open on github.com; G3's server key does not sign the browser into GitHub.
+For other roles, Admin must explicitly enable Read private robot code in Roles & permissions; paid G3 Assist permission is also needed. Key rotation/expiry or removed repository approval produces a connection error rather than falling back to unrelated public code. The key name is G3_ROBOT_GITHUB_TOKEN, stored only in production Edge Function secrets.
+
+No APK was rebuilt. No private source repository was modified. Remaining robot-code generator/build/calibration and verified log matching remain next increments, not prerequisites for the now-working selected-code mentor.
