@@ -21,6 +21,21 @@ privateRepo=true;await assert.rejects(softwareEvidence(selection,send),/public/)
 truncated=true;await assert.rejects(prepareSoftware(repository,'main',send),/incomplete/);truncated=false;
 body='-----BEGIN RSA PRIVATE KEY-----';await assert.rejects(softwareEvidence(selection,send),/credential/);
 body='x'.repeat(23000);await assert.rejects(softwareEvidence(selection,send),/context budget/);
+// Private credentials are accepted only for explicit robot repositories and never sent elsewhere.
+const privateName='GlueGunAndGlitter/OFFSEASON_2026',privateAccess={allowPrivate:true,token:'test-only-credential'};
+let privateCalls=0;
+const privateSend=async(url,opts)=>{privateCalls++;assert.ok(url.startsWith('https://api.github.com/repos/'+privateName));assert.equal(opts.headers.Authorization,'Bearer test-only-credential');let data;
+if(url.endsWith(privateName))data={full_name:privateName,private:true};
+else if(url.includes('/commits/'))data={sha:revision,commit:{tree:{sha:revision}}};
+else if(url.includes('/git/trees/'))data={truncated:false,tree:[{path:'src/Robot.java',type:'blob',mode:'100644',sha:revision,size:20}]};
+else data={encoding:'base64',content:btoa('class Robot {}')};return Response.json(data);};
+const privatePrepared=await prepareSoftware(privateName,'main',privateSend,privateAccess);assert.equal(privatePrepared.private,true);
+const privateEvidence=await softwareEvidence({repository:privateName,revision,paths:['src/Robot.java'],mode:'explain'},privateSend,privateAccess);assert.equal(privateEvidence.rows.length,1);assert.ok(!JSON.stringify(privateEvidence).includes(privateAccess.token));
+const beforeDenied=privateCalls;
+await assert.rejects(prepareSoftware(privateName,'main',privateSend,{token:privateAccess.token,allowPrivate:false}),/not authorized/);
+await assert.rejects(prepareSoftware(repository,'main',privateSend,privateAccess),/not authorized/);
+assert.equal(privateCalls,beforeDenied);
+console.log('PASS: private allowlist, denied access before network, authenticated reads, no token in returned evidence');
 console.log('PASS: exact revisions, selected-file scope, public-only access, bounded context, excluded symlinks/secrets and citation ranges');
 if(process.argv.includes('--live')){const actual=await prepareSoftware('GlueGunAndGlitter/6740_robot_2024','main');const data=await softwareEvidence({repository:actual.repository,revision:actual.revision,mode:'explain',paths:['src/main/java/frc/robot/subsystems/ShooterSubsystem.java']});console.log(JSON.stringify({repository:actual.repository,revision:actual.revision,files:data.rows.map(r=>({path:r.path,lines:r.lines})),promptCharacters:data.prompt.length}));}
 `;

@@ -1,3 +1,6 @@
+# Private robot connection — active release
+Read [PRIVATE_ROBOT_CONNECTION_20261004.md](PRIVATE_ROBOT_CONNECTION_20261004.md) first. Three private robot identities are confirmed; approved server secret is saved. Implementation and deployment status are recorded there. Earlier private-repository/log-unavailable assumptions are superseded; do not conflate season, advanced practice and offseason code.
+
 # Official training — latest implementation, 4 October
 Current live release: complete catalogue implementation `81d2081`, production source `14ed060`, Ready deployment `NYxQmc3ETY5gr1TvrvcWrcNNifdA` at g3-6740.com. Complete migration applied; authenticated catalogue/direct-course/certificate-form checks and responsive overflow check passed. Earlier deployment IDs below are historical. Proof and regression results are in OFFICIAL_TRAINING_RELEASE_20261004.md.
 Complete Guided Experience catalogue supersedes the initial subset: all 12 numbered modules plus the separate full path; 11 modules available, Module 9 unavailable on FIRST. Read the first section of OFFICIAL_TRAINING_RELEASE_20261004.md. Added official_training_complete_20261004.sql after the base/link migrations; required path coverage is now modules 1–7, 11, 12, never optional 8/9/10. Reuse the existing certificate workflow; do not rebuild it or describe this as the entire multi-program FIRST catalogue.

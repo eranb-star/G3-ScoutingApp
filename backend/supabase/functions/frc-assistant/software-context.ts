@@ -1,4 +1,11 @@
-/** Read-only, bounded public repository adapter. No credentials or code execution. */
+/** Bounded read-only adapter. Private credentials stay server-side; no code execution. */
+export const privateRobotRepositories = [
+ {repository:"GlueGunAndGlitter/OFFSEASON_2026",purpose:"offseason"},
+ {repository:"GlueGunAndGlitter/Rebuilt_Practise",purpose:"advanced-practice"},
+ {repository:"GlueGunAndGlitter/Rebuilt_2026",purpose:"season-2026"},
+] as const;
+export type SoftwareAccess={token?:string;allowPrivate?:boolean};
+export const isPrivateRobotRepository=(repository:string)=>privateRobotRepositories.some(r=>r.repository.toLowerCase()===repository.toLowerCase());
 export type SoftwareSelection={repository:string;revision:string;base?:string;paths:string[];mode:'explain'|'diagnose'|'review'};
 type Entry={path:string;type:string;mode:string;sha:string;size?:number};
 export type CodeExcerpt={id:string;path:string;revision:string;url:string;text:string;lines:number};
@@ -14,17 +21,19 @@ export function validateSoftware(value:any):SoftwareSelection{
  if(!Array.isArray(value.paths)||value.paths.length<1||value.paths.length>6||value.paths.some((p:any)=>typeof p!=='string'||!codePath(p)||p.includes('..'))||new Set(value.paths).size!==value.paths.length)throw new SoftwareError('Choose one to six supported source files.');
  return {repository:value.repository,revision:value.revision,base:value.base||undefined,paths:value.paths,mode:value.mode};
 }
-export function githubReader(send:typeof fetch=fetch){
+export function githubReader(send:typeof fetch=fetch,access:SoftwareAccess={}){
  let requests=0;
  return async(path:string)=>{
   // Only immutable public objects are cached. Repository visibility and branch
   // resolution are checked live; private access never shares this cache.
-  const immutable=send===fetch&&/\/(?:git\/(?:trees|blobs)|commits)\/[a-f0-9]{40}(?:\?recursive=1)?$/.test(path);
+  const immutable=!access.token&&send===fetch&&/\/(?:git\/(?:trees|blobs)|commits)\/[a-f0-9]{40}(?:\?recursive=1)?$/.test(path);
   const cached=immutable?cache.get(path):null;
   if(cached&&Date.now()-cached.at<600000)return cached.value;
   if(++requests>18)throw new SoftwareError('Repository request limit reached. Narrow the selected files.');
-  const response=await send('https://api.github.com/repos/'+path,{headers:{Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','User-Agent':'G3-Software-Mentor'},redirect:'error',signal:AbortSignal.timeout(10000)});
-  if(!response.ok)throw new SoftwareError(response.status===403||response.status===429?'GitHub read limit reached. Try later; no AI generation was started.':'Repository or revision unavailable. Private repository access is not enabled for Software Mentor.');
+  const repo=path.split('/').slice(0,2).join('/');
+  if(access.token&&(!access.allowPrivate||!isPrivateRobotRepository(repo)))throw new SoftwareError('Private repository access is not authorized.');
+  const response=await send('https://api.github.com/repos/'+path,{headers:{Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','User-Agent':'G3-Software-Mentor',...(access.token?{Authorization:`Bearer ${access.token}`}:{})},redirect:'error',signal:AbortSignal.timeout(10000)});
+  if(!response.ok)throw new SoftwareError(response.status===403||response.status===429?'GitHub read limit reached. Try later; no AI generation was started.':'Repository or revision unavailable. Check the branch and server connection permissions.');
   if(Number(response.headers.get('content-length'))>1500000)throw new SoftwareError('Repository response exceeds the read limit.');
   const reader=response.body?.getReader();if(!reader)throw new SoftwareError('Repository response is empty.');
   let length=0;const chunks:Uint8Array[]=[];
@@ -35,9 +44,10 @@ export function githubReader(send:typeof fetch=fetch){
   return value;
  };
 }
-async function publicRepo(read:ReturnType<typeof githubReader>,repository:string){
+async function publicRepo(read:ReturnType<typeof githubReader>,repository:string,access:SoftwareAccess={}){
  if(!/^[-\w]+\/[-\w.]+$/.test(repository)||!owners.has(repository.split('/')[0].toLowerCase()))throw new SoftwareError('Choose a G3 repository.');
- const meta=await read(repository);if(meta.private!==false||String(meta.full_name).toLowerCase()!==repository.toLowerCase())throw new SoftwareError('Only verified public team repositories are supported in this increment.');return meta;
+ const meta=await read(repository);if(String(meta.full_name).toLowerCase()!==repository.toLowerCase())throw new SoftwareError('Repository identity changed.');
+ if(meta.private!==false&&!(meta.private===true&&access.allowPrivate&&access.token&&isPrivateRobotRepository(repository)))throw new SoftwareError('Only verified public repositories or authorized private robot repositories are supported.');return meta;
 }
 async function tree(read:ReturnType<typeof githubReader>,repo:string,revision:string){
  const commit=await read(`${repo}/commits/${encodeURIComponent(revision)}`);
@@ -46,13 +56,13 @@ async function tree(read:ReturnType<typeof githubReader>,repo:string,revision:st
  if(result.truncated)throw new SoftwareError('Repository tree is incomplete. A narrower repository adapter is required.');
  return {revision:commit.sha as string,entries:(result.tree as Entry[]).filter(e=>e.type==='blob'&&['100644','100755'].includes(e.mode)&&codePath(e.path)&&e.size!==undefined&&e.size<=24000)};
 }
-export async function prepareSoftware(repository:string,ref:string,send:typeof fetch=fetch){
+export async function prepareSoftware(repository:string,ref:string,send:typeof fetch=fetch,access:SoftwareAccess={}){
  if(typeof ref!=='string'||!ref.trim()||ref.length>120)throw new SoftwareError('Enter a branch, tag or commit.');
- const read=githubReader(send);await publicRepo(read,repository);const result=await tree(read,repository,ref);
- return {repository,revision:result.revision,paths:result.entries.map(e=>e.path),scope:'Public source files up to 24 KB; generated, hidden and unsupported files excluded.'};
+ const read=githubReader(send,access);const meta=await publicRepo(read,repository,access);const result=await tree(read,repository,ref);
+ return {repository,revision:result.revision,paths:result.entries.map(e=>e.path),private:meta.private,scope:'Selected source files up to 24 KB; generated, hidden and unsupported files excluded.'};
 }
-export async function softwareEvidence(input:unknown,send:typeof fetch=fetch){
- const selection=validateSoftware(input),read=githubReader(send);await publicRepo(read,selection.repository);
+export async function softwareEvidence(input:unknown,send:typeof fetch=fetch,access:SoftwareAccess={}){
+ const selection=validateSoftware(input),read=githubReader(send,access);await publicRepo(read,selection.repository,access);
  const revisions=[selection.revision,...(selection.base?[selection.base]:[])],rows:CodeExcerpt[]=[];let size=0;
  for(const revision of revisions){
   const files=await tree(read,selection.repository,revision);
@@ -63,7 +73,7 @@ export async function softwareEvidence(input:unknown,send:typeof fetch=fetch){
    const blob=await read(`${selection.repository}/git/blobs/${entry.sha}`);
    if(blob.encoding!=='base64'||typeof blob.content!=='string')throw new SoftwareError('Unsupported source encoding.');
    const text=new TextDecoder('utf-8',{fatal:true}).decode(Uint8Array.from(atob(blob.content.replace(/\s/g,'')),c=>c.charCodeAt(0)));
-   if(/\x00|-----BEGIN .*PRIVATE KEY-----|\b(?:gh[pousr]_[A-Za-z0-9]{20,}|AIza[\w-]{30,})/.test(text))throw new SoftwareError('A selected file contains binary data or credential-like material and cannot be sent to AI.');
+   if(/\x00|-----BEGIN .*PRIVATE KEY-----|\b(?:gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|AIza[\w-]{30,})/.test(text))throw new SoftwareError('A selected file contains binary data or credential-like material and cannot be sent to AI.');
    size+=new TextEncoder().encode(text).length;if(size>22000)throw new SoftwareError('Selected code exceeds the context budget. Choose fewer or smaller files.');
    const lines=text.split('\n');rows.push({id:`C${rows.length+1}`,path,revision,url:`https://github.com/${selection.repository}/blob/${revision}/${path.split('/').map(encodeURIComponent).join('/')}`,text:lines.map((line,i)=>`${i+1}: ${line}`).join('\n'),lines:lines.length});
   }
