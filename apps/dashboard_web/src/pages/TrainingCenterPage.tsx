@@ -104,7 +104,7 @@ export default function TrainingCenterPage(){
       supabase.from("training_assessment_submissions").select("*").order("updated_at",{ascending:false}),
       supabase.from("training_assessment_answer_keys").select("assessment_id,answers"),
       supabase.from("training_progress_events").select("*").order("created_at",{ascending:false}).limit(500),
-      supabase.from('training_official_catalog').select('*').eq('active',true),
+      supabase.from('training_official_catalog').select('*'),
       supabase.from('training_official_credits').select('*'),
       supabase.from('training_certificates').select('id').eq('status','submitted')
     ]);
