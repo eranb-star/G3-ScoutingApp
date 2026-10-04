@@ -1,4 +1,4 @@
-import {prepareSoftware,softwareEvidence,softwareCitations,validateSoftware,SoftwareError} from './software-context.ts';
+import {prepareSoftware,softwareEvidence,softwareCitations,validateSoftware,SoftwareError,isPrivateRobotRepository,type SoftwareAccess} from './software-context.ts';
 import {officialSeasonEvidence} from './official-season.ts';
 import {verifiedCalculations} from './verified-calculations.ts';
 import {scoringAnswer} from './scoring-answer.ts';
@@ -9,7 +9,7 @@ const cors = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
-const jsonHeaders = { ...cors, "Content-Type": "application/json" };
+const jsonHeaders = { ...cors, "Content-Type": "application/json", "Cache-Control": "no-store" };
 const MODEL = Deno.env.get("GEMINI_MODEL") || "gemini-3.6-flash";
 const FALLBACK_MODELS = ["gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-3.1-flash-lite"];
 const DAILY_LIMIT = 20;
@@ -107,8 +107,16 @@ Deno.serve(async (request) => {
     const isAdmin = member.role === "admin";
     const answerInstruction = isAdmin ? systemInstruction.replace("Focus only on FRC:", "The authenticated administrator may ask general questions as well as FRC questions. Answer their requested topic; do not restrict them to team subjects. Your specialist FRC areas include:") : systemInstruction;
     const body = await request.json().catch(() => ({}));
+    async function repositoryAccess(repository:string):Promise<SoftwareAccess>{
+      if(!isPrivateRobotRepository(repository??''))return {};
+      const permission=await caller.rpc('has_permission',{requested_permission:'use_private_robot_code'});
+      if(permission.error||permission.data!==true)throw new SoftwareError('Your role does not have private robot code access. Contact an administrator.');
+      const token=Deno.env.get('G3_ROBOT_GITHUB_TOKEN');
+      if(!token)throw new SoftwareError('The private robot GitHub connection is not configured. An administrator must complete server setup.');
+      return {token,allowPrivate:true};
+    }
     if(body.action==='prepare-software'){
-      try{return response(await prepareSoftware(body.repository,body.ref));}
+      try{return response(await prepareSoftware(body.repository,body.ref,fetch,await repositoryAccess(body.repository)));}
       catch(error){return response({error:error instanceof SoftwareError?error.message:'Repository preparation failed.',code:'SOFTWARE_UNAVAILABLE'},400);}
     }
     const message = typeof body.message === "string" ? body.message.trim().slice(0, 6000) : "";
@@ -165,7 +173,7 @@ Deno.serve(async (request) => {
     let software:Awaited<ReturnType<typeof softwareEvidence>>|null=null;
     if(softwareSelection){
       if(!budgeted)return await finishResponse({error:'Software Mentor requires the budget-controlled assistant.',code:'SOFTWARE_BUDGET_REQUIRED'},409);
-      try{software=await softwareEvidence(softwareSelection);}
+      try{software=await softwareEvidence(softwareSelection,fetch,await repositoryAccess(softwareSelection.repository));}
       catch(error){return await finishResponse({error:error instanceof SoftwareError?error.message:'Code evidence could not be read. No answer was generated.',code:'SOFTWARE_UNAVAILABLE'},409);}
     }
     let conversationId = requestedConversation;

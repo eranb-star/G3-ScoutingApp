@@ -15,6 +15,9 @@ create function is_admin()returns boolean language sql security definer as $$sel
 const rolesSql = fs.readFileSync(new URL('../../../backend/supabase/roles_permissions_multi_team_20260904.sql', import.meta.url), 'utf8');
 await db.exec(rolesSql.match(/create or replace function public.has_permission[\s\S]*?\$\$;/)[0]);
 await db.exec(migration);
+const privateMigration=fs.readFileSync(new URL('../../../backend/supabase/private_robot_access_20261004.sql',import.meta.url),'utf8');
+await db.exec(privateMigration);await db.exec(privateMigration);
+assert.equal((await db.query("select count(*)::int n from role_permissions where permission_key='use_private_robot_code' and allowed")).rows[0].n,1);
 for (const [i, role] of ['member', 'team_leader', 'mentor', 'admin'].entries()) {
   const id = `00000000-0000-4000-8000-00000000000${i+1}`;
   await db.exec(`insert into team_members values('${id}','${role}',true); set test.uid='${id}';`);
@@ -55,7 +58,12 @@ try {
   const officialUrl='data:text/javascript;base64,'+Buffer.from(officialCode.replace("'./evidence-context.ts'",JSON.stringify(evidenceUrl))).toString('base64');
   const softwareCode=ts.transpileModule(fs.readFileSync(new URL('../../../backend/supabase/functions/frc-assistant/software-context.ts',import.meta.url),'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText;
   const softwareUrl='data:text/javascript;base64,'+Buffer.from(softwareCode).toString('base64');
-  const code = original.replace("'./software-context.ts'",JSON.stringify(softwareUrl)).replace("'./official-season.ts'",JSON.stringify(officialUrl)).replace("'./evidence-context.ts'",JSON.stringify(evidenceUrl)).replace(/import \{ createClient \} from "[^"]+";/, 'const createClient=globalThis.__assistClient; const Deno=globalThis.__assistDeno;')
+  function localModule(name){
+    let source=ts.transpileModule(fs.readFileSync(new URL('../../../backend/supabase/functions/frc-assistant/'+name,import.meta.url),'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText;
+    source=source.replace(/from ['"]\.\/([^'"]+)['"]/g,(_,file)=>'from '+JSON.stringify(localModule(file)));
+    return 'data:text/javascript;base64,'+Buffer.from(source).toString('base64');
+  }
+  const code = original.replace("'./verified-calculations.ts'",JSON.stringify(localModule('verified-calculations.ts'))).replace("'./scoring-answer.ts'",JSON.stringify(localModule('scoring-answer.ts'))).replace("'./software-context.ts'",JSON.stringify(softwareUrl)).replace("'./official-season.ts'",JSON.stringify(officialUrl)).replace("'./evidence-context.ts'",JSON.stringify(evidenceUrl)).replace(/import \{ createClient \} from "[^"]+";/, 'const createClient=globalThis.__assistClient; const Deno=globalThis.__assistDeno;')
     .replace('import("./budgeted-gemini.ts")','Promise.resolve(globalThis.__assistBudgetModule)')
     .replace("import('./team-purpose.ts')",'Promise.resolve(globalThis.__assistPurposeModule)');
   const compiled = ts.transpileModule(code,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}});
