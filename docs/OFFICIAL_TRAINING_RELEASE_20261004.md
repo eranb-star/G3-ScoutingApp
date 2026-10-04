@@ -1,5 +1,16 @@
 # Official FIRST training — implementation and release, 4 October 2026
 
+## Complete Guided Experience catalogue — latest scope
+The user explicitly requested the complete set after rejecting the initial subset. `official_training_complete_20261004.sql` adds the nine missing modules to the existing workflow. This section supersedes every earlier pilot-count/coverage statement below. The complete set here means the FIRST Robotics Competition Guided Experience, not every training for every FIRST program or volunteer role.
+
+- All twelve numbered modules: 1 Intro to FRC; 2 How Do FRC Robots Work?; 3 Intro to CAD and 3D Printing; 4 Fabrication Tools and Safety; 5 Rapid Prototyping; 6 Preparing for Build Season; 7 Kickoff: Game and Robot Strategy; 8 Design & Mechanical; 9 Electrical and Programming (FIRST placeholder, unavailable); 10 Business, Awards, Marketing, and Media; 11 Preparing for Competition; 12 End of Season Activities.
+- Eleven modules are available. Module 9 remains explicitly unavailable with assignments/submissions blocked. Do not invent content, a release date or an alternative course identity for it.
+- UI groups modules 1–6 under Pre-season and 7–12 under Build season, matching the live path. Every card displays its module number. The complete path is separate, with a link to FIRST's Additional Resources and Survey. English/Hebrew navigation and local course names follow the existing language rules; original FIRST titles remain identifiable.
+- Verified all nine added landing pages individually and their course-specific sign-in return links on 4 October. URLs and original titles are recorded directly in the migration. No learner credentials or provider progress were accessed.
+- Live FIRST path requirements: 1–7, 11, 12 required; 8, 9, 10 optional. A verified path certificate covers the nine required modules, not the optional modules. Existing IDs/evidence/reviews remain; no courses are automatically assigned and no practical assessments are waived.
+- Validation: repeatable 13-entry seed (12 modules + path), no automatic enrollment, direct URLs for all 12 available entries, module 9 rejection, required-module certificate reuse and optional-module exclusion; existing practical quiz/review/qualification regression and TypeScript passed.
+- Migration order: official_training_20261004.sql → official_training_links_20261004.sql → official_training_complete_20261004.sql. Release verification below will record the exact production identity.
+
 ## Direct-link correction — supersedes initial catalogue/coverage assumptions
 Verified the live FIRST catalogue and course/path pages on 4 October after the user reported the generic destination. The initial PDF-only mapping was insufficient: always verify the live provider page, its availability and required/optional milestones before publishing links or credit coverage.
 
