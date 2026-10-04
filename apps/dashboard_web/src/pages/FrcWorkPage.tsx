@@ -23,6 +23,7 @@ type Component={id:string;name:string;status:string;service_interval_days:number
 
 const frcAreas=frcTeams;
 const operationalAreas=[
+  {key:"fundraising",en:"Fundraising & Production",he:"גיוס כספים וייצור",detailEn:"Print products, filament, event sales and income",detailHe:"מוצרי הדפסה, פילמנט, מכירות באירועים והכנסות",path:"/fundraising"},
   {key:"inventory",en:"Tools & inventory",he:"כלים ומלאי",detailEn:"Parts, equipment, stock and purchase requests",detailHe:"חלקים, ציוד, מלאי ובקשות רכש",path:"/tools"},
   {key:"decisions",en:"Decision log",he:"יומן החלטות",detailEn:"Technical decisions and rationale",detailHe:"החלטות טכניות והסיבות להן"},
   {key:"packing",en:"Pit & packing",he:"פיט ואריזה",detailEn:"Competition packing and readiness",detailHe:"אריזה לתחרות ומוכנות"},

@@ -1,0 +1,30 @@
+import fs from 'node:fs/promises';
+import assert from 'node:assert/strict';
+import {pathToFileURL} from 'node:url';
+const {PGlite}=await import(process.env.PGLITE_MODULE?pathToFileURL(process.env.PGLITE_MODULE).href:'../../../docs/staging/ops-qa/node_modules/@electric-sql/pglite/dist/index.js');
+const db=new PGlite();
+await db.exec(`create role authenticated;create role anon;create schema auth;create function auth.uid() returns uuid language sql as $$select '00000000-0000-0000-0000-000000000001'::uuid$$;
+create table team_members(id uuid primary key,active boolean);insert into team_members values(auth.uid(),true);
+create function has_permission(text) returns boolean language sql as $$select coalesce(current_setting('test.allowed',true),'yes')='yes'$$;
+create function is_admin() returns boolean language sql as $$select coalesce(current_setting('test.admin',true),'yes')='yes'$$;
+create table frc_parts_inventory(id uuid primary key,name text,quantity numeric(14,4),unit_cost numeric,unit text,filament_details jsonb,archived boolean default false,updated_at timestamptz);
+create table frc_stock_movements(part_id uuid,quantity_delta numeric,reason text,note text,member_id uuid);
+create table finance_income(id uuid primary key default gen_random_uuid(),received_on date,source_type text,source_name text,amount numeric,currency text,notes text);
+insert into frc_parts_inventory values('00000000-0000-0000-0000-000000000002','PLA+',1,80,'kg','{}',false,now());`);
+const sql=await fs.readFile('../../backend/supabase/fundraising_production_20261004.sql','utf8');await db.exec(sql);await db.exec(sql);
+const call=async(action,data)=> (await db.query('select fundraising_command($1,$2) id',[action,JSON.stringify(data)])).rows[0].id;
+const part='00000000-0000-0000-0000-000000000002';
+
+await db.exec("alter table team_members add column display_name text;update team_members set display_name='Workshop leader';update frc_parts_inventory set filament_details='{\"net_weight_g\":\"1000\",\"brand\":\"eSUN\",\"material\":\"PLA+\",\"colour\":\"Pink\"}';");
+const product=await call('product',{name:'G3 keyring',materials:[{part_id:part,grams:20}],operating_cost:0.5,other_cost:0.2,sale_price:10});
+const event=await call('event',{name:'Village market',event_date:'2026-10-10',location:'Community square'});
+await call('job',{product_id:product,event_id:event,quantity:10,printer:'Printer 1'});
+const {createServer}=await import('vite');const {default:react}=await import('@vitejs/plugin-react');const path=await import('node:path');const os=await import('node:os');
+const app=process.cwd()+'/',root=await fs.mkdtemp(path.join(os.tmpdir(),'g3-fundraising-'));
+await fs.writeFile(path.join(root,'index.html'),'<html><meta name="viewport" content="width=device-width,initial-scale=1"><div id="root"></div><script type="module" src="/entry.tsx"></script></html>');
+await fs.writeFile(path.join(root,'entry.tsx'),`import React from 'react';import{createRoot}from 'react-dom/client';import{BrowserRouter}from 'react-router-dom';import Page from '/@fs/${app.replaceAll('\\','/')}src/pages/FundraisingPage.tsx';import '/@fs/${app.replaceAll('\\','/')}src/teamHub.css';document.documentElement.dir=new URLSearchParams(location.search).get('lang')==='he'?'rtl':'ltr';createRoot(document.getElementById('root')!).render(<BrowserRouter><Page/></BrowserRouter>);`);
+const mock=`const send=async(body)=>{const r=await fetch('/fixture',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});return r.json();};export const supabase={from(table){let single=false;const q=new Proxy({},{get(_,key){if(key==='then')return yes=>send({table,single}).then(yes);if(key==='single')return()=>{single=true;return q;};return()=>q;}});return q;},rpc(action,args){return send({action,args});}};export const useLocalization=()=>({pick:(en,he)=>new URLSearchParams(location.search).get('lang')==='he'?he:en});export const useAdminStatus=()=>true;export const useAccessControl=()=>({can:()=>true});`;
+const allowed=new Set(['fundraising_settings','fundraising_products','fundraising_jobs','fundraising_events','fundraising_sales','frc_parts_inventory','team_members']);
+const server=await createServer({configFile:false,root,plugins:[{name:'isolated-fixture',enforce:'pre',resolveId(id){if(/(?:lib\/useAdminStatus|lib\/localization|lib\/accessControl|\/supabase)$/.test(id))return '\0fixture';},load(id){if(id==='\0fixture')return mock;},configureServer(server){server.middlewares.use('/fixture',async(req,res)=>{let raw='';for await(const chunk of req)raw+=chunk;try{const body=JSON.parse(raw);let data;if(body.table){if(!allowed.has(body.table))throw Error('Unknown table');const rows=(await db.query('select * from '+body.table)).rows;data=body.single?rows[0]:rows;}else{data=await call(body.args.p_action,body.args.p_data);}res.setHeader('Content-Type','application/json');res.end(JSON.stringify({data,error:null}));}catch(e){res.setHeader('Content-Type','application/json');res.end(JSON.stringify({data:null,error:{message:e.message}}));}});}},react()],resolve:{dedupe:['react','react-dom'],alias:{react:path.join(app,'node_modules/react'),'react-dom':path.join(app,'node_modules/react-dom'),'react-router-dom':path.join(app,'node_modules/react-router-dom')}},server:{host:'127.0.0.1',port:4184,strictPort:true,fs:{allow:[app,root]}}});
+await server.listen();console.log('Fundraising isolated database fixture: http://127.0.0.1:4184');
+

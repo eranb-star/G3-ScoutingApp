@@ -1,3 +1,4 @@
+import FundraisingPage from './pages/FundraisingPage';
 import { useG3AssistAccess } from "./lib/useG3AssistAccess";
 import LabScreenGate from './components/LabScreenGate';
 import React, { createContext, lazy, Suspense, useContext, useEffect, useMemo, useRef, useState } from "react";
@@ -864,6 +865,7 @@ function AppShell() {
         <Route path="/attendance" element={<MemberGate><AttendanceReportsPage /></MemberGate>} />
         <Route path="/profile" element={<MemberGate><ProfilePage /></MemberGate>} />
         <Route path="/projects" element={<MemberGate><ProjectsPage /></MemberGate>} />
+        <Route path="/fundraising" element={<MemberGate><FundraisingPage /></MemberGate>} />
         <Route path="/tools" element={<MemberGate><ToolsInventoryPage /></MemberGate>} />
         <Route path="/frc-operations" element={<MemberGate><FrcOperationsPage /></MemberGate>} />
         <Route path="/robot-issues" element={<MemberGate><RobotIssuesPage /></MemberGate>} />
