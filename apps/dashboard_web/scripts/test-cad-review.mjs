@@ -26,6 +26,8 @@ const large=designEvidence(source,{microversion:'2'.repeat(24),coverage:[],evide
 assert.equal(large.truncated,true);assert.ok(large.citations.some(c=>c.anchor==='cut'&&c.data.parameters[0].value==='REMOVE'),'large sketches must never crowd downstream operations out');assert.equal(large.citations[0].data.featureCount,2);
 assert.deepEqual(validateReviewCitations('Feature issue [C2]',evidence.citations),['C2']);
 assert.deepEqual(validateReviewCitations('Evidence [C1, C2]',evidence.citations),['C1','C2']);
+assert.deepEqual(validateReviewCitations('Evidence [C1–C2]',evidence.citations),['C1','C2']);
+assert.throws(()=>validateReviewCitations('Evidence [C1–C999]',evidence.citations));
 assert.throws(()=>validateReviewCitations('Invented grouped source [C1, C999]',evidence.citations));
 assert.throws(()=>validateReviewCitations('Generic unsupported advice',evidence.citations));
 assert.throws(()=>validateReviewCitations('Invented [C999]',evidence.citations));
