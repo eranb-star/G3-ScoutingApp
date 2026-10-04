@@ -20,7 +20,13 @@ const model=await geometryFor(source,{microversion:'2'.repeat(24),evidence:{asse
 assert.equal(model.meshes[0].name,'Bracket');assert.deepEqual(model.meshes[0].transform,transform);
 const evidence=designEvidence(source,{id:'snapshot',microversion:'2'.repeat(24),coverage:[{kind:'features',status:'retrieved'}],evidence:{features:{features:[{featureId:'f1',featureType:'extrude',name:'Bracket',parameters:[{parameterId:'depth',expression:'3 mm'}]}],featureStates:{f1:{featureStatus:'ERROR'}}},parts:[]}});
 assert.equal(evidence.citations[1].anchor,'f1');assert.ok(evidence.citations[1].url.includes('/m/'));
+const typed=designEvidence(source,{microversion:'2'.repeat(24),coverage:[],evidence:{features:{features:[{type:151,typeName:'BTMSketch',message:{featureId:'sketch1',featureType:'newSketch',name:'Sketch 1',entities:Array.from({length:150},(_,i)=>({type:155,typeName:'BTMSketchCurveSegment',message:{entityId:'e'+i,geometry:{type:117,typeName:'BTCurveGeometryLine',message:{dirX:1,dirY:0,pntX:i,pntY:0}}}})),constraints:[]}}]},parts:[]}});
+assert.equal(typed.observations[0].anchor,'sketch1');assert.equal(typed.citations[1].data.entityCount,150);assert.ok(typed.citations.some(c=>c.anchor==='sketch1/entities/0'));
+const large=designEvidence(source,{microversion:'2'.repeat(24),coverage:[],evidence:{features:{features:[{featureId:'sketch',featureType:'newSketch',name:'Large sketch',constraints:Array.from({length:500},(_,i)=>({constraintId:'c'+i,description:'x'.repeat(500)}))},{featureId:'cut',featureType:'extrude',name:'Extrude 2',parameters:[{parameterId:'operationType',value:'REMOVE'}]}]},parts:[]}});
+assert.equal(large.truncated,true);assert.ok(large.citations.some(c=>c.anchor==='cut'&&c.data.parameters[0].value==='REMOVE'),'large sketches must never crowd downstream operations out');assert.equal(large.citations[0].data.featureCount,2);
 assert.deepEqual(validateReviewCitations('Feature issue [C2]',evidence.citations),['C2']);
+assert.deepEqual(validateReviewCitations('Evidence [C1, C2]',evidence.citations),['C1','C2']);
+assert.throws(()=>validateReviewCitations('Invented grouped source [C1, C999]',evidence.citations));
 assert.throws(()=>validateReviewCitations('Generic unsupported advice',evidence.citations));
 assert.throws(()=>validateReviewCitations('Invented [C999]',evidence.citations));
 let calls=0;const db={rpc:()=>{calls++;throw Error('must not execute');}};

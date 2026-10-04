@@ -15,8 +15,8 @@ export default function CadMentorPage(){
  async function call(action:string,values:Record<string,unknown>={}){
   const result=await supabase.functions.invoke('onshape-connector',{body:{action,...values}});
   if(result.error||result.data?.error){
-   let code=result.data?.code;
-   if(!code&&result.error?.context instanceof Response){try{code=(await result.error.context.json()).code;}catch{}}
+   let code=result.data?.code, message=result.data?.error;
+   if(!code&&result.error?.context instanceof Response){try{const detail=await result.error.context.json();code=detail.code;message=detail.error;}catch{}}
    const errors:Record<string,[string,string]>={
     ACCESS_DENIED:['CAD connections currently require an active G3 admin account.','חיבורי CAD זמינים כרגע למנהלי G3 פעילים.'],
     SETUP_REQUIRED:['An administrator must finish the Onshape connector setup.','מנהל צריך להשלים את הגדרת החיבור ל-Onshape.'],
@@ -26,7 +26,6 @@ export default function CadMentorPage(){
     RATE_LIMITED:['Onshape API limit reached. Try again later.','הגעתם למגבלת ה-API של Onshape. נסו שוב מאוחר יותר.'],
     UNSUPPORTED_ELEMENT:['Select a Part Studio or Assembly tab.','בחרו לשונית Part Studio או Assembly.'],
    };
-   const message=result.data?.error;
    throw Error(code&&errors[code]?pick(...errors[code]):message||pick('Could not complete the CAD request. Check your connection and retry.','לא ניתן להשלים את בקשת ה-CAD. בדקו את החיבור ונסו שוב.'));
   }
   return result.data;

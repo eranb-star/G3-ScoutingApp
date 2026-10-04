@@ -1,4 +1,4 @@
-import {CadError,onshapeId} from './security.ts';
+import {CadError,onshapeId,cadValue} from './security.ts';
 export type CadMesh={id:string;name:string;positions:number[];transform?:number[]};
 export type CadLine={id:string;name:string;positions:number[]};
 const point=(v:any):number[]=>Array.isArray(v)?v:[v?.x,v?.y,v?.z];
@@ -26,7 +26,7 @@ export async function geometryFor(source:any,snapshot:any,read:(path:string)=>Pr
    const data=await read(`/parts/d/${did}/m/${micro}/e/${eid}/partid/${encodeURIComponent(part.partId)}/tessellatedfaces?${query}`);
    const positions=meshPositions(data);if(positions.length)meshes.push({id:part.partId,name:part.name||part.partId,positions});
   }
-  const sketches=(snapshot.evidence.features?.features||[]).filter((f:any)=>f.featureType==='newSketch'&&!f.suppressed);
+  const sketches=(cadValue(snapshot.evidence.features)?.features||[]).filter((f:any)=>f.featureType==='newSketch'&&!f.suppressed);
   const lines:CadLine[]=[];const gaps:string[]=[];
   for(const sketch of sketches.slice(0,30)){
    try{

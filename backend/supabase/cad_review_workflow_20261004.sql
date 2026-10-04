@@ -7,6 +7,7 @@ create table if not exists public.cad_reviews (
  question text not null,requirements text not null,answer text not null,citations jsonb not null default '[]',
  created_at timestamptz not null default now()
 );
+alter table public.cad_reviews add column if not exists validation_note text not null default '';
 create table if not exists public.cad_findings (
  id uuid primary key default gen_random_uuid(),source_id uuid not null references public.cad_sources(id),
  snapshot_id uuid not null references public.cad_snapshots(id),review_id uuid references public.cad_reviews(id),
