@@ -1,7 +1,7 @@
 import {createRequire} from 'node:module';import fs from 'node:fs/promises';import os from 'node:os';import path from 'node:path';import {pathToFileURL} from 'node:url';
 const req=createRequire(import.meta.url),{build}=createRequire(req.resolve('vite'))('esbuild');
 const contents=`import assert from 'node:assert/strict';
-import {prepareSoftware,softwareEvidence,softwareCitations,validateSoftware} from '../../backend/supabase/functions/frc-assistant/software-context';
+import {selectSoftware,prepareSoftware,softwareEvidence,softwareCitations,validateSoftware} from '../../backend/supabase/functions/frc-assistant/software-context';
 const revision='a'.repeat(40),base='b'.repeat(40),repository='GlueGunAndGlitter/6740_robot_2024';
 let privateRepo=false,truncated=false,body='class Intake {\\n void stop() {}\\n}';let calls=0;
 const send=async(url,opts)=>{calls++;assert.ok(url.startsWith('https://api.github.com/repos/'+repository));assert.equal(opts.redirect,'error');assert.equal(opts.headers.Authorization,undefined);let data;
@@ -9,6 +9,7 @@ if(url.endsWith(repository))data={full_name:repository,private:privateRepo};
 else if(url.includes('/commits/'))data={sha:url.endsWith(base)?base:revision,commit:{tree:{sha:revision}}};
 else if(url.includes('/git/trees/'))data={truncated,tree:[{path:'src/Intake.java',type:'blob',mode:'100644',sha:revision,size:40},{path:'.env',type:'blob',mode:'100644',sha:base,size:2},{path:'src/linked.java',type:'blob',mode:'120000',sha:base,size:20}]};
 else data={encoding:'base64',content:btoa(body)};return Response.json(data);};
+const automatic=await selectSoftware(repository,'How does intake stop?',send);assert.deepEqual(automatic.paths,['src/Intake.java']);assert.equal(automatic.revision,revision);
 const prepared=await prepareSoftware(repository,'main',send);assert.equal(prepared.revision,revision);assert.deepEqual(prepared.paths,['src/Intake.java']);
 const selection={repository,revision,paths:['src/Intake.java'],mode:'explain'};
 const evidence=await softwareEvidence(selection,send);assert.equal(evidence.rows.length,1);assert.match(evidence.prompt,/No code was executed/);assert.match(evidence.rows[0].text,/2:  void stop/);

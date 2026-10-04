@@ -1,4 +1,4 @@
-import {prepareSoftware,softwareEvidence,softwareCitations,validateSoftware,SoftwareError,isPrivateRobotRepository,type SoftwareAccess} from './software-context.ts';
+import {selectSoftware,prepareSoftware,softwareEvidence,softwareCitations,validateSoftware,SoftwareError,isPrivateRobotRepository,type SoftwareAccess} from './software-context.ts';
 import {officialSeasonEvidence} from './official-season.ts';
 import {verifiedCalculations} from './verified-calculations.ts';
 import {scoringAnswer} from './scoring-answer.ts';
@@ -115,6 +115,10 @@ Deno.serve(async (request) => {
       if(!token)throw new SoftwareError('The private robot GitHub connection is not configured. An administrator must complete server setup.');
       return {token,allowPrivate:true};
     }
+    if(body.action==='select-software'){
+      try{return response(await selectSoftware(body.repository,String(body.question??'').slice(0,6000),fetch,await repositoryAccess(body.repository)));}
+      catch(error){return response({error:error instanceof SoftwareError?error.message:'Repository source selection failed. No generic answer was generated.',code:'SOFTWARE_UNAVAILABLE'},400);}
+    }
     if(body.action==='prepare-software'){
       try{return response(await prepareSoftware(body.repository,body.ref,fetch,await repositoryAccess(body.repository)));}
       catch(error){return response({error:error instanceof SoftwareError?error.message:'Repository preparation failed.',code:'SOFTWARE_UNAVAILABLE'},400);}
@@ -136,7 +140,7 @@ Deno.serve(async (request) => {
     if (budgeted && (image || body.tools || body.model || body.provider)) return response({error:"This pilot supports text questions using team context. Image analysis and external search are not enabled in this pilot.",code:"PILOT_UNSUPPORTED_INPUT"},400);
     if (budgeted && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(body.requestId??"")) return response({error:"Reload the assistant before sending this question.",code:"REQUEST_ID_REQUIRED"},400);
     if(budgeted){
-      const canonical=JSON.stringify({message,language,conversationId:requestedConversation,contextIssueId,evidence:body.evidence??null,software:body.software??null});
+      const canonical=JSON.stringify({message,language,conversationId:requestedConversation,contextIssueId,evidence:body.evidence??null,software:body.software??null,repository:body.repository??null});
       const hash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(canonical))),b=>b.toString(16).padStart(2,'0')).join('');
       const {data:claim,error}=await admin.rpc('claim_g3_assist_execution',{p_member:memberId,p_request:body.requestId,p_hash:hash});
       if(error) return response({error:'The request could not be started. Check the AI budget or try again later.',code:error.message?.includes('IDEMPOTENCY_CONFLICT')?'IDEMPOTENCY_CONFLICT':'EXECUTION_UNAVAILABLE'},error.message?.includes('IDEMPOTENCY_CONFLICT')?409:503);
@@ -163,6 +167,7 @@ Deno.serve(async (request) => {
     }
 
     let softwareSelection=body.software??null;
+    if(body.repository&&(!softwareSelection||softwareSelection.repository!==body.repository))return await finishResponse({error:'Repository code must be attached before answering. Read the repository or start a new code conversation.',code:'SOFTWARE_CONTEXT_REQUIRED'},409);
     if(requestedConversation){
       const saved=await admin.from('ai_conversations').select('software_context').eq('id',requestedConversation).eq('member_id',memberId).maybeSingle();
       if(saved.error||!saved.data)return await finishResponse({error:'Conversation context could not be verified.',code:'CONTEXT_UNAVAILABLE'},409);
