@@ -3,7 +3,7 @@ export async function captureSnapshot(source:any,read:(path:string)=>Promise<any
  const did=onshapeId(source.document_id),eid=onshapeId(source.element_id),ref=onshapeId(source.reference_id);
  if(!['w','v','m'].includes(source.reference_type))throw new CadError('INVALID_SOURCE','Invalid source reference.');
  const microversion=source.reference_type==='m'?ref:onshapeId((await read(`/documents/d/${did}/${source.reference_type}/${ref}/currentmicroversion`)).microversion);
- const path=`d/${did}/m/${microversion}/e/${eid}`,query=`configuration=${encodeURIComponent(source.configuration||'default')}`;
+ const path=`d/${did}/m/${microversion}/e/${eid}`,query=`configuration=${encodeURIComponent(source.configuration==='default'?'':source.configuration||'')}`;
  // Every evidence request is pinned to the same immutable revision, never the moving workspace.
  const evidence:Record<string,unknown>={},coverage:{kind:string;status:string;code?:string}[]=[];
  const requests=source.element_type==='PARTSTUDIO'?

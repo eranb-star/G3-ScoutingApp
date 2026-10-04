@@ -1,9 +1,11 @@
 import {createClient} from 'https://esm.sh/@supabase/supabase-js@2';
-import {CadError,parseSource,sha256,seal,unseal,boundedJson,providerReader} from './security.ts';
+import {CadError,onshapeId,parseSource,sha256,seal,unseal,boundedJson,providerReader} from './security.ts';
 import {captureSnapshot,inspectEvidence} from './snapshot.ts';
+import {geometryFor} from './geometry.ts';
+import {reviewDesign,designEvidence} from './review.ts';
 
 const headers={'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'authorization, x-client-info, apikey, content-type','Cache-Control':'no-store','Referrer-Policy':'no-referrer'};
-const env=(name:string)=>Deno.env.get(name)||'';
+const env=(name:string)=>(Deno.env.get(name)||'').trim();
 const reply=(body:unknown,status=200)=>Response.json(body,{status,headers});
 function configuration(){
  const clientId=env('G3_ONSHAPE_CLIENT_ID'),clientSecret=env('G3_ONSHAPE_CLIENT_SECRET');
@@ -19,6 +21,7 @@ async function encryptionKey(db:any){
 async function exchange(values:Record<string,string>){
  const config=configuration();
  const result=await boundedJson(await fetch('https://oauth.onshape.com/oauth/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({...values,client_id:config.clientId,client_secret:config.clientSecret}),redirect:'error',signal:AbortSignal.timeout(20000)}),64000);
+ result.expires_in=Number(result.expires_in);
  if(typeof result.access_token!=='string'||typeof result.refresh_token!=='string'||!Number.isFinite(result.expires_in)||result.expires_in<=0)throw new CadError('RECONNECT_REQUIRED','Onshape did not return a valid connection.',502);
  return result;
 }
@@ -84,7 +87,8 @@ Deno.serve(async request=>{
   const caller=createClient(env('SUPABASE_URL'),env('SUPABASE_ANON_KEY'),{global:{headers:{Authorization:authorization}}});
   const {data:{user}}=await caller.auth.getUser();if(!user)throw new CadError('AUTH_REQUIRED','Sign in to G3.',401);
   await activeAdmin(db,user.id);
-  const body=await request.json();
+ const raw=await request.text();if(raw.length>16000)throw new CadError('INPUT_TOO_LONG','CAD request is too large.',413);
+ const body=JSON.parse(raw);
   if(body.action==='status'){
    const result=await db.from('cad_connections').select('id,updated_at,disconnected_at').eq('member_id',user.id).maybeSingle();
    if(result.error)throw new CadError('STORAGE_UNAVAILABLE','CAD connection storage is unavailable.',503);
@@ -113,6 +117,56 @@ Deno.serve(async request=>{
    return reply({sources:result.data});
   }
   const read=providerReader(await accessToken(db,row));
+  if(['geometry','workspace','requirements','finding','review','evidence'].includes(body.action)){
+   const selected=await db.from('cad_sources').select('*').eq('id',body.sourceId).eq('connection_id',row.id).is('archived_at',null).maybeSingle();
+   if(selected.error||!selected.data)throw new CadError('SOURCE_UNAVAILABLE','Select one of your connected designs.',404);
+   if(body.action==='requirements'){
+    const requirements=String(body.requirements||'').trim();if(requirements.length>6000)throw new CadError('INPUT_TOO_LONG','Keep requirements under 6,000 characters.');
+    const update=await db.from('cad_sources').update({requirements,revision:selected.data.revision+1}).eq('id',selected.data.id).eq('revision',body.revision).select('id').maybeSingle();
+    if(update.error||!update.data)throw new CadError('STALE_EDIT','This design changed. Reload before saving.',409);
+    return reply({saved:true});
+   }
+   if(body.action==='workspace'){
+    const snapshots=await db.from('cad_snapshots').select('id,microversion,coverage,created_at').eq('source_id',selected.data.id).order('created_at',{ascending:false}).limit(30);
+    if(snapshots.error)throw new CadError('STORAGE_UNAVAILABLE','Could not load design history.',503);
+    const findings=await db.from('cad_findings').select('*').eq('source_id',selected.data.id).order('created_at',{ascending:false});
+    if(findings.error)throw new CadError('STORAGE_UNAVAILABLE','Could not load findings.',503);
+    const ids=(snapshots.data||[]).map((s:any)=>s.id);
+    const reviews=ids.length?await db.from('cad_reviews').select('*').in('snapshot_id',ids).eq('member_id',user.id).order('created_at',{ascending:false}).limit(30):{data:[]};
+    if(reviews.error)throw new CadError('STORAGE_UNAVAILABLE','Could not load reviews.',503);
+    return reply({source:selected.data,snapshots:snapshots.data,findings:findings.data,reviews:reviews.data});
+   }
+   const snapshot=await db.from('cad_snapshots').select('*').eq('source_id',selected.data.id).eq('id',body.snapshotId).maybeSingle();
+   if(snapshot.error||!snapshot.data)throw new CadError('SNAPSHOT_REQUIRED','Import the design revision first.',409);
+   if(body.action==='evidence')return reply(designEvidence(selected.data,snapshot.data));
+   if(body.action==='review')return reply(await reviewDesign(db,caller,user.id,selected.data,snapshot.data,body,env('GEMINI_API_KEY')));
+   if(body.action==='finding'){
+    if(body.findingId){
+     if(!['open','proposed_fix','awaiting_verification','resolved','accepted'].includes(body.status))throw new CadError('INVALID_STATUS','Choose a valid finding status.');
+     const resolution=String(body.resolution||'').trim().slice(0,6000);
+     if(['resolved','accepted'].includes(body.status)&&!resolution)throw new CadError('VERIFICATION_REQUIRED','Record the verification evidence or acceptance reason.');
+     const updated=await db.from('cad_findings').update({status:body.status,resolution,resolution_snapshot_id:snapshot.data.id,revision:Number(body.revision)+1,updated_at:new Date().toISOString()}).eq('id',body.findingId).eq('source_id',selected.data.id).eq('revision',body.revision).select('id').maybeSingle();
+     if(updated.error||!updated.data)throw new CadError('STALE_EDIT','This finding changed. Reload before saving.',409);
+    }else{
+     const title=String(body.title||'').trim().slice(0,180);if(!title)throw new CadError('TITLE_REQUIRED','Describe the finding.');
+     if(!/^[0-9a-f-]{36}$/i.test(body.findingRequestId||''))throw new CadError('REQUEST_ID_REQUIRED','Reload before saving this finding.');
+     const inserted=await db.from('cad_findings').upsert({id:body.findingRequestId,source_id:selected.data.id,snapshot_id:snapshot.data.id,title,description:String(body.description||'').slice(0,6000)},{onConflict:'id',ignoreDuplicates:true});
+     if(inserted.error)throw new CadError('STORAGE_UNAVAILABLE','Could not save finding.',503);
+    }
+    return reply({saved:true});
+   }
+   const asset=`${row.id}/${snapshot.data.id}-v1.json`;
+   const bucket=db.storage.from('cad-design-assets');
+   const cached=await bucket.download(asset);
+   if(cached.error){
+    const geometry=await geometryFor(selected.data,snapshot.data,read);
+    const saved=await bucket.upload(asset,JSON.stringify(geometry),{contentType:'application/json',upsert:false});
+    if(saved.error&&!String(saved.error.message).includes('already exists'))throw new CadError('STORAGE_UNAVAILABLE','Could not store geometry.',503);
+   }
+   const signed=await bucket.createSignedUrl(asset,60);
+   if(signed.error)throw new CadError('STORAGE_UNAVAILABLE','Could not open geometry.',503);
+   return reply({url:signed.data.signedUrl,snapshotId:snapshot.data.id,microversion:snapshot.data.microversion});
+  }
   if(body.action==='snapshot'){
    const source=await db.from('cad_sources').select('*').eq('id',body.sourceId).eq('connection_id',row.id).is('archived_at',null).maybeSingle();
    if(source.error||!source.data)throw new CadError('SOURCE_UNAVAILABLE','Select one of your connected designs.',404);
@@ -129,13 +183,19 @@ Deno.serve(async request=>{
    const page=await read(`/documents?offset=${offset}&limit=20&sortColumn=modifiedAt&sortOrder=desc`);
    return reply({items:(page.items||[]).map((item:any)=>({id:item.id,name:item.name,workspaceId:item.defaultWorkspace?.id,modifiedAt:item.modifiedAt})),nextOffset:page.next?offset+20:null});
   }
+  if(body.action==='elements'){
+   const did=onshapeId(body.documentId),wid=onshapeId(body.workspaceId);
+   const elements=await read(`/documents/d/${did}/w/${wid}/elements`);
+   return reply({elements:elements.filter((v:any)=>['PARTSTUDIO','ASSEMBLY'].includes(v.elementType||v.type)).map((v:any)=>({id:v.id,name:v.name,type:v.elementType||v.type,url:`https://cad.onshape.com/documents/${did}/w/${wid}/e/${v.id}`}))});
+  }
   if(body.action==='add-source'){
    const source=parseSource(body.url);
    const elements=await read(`/documents/d/${source.documentId}/${source.referenceType}/${source.referenceId}/elements`);
    const element=elements.find((item:any)=>item.id===source.elementId);
    if(!element)throw new CadError('SOURCE_UNAVAILABLE','This design tab was not found.',404);
-   if(!['PARTSTUDIO','ASSEMBLY'].includes(element.elementType))throw new CadError('UNSUPPORTED_ELEMENT','Select a Part Studio or Assembly. Sketches inside Part Studios are supported.');
-   const saved=await db.from('cad_sources').upsert({connection_id:row.id,document_id:source.documentId,reference_type:source.referenceType,reference_id:source.referenceId,element_id:source.elementId,configuration:source.configuration,name:element.name,element_type:element.elementType,archived_at:null},{onConflict:'connection_id,document_id,reference_type,reference_id,element_id,configuration'}).select('*').single();
+   const elementType=element.elementType||element.type;
+   if(!['PARTSTUDIO','ASSEMBLY'].includes(elementType))throw new CadError('UNSUPPORTED_ELEMENT','Select a Part Studio or Assembly. Sketches inside Part Studios are supported.');
+   const saved=await db.from('cad_sources').upsert({connection_id:row.id,document_id:source.documentId,reference_type:source.referenceType,reference_id:source.referenceId,element_id:source.elementId,configuration:source.configuration,name:element.name,element_type:elementType,archived_at:null},{onConflict:'connection_id,document_id,reference_type,reference_id,element_id,configuration'}).select('*').single();
    if(saved.error)throw new CadError('STORAGE_UNAVAILABLE','Could not save this design.',503);
    return reply({source:saved.data});
   }

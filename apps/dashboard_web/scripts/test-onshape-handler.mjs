@@ -3,6 +3,9 @@ const root='../../backend/supabase/functions/onshape-connector/';
 const url=code=>'data:text/javascript;base64,'+Buffer.from(ts.transpileModule(code,{compilerOptions:{target:99,module:99}}).outputText).toString('base64');
 const security=url(fs.readFileSync(root+'security.ts','utf8'));
 const snapshot=url(fs.readFileSync(root+'snapshot.ts','utf8').replace("'./security.ts'",JSON.stringify(security)));
+const geometry=url(fs.readFileSync(root+'geometry.ts','utf8').replace("'./security.ts'",JSON.stringify(security)));
+const budget=url(fs.readFileSync(root+'../frc-assistant/budgeted-gemini.ts','utf8'));
+const review=url(fs.readFileSync(root+'review.ts','utf8').replace("'./security.ts'",JSON.stringify(security)).replace("'./snapshot.ts'",JSON.stringify(snapshot)).replace("'../frc-assistant/budgeted-gemini.ts'",JSON.stringify(budget)));
 let handler,authenticated=true,active=true,role='admin',states=new Map(),lastInsert;
 const client={auth:{getUser:async()=>({data:{user:authenticated?{id:'member-1'}:null}})},rpc:async()=>({data:Buffer.alloc(32,1).toString('base64')}),from(table){let operation='select',filters={},data;const q={select:()=>q,eq:(key,value)=>(filters[key]=value,q),gt:()=>q,is:()=>q,delete:()=>(operation='delete',q),insert:value=>(operation='insert',data=value,q),maybeSingle:async()=>{
  if(table==='team_members')return {data:{active,role}};
@@ -11,6 +14,7 @@ const client={auth:{getUser:async()=>({data:{user:authenticated?{id:'member-1'}:
  },then(resolve){if(table==='cad_oauth_states'&&operation==='insert'){lastInsert=data;states.set(data.state_hash,{member_id:data.member_id});}return Promise.resolve({error:null}).then(resolve);}};return q;}};
 globalThis.__cadClient=()=>client;globalThis.__cadDeno={env:{get:name=>({G3_ONSHAPE_CLIENT_ID:'client',G3_ONSHAPE_CLIENT_SECRET:'secret',SUPABASE_URL:'https://project.supabase.co'}[name]||'test')},serve:fn=>handler=fn};
 let source=fs.readFileSync(root+'index.ts','utf8').replace(/import \{createClient\} from '[^']+';/,'const createClient=globalThis.__cadClient;const Deno=globalThis.__cadDeno;').replace("'./security.ts'",JSON.stringify(security)).replace("'./snapshot.ts'",JSON.stringify(snapshot));
+source=source.replace("'./geometry.ts'",JSON.stringify(geometry)).replace("'./review.ts'",JSON.stringify(review));
 await import(url(source));
 const call=(body,authorization='Bearer test')=>handler(new Request('https://project.supabase.co/functions/v1/onshape-connector',{method:'POST',headers:authorization?{Authorization:authorization}:{},body:JSON.stringify(body)}));
 assert.equal((await call({action:'status'},'')).status,401);
