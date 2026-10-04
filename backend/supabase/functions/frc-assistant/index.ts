@@ -178,7 +178,7 @@ Deno.serve(async (request) => {
     let software:Awaited<ReturnType<typeof softwareEvidence>>|null=null;
     if(softwareSelection){
       if(!budgeted)return await finishResponse({error:'Software Mentor requires the budget-controlled assistant.',code:'SOFTWARE_BUDGET_REQUIRED'},409);
-      try{software=await softwareEvidence(softwareSelection,fetch,await repositoryAccess(softwareSelection.repository));}
+      try{software=await softwareEvidence(softwareSelection,fetch,await repositoryAccess(softwareSelection.repository),message);}
       catch(error){return await finishResponse({error:error instanceof SoftwareError?error.message:'Code evidence could not be read. No answer was generated.',code:'SOFTWARE_UNAVAILABLE'},409);}
     }
     let conversationId = requestedConversation;
