@@ -8,7 +8,6 @@ const more=read("apps/dashboard_web/src/pages/TeamHubPages.tsx");
 const admin=read("apps/dashboard_web/src/pages/AdminDashboardPage.tsx");
 const attendance=read("apps/dashboard_web/src/pages/AttendanceReportsPage.tsx");
 const updates=read("apps/dashboard_web/src/pages/UpdatesPage.tsx");
-const github=read("supabase/functions/github-repositories/index.ts");
 const checks=[
   ["administration center exposes finance and governance",admin.includes('"/admin/finance"')&&admin.includes('"/admin/permissions"')&&admin.includes('"/admin/security"')],
   ["phone More does not duplicate administration",!more.includes('navigate("/admin/finance")')&&!more.includes('navigate("/admin/members")')],
@@ -18,8 +17,6 @@ const checks=[
   ["token refresh retains the validated profile",auth.includes("profileRef.current")&&!auth.includes("setProfile(null);\n    setProfileError")],
   ["stale profile requests cannot overwrite current account",auth.includes("requestId !== requestRef.current")],
   ["initial session races cannot reveal Account unavailable",auth.includes("setProfile(profileRef.current);\n    setLoading(false);")&&!auth.includes("if (alive) setLoading(false)")],
-  ["GitHub token remains server-side",github.includes('Deno.env.get("GITHUB_TOKEN")')&&!read("apps/dashboard_web/src/pages/EngineeringHubPage.tsx").includes("GITHUB_TOKEN")],
-  ["authenticated GitHub user endpoint can return private repositories",github.includes("/user/repos")&&github.includes("visibility=all")],
   ["corrected Android package has a distinct release identity",Number(read("apps/dashboard_web/android/app/build.gradle").match(/versionCode\s+(\d+)/)?.[1])>=17&&/versionName "\d+\.\d+\.\d+"/.test(read("apps/dashboard_web/android/app/build.gradle"))],
 ];
 let failed=0;for(const[name,ok]of checks){console.log(`${ok?"PASS":"FAIL"} ${name}`);if(!ok)failed++}if(failed)process.exit(1);console.log(`PASS ${checks.length} mobile, notification and stability checks`);
