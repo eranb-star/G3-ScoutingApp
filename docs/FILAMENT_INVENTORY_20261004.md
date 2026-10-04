@@ -17,3 +17,7 @@ Implementation `040ab16`, release source `d8ca50f`. Rollback UI independently; a
 ## Still separate work
 Physical spool IDs/counts, batch price history, print-product selector, stock reservations, print consumption, failure records, event sales and fundraising reconciliation are NOT implemented here. Existing Use/Receive actions remain manual. Reuse these inventory records for the future production workflow; do not claim automatic print-stock deduction already exists.
 
+
+## Spool quantity correction
+The original kg-only input confused the user. Add part now asks number of full spools (whole units) plus optional combined remaining grams in opened spools, computes kg from the selected net spool weight, and saves that calculated stock. + Receive for existing filament uses the same form and records the spool count/weight in the stock movement note. Existing stock stays unchanged until explicit receipt; editing metadata does not reset stock. Physical spool identities are still not tracked. Purchasing/finance receiving remains its existing quantity flow; this correction covers Add part and inventory + Receive.
+TypeScript and filament conversion/SQL regression tests passed. Browser fixture: 8 × 500 g = 4 kg; receiving those into 2 kg produced 6 kg. No fabricated production stock was added.
