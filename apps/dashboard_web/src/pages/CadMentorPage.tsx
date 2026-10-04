@@ -3,12 +3,15 @@ import {Link} from 'react-router-dom';
 import {supabase} from '../supabase';
 import {useLocalization} from '../lib/localization';
 import './CadMentorPage.css';
+import CadReviewWorkspace from '../components/CadReviewWorkspace';
+import CadDocumentBrowser from '../components/CadDocumentBrowser';
 
 type Source={id:string;name:string;element_type:string;document_id:string;reference_type:string;reference_id:string;element_id:string};
 export default function CadMentorPage(){
  const {pick}=useLocalization();
  const [status,setStatus]=useState<{configured:boolean;connected:boolean}|null>(null),[sources,setSources]=useState<Source[]>([]),[url,setUrl]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState('');
  const [authorizationUrl,setAuthorizationUrl]=useState('');
+ const [selected,setSelected]=useState('');
  async function call(action:string,values:Record<string,unknown>={}){
   const result=await supabase.functions.invoke('onshape-connector',{body:{action,...values}});
   if(result.error||result.data?.error){
@@ -23,7 +26,8 @@ export default function CadMentorPage(){
     RATE_LIMITED:['Onshape API limit reached. Try again later.','הגעתם למגבלת ה-API של Onshape. נסו שוב מאוחר יותר.'],
     UNSUPPORTED_ELEMENT:['Select a Part Studio or Assembly tab.','בחרו לשונית Part Studio או Assembly.'],
    };
-   throw Error(code&&errors[code]?pick(...errors[code]):pick('Could not complete the CAD request. Check your connection and retry.','לא ניתן להשלים את בקשת ה-CAD. בדקו את החיבור ונסו שוב.'));
+   const message=result.data?.error;
+   throw Error(code&&errors[code]?pick(...errors[code]):message||pick('Could not complete the CAD request. Check your connection and retry.','לא ניתן להשלים את בקשת ה-CAD. בדקו את החיבור ונסו שוב.'));
   }
   return result.data;
  }
@@ -40,6 +44,6 @@ export default function CadMentorPage(){
   </div></section>
   {status&&!status.configured&&<p role="status">{pick('Connector setup is pending. No private CAD has been imported.','הגדרת החיבור טרם הושלמה. לא יובא CAD פרטי.')}</p>}
   {status?.connected&&<><form className="cad-add" onSubmit={e=>{e.preventDefault();void run(async()=>{await call('add-source',{url});setUrl('');await load();});}}><label htmlFor="cad-source-link">{pick('Add a design from Onshape','הוספת תכנון מ-Onshape')}<small>{pick('Open the Part Studio or Assembly you want to review, then paste its link. An unfinished design is fine.','פתחו את ה-Part Studio או ה-Assembly לבדיקה והדביקו את הקישור. אפשר לבחור גם תכנון בתהליך.')}</small></label><div><input id="cad-source-link" type="url" required value={url} onChange={e=>setUrl(e.target.value)} placeholder="https://cad.onshape.com/documents/…" dir="ltr"/><button className="primary" disabled={busy||!url.trim()}>{pick('Add design','הוספת תכנון')}</button></div></form>
-  <section><h2>{pick('Selected designs','תכנונים שנבחרו')}</h2><div className="cad-library">{sources.map(source=><article key={source.id}><span>{source.element_type==='ASSEMBLY'?pick('Assembly','הרכבה'):pick('Part Studio · parts and sketches','Part Studio · חלקים וסקיצות')}</span><h3>{source.name}</h3><p>{pick('Source connected. Geometry import and engineering review are not yet enabled.','המקור מחובר. ייבוא גאומטריה ובדיקה הנדסית עדיין אינם מופעלים.')}</p><a href={`https://cad.onshape.com/documents/${source.document_id}/${source.reference_type}/${source.reference_id}/e/${source.element_id}`} target="_blank" rel="noreferrer">{pick('Open in Onshape','פתיחה ב-Onshape')} ↗</a></article>)}</div>{!sources.length&&<p>{pick('Add your first design above. Sketches and individual parts do not need a complete robot assembly.','הוסיפו את התכנון הראשון למעלה. סקיצות וחלקים בודדים אינם דורשים הרכבת רובוט שלמה.')}</p>}</section></>}
+  <CadDocumentBrowser call={call} onAdded={async id=>{await load();setSelected(id);}}/><section><h2>{pick('Selected designs','תכנונים שנבחרו')}</h2><div className="cad-library">{sources.map(source=><article key={source.id}><span>{source.element_type==='ASSEMBLY'?pick('Assembly','הרכבה'):pick('Part Studio · parts and sketches','Part Studio · חלקים וסקיצות')}</span><h3>{source.name}</h3><button className='primary' disabled={busy} aria-pressed={selected===source.id} onClick={()=>setSelected(source.id)}>{pick('Inspect & review','בדיקה וסקירה')}</button><a href={`https://cad.onshape.com/documents/${source.document_id}/${source.reference_type}/${source.reference_id}/e/${source.element_id}`} target="_blank" rel="noreferrer">{pick('Open in Onshape','פתיחה ב-Onshape')} ↗</a></article>)}</div>{!sources.length&&<p>{pick('Add your first design above. Sketches and individual parts do not need a complete robot assembly.','הוסיפו את התכנון הראשון למעלה. סקיצות וחלקים בודדים אינם דורשים הרכבת רובוט שלמה.')}</p>}</section>{selected&&<CadReviewWorkspace key={selected} sourceId={selected} call={call}/>}</>}
  </main>;
 }

@@ -1,6 +1,15 @@
 # CAD Mentor / Onshape — implementation design, 4 October 2026
 
-Status: local connector implementation in progress; NOT connected to G3 production or deployed. Browser sign-in is not backend authorization. Existing browser-local GLB viewer and camera advisor remain delivered foundations.
+Status: Onshape read-only connection is live; viewer/review release acceptance is in progress. The historical checkpoint below records the earlier staging state and is superseded by this section.
+
+## Live checkpoint — 4 October, late evening
+- User created OAuth application and saved both secrets in Supabase; never expose their values. User separately approved disabling legacy JWT verification only for onshape-connector and granting OAuth2Read to G3 CAD Mentor. Both actions completed; callback returned to G3 with Onshape connected. Added the supplied Part Studio 1 successfully.
+- Production frontend 39c4ac0, Vercel AFyxu3TuavWq6LAtm76LpWdRYw65, is the connection foundation. The new viewer/review frontend is staged for deployment. Backend is already deployed to allow acceptance, including discovery, immutable revision geometry, saved requirements, findings and budgeted cited reviews.
+- Applied cad_onshape_connection_20261004.sql, cad_vault_key_20261004.sql and cad_review_workflow_20261004.sql. Encryption uses a generated Supabase Vault key and service-only cad_envelope_key(), not a manually supplied encryption environment secret. Private cad-design-assets bucket stores bounded tessellated geometry, signed URLs expire in 60 seconds.
+- Fixed actual OAuth failures: trim pasted Client ID/Secret whitespace; display an explicit Continue to Onshape link instead of silent location navigation. Preserve these fixes. App code POST requests still require an active admin; OAuth callback consumes one-time state and rechecks active membership.
+- Added document/element browser, native feature evidence, actual tessellated part/sketch/assembly viewer, fullscreen/fit/isolate/selection, requirements, existing metered Gemini budget integration, citation allowlist and review history, findings with explicit verification evidence pinned to a revision. EN/HE; isolated mobile RTL and fullscreen tests passed. Gemini receives selected structured evidence, not a strength simulation or native BREP analysis.
+- Local security, handler, snapshot, database privilege/rerun and review tests pass; TypeScript and production build pass. CI and live geometry/review acceptance still required. No CAD evidence has yet been sent to Gemini; obtain the separate data/destination consent before the first real test. Do not reuse the prior private-code disclosure grant.
+- Current boundaries: connecting-admin privacy, no team-sharing/assignment bridge; no exact interference/FEA, automated native corrections, manufacturing certification, simulator calibration or APK update. Revision history exists; a dedicated change comparison is not yet implemented. The design sections below describe the broader roadmap, not delivered promises.
 
 ## Implementation checkpoint (4 October)
 - User authorized end-to-end implementation. Prepared Onshape company OAuth application registration in browser tab 42 with Connected Cloud App, OAuth2Read only; no write/delete/share/purchase/profile scopes. API agreement gate was cleared by the user/browser; agent did not accept it.
