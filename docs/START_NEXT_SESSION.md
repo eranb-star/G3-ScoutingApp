@@ -1,3 +1,6 @@
+# Filament inventory — latest production checkpoint, 4 October 2026
+Read [FILAMENT_INVENTORY_20261004.md](FILAMENT_INVENTORY_20261004.md). Existing Add part now supports Filament details, common/custom dropdowns and automatic reference costing. Implementation 040ab16, release d8ca50f, production EynTWPRirAQus5dH2uf8RJWtpqpr is Ready at g3-6740.com; migration applied. Tests and authenticated live form verification passed. Broader fundraising/print-production integration remains unimplemented; do not confuse this with automatic consumption. APK unchanged 2.3.0/code25. Earlier deployment entries below are historical.
+
 # Private robot connection — current entry-flow correction
 Read [PRIVATE_ROBOT_CONNECTION_20261004.md](PRIVATE_ROBOT_CONNECTION_20261004.md) first. The initial manual-attachment acceptance missed the natural repository button flow: the user's SysId conversation had NULL software context. Corrections `0d814e3` and `11d5304` add automatic actual-source retrieval, large-file excerpts and fail-closed repository requests. Release source `0e58a59`, production promotion `2fm9FjH1nH7Rt9PsmivpSbbnE9Rd`. Exact SysId entry tested on real Rebuilt_2026: six implementation files, ten code citations and persisted commit. Boundaries and two test costs recorded in the release document. Do not claim whole-repository review or compiled generated code. Admin-default permission remains unchanged. APK remains 2.3.0/code25.
 
@@ -89,3 +92,4 @@ Read this entry point before planning or implementing. Do not rely on conversati
 Main working branch `codex/release-1-qa`; isolated release branch `codex/knowledge-protection-release` at `docs/staging/knowledge-release.local`. Inspect status before edits, preserve unrelated Android `.idea` edits and do not deploy accumulated working-tree changes wholesale. Never commit secrets, private backup objects/keys, downloaded corpora or signing credentials. Tests and documentation reduce regressions, not guarantee none.
 
 [Previous accumulated start notes](START_NEXT_SESSION_HISTORY_20260924.md) are preserved as historical evidence only. Their contradictory not-deployed/awaiting-selection/missing-ingestion statements are superseded. [Earlier session history](SESSION_HISTORY_20260921.md) remains available.
+
