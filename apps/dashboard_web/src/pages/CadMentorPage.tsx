@@ -8,6 +8,7 @@ type Source={id:string;name:string;element_type:string;document_id:string;refere
 export default function CadMentorPage(){
  const {pick}=useLocalization();
  const [status,setStatus]=useState<{configured:boolean;connected:boolean}|null>(null),[sources,setSources]=useState<Source[]>([]),[url,setUrl]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState('');
+ const [authorizationUrl,setAuthorizationUrl]=useState('');
  async function call(action:string,values:Record<string,unknown>={}){
   const result=await supabase.functions.invoke('onshape-connector',{body:{action,...values}});
   if(result.error||result.data?.error){
@@ -34,7 +35,7 @@ export default function CadMentorPage(){
   <header className="cad-header"><div><span>G3 6740 · CAD</span><h1>{pick('CAD Mentor','מנטור CAD')}</h1><p>{pick('Connect your designs. Keep modeling in Onshape.','חברו את התכנונים שלכם. המשיכו לתכנן ב-Onshape.')}</p></div><button disabled={busy} onClick={()=>void run(load)}>{pick('Refresh','רענון')}</button></header>
   {error&&<p className="cad-error" role="alert">{error}</p>}
   <section className="cad-connection" aria-label={pick('Onshape connection','חיבור Onshape')}><div><h2>{status?.connected?pick('Onshape connected','Onshape מחובר'):pick('Connect the team’s Onshape','חיבור Onshape של הקבוצה')}</h2><p>{pick('Read-only access. Your password stays with Onshape. Only designs you select appear here.','גישה לקריאה בלבד. הסיסמה נשארת ב-Onshape. רק תכנונים שתבחרו יופיעו כאן.')}</p><small>{pick('This connection is private to your G3 admin account. Team sharing is not enabled.','החיבור פרטי לחשבון מנהל ה-G3 שלכם. שיתוף עם הקבוצה אינו מופעל.')}</small></div><div className="cad-actions">
-   <button className="primary" disabled={busy||!status?.configured} onClick={()=>void run(async()=>{const data=await call('connect');const target=new URL(data.url);if(target.origin!=='https://oauth.onshape.com')throw Error('Invalid authorization destination');window.location.assign(target.href);})}>{status?.connected?pick('Reconnect','חיבור מחדש'):pick('Connect Onshape','חיבור Onshape')}</button>
+   {authorizationUrl?<a className="primary" href={authorizationUrl}>{pick('Continue to Onshape →','המשך ל-Onshape ←')}</a>:<button className="primary" disabled={busy||!status?.configured} onClick={()=>void run(async()=>{const data=await call('connect');const target=new URL(data.url);if(target.origin!=='https://oauth.onshape.com')throw Error('Invalid authorization destination');setAuthorizationUrl(target.href);})}>{status?.connected?pick('Reconnect','חיבור מחדש'):pick('Connect Onshape','חיבור Onshape')}</button>}
    {status?.connected&&<button disabled={busy} onClick={()=>void run(async()=>{await call('disconnect');await load();})}>{pick('Disconnect G3','ניתוק G3')}</button>}
   </div></section>
   {status&&!status.configured&&<p role="status">{pick('Connector setup is pending. No private CAD has been imported.','הגדרת החיבור טרם הושלמה. לא יובא CAD פרטי.')}</p>}
