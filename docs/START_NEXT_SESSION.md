@@ -1,8 +1,8 @@
 # Official training — latest implementation, 4 October
-Read [OFFICIAL_TRAINING_RELEASE_20261004.md](OFFICIAL_TRAINING_RELEASE_20261004.md) first for current implementation, verification, release status and remaining boundaries. The user approved the earlier design. Official completion stays on FIRST; G3 verifies reusable evidence, preserves practical checks and prevents duplicate theory work. Do not claim FIRST API synchronization.
+Read [OFFICIAL_TRAINING_RELEASE_20261004.md](OFFICIAL_TRAINING_RELEASE_20261004.md) first for current implementation, verification, release status and remaining boundaries. Live production: `2St5uDzrPb5SAQUPsrXCNghxn9M8`, source `c4956de`; implementation `240c808`. Database, private upload service and authenticated student/reviewer acceptance passed. Official completion stays on FIRST; G3 verifies reusable evidence, preserves practical checks and prevents duplicate theory work. Do not claim FIRST API synchronization. APK remains 2.3.0/code25 and does not include this new bundled UI.
 
 # Latest APK milestone — 2.3.0 / code 25
-Signed APK built and verified on 2 October. Read [APK_MILESTONE_20261002.md](APK_MILESTONE_20261002.md) for artifact, hashes, source and physical acceptance. Older APK 2.2.0 statements below are historical. Website remains the verified hopper/absence production release below.
+Signed APK built and verified on 2 October. Read [APK_MILESTONE_20261002.md](APK_MILESTONE_20261002.md) for artifact, hashes, source and physical acceptance. Older APK 2.2.0 statements below are historical. The website has since advanced to the official-training release above.
 
 # Latest checkpoint — hopper linkage and absence dates
 Read [HOPPER_ABSENCE_RELEASE_20261002.md](HOPPER_ABSENCE_RELEASE_20261002.md) first for the latest fix, migration, validation, release status and APK boundary. Live production: 56T93uBBkRtDMJQYcJX4bCejHDBu, source 35ab794; authenticated acceptance passed. Earlier deployment IDs below are historical.
