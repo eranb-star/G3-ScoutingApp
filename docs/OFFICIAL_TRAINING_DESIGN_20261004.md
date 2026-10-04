@@ -1,6 +1,6 @@
 # Official training in Skills Academy — proposed design, 4 October 2026
 
-Status: design only, awaiting user review. No application/schema changes, enrollments or FIRST communication authorized by this document. Based on existing AcademyHome, academyProgress, TrainingCenterPage and Academy/Knowledge release records. Do not force external courses into the prepared four-step local-course contract.
+Status: user approved implementation on 4 October 2026. See OFFICIAL_TRAINING_RELEASE_20261004.md for delivered scope, launch boundaries and exact release evidence. No FIRST communication is authorized. Based on existing AcademyHome, academyProgress, TrainingCenterPage and Academy/Knowledge release records. Do not force external courses into the prepared four-step local-course contract.
 
 ## Product contract
 One Academy; one reusable official completion record per member/provider/course/version or renewal cycle. FIRST records official completion on its own platform. G3 records verification of that evidence and separately validates practical skills. Never imply a G3 review writes to FIRST, an external-link click proves progress, or certificate completion proves safe workshop competence.
