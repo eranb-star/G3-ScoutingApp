@@ -1,0 +1,26 @@
+import fs from 'node:fs';import assert from 'node:assert/strict';import ts from 'typescript';
+const root='../../backend/supabase/functions/onshape-connector/';
+const url=code=>'data:text/javascript;base64,'+Buffer.from(ts.transpileModule(code,{compilerOptions:{target:99,module:99}}).outputText).toString('base64');
+const security=url(fs.readFileSync(root+'security.ts','utf8'));
+const snapshot=url(fs.readFileSync(root+'snapshot.ts','utf8').replace("'./security.ts'",JSON.stringify(security)));
+let handler,authenticated=true,active=true,role='admin',states=new Map(),lastInsert;
+const client={auth:{getUser:async()=>({data:{user:authenticated?{id:'member-1'}:null}})},rpc:async()=>({data:Buffer.alloc(32,1).toString('base64')}),from(table){let operation='select',filters={},data;const q={select:()=>q,eq:(key,value)=>(filters[key]=value,q),gt:()=>q,is:()=>q,delete:()=>(operation='delete',q),insert:value=>(operation='insert',data=value,q),maybeSingle:async()=>{
+ if(table==='team_members')return {data:{active,role}};
+ if(table==='cad_oauth_states'){const row=states.get(filters.state_hash);states.delete(filters.state_hash);return {data:row};}
+ return {data:null};
+ },then(resolve){if(table==='cad_oauth_states'&&operation==='insert'){lastInsert=data;states.set(data.state_hash,{member_id:data.member_id});}return Promise.resolve({error:null}).then(resolve);}};return q;}};
+globalThis.__cadClient=()=>client;globalThis.__cadDeno={env:{get:name=>({G3_ONSHAPE_CLIENT_ID:'client',G3_ONSHAPE_CLIENT_SECRET:'secret',SUPABASE_URL:'https://project.supabase.co'}[name]||'test')},serve:fn=>handler=fn};
+let source=fs.readFileSync(root+'index.ts','utf8').replace(/import \{createClient\} from '[^']+';/,'const createClient=globalThis.__cadClient;const Deno=globalThis.__cadDeno;').replace("'./security.ts'",JSON.stringify(security)).replace("'./snapshot.ts'",JSON.stringify(snapshot));
+await import(url(source));
+const call=(body,authorization='Bearer test')=>handler(new Request('https://project.supabase.co/functions/v1/onshape-connector',{method:'POST',headers:authorization?{Authorization:authorization}:{},body:JSON.stringify(body)}));
+assert.equal((await call({action:'status'},'')).status,401);
+authenticated=false;assert.equal((await call({action:'status'})).status,401);authenticated=true;
+for(const value of ['student','mentor']){role=value;assert.equal((await call({action:'connect'})).status,403);}role='admin';
+active=false;assert.equal((await call({action:'connect'})).status,403);active=true;
+const response=await call({action:'connect'});assert.equal(response.status,200);assert.equal(response.headers.get('cache-control'),'no-store');
+const payload=await response.json(),target=new URL(payload.url),state=target.searchParams.get('state');
+assert.equal(target.origin,'https://oauth.onshape.com');assert.equal(target.searchParams.get('scope'),'OAuth2Read');assert.ok(!JSON.stringify(payload).includes('secret'));assert.notEqual(lastInsert.state_hash,state);
+const callback=()=>handler(new Request('https://project.supabase.co/functions/v1/onshape-connector?state='+state+'&error=access_denied'));
+assert.equal((await callback()).status,400);assert.equal((await (await callback()).json()).code,'INVALID_STATE');
+assert.equal((await handler(new Request('https://project.supabase.co/functions/v1/onshape-connector?state=bad&code=bad'))).status,400);
+console.log('PASS: actual handler requires active admin, keeps secrets server-side, scopes OAuth read-only and consumes callback state once');
