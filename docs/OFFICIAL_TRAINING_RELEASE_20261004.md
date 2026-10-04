@@ -1,0 +1,38 @@
+# Official FIRST training — implementation and release, 4 October 2026
+
+User approved the design and authorized implementation. This extends Skills Academy, not a second LMS. See OFFICIAL_TRAINING_DESIGN_20261004.md for the agreed product contract. Release verification is recorded below; do not infer deployment from a successful local build.
+
+## Delivered implementation
+- Explore lists official training. The pilot uses FIRST Guided Experience modules 1 (Intro to FIRST Robotics Competition), 8 (Design and Mechanical), 9 (Electrical and Programming), and an existing full-path certificate option. Titles and coverage were checked against FIRST's current course-overview PDF on 4 October. Provider keys are G3 stable identifiers, not invented FIRST API IDs. Launch is the official catalogue because a stable authenticated module deep link has not been established.
+- One compact course flow: complete on FIRST, submit certificate, G3 verification. Prior certificates can be submitted without enrollment from My progress. External navigation retains the current Academy URL. FIRST owns its original completion record; G3 never claims to update FIRST.
+- Private PDF/JPEG/PNG input, 10 MB input limit, at most three certificate pages. Browser renders pixels; certificate-upload authenticates an active member, bounds PNG dimensions/payload, decodes and re-encodes pixels, and stores only a sanitized PNG. Original PDF, scripts, metadata and attachments are not retained. This is content sanitization, not an antivirus certification. Two-minute signed links; learners see their own files, authorized reviewers see submitted evidence. Restrictive bucket policy prevents unrelated broad policies from enabling access or direct uploads. No student certificates sent to an LLM.
+- Completion date, optional certificate identifier, immutable submission attempts and append-only reviews. Four explicit checks, meaningful feedback, no self-review, locked review transitions and idempotent retries. Corrections do not require repeating the course.
+- Assignment preview distinguishes new, already assigned, verified, pending and unavailable members. Verified requirements are skipped. Pending evidence is reused. Leaders are limited to members of teams they are permitted to manage. Publishing creates no enrollments.
+- A verified full-path certificate covers the three pilot modules through a sourced coverage table; reviewers see the exact coverage. No title-based guessing. Local quizzes receive credit only through an explicit instructor-approved equivalence with objectives and source. The separate credit view leaves quiz answers/scores and practical rubrics unchanged.
+- Qualification, My learning, generic quizzes, guided practical courses and gradebook recognize approved theory credit. Practical demonstrations remain required. Withdrawal removes active credit but keeps evidence/review history. New enrollments reuse existing credit.
+- Existing Work actions carry assignments, reviewer tasks and correction feedback. Pending/verified certificate assignments and equivalent quiz reminders are suppressed; resubmission closes stale correction actions. Refresh preserves the preceding reminder function and is repeatable.
+- English/Hebrew guidance follows Settings; the provider's original English title and language remain explicit. No additional language selector.
+
+## Validation
+- test-official-training.mjs: real isolated PostgreSQL/PGlite migration twice; ownership/RLS/private storage; unauthorized and self-review rejection; duplicate and retry handling; correction/resubmission; qualification; explicit theory credit with untouched practical requirement; withdrawal history; full-path reuse and duplicate child submission rejection.
+- test-team-learning.mjs --official: existing prepared course quiz, rubric, correction, retest and qualification against the new migration; existing CSV/trials and private draft checks.
+- test-academy-language.mjs and TypeScript/production build.
+- Browser: actual Academy components with synthetic data, English desktop and Hebrew at 390 px; no horizontal overflow. File rendering and authenticated production checks are separately recorded below.
+- Live migration was previewed inside a rollback transaction; final rollout status below is authoritative.
+
+## Operational boundaries / remaining acceptance
+- No FIRST API/team-student export or automatic account matching has been verified. Manual certificate review is the supported integration. No FIRST credentials are collected and no messages were sent to FIRST.
+- No official verification URL is accepted until its validation mechanism is verified. Upload the actual completion certificate instead.
+- No automatic expiry: the pilot source establishes completion certificates but no expiration rule. Future genuinely mandatory renewals require a documented provider/team policy and a versioned requirement; do not reuse the existing identity to silently invalidate achievements. Arbitrary provider-course authoring and policy-driven renewal scheduling are not enabled in this pilot.
+- Original certificate images contain personal information. Do not put them in public documentation, exports or screenshots. Retain accepted evidence while its team requirement is used. An administrator must review requests to remove member evidence and the effect on linked credits; there is no automated purge in this release. Abandoned uploads should be reviewed after 7 days and removed only after confirming no certificate references the path. No blind database cascades or automatic history deletion.
+- Upload quota: 12 images/member/hour and 100 stored objects/member as an abuse cap. An administrator reviews unused objects before increasing/removing storage. Failed RPC retries reuse already uploaded paths.
+- Notifications are existing in-app Work actions. This increment does not send external email or new unsolicited push campaigns.
+- APK 2.3.0/code25 is the preceding milestone and does not contain this newly bundled UI. Capacitor's existing external URL handler opens FIRST in the system browser; a physical Android upload/return test is still needed when the next APK is built. Do not claim physical-device acceptance without evidence.
+
+## Regression lessons and release procedure
+Do not map certificate completion into invented quiz submissions. Qualification and UI must both use the credit view. Keep practical checks separate. A repeatable migration must not rename its own reminder wrapper (covered by a rerun test). Monaco's textarea `fill` did not replace its complete buffer: use Playwright ControlOrMeta+A, Backspace, then paste, and verify the result before executing deployment SQL. SQL preview errors were rolled back; no user records were changed by the preview.
+
+Deploy the migration and certificate-upload before promoting the matching frontend. Reuse the existing production release checkout, cherry-pick only reviewed changes, and verify the exact Vercel source commit and live domain. Rollback frontend independently; additive tables can remain private. Do not remove evidence tables or revert the qualification function while live certificate credit is in use without a data-aware rollback plan.
+
+## Release record
+Pending final release verification in this working turn. Replace this line with exact commits, deployment identity and acceptance evidence before reporting completion.

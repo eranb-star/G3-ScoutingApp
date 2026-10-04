@@ -2,6 +2,7 @@ import {learningProgress} from '../lib/academyProgress';
 import { academyText,academyFeedback } from '../lib/academyLanguage';
 import './academyWorkspace.css';
 type Props = {
+  credits?:{member_id:string;assessment_id:string}[];
   pick:(en:string,he:string)=>string;
   memberId?:string;
   courses:{id:string;title:string;description:string}[];
@@ -13,7 +14,7 @@ type Props = {
   open:(id:string,feedback?:boolean,step?:number)=>void;
   explore:()=>void;
 };
-export default function AcademyHome({pick,memberId,courses,enrollments,assessments,submissions,modules,evidence,open,explore}:Props){
+export default function AcademyHome({credits=[],pick,memberId,courses,enrollments,assessments,submissions,modules,evidence,open,explore}:Props){
   const assigned=enrollments.filter(e=>e.member_id===memberId);
   const latest=new Map<string,Props['submissions'][number]>();
   for(const s of submissions)if(s.member_id===memberId&&!latest.has(s.assessment_id))latest.set(s.assessment_id,s);
@@ -23,7 +24,7 @@ export default function AcademyHome({pick,memberId,courses,enrollments,assessmen
     const required=assessments.filter(a=>a.course_id===e.course_id&&a.required);
     const passed=required.filter(a=>submissions.some(s=>s.member_id===memberId&&s.assessment_id===a.id&&s.status==='reviewed'&&(!a.graded||a.passing_score===null||(s.score!==null&&s.score>=a.passing_score)))).length;
     const needsCorrection=correction.some(s=>assessments.find(a=>a.id===s.assessment_id)?.course_id===e.course_id);
-    const progress=learningProgress(e,modules,evidence,assessments,submissions);
+    const progress=learningProgress(e,modules,evidence,assessments,submissions,credits);
     return {e,course,required,passed,needsCorrection:progress.changes,progress};
   }).filter(r=>r.course).sort((a,b)=>Number(b.needsCorrection)-Number(a.needsCorrection)||(a.e.due_at??'9999').localeCompare(b.e.due_at??'9999'));
   const next=rows.find(r=>['correct','blocked','continue'].includes(r.progress.action))??rows.find(r=>r.progress.action!=='qualified');

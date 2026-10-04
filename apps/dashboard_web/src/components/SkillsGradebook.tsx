@@ -5,18 +5,18 @@ import { useMemo, useState } from "react";
 type Pick=(english:string,hebrew:string)=>string;
 type Course={id:string;title:string;domain:string};
 type Module={id:string;course_id:string};
-type Enrollment={id:string;course_id:string;member_id:string;status:string;due_at:string|null};
+type Enrollment={official_training?:boolean;id:string;course_id:string;member_id:string;status:string;due_at:string|null};
 type Evidence={enrollment_id:string;module_id:string;status:string};
 type Assessment={id:string;course_id:string;title:string;required:boolean;graded:boolean;passing_score:number|null;max_score:number|null;due_at:string|null;max_attempts:number};
 type Submission={id:string;assessment_id:string;enrollment_id:string;member_id:string;status:string;score:number|null;feedback:string|null;submitted_at:string|null;attempt_number:number;answers:Record<string,string|string[]>;response:string};
 type Person={id:string;display_name:string;subteam:string|null;subteams:string[]};
 type ProgressEvent={id:string;enrollment_id:string;assessment_id:string|null;member_id:string;event_type:string;score:number|null;attempt_number:number|null;details:string|null;created_at:string};
 
-type Props={pick:Pick;profileId?:string;canReview:boolean;courses:Course[];modules:Module[];enrollments:Enrollment[];evidence:Evidence[];assessments:Assessment[];submissions:Submission[];people:Person[];progressEvents:ProgressEvent[]};
+type Props={credits?:{member_id:string;assessment_id:string}[];pick:Pick;profileId?:string;canReview:boolean;courses:Course[];modules:Module[];enrollments:Enrollment[];evidence:Evidence[];assessments:Assessment[];submissions:Submission[];people:Person[];progressEvents:ProgressEvent[]};
 
 type ProgressStatus="qualified"|"passed"|"submitted"|"changes_requested"|"overdue"|"in_progress"|"not_started";
 
-export default function SkillsGradebook({pick,profileId,canReview,courses,modules,enrollments,evidence,assessments,submissions,people,progressEvents}:Props){
+export default function SkillsGradebook({credits=[],pick,profileId,canReview,courses,modules,enrollments,evidence,assessments,submissions,people,progressEvents}:Props){
   const [courseFilter,setCourseFilter]=useState("all");
   const [memberFilter,setMemberFilter]=useState("");
   const [statusFilter,setStatusFilter]=useState("all");
@@ -28,19 +28,19 @@ export default function SkillsGradebook({pick,profileId,canReview,courses,module
     const approved=courseModules.filter(item=>evidence.some(row=>row.enrollment_id===enrollment.id&&row.module_id===item.id&&row.status==="approved")).length;
     const required=assessments.filter(item=>item.course_id===enrollment.course_id&&item.required);
     const attempts=submissions.filter(item=>item.enrollment_id===enrollment.id);
-    const passedCount=required.filter(item=>attempts.some(row=>row.assessment_id===item.id&&passed(item,row))).length;
-    const current=learningProgress(enrollment,modules,evidence,assessments,submissions);
+    const passedCount=required.filter(item=>credits.some(c=>c.member_id===enrollment.member_id&&c.assessment_id===item.id)||attempts.some(row=>row.assessment_id===item.id&&passed(item,row))).length;
+    const current=learningProgress(enrollment,modules,evidence,assessments,submissions,credits);
     const waiting=current.waiting;
     const changes=current.changes;
     const overdue=(enrollment.due_at?new Date(`${enrollment.due_at}T23:59:59`).getTime()<Date.now():false)||required.some(item=>item.due_at&&new Date(item.due_at).getTime()<Date.now()&&!attempts.some(row=>row.assessment_id===item.id&&passed(item,row)));
     const complete=courseModules.length+required.length>0&&approved===courseModules.length&&passedCount===required.length;
     const status:ProgressStatus=enrollment.status==="qualified"?"qualified":complete?"passed":waiting?"submitted":changes?"changes_requested":overdue?"overdue":approved||attempts.length?"in_progress":"not_started";
-    const total=courseModules.length+required.length,done=approved+passedCount;
+    const total=enrollment.official_training?1:courseModules.length+required.length,done=enrollment.official_training?current.done:approved+passedCount;
     const exhausted=current.exhausted;
     return{status,total,done,percent:total?Math.round(done/total*100):0,approved,moduleTotal:courseModules.length,passedCount,assessmentTotal:required.length,attempts,exhausted};
   }
 
-  const rows=useMemo(()=>enrollments.map(enrollment=>({enrollment,course:courses.find(item=>item.id===enrollment.course_id),person:people.find(item=>item.id===enrollment.member_id),...progress(enrollment)})),[enrollments,courses,people,modules,evidence,assessments,submissions]);
+  const rows=useMemo(()=>enrollments.map(enrollment=>({enrollment,course:courses.find(item=>item.id===enrollment.course_id),person:people.find(item=>item.id===enrollment.member_id),...progress(enrollment)})),[enrollments,courses,people,modules,evidence,assessments,submissions,credits]);
   const visible=rows.filter(row=>(canReview||row.enrollment.member_id===profileId)&&(courseFilter==="all"||row.enrollment.course_id===courseFilter)&&(statusFilter==="all"||row.status===statusFilter)&&(!memberFilter||row.person?.display_name.toLowerCase().includes(memberFilter.toLowerCase())));
   const mine=rows.filter(row=>row.enrollment.member_id===profileId);
   const summary=canReview?rows:mine;

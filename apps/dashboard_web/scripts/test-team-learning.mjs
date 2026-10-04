@@ -31,7 +31,11 @@ const sql=async name=>readFile(`../../backend/supabase/${name}.sql`,'utf8');
 for(const name of ['skills_academy_assessments_20260905','skills_academy_quiz_engine_20260905','skills_academy_access_boundary_20260905','skills_academy_gradebook_20260906'])await db.exec(await sql(name));
 await db.exec(`alter table training_assessments add column target_type text default 'all';grant select on training_courses,training_modules,training_enrollments,training_assessments,training_assessment_submissions,training_assessment_answer_keys to authenticated;grant insert,update on training_assessment_submissions to authenticated;`);
 for(let n=0;n<2;n++)for(const name of ['team_learning_trials_20261002','practical_learning_workflow_20261002','practical_learning_pack_20261002'])await db.exec(await sql(name));
-assert.equal((await db.query('select count(*)::int n from training_courses')).rows[0].n,6);
+if(process.argv.includes('--official')){
+ await db.exec(`alter table team_members add column subteam text,add column subteams text[],add column leader_subteams text[];create schema storage;create table storage.objects(id uuid,bucket_id text,name text);alter table storage.objects enable row level security;create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);`);
+ await db.exec(await sql('official_training_20261004'));
+}
+assert.equal((await db.query('select count(*)::int n from training_courses')).rows[0].n,process.argv.includes('--official')?10:6);
 assert.equal((await db.query('select count(*)::int n from training_assessments')).rows[0].n,18);
 assert.equal((await db.query("select sum(jsonb_array_length(questions))::int n from training_assessments where assessment_type='quiz'")).rows[0].n,60);
 const student='00000000-0000-4000-8000-000000000001',other='00000000-0000-4000-8000-000000000002',mentor='00000000-0000-4000-8000-000000000003',enrollment='00000000-0000-4000-8000-000000000004',course='67402026-1002-4000-8000-000001000001',quiz='67402026-1002-4000-8000-000001000002',practical='67402026-1002-4000-8000-000001000003';
