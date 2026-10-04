@@ -1,3 +1,6 @@
+# CAD Mentor — active work, not a production release
+Read [CAD_MENTOR_DESIGN_20261004.md](CAD_MENTOR_DESIGN_20261004.md) first for the latest user-authorized Onshape work. Local connector, private credential storage, revision-pinned evidence retrieval and initial bilingual connection UI are staged; live OAuth credentials are pending user setup. Do not confuse this with completed CAD analysis. Migration and function are NOT deployed; full viewer, evidence-grounded AI, sharing consent and production acceptance remain. Existing Fundraising production release below is unchanged.
+
 # Fundraising & Production — verified production release
 Read [FUNDRAISING_PRODUCTION_20261004.md](FUNDRAISING_PRODUCTION_20261004.md) first. Workspace under Work → Team Operations connects products, print jobs, filament stock, event sales and one-time Finance income. User-selected default operating cost is ILS 0.50/item and editable. Tests, role boundaries, immutable costs and remaining printer/payment boundaries are recorded there. Live source 8ad8ddd (implementation 015623e), Ready production AJ1JDGoe9Kp2uWSfBCGa2KaLaSP2 at g3-6740.com/fundraising. Migration and RLS verified; CI 270/271 passed; live form uses six existing filaments and 0.5 default. Earlier statements that the entire fundraising workspace is unimplemented are historical.
 
