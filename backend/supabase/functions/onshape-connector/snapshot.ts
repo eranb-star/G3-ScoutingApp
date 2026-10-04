@@ -1,4 +1,4 @@
-import {CadError,onshapeId} from './security.ts';
+import {CadError,onshapeId,cadValue} from './security.ts';
 export async function captureSnapshot(source:any,read:(path:string)=>Promise<any>){
  const did=onshapeId(source.document_id),eid=onshapeId(source.element_id),ref=onshapeId(source.reference_id);
  if(!['w','v','m'].includes(source.reference_type))throw new CadError('INVALID_SOURCE','Invalid source reference.');
@@ -18,7 +18,7 @@ export async function captureSnapshot(source:any,read:(path:string)=>Promise<any
  return {microversion,evidence,coverage};
 }
 export function inspectEvidence(snapshot:any){
- const features=snapshot.evidence?.features;
+ const features=cadValue(snapshot.evidence?.features);
  const observations:{anchor:string;kind:string;status:string;name:string}[]=[];
  for(const feature of features?.features??[]){
   if(typeof feature.featureId!=='string')continue;

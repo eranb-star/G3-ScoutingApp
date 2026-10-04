@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import assert from 'node:assert/strict';
-import {PGlite} from '../../../docs/staging/ops-qa/node_modules/@electric-sql/pglite/dist/index.js';
+import {pathToFileURL} from 'node:url';
+const {PGlite}=await import(process.env.PGLITE_MODULE?pathToFileURL(process.env.PGLITE_MODULE).href:'../../../docs/staging/ops-qa/node_modules/@electric-sql/pglite/dist/index.js');
 const db=new PGlite();
 await db.exec('create role anon; create role authenticated; create role service_role; create table team_members(id uuid primary key);');
 const sql=await fs.readFile('../../backend/supabase/cad_onshape_connection_20261004.sql','utf8');

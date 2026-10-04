@@ -60,3 +60,11 @@ export function providerReader(token: string, fetcher: typeof fetch = fetch) {
     return boundedJson(await fetcher(`https://cad.onshape.com/api${path}`, {method:'GET', headers:{Authorization:`Bearer ${token}`, Accept:'application/json'}, redirect:'error', signal:AbortSignal.timeout(20000)}));
   };
 }
+// Onshape's unversioned FeatureScript endpoints use typed {type,typeName,message}
+// envelopes. Normalize those without discarding the underlying evidence.
+export function cadValue(value:any):any {
+ if(Array.isArray(value))return value.map(cadValue);
+ if(!value||typeof value!=='object')return value;
+ if(value.message&&typeof value.message==='object'&&('typeName' in value||typeof value.type==='number'))return cadValue(value.message);
+ return Object.fromEntries(Object.entries(value).map(([key,item])=>[key,cadValue(item)]));
+}

@@ -38,3 +38,12 @@ jobs:
       # Exercise the current permission-controlled catalogue, not obsolete token/URL strings.
       - name: Private repository access boundaries
         run: node scripts/test-private-repositories.mjs
+      - name: Private CAD authorization, revisions and review evidence
+        env:
+          PGLITE_MODULE: ${{ runner.temp }}/g3-sql/node_modules/@electric-sql/pglite/dist/index.js
+        run: |
+          node scripts/test-onshape-security.mjs
+          node scripts/test-onshape-handler.mjs
+          node scripts/test-onshape-snapshot.mjs
+          node scripts/test-onshape-storage.mjs
+          node scripts/test-cad-review.mjs

@@ -155,7 +155,7 @@ Deno.serve(async request=>{
     }
     return reply({saved:true});
    }
-   const asset=`${row.id}/${snapshot.data.id}-v1.json`;
+    const asset=`${row.id}/${snapshot.data.id}-v2.json`;
    const bucket=db.storage.from('cad-design-assets');
    const cached=await bucket.download(asset);
    if(cached.error){
@@ -195,7 +195,9 @@ Deno.serve(async request=>{
    if(!element)throw new CadError('SOURCE_UNAVAILABLE','This design tab was not found.',404);
    const elementType=element.elementType||element.type;
    if(!['PARTSTUDIO','ASSEMBLY'].includes(elementType))throw new CadError('UNSUPPORTED_ELEMENT','Select a Part Studio or Assembly. Sketches inside Part Studios are supported.');
-   const saved=await db.from('cad_sources').upsert({connection_id:row.id,document_id:source.documentId,reference_type:source.referenceType,reference_id:source.referenceId,element_id:source.elementId,configuration:source.configuration,name:element.name,element_type:elementType,archived_at:null},{onConflict:'connection_id,document_id,reference_type,reference_id,element_id,configuration'}).select('*').single();
+   const document=await read(`/documents/${source.documentId}`);
+   const name=document.name?`${document.name} · ${element.name}`:element.name;
+   const saved=await db.from('cad_sources').upsert({connection_id:row.id,document_id:source.documentId,reference_type:source.referenceType,reference_id:source.referenceId,element_id:source.elementId,configuration:source.configuration,name,element_type:elementType,archived_at:null},{onConflict:'connection_id,document_id,reference_type,reference_id,element_id,configuration'}).select('*').single();
    if(saved.error)throw new CadError('STORAGE_UNAVAILABLE','Could not save this design.',503);
    return reply({source:saved.data});
   }
