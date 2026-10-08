@@ -14,6 +14,14 @@ Status: source audit completed; browser sign-in restored and native comparisons 
 
 ## Required outcome
 
+## Release acceptance
+
+Implementation c81a0f3, release 93a285f. Production 8Jpm1tURdFVCDug8vf4453iyqyRY (bhnnayiid), Ready and aliased to g3-6740.com on 8 October. CI 296 and 297 passed. Supabase connector deployed separately with v3 geometry assets.
+
+Live acceptance: master sketch reports 0/0 parts and 1/1 sketches, defaults to Normal to sketch and enables construction-line control from real metadata. Rake assembly renders the rack and both gears in their native arrangement; dropdown selection, fit selection, isolate and show-all verified. Native exact-revision link confirmed in browser history mode. Screenshots saved locally under docs/staging/cad-master-inspection-20261008.png, cad-native-master-20261008.png and cad-assembly-inspection-20261008.png. The requested viewport override did not actually change the browser's measured width; do NOT claim phone-width acceptance from that attempt. No physical APK/phone acceptance performed. No generated analysis was requested during this release.
+
+## Required outcome (unchanged)
+
 The user requires the team's actual Onshape design to remain recognizable and complete in CAD Mentor, across sketches, Part Studios and assemblies. Do not substitute illustrative geometry, call successful tessellation full fidelity, or fix only the reported master sketch. Keep editing in Onshape and bind every inspection/review to its document, element, configuration and immutable microversion.
 
 ## Verified findings from current source
