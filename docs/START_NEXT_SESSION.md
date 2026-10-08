@@ -1,3 +1,6 @@
+# Workshop reminder date — 8 October hotfix
+scheduled-operations now includes weekday, calendar day, month, year and time in Asia/Jerusalem in newly generated workshop reminders. Date-only formatter correction 963bf2f; deployed through Supabase Code editor after verifying live source matched repository. Example verified: 8 October 2026 18:00 Israel time. Existing sent notifications are not rewritten; no APK rebuild required. No reminder was manually sent during verification.
+
 # Operational corrections — 8 October (live; APK 2.3.1 ready)
 Read [OPERATIONAL_CLARITY_20261008.md](OPERATIONAL_CLARITY_20261008.md). Attendance feedback, fundraising authorization, pending purchase correction/cancellation and compact operational rows are deployed. Source fc70f3c, production 284FhBDVeqhcZRrhWHSv8vbVy4hJ Ready on g3-6740.com; migration applied; CI 286/287 passed. Signed APK releases/G3-Team-Hub-2.3.1.apk/code26 built and verified, not physically installed/tested. This supersedes older APK status below. Old APK purchase approvers must update/use web. Older inventory-role defaults do not match current live grants: Team Leader was enabled but server subteam scoping caused the fundraising mismatch; dedicated manage_fundraising now resolves it without altering inventory grants.
 
