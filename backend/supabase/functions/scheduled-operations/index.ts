@@ -19,7 +19,7 @@ Deno.serve(async request => {
       const runKey=`meeting:${meeting.id}:60m`;
       const {error:claimError}=await db.from("automation_runs").insert({run_key:runKey,kind:"meeting_reminder"});
       if(claimError) continue;
-      const time=new Intl.DateTimeFormat("he-IL",{timeZone:"Asia/Jerusalem",weekday:"long",hour:"2-digit",minute:"2-digit"}).format(new Date(meeting.starts_at));
+      const time=new Intl.DateTimeFormat("he-IL",{timeZone:"Asia/Jerusalem",weekday:"long",day:"numeric",month:"long",year:"numeric",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).format(new Date(meeting.starts_at));
       const {data:announcement}=await db.from("announcements").insert({title:`Reminder: ${meeting.title}`,body:`The meeting starts in about one hour (${time}, Israel time).`,audience:"all",priority:"important",meeting_id:meeting.id,created_by:(await db.from("team_members").select("id").eq("role","admin").eq("active",true).limit(1).single()).data?.id}).select("id").single();
       if(announcement){created.push(announcement.id);await fetch(`${url}/functions/v1/send-push`,{method:"POST",headers:{"Content-Type":"application/json","x-cron-secret":cronSecret},body:JSON.stringify({announcementId:announcement.id})});}
     }
