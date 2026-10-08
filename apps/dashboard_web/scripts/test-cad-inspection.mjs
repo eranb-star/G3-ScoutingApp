@@ -1,0 +1,11 @@
+import fs from 'node:fs';import assert from 'node:assert/strict';import ts from 'typescript';import{createRequire}from'node:module';import{pathToFileURL}from'node:url';
+const require=createRequire(import.meta.url),three=pathToFileURL(require.resolve('three')).href;
+const source=fs.readFileSync('src/lib/cadInspection.ts','utf8').replace("'three'",JSON.stringify(three));
+const {inspectionPlane,inspectionUp}=await import('data:text/javascript;base64,'+Buffer.from(ts.transpileModule(source,{compilerOptions:{target:99,module:99}}).outputText).toString('base64'));
+const xz=inspectionPlane([0,0,0,4,0,0,0,0,1,1,0,.5]);assert.ok(xz.y<-.999);
+const tilted=inspectionPlane([2,3,4,3,3,5,2,4,4,3,4,5]);assert.ok(Math.abs(tilted.x+tilted.z)<1e-9);
+assert.equal(inspectionPlane([0,0,0,1,0,0,0,1,0,0,0,1]),null,'never flatten nonplanar geometry');
+assert.equal(inspectionPlane([0,0,0,1,0,0,2,0,0]),null,'collinear geometry does not define a plane');
+const xy=inspectionPlane([0,0,0,1,0,0,0,1,0]);assert.ok(Math.abs(inspectionUp(xy).dot(xy))<1e-9,'top view must not use a parallel up vector');
+assert.ok(Math.abs(inspectionUp(tilted).dot(tilted))<1e-9);
+console.log('PASS: axis-aligned and arbitrary sketch planes, nonplanar/collinear rejection and stable camera up');

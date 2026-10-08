@@ -4,7 +4,7 @@ import {executeBudgetedText,BudgetExecutionError} from '../frc-assistant/budgete
 
 export function designEvidence(source:any,snapshot:any){
  const citations:{id:string;title:string;anchor:string;url:string;data:unknown}[]=[];
- const base=`https://cad.onshape.com/documents/${source.document_id}/m/${snapshot.microversion}/e/${source.element_id}?configuration=${encodeURIComponent(source.configuration==='default'?'':source.configuration||'')}`;
+ const base=`https://cad.onshape.com/documents/${source.document_id}/${source.reference_type||'m'}/${source.reference_id||snapshot.microversion}${source.reference_type&&source.reference_type!=='m'?`/m/${snapshot.microversion}`:''}/e/${source.element_id}?configuration=${encodeURIComponent(source.configuration==='default'?'':source.configuration||'')}`;
  let bytes=0,truncated=false;
  const add=(title:string,anchor:string,data:unknown)=>{
   const record={id:`C${citations.length+1}`,title,anchor,url:base,data:compactEvidence(data)};
