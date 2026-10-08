@@ -1,3 +1,6 @@
+# CAD automatic discovery and revision refresh — 8 October
+Read [CAD_REFRESH_20261008.md](CAD_REFRESH_20261008.md). Live release 0128e50, production HMawXCTVpL25P73TL6RPeTQuTXmK. Catalogue loads automatically on entry/return, and opening a design imports its current revision. Global Refresh reaches both. Drafts pause automatic revision switching; immutable reviews remain. No background push subscription, no automatic AI calls. Sketch presentation improvements remain open. This frontend change is not bundled in APK 2.3.1.
+
 # Workshop reminder date — 8 October hotfix
 scheduled-operations now includes weekday, calendar day, month, year and time in Asia/Jerusalem in newly generated workshop reminders. Date-only formatter correction 963bf2f; deployed through Supabase Code editor after verifying live source matched repository. Example verified: 8 October 2026 18:00 Israel time. Existing sent notifications are not rewritten; no APK rebuild required. No reminder was manually sent during verification.
 
