@@ -1,3 +1,6 @@
+# CAD fidelity correction — active, not delivered
+Read [CAD_FIDELITY_AUDIT_20261008.md](CAD_FIDELITY_AUDIT_20261008.md) before further CAD work. Source audit confirms gaps beyond master sketch: sketch display semantics/plane fitting, part appearance, silent coverage omissions, assembly handling and bounded AI evidence. Native same-revision comparison requires Onshape browser sign-in. Do not claim the current viewer reproduces the exact native design presentation or performs full geometry analysis. The audit specifies implementation and acceptance gates; no fidelity correction has been deployed yet.
+
 # CAD automatic discovery and revision refresh — 8 October
 Read [CAD_REFRESH_20261008.md](CAD_REFRESH_20261008.md). Live release 0128e50, production HMawXCTVpL25P73TL6RPeTQuTXmK. Catalogue loads automatically on entry/return, and opening a design imports its current revision. Global Refresh reaches both. Drafts pause automatic revision switching; immutable reviews remain. No background push subscription, no automatic AI calls. Sketch presentation improvements remain open. This frontend change is not bundled in APK 2.3.1.
 
