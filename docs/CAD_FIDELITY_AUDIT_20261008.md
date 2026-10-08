@@ -1,6 +1,16 @@
 # CAD fidelity audit — 8 October 2026
 
-Status: source audit completed; native same-revision visual comparison blocked by Onshape browser sign-in. This is an implementation/acceptance specification, NOT a completed fidelity release. Production remains the previously documented release.
+Status: source audit completed; browser sign-in restored and native comparisons performed. Corrections below are being released. This is NOT a claim of native Onshape editor parity or complete geometric engineering validation.
+
+## Native comparison and correction follow-up
+
+- Master sketch at microversion 5219186311934be41c39bcb5: native Onshape confirms Sketch 1 and Parts (0), with long construction/reference geometry. It is a planar layout, not a solid robot flattened by the importer.
+- Rake Part Studio 2 at 124ada7d9dd2fd448a7cd449: native Parts (49), matching the imported 49 parts. Native Assembly 1 (element 3af1754d9a9ac5894a071e19) contains the rack and two 16-tooth gears; this real three-instance assembly was added to CAD Mentor and imported at the same revision.
+- Critical additional defect: browser links using /documents/did/m/micro/e/eid redirect to the document list. Verified native history links use /documents/did/w/wid/m/micro/e/eid. Corrected workspace-source revision links and new review citations. Historical saved citations are not rewritten. Microversion-only sources without workspace context remain an unverified native-link case.
+- Implemented orthographic inspection, arbitrary planar-sketch normal detection, standard views, fit-visible/fit-selection, sketch visibility and explicit construction classification when the provider supplies matching entity identity. Unknown classification is never inferred from line length. Geometry remains unmodified. Solid appearance/native annotations are not reproduced.
+- Added explicit Part Studio import counts and omitted geometry reporting; fixed suppressed-ancestor traversal. Existing resource caps remain. Geometry cache version is v3.
+- Local TypeScript, production Vite build, CAD geometry/review tests, plane-fitting tests and Onshape handler/security/snapshot/storage tests passed. Browser fixture verified fullscreen controls and an orthographic solid. Real production acceptance and release IDs follow in the handover.
+- Supabase connector deployed through the Code editor after exact staged-source comparison. Prior deployed source preserved locally in ignored docs/staging/cad-release.local/prior-connector.ts; source diff contained only the intended changes. No database/authentication setting or OAuth permission changed, and no new Gemini call was made.
 
 ## Required outcome
 
@@ -34,4 +44,4 @@ The existing custom viewer cannot promise the exact Onshape editor, constraint s
 
 ## Current blocker
 
-Opening the native master sketch on 8 October redirects to Onshape sign-in. Backend OAuth working does not sign the browser into Onshape. User has been asked to sign in; no credentials were read or changed. No new Gemini review or production deployment was performed for this audit.
+The prior sign-in blocker is resolved. Backend OAuth does not sign the browser into Onshape. No credentials were read or changed. Exact native presentation, source appearance/annotations, large-model incremental import and computed geometry analysis remain distinct work items; do not relabel this targeted correction as their completion.

@@ -155,7 +155,7 @@ Deno.serve(async request=>{
     }
     return reply({saved:true});
    }
-    const asset=`${row.id}/${snapshot.data.id}-v2.json`;
+    const asset=`${row.id}/${snapshot.data.id}-v3.json`;
    const bucket=db.storage.from('cad-design-assets');
    const cached=await bucket.download(asset);
    if(cached.error){
