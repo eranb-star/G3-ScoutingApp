@@ -1,3 +1,6 @@
+# Operational corrections — 8 October (release in progress)
+Read [OPERATIONAL_CLARITY_20261008.md](OPERATIONAL_CLARITY_20261008.md). Scope is attendance feedback, fundraising authorization, pending purchase correction/cancellation and compact operational rows. Do not confuse local implementation with production completion; see its release section. Older inventory-role defaults do not match current live grants: Team Leader is enabled but server subteam scoping causes the fundraising mismatch.
+
 # CAD Mentor — actual Onshape viewing and review are live
 Read [CAD_MENTOR_RELEASE_20261005.md](CAD_MENTOR_RELEASE_20261005.md) first for deployment, real-design acceptance, critical evidence regression fixes and precise remaining work. Frontend c2df378 is Ready at g3-6740.com/engineering/cad (AVwiEmPi1EJP78nHxYS55LYDuLZ8); connector includes citation-range fix d9fad99. OAuth, private actual sketch/part geometry, revision-pinned cited Gemini reviews, findings and verification are delivered. User explicitly approved the read-only grant, callback setting and the two selected designs' Gemini acceptance reviews. Do not repeat setup or confuse the wider design roadmap with delivered capabilities. CAD remains private to the connecting active admin; team sharing/native CAD changes/physical engineering validation are not enabled. APK remains 2.3.0/code25.
 
