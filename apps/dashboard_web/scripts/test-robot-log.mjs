@@ -1,0 +1,27 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import ts from 'typescript';
+const source = await fs.readFile(new URL('../src/lib/robotLog.ts', import.meta.url), 'utf8');
+const js = ts.transpileModule(source, {compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ES2022}}).outputText;
+const {parseRobotLog,numericLogSummary} = await import('data:text/javascript;base64,'+Buffer.from(js).toString('base64'));
+const u32 = n => {const b=Buffer.alloc(4);b.writeUInt32LE(n);return b;};
+const str = s => Buffer.concat([u32(Buffer.byteLength(s)),Buffer.from(s)]);
+const header=Buffer.concat([Buffer.from('WPILOG'),Buffer.from([0,1]),u32(0)]);
+const record=(id,payload,time=1000000)=>{const b=Buffer.alloc(17);b[0]=0x7f;b.writeUInt32LE(id,1);b.writeUInt32LE(payload.length,5);b.writeBigUInt64LE(BigInt(time),9);return Buffer.concat([b,payload]);};
+const start=(id,name,type)=>record(0,Buffer.concat([Buffer.from([0]),u32(id),str(name),str(type),str('')]));
+const dbl=n=>{const b=Buffer.alloc(8);b.writeDoubleLE(n);return b;};
+const parse=(...chunks)=>{const b=Buffer.concat(chunks);return parseRobotLog(b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength));};
+const log=parse(header,start(1,'velocity','double'),record(1,dbl(3),2000000),record(1,dbl(1),1000000));
+assert.equal(log.complete,true);assert.deepEqual(log.channels[0].samples.map(s=>s.value),[1,3]);assert.deepEqual(numericLogSummary(log.channels[0]),{min:1,max:3,mean:2,count:2});
+assert.throws(()=>parse(Buffer.from('invalid')),/INVALID_LOG_HEADER/);
+assert.equal(parse(header,start(1,'x','double'),record(1,dbl(1)).subarray(0,18)).warnings[0],'TRUNCATED_TAIL');
+const reused=parse(header,start(1,'a','double'),record(0,Buffer.concat([Buffer.from([1]),u32(1)])),start(1,'b','boolean'),record(1,Buffer.from([1])));
+assert.equal(reused.channels.length,2);assert.equal(reused.channels[1].samples[0].value,true);
+assert.equal(parse(header,start(1,'a','double'),start(1,'b','double')).complete,false);
+assert.equal(parse(header,start(1,'pose','struct:Pose2d'),record(1,Buffer.alloc(24))).channels[0].unsupported,1);
+assert.equal(parse(header,start(1,'a','double'),record(1,Buffer.alloc(3))).complete,false);
+const large=Buffer.alloc(8);large.writeBigInt64LE(9007199254740993n);
+assert.equal(parse(header,start(1,'large','int64'),record(1,large)).channels[0].samples[0].value,'9007199254740993');
+assert.equal(parse(header,start(1,'flag','boolean'),record(1,Buffer.from([9]))).complete,false);
+if(process.argv[2]){const b=await fs.readFile(process.argv[2]);const actual=parse(b);console.log(JSON.stringify({records:actual.records,channels:actual.channels.length,duration:actual.end-actual.start,warnings:actual.warnings,unsupported:actual.channels.filter(c=>c.unsupported).length}));assert.ok(actual.records>0);}
+console.log('Robot log parser checks passed');
