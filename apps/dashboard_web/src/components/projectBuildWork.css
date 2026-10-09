@@ -1,0 +1,12 @@
+.project-build-work{margin-block:1rem;border-block:1px solid #ded6df;padding-block:.75rem;min-width:0}
+.build-work-content{padding-block:1rem}
+.build-work-actions,.build-job-summary{display:flex;gap:.75rem;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.build-job{padding-block:1rem;border-bottom:1px solid #ded6df}
+.build-job-summary small{display:block;color:#635a68}
+.build-job-summary>strong{white-space:nowrap;font-variant-numeric:tabular-nums}
+.project-build-work fieldset{display:grid;gap:.75rem;padding:1rem;border:1px solid #ded6df;min-width:0}
+.project-build-work label{display:grid;gap:.3rem;min-width:0}
+.project-build-work input,.project-build-work textarea,.project-build-work select{width:100%;box-sizing:border-box;min-width:0}
+.build-instructions{white-space:pre-wrap;overflow-wrap:anywhere}
+.project-build-work summary{cursor:pointer;padding-block:.6rem}
+.project-build-work :is(button,input,textarea,select,summary,a):focus-visible{outline:3px solid #aa0078;outline-offset:3px}
