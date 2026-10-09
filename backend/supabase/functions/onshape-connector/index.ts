@@ -2,6 +2,7 @@ import {createClient} from 'https://esm.sh/@supabase/supabase-js@2';
 import {CadError,onshapeId,parseSource,sha256,seal,unseal,boundedJson,providerReader} from './security.ts';
 import {captureSnapshot,inspectEvidence} from './snapshot.ts';
 import {structuralBom} from './bom.ts';
+import {enrichBomMetadata} from './partMetadata.ts';
 import {geometryFor} from './geometry.ts';
 import {reviewDesign,designEvidence} from './review.ts';
 
@@ -139,12 +140,18 @@ Deno.serve(async request=>{
    }
    const snapshot=await db.from('cad_snapshots').select('*').eq('source_id',selected.data.id).eq('id',body.snapshotId).maybeSingle();
    if(snapshot.error||!snapshot.data)throw new CadError('SNAPSHOT_REQUIRED','Import the design revision first.',409);
-   if(body.action==='bom')return reply({snapshotId:snapshot.data.id,microversion:snapshot.data.microversion,...structuralBom(snapshot.data.evidence,selected.data.element_type,body.purchasedAssemblies??[])});
+   if(body.action==='bom'){
+    const bom=structuralBom(snapshot.data.evidence,selected.data.element_type,body.purchasedAssemblies??[]);
+    const metadata=bom.coverage==='resolved'?await enrichBomMetadata(db,read,snapshot.data.id,bom.rows,true):{};
+    return reply({snapshotId:snapshot.data.id,microversion:snapshot.data.microversion,...bom,...metadata});
+   }
    if(body.action==='import-bom'){
     const bom=structuralBom(snapshot.data.evidence,selected.data.element_type,body.purchasedAssemblies??[]);
     if(bom.coverage!=='resolved'||!bom.rows.length)throw new CadError('BOM_INCOMPLETE','Resolve the assembly structure before importing a project parts list.',409);
     if(!/^[0-9a-f-]{36}$/i.test(body.projectId||''))throw new CadError('PROJECT_REQUIRED','Choose a project.');
-    const imported=await db.rpc('import_robot_build_bom',{p_actor:user.id,p_project:body.projectId,p_snapshot:snapshot.data.id,p_rows:bom.rows});
+    const metadata=await enrichBomMetadata(db,read,snapshot.data.id,bom.rows,false);
+    if(metadata.metadataProgress.pending)throw new CadError('METADATA_PENDING','Wait for the part metadata check before saving this draft.',409);
+    const imported=await db.rpc('import_robot_build_bom',{p_actor:user.id,p_project:body.projectId,p_snapshot:snapshot.data.id,p_rows:metadata.rows});
     if(imported.error)throw new CadError('BOM_IMPORT_FAILED','The project parts list could not be saved. Check project status and try again.',409);
     return reply({bomId:imported.data,projectId:body.projectId});
    }
