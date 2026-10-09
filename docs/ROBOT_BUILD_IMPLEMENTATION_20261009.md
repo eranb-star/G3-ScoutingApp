@@ -1,3 +1,13 @@
+# Current release verification — 9 October 2026
+
+Source `507bc39` is pushed. All 59 CI scripts passed locally and GitHub CI run 320 passed, including the final build. Runs 318/319 failed because two new SQL tests ran outside the configured PGLite environment; 507bc39 corrected their placement. Thirty additive migrations passed the combined rehearsal twice. None of this expanded release is deployed yet.
+
+Recovery now covers the current Robot Build records: the current project, credential-free disconnected CAD connection metadata, source, full snapshot, one parts list, two lines and one audit record were restored from an encrypted snapshot into existing recovery project `ooqwgylckjvfpkshhexm`. Every restored row was compared against its original captured fields in a transaction. Earlier missing-prerequisite/default failures rolled back and were corrected before the successful comparison. Recovery has zero active cron jobs and no live CAD credential.
+
+The fresh encrypted Storage backup contains 21 objects (11,404,764 bytes); all 21 restored locally with verified hashes. The actual parts-list geometry (750,598 bytes) was also uploaded to its original path in the existing recovery CAD bucket and freshly downloaded. SHA-256 matched: `24e351f1dc3067f82433e5adfc9a06a65070a6d2284475d316da83ff32b9f9b5`. No new paid project was created. This proves scoped current Robot Build record/file recovery, not full current application disaster recovery or a measured RTO. Private snapshots, restored files and credentials remain outside Git.
+
+Remaining release work: connected provider/file/role and Studio linked-revision acceptance; resolve failures; deploy the 30 migrations and dependent backend functions before the frontend; verify actual production workflows and record release identifiers. APK and physical-device acceptance remain separate. Preserve the full G/S/A scope; do not stop at this documentation checkpoint or claim production completion.
+
 # Event and packing continuity — 9 October, local only
 
 Addition 30 (`robot_build_event_handoff_20261009.sql`) records an immutable event/build/physical-configuration handoff with optional existing packing item and kit. It rejects designed-only configurations, foreign or retired kits, inactive events and wrong packing categories. History and payload-bound retries are preserved. No new stock movement, packing completion, task or readiness approval is created. Assembly & tests records the handoff; the selected competition's Pit view displays the same references. Packing deep links highlight the original item. Repairs/retests remain in the existing linked build workflow.

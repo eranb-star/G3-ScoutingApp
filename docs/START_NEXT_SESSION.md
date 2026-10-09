@@ -1,4 +1,14 @@
-# Current authoritative status — reconciled against 098c96d plus event handoff
+# Current release verification — 9 October 2026
+
+Source `507bc39` is pushed. All 59 CI scripts passed locally and GitHub CI run 320 passed, including the final build. Runs 318/319 failed because two new SQL tests ran outside the configured PGLite environment; 507bc39 corrected their placement. Thirty additive migrations passed the combined rehearsal twice. None of this expanded release is deployed yet.
+
+Recovery now covers the current Robot Build records: the current project, credential-free disconnected CAD connection metadata, source, full snapshot, one parts list, two lines and one audit record were restored from an encrypted snapshot into existing recovery project `ooqwgylckjvfpkshhexm`. Every restored row was compared against its original captured fields in a transaction. Earlier missing-prerequisite/default failures rolled back and were corrected before the successful comparison. Recovery has zero active cron jobs and no live CAD credential.
+
+The fresh encrypted Storage backup contains 21 objects (11,404,764 bytes); all 21 restored locally with verified hashes. The actual parts-list geometry (750,598 bytes) was also uploaded to its original path in the existing recovery CAD bucket and freshly downloaded. SHA-256 matched: `24e351f1dc3067f82433e5adfc9a06a65070a6d2284475d316da83ff32b9f9b5`. No new paid project was created. This proves scoped current Robot Build record/file recovery, not full current application disaster recovery or a measured RTO. Private snapshots, restored files and credentials remain outside Git.
+
+Remaining release work: connected provider/file/role and Studio linked-revision acceptance; resolve failures; deploy the 30 migrations and dependent backend functions before the frontend; verify actual production workflows and record release identifiers. APK and physical-device acceptance remain separate. Preserve the full G/S/A scope; do not stop at this documentation checkpoint or claim production completion.
+
+# Current authoritative status — reconciled against 507bc39 and verified scoped recovery
 
 Read section 12 of ROBOT_BUILD_PREDEVELOPMENT_MASTER_20261009.md and the first sections of ROBOT_BUILD_IMPLEMENTATION_20261009.md. Thirty additions remain undeployed. CAD disposition enforcement and scoped form drafts are now implemented locally; read the latest implementation entries. Scoped engineering substitutions now have server enforcement, UI and actual-schema tests. Partial assembly receipts and inspected disassembly/recovery now have actual-schema tests. Material specification/remnant controls and actual-schema tests have now been added; read the latest implementation entry. Freshness, metadata observations, subsystem coverage, WIP adoption, downstream holds and impact visibility are implemented; do not describe them as wholly unstarted.
 
