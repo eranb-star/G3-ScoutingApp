@@ -50,7 +50,7 @@ export default function FieldTwinPage(){
  const [exercise,setExercise]=useState<Exercise>(()=>{const e=new URLSearchParams(location.search).get('exercise');return ['cycle','collection','shooting','visibility'].includes(e??'')?e as Exercise:'cycle';});
  const [missionTarget,setMissionTarget]=useState(()=>{const n=Number(new URLSearchParams(location.search).get('target')??10);return Number.isInteger(n)&&n>=1&&n<=999?n:10;});
  const practice=useRef<PracticeRun|null>(null),playback=useRef({active:false,playing:false,seconds:0,intake:false});
- const [activity,setActivity]=useState<'drive'|'practice'|'engineering'>(()=>new URLSearchParams(location.search).get('activity')==='practice'?'practice':'drive');
+ const [activity,setActivity]=useState<'drive'|'practice'|'engineering'>(()=>new URLSearchParams(location.search).get('activity')==='engineering'?'engineering':new URLSearchParams(location.search).get('activity')==='practice'?'practice':'drive');
  const [panel,setPanel]=useState('shooting');
  const [softwareMode,setSoftwareMode]=useState(false),[moreTelemetry,setMoreTelemetry]=useState(false);
  const [bindings,setBindings]=useState(loadBindings),[target,setTarget]=useState<0|1>(()=>initialAlliance()==='blue'?1:0),[overlay,setOverlay]=useState(true);

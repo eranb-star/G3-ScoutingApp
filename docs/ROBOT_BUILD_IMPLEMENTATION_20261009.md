@@ -1,3 +1,9 @@
+# Explicit simulation linkage — 9 October, local only
+
+Addition 29 (`robot_build_simulation_20261009.sql`) binds a visible imported CAD parts list/revision to an accessible existing saved engineering-plan revision. The record is immutable, retry-safe and does not rewrite calibration, physical evidence or planning settings. Build details displays source freshness/parts-review changes and newer-plan warnings. Private plan access revocation also hides its build reference. Leaders record the assumptions and differences they reviewed.
+
+The Studio engineering deep link opens a visible linked-revision load choice; it never automatically replaces the current local route. Existing profile compatibility validation remains in force. CAD and simulator permissions remain independent. Actual-schema stale-revision, permission, private-plan revocation, immutable retry/no-rewrite tests, TypeScript and all 29 additions applied twice pass. Browser/live-provider integration acceptance remains required. Viewer increment 90bcf2d is pushed; production is unchanged. Continue pit handoff and the master integration/recovery/release gates.
+
 # Exact part inspection — 9 October, local only
 
 Parts-list detail now opens the pinned snapshot and selects/isolate-fits the exact occurrence path, including repeated instances. It never substitutes a similarly named part or a newer snapshot. Missing geometry and denied private-source access are explicit; released work files remain the alternative. Existing CAD source permissions are unchanged. Native annotations/dimensions remain in Onshape.
