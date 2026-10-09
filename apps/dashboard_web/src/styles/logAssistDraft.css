@@ -7,3 +7,5 @@
 .log-assist-draft button:disabled{opacity:.5;cursor:not-allowed}
 .log-assist-draft button:focus-visible,.log-assist-draft summary:focus-visible{outline:3px solid #6b3c9d;outline-offset:3px}
 @media(max-width:520px){.log-assist-draft button{width:100%;margin-inline-end:0}}
+
+.log-assist-draft label{display:grid;gap:.4rem;margin-block:.8rem}.log-assist-draft input:not([type=checkbox]),.log-assist-draft textarea{width:100%;min-height:44px;padding:.65rem;border:1px solid #d8c9d8;border-radius:8px;font:inherit}.log-assist-draft textarea{min-height:90px}

@@ -1,0 +1,6 @@
+import {useLocalization} from '../lib/localization';
+import type {LogTrialDraft} from '../lib/robotLogTrialDraft';
+export default function LogEvidenceSummary({evidence}:{evidence:LogTrialDraft}){
+ const {pick}=useLocalization();
+ return <section><p><strong>{evidence.start.toFixed(3)}–{evidence.end.toFixed(3)} s</strong> · {evidence.kind==='physical'?pick('Physical robot','רובוט פיזי'):pick('Simulation','סימולציה')}{evidence.partial?pick(' · Partial log',' · לוג חלקי'):''}</p><p dir="auto">{evidence.repository||pick('No code association','אין קישור קוד')}{evidence.commit?' · '+evidence.commit.slice(0,12):''}</p>{evidence.signals?.map((s,i)=><p key={i} style={{overflowWrap:'anywhere'}}><strong dir="ltr">{s.signal}{s.component?' · '+s.component:''}</strong><br/>{s.count} {pick('samples','דגימות')} · {pick('Min / max / sample mean','מינימום / מקסימום / ממוצע דגימות')}: {[s.min,s.max,s.mean].map(v=>v===null?'—':Number(v.toPrecision(5))).join(' / ')} · {s.units??pick('Units not recorded','יחידות לא תועדו')}</p>)}<details><summary>{pick('Technical evidence & file fingerprint','נתונים טכניים וטביעת אצבע של הקובץ')}</summary><pre style={{whiteSpace:'pre-wrap',overflowWrap:'anywhere'}}>{JSON.stringify(evidence,null,2)}</pre></details></section>;
+}
