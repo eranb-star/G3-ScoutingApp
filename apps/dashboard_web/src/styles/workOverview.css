@@ -1,0 +1,10 @@
+.work-overview .work-project-entry{padding:16px 20px;gap:16px;margin-block:10px;border-radius:14px;box-shadow:none}
+.work-overview .work-project-entry>div{min-width:0}
+.work-overview .work-project-entry h2{font-size:1.15rem;line-height:1.3}
+.work-overview .work-project-entry p,.work-overview .work-project-entry small{overflow-wrap:anywhere;line-height:1.5}
+.work-overview .work-project-entry small{display:block;color:var(--g3-muted);font-size:.8rem;margin-top:4px}
+.work-overview .work-project-entry .hub-button{min-height:44px;padding:10px 16px;font-size:.88rem;white-space:normal;text-align:center;border-radius:10px;box-shadow:none}
+.work-priority-alerts{display:flex;gap:8px;flex-wrap:wrap;margin-block:10px}
+.work-priority-alerts button{min-height:44px;padding:10px 14px;border:1px solid #c4778f;background:#fff3f6;color:#80243f;border-radius:10px;font:inherit;text-align:start;cursor:pointer}
+.work-overview button:focus-visible{outline:3px solid #853184;outline-offset:3px}
+@media(max-width:700px){.work-overview .work-project-entry{padding:14px;gap:10px}.work-overview .work-project-entry .hub-button{align-self:flex-start;max-width:100%}.work-priority-alerts button{width:100%}}
