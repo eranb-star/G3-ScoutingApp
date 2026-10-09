@@ -14,8 +14,8 @@ Status: development in progress. Frontend and three additive SQL migrations are 
 
 ### Checks actually performed
 
-- TypeScript passed after the router, scope draft, preparation draft and logout changes; repeat after the latest BOM selector addition.
-- Vite production build passed after initial router change; existing large-chunk warnings remain. Repeat final bundle before release.
+- Local implementation commit: `1135779` on `codex/release-1-qa`. Not pushed or deployed.
+- TypeScript and Vite production build passed after the final BOM selector addition. Existing large-chunk warning remains; this does not substitute for pending role/auth/device acceptance.
 - New scope, preparation and raw-material-reservation database suites passed, including migration rerun, authorization, stale writes/idempotency, independent release approval, premature-start denial and shared print/build reservation floors. These use isolated database fixtures, not production writes or concurrent multi-connection stress tests.
 - Existing Robot Build integration and operations suites passed: actual review chain from release through QC, stock, kit and exact physical installation; changed release invalidates completion. Existing fundraising suite passed.
 - `verify-finance-receiving.mjs` still fails three source-text checks: old Attendance label, old personal-debt heading and old commitments heading. The affected FinanceAdminPage/WebPortalShell files have no changes in this continuation; inspection confirms renamed headings and existing calculations/commitment filters. Do not call this script green or silently weaken its checks.
