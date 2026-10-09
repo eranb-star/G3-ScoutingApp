@@ -1,0 +1,13 @@
+import fs from 'node:fs';import assert from 'node:assert/strict';
+process.env.G3_BUILD_LOT_FIXTURE='1';
+const {db,admin,student,first,as,project}=await import('./test-robot-build-integration.mjs');await db.exec('reset role');
+const sql=fs.readFileSync(new URL('../../../backend/supabase/robot_build_software_20261009.sql',import.meta.url),'utf8');await db.exec(sql);await db.exec(sql);
+const request='98000000-0000-0000-0000-000000000011',commit='a'.repeat(40),repo='GlueGunAndGlitter/OFFSEASON_2026';
+const save=(sha=commit,repository=repo,id=request)=>db.query('select record_robot_build_software($1,$2,$3,$4,$5)',[project,repository,sha,'Intended offseason software; not deployment evidence',id]);
+await as(student);await assert.rejects(save(),/permission/);await as(admin);
+await assert.rejects(save('main'),/check constraint/);await assert.rejects(save(commit,'GlueGunAndGlitter/other'),/check constraint/);
+await save();await save();assert.equal((await first('select count(*)::int n from robot_build_software_references')).n,1);
+await assert.rejects(save('b'.repeat(40)),/identity/);await assert.rejects(db.query("update robot_build_software_references set commit_sha=$1",['b'.repeat(40)]),/permission/);
+await as(student);assert.equal((await first('select count(*)::int n from robot_build_software_references')).n,0);
+await db.exec('reset role');await db.query('update team_projects set hidden_from=$1 where id=$2',[admin,project]);await as(admin);assert.equal((await first('select count(*)::int n from robot_build_software_references')).n,0);
+console.log('PASS build software intent: exact allowed repository/SHA, immutable retry, no direct writes, separate code and project visibility');await db.close();

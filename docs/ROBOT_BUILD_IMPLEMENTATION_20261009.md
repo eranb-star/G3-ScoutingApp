@@ -1,3 +1,11 @@
+# Intended software reference — 9 October, local only
+
+Addition 28 (`robot_build_software_20261009.sql`) records immutable intended repository/commit references per build, with reasons and history. It is deliberately not deployment evidence. Existing physical configuration software/calibration fields remain authoritative for what was actually tested. The UI is in Build details. Private-code permission and visible project scope are both required; no role grant was added.
+
+The existing `github-repositories` function now has a bounded `check-commit` read action using the same three-repository allowlist and server secret. It returns only repository/commit metadata, requires active membership/private-code permission, rejects mismatches, and does not use Gemini or require paid Assist access. The UI checks the commit before recording it; the stored record is labelled intent, not a server-certified deployment or engineering approval. Deploy this function before this frontend. No GitHub write occurs.
+
+Actual-schema intent permission/history/retry tests, actual handler tests and all 28 additive migrations applied twice pass. TypeScript is being checked with the new permission type (no default permissions changed). Simulation profile linkage/change warning, pit continuity/provider/live acceptance and final recovery/release gates remain. Learning increment is pushed as `df7323c`; production remains unchanged.
+
 # Operation learning connection — 9 October, local only
 
 `robot_build_learning_20261009.sql` is addition 27. Project leaders attach an existing Academy course to a current manufacturing operation, with the operation title retained to identify later process changes. Existing job/course visibility applies. Students see their existing enrollment or verified official completion; linking never enrolls, awards qualifications, changes work progress or grants machine authority. Archived references are identified. Academy preserves a validated return to the same build/job. The operation reference is visible alongside workshop instructions, not buried inside process editing. Separate edits retain their own draft.
