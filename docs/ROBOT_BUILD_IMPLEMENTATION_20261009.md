@@ -1,6 +1,14 @@
 # Robot Build implementation checkpoint — 9 October 2026
 
-Status: development in progress. Frontend and twenty-three additive SQL migrations are local, not a production release or completion of P0–P6. Follow ROBOT_BUILD_PREDEVELOPMENT_MASTER_20261009.md for the complete scope. The user has authorized end-to-end execution; do not ask for another phase-selection approval.
+Status: development in progress. Frontend and twenty-four additive SQL migrations are local, not a production release or completion of P0–P6. Follow ROBOT_BUILD_PREDEVELOPMENT_MASTER_20261009.md for the complete scope. The user has authorized end-to-end execution; do not ask for another phase-selection approval.
+
+## Scoped engineering substitutions — current continuation
+
+- `robot_build_substitutions_20261009.sql` follows the prior twenty-three additions. Immutable proposals pin kit, requirement revision, alternative accepted batch, quantity ceiling and a separate existing engineering review. The review must approve exact revision `SUB-<proposal UUID>` with independent reviewers before activation. No alternative is globally declared equivalent.
+- Existing kit issue/return RPC now recognizes only a current approved scoped proposal. Alternative physical stock is moved; original requirement stock is not consumed. Demand coverage remains one aggregate counter, with the actual batch and substitution preserved on kit items. Reserving original demand is reduced as that demand is fulfilled. Holds/revised approvals block further issue and installation/assembly receipt; returns remain possible for reconciliation.
+- UI adds proposal, exact review link/revision, activation and existing hold controls in Assembly & tests. Batch choices include recorded approved alternatives, while the server rechecks live validity. Pending/recorded approval labels do not promise current usability.
+- Actual-schema tests pass for authorization, preapproval rejection, exact-review activation, retry, quantity cap, alternative/original stock conservation, held-use rejection and traceable return. TypeScript and combined twenty-four-migration replay pass. No new production or cloud-recovery deployment occurred.
+- Full approved CAD-change dispositions, full draft/navigation behavior, provider/file/handoff acceptance and release gates remain. Do not call the full programme complete.
 
 ## Partial assembly receipts and inspected recovery — current continuation
 
