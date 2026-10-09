@@ -7,6 +7,7 @@ type Bom={id:string;name:string;snapshot_id:string|null;owner_id:string};
 /** Advisory source checks never update the imported BOM or a released drawing. */
 export default function BuildSourceFreshness({boms}:{boms:Bom[]}){
  const {pick}=useLocalization(),{profile}=useMemberAuth();
+ const [sourceLinks,setSourceLinks]=useState<Record<string,string>>({});
  const [checks,setChecks]=useState<Check[]>([]),[busy,setBusy]=useState(false),[failed,setFailed]=useState(false);
  const trigger=useRef<()=>void>(()=>{});
  const imports=boms.filter(b=>b.snapshot_id),identity=imports.map(b=>b.id+':'+b.owner_id).sort().join(',');
@@ -23,6 +24,9 @@ export default function BuildSourceFreshness({boms}:{boms:Bom[]}){
      const r=await supabase.functions.invoke('onshape-connector',{body:{action:'build-freshness',bomId:bom.id}});
      if(r.error||r.data?.error){if(!cancelled)setFailed(true);break;}
     }
+    const links:Record<string,string>={};
+    if(profile?.role==='admin'){const owned=sourceBoms.filter(b=>b.owner_id===profile.id);for(let i=0;i<owned.length;i+=100){const ids=owned.slice(i,i+100).map(b=>b.snapshot_id!);const r=await supabase.from('cad_snapshots').select('id,source_id').in('id',ids);if(!r.error)for(const snapshot of r.data??[])links[snapshot.id]=snapshot.source_id;}}
+    if(!cancelled)setSourceLinks(links);
     const rows:Check[]=[];
     for(let i=0;i<sourceBoms.length;i+=100){
      const r=await supabase.from('robot_build_source_checks').select('bom_id,checked_at,current_microversion,pinned_microversion,reference_type,error').in('bom_id',sourceBoms.slice(i,i+100).map(b=>b.id));
@@ -31,7 +35,7 @@ export default function BuildSourceFreshness({boms}:{boms:Bom[]}){
     if(!cancelled)setChecks(rows);
    }catch{if(!cancelled)setFailed(true);}finally{running=false;if(!cancelled)setBusy(false);}
   }
-  setChecks([]);trigger.current=()=>void refresh(true);void refresh();
+  setChecks([]);setSourceLinks({});trigger.current=()=>void refresh(true);void refresh();
   const wake=()=>{if(!hidden())void refresh();},timer=setInterval(wake,300000);
   window.addEventListener('focus',wake);document.addEventListener('visibilitychange',wake);
   return()=>{cancelled=true;clearInterval(timer);window.removeEventListener('focus',wake);document.removeEventListener('visibilitychange',wake);};
@@ -41,7 +45,7 @@ export default function BuildSourceFreshness({boms}:{boms:Bom[]}){
   <div className="build-job-summary"><strong>{pick('CAD source freshness','עדכניות מקור CAD')}</strong><button type="button" disabled={busy} onClick={()=>trigger.current()}>{busy?pick('Checking…','בודק…'):pick('Check now','בדיקה כעת')}</button></div>
   <p>{pick('Checks on opening, returning and every 5 minutes while visible. Only the connected source owner can check Onshape; other members see the last saved result. Released work never changes automatically.','בדיקה בפתיחה, בחזרה ובכל 5 דקות כשהמסך מוצג. רק בעל חיבור המקור יכול לבדוק ב-Onshape; שאר החברים רואים את התוצאה האחרונה שנשמרה. עבודה ששוחררה אינה משתנה אוטומטית.')}</p>
   {failed&&<p role="status">{pick('Could not complete the latest check. Results below are last known, not confirmation that CAD is current.','הבדיקה האחרונה לא הושלמה. התוצאות להלן הן האחרונות הידועות ואינן אישור שה-CAD עדכני.')}</p>}
-  <ul>{imports.map(b=>{const c=checks.find(c=>c.bom_id===b.id);return <li key={b.id}><strong>{b.name}</strong> — {!c?.checked_at?pick('Not checked','טרם נבדק'):c.error?pick('Latest check failed','הבדיקה האחרונה נכשלה'):c.reference_type!=='w'?pick('Fixed CAD reference; does not track workspace edits','מקור CAD קבוע; אינו עוקב אחרי עריכות סביבת העבודה'):c.current_microversion!==c.pinned_microversion?pick('New CAD revision available — review before updating work','גרסת CAD חדשה זמינה — יש לבדוק לפני עדכון עבודה'):pick('Matches the source at the last check','תואם למקור בזמן הבדיקה האחרונה')}{c?.checked_at&&<> · <time dateTime={c.checked_at}>{new Date(c.checked_at).toLocaleString(pick('en-GB','he-IL'))}</time></>}</li>;})}</ul>
+  <ul>{imports.map(b=>{const c=checks.find(c=>c.bom_id===b.id);return <li key={b.id}><strong>{b.name}</strong> — {!c?.checked_at?pick('Not checked','טרם נבדק'):c.error?pick('Latest check failed','הבדיקה האחרונה נכשלה'):c.reference_type!=='w'?pick('Fixed CAD reference; does not track workspace edits','מקור CAD קבוע; אינו עוקב אחרי עריכות סביבת העבודה'):c.current_microversion!==c.pinned_microversion?pick('New CAD revision available — review before updating work','גרסת CAD חדשה זמינה — יש לבדוק לפני עדכון עבודה'):pick('Matches the source at the last check','תואם למקור בזמן הבדיקה האחרונה')}{c?.checked_at&&<> · <time dateTime={c.checked_at}>{new Date(c.checked_at).toLocaleString(pick('en-GB','he-IL'))}</time></>}{b.snapshot_id&&sourceLinks[b.snapshot_id]&&<> · <a href={`/engineering/cad?source=${encodeURIComponent(sourceLinks[b.snapshot_id])}`}>{pick('Review this design','סקירת תכנון זה')}</a></>}</li>;})}</ul>
   <a href="/engineering/cad">{pick('Review source designs in CAD Mentor','סקירת תכנוני המקור במנטור CAD')}</a>
  </section>;
 }

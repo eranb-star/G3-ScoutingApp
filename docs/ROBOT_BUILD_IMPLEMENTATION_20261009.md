@@ -4,6 +4,14 @@ Status: development in progress. Frontend and nineteen additive SQL migrations a
 
 ## Subsystem scope and initial workshop work
 
+### Integrated follow-up verification
+
+- Readiness now propagates release holds through task dependencies, including multiple levels, without counting unrelated work as held. The focused test covers chains and cycles. TypeScript and the combined nineteen-migration replay passed after integration.
+- A selected requirement exposes linked manufacturing, purchasing, batch output and assembly/installations for impact review. Quantities are explicitly historical or allocated; they are not summed into available stock. This is read-only impact discovery, not an approved downstream change-disposition workflow. Synthetic browser navigation verified the affected-work link.
+- Source freshness links now open the authorized source in CAD Mentor. Material and inventory selectors paginate instead of silently dropping records beyond the server page limit.
+- The four latest additions (freshness, independent metadata observations, subsystems and initial WIP adoption) passed a rollback-only rehearsal and were then applied in the existing recovery project. Evidence: `staging/robot-build-recovery-additions-20261009.png`. No paid project was created. This remains schema rehearsal on the September recovery baseline, not restoration of current production data or files.
+- Production remains unchanged. Material specifications/remnants, engineering substitutions, assembly recovery/partial output, approved change dispositions, full form-draft handling, provider/file acceptance and final deployment gates remain open under the master plan.
+
 - Subsystem definitions group existing project tasks, including shared tasks without double-counted aggregate readiness. Overview separates completed recorded work, current manufacturing releases and physical verification; missing verification coverage is explicit. Scope edits have server authority checks, expected revision, idempotency and an append-only audit. No task or approval is recreated.
 - Initial WIP adoption is leader-only and allowed once before any job reporting/inspection. It requires the current manufacturing release and records observed quantity/date/location/history gaps. It does not create accepted stock, material withdrawals, expenses, progress contributions or qualifications. Existing QC is still required. Historical baseline is displayed in the job.
 - Actual SQL tests pass for both additions, including altered retries, stale edits, wrong tasks, permission denial and absence of stock/progress side effects. TypeScript passed. Browser synthetic acceptance shows a held intake release as 0/1 and absent physical checks as 0/0 with an explicit missing-coverage message. The source result is visible on background tabs without unnecessary provider calls.
