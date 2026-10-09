@@ -4,6 +4,7 @@ function moduleUrl(file){if(cache.has(file.href))return cache.get(file.href);let
 const {repositoryAutoJava,toOdometry}=await import(moduleUrl(new URL('../src/lib/repositoryAutoExport.ts',import.meta.url)));
 const {logIdentity,logModes,compareLogChannels,boundedLogEvidence}=await import(moduleUrl(new URL('../src/lib/robotLogAnalysis.ts',import.meta.url)));
 const {parseLogTrialDraft,logTrialDraftKey}=await import(moduleUrl(new URL('../src/lib/robotLogTrialDraft.ts',import.meta.url)));
+const {logAssistDraft,readLogAssistDraft,logAssistKey}=await import(moduleUrl(new URL('../src/lib/robotLogAssist.ts',import.meta.url)));
 const frame={x:8,y:4,yaw:Math.PI,reviewed:true};const p=toOdometry({x:2,y:1,heading:0},frame);assert.equal(p.x,6);assert.equal(p.y,3);assert.equal(p.heading,Math.PI);assert.throws(()=>toOdometry({x:0,y:0,heading:0},{...frame,reviewed:false}));
 const point=x=>({x,y:0,heading:0,action:'none',seconds:0,points:0,success:1});
 const plan={season:{schema:1,season:2026,revision:'fixture',name:'fixture',field:{length:20,width:12,geometry:'proxy',obstacles:[],tags:[]},autonomous:{seconds:20,reviewed:false},supportedInteractions:['intake','shoot','wait']},robot:{length:1,width:1,speed:2,acceleration:2,turnRate:1,clearance:.1,measured:false,alliance:1},route:[point(0),point(1)]};
@@ -22,4 +23,13 @@ assert.throws(()=>boundedLogEvidence(log,enabled,-1,2));assert.equal(boundedLogE
 const draft={schema:1,fileSha256:'a'.repeat(64),start:1,end:2,repository:'GlueGunAndGlitter/OFFSEASON_2026',commit:'',kind:'simulated',partial:true};
 assert.equal(parseLogTrialDraft(draft).kind,'simulated');assert.throws(()=>parseLogTrialDraft({...draft,end:0}));assert.throws(()=>parseLogTrialDraft({...draft,kind:'passed'}));assert.notEqual(logTrialDraftKey('member1'),logTrialDraftKey('member2'));
 if(process.argv[2])fs.writeFileSync(process.argv[2],source);
+const aiDraft=logAssistDraft(log,enabled,'a'.repeat(64),0,4,'','');
+assert.ok(aiDraft.includes('deploymentVerified":false'));
+assert.ok(aiDraft.includes('"signal":"enabled"'));
+assert.equal(readLogAssistDraft(JSON.stringify({schema:1,prompt:aiDraft})),aiDraft);
+assert.equal(readLogAssistDraft('{broken'),null);
+assert.equal(logIdentity({...log,channels:[{...commit,name:'/RealMetadata/GitSHA'}]}).commit,'b'.repeat(40));
+assert.notEqual(logAssistKey('a'),logAssistKey('b'));
+assert.throws(()=>logAssistDraft(log,enabled,'invalid',0,4,'',''));
+assert.throws(()=>logAssistDraft({...log,channels:[commit]},commit,'a'.repeat(64),0,4,'',''),/NUMERIC/);
 console.log('Robot integration: frame, action blocking, generated source, modes, identity and units checks passed');
