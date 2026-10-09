@@ -251,8 +251,8 @@ Initial execution ledger:
 
 | Package | Status | Evidence / next action |
 |---|---|---|
-| P0 | Planned | Verify deployed contracts and provider matrix before implementation |
-| P1 | Planned | Screen prototype/walkthrough against final four-view/direct-entry contract |
+| P0 | In progress | Eight deployed table columns/RLS checked read-only; functions/constraints/provider/recovery gates remain. See implementation checkpoint. |
+| P1 | In progress, local only | Direct entry/four views/compact parts/paginated reads implemented; guided setup, complete drafts/role flows and acceptance remain. See implementation checkpoint. |
 | P2 | Planned | Requires P0 source/file identity; preserve existing CAD access |
 | P3 | Planned | Requires quantity/authority contracts; additive lot/reservation implementation |
 | P4 | Planned | Requires pinned source and release model; no automatic work rewrite |
@@ -260,6 +260,8 @@ Initial execution ledger:
 | P6 | Planned | All required requirements/evidence satisfied before completion claim |
 
 ## 13. Completion definition
+
+Execution evidence and unresolved work: [ROBOT_BUILD_IMPLEMENTATION_20261009.md](ROBOT_BUILD_IMPLEMENTATION_20261009.md). No new production release from this checkpoint.
 
 Complete means required G01–G17 and S01–S11 are implemented or have an explicit user-approved scope disposition, mapped A01–A22 acceptance has evidence, required regressions/CI and deployment checks pass, and device/provider/physical boundaries are reported accurately. Optional later conveniences remain explicitly outside this milestone. Do not call a phase complete because the budget or turn is ending.
 

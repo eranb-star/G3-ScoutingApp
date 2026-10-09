@@ -32,6 +32,7 @@ import ToolsInventoryPage from "./pages/ToolsInventoryPage";
 import ProductivityHomePage from "./pages/ProductivityHomePage";
 import FrcOperationsPage from "./pages/FrcOperationsPage";
 import ProjectsPage from "./pages/ProjectsPage";
+import RobotBuildPage from "./pages/RobotBuildPage";
 import UpdatesPage from "./pages/UpdatesPage";
 import FrcWorkPage from "./pages/FrcWorkPage";
 import SecurityAdminPage from "./pages/SecurityAdminPage";
@@ -867,6 +868,7 @@ function AppShell() {
         <Route path="/attendance" element={<MemberGate><AttendanceReportsPage /></MemberGate>} />
         <Route path="/profile" element={<MemberGate><ProfilePage /></MemberGate>} />
         <Route path="/projects" element={<MemberGate><ProjectsPage /></MemberGate>} />
+        <Route path="/robot-build" element={<MemberGate><RobotBuildPage /></MemberGate>} />
         <Route path="/fundraising" element={<MemberGate><FundraisingPage /></MemberGate>} />
         <Route path="/tools" element={<MemberGate><ToolsInventoryPage /></MemberGate>} />
         <Route path="/frc-operations" element={<MemberGate><FrcOperationsPage /></MemberGate>} />
