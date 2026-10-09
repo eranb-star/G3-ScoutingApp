@@ -1,3 +1,9 @@
+# Event and packing continuity — 9 October, local only
+
+Addition 30 (`robot_build_event_handoff_20261009.sql`) records an immutable event/build/physical-configuration handoff with optional existing packing item and kit. It rejects designed-only configurations, foreign or retired kits, inactive events and wrong packing categories. History and payload-bound retries are preserved. No new stock movement, packing completion, task or readiness approval is created. Assembly & tests records the handoff; the selected competition's Pit view displays the same references. Packing deep links highlight the original item. Repairs/retests remain in the existing linked build workflow.
+
+TypeScript, actual-schema identity/permission/retired-kit/no-stock-side-effect tests and all 30 migrations applied twice pass. Synthetic phone browser showed configuration/serial, kit, packing status and timestamp without horizontal overflow. The simulator warning also visibly identifies changed CAD and a newer plan while retaining v1. Screenshot: docs/staging/robot-build-handoff-phone-20261009.png. These are synthetic records; live role/provider, final regression/recovery/deployment and device acceptance remain. Simulation increment 098c96d is pushed; production remains unchanged.
+
 # Explicit simulation linkage — 9 October, local only
 
 Addition 29 (`robot_build_simulation_20261009.sql`) binds a visible imported CAD parts list/revision to an accessible existing saved engineering-plan revision. The record is immutable, retry-safe and does not rewrite calibration, physical evidence or planning settings. Build details displays source freshness/parts-review changes and newer-plan warnings. Private plan access revocation also hides its build reference. Leaders record the assumptions and differences they reviewed.

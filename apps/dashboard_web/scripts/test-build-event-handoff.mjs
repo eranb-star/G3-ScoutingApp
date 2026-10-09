@@ -1,0 +1,17 @@
+import fs from 'node:fs';import assert from 'node:assert/strict';
+process.env.G3_BUILD_LOT_FIXTURE='1';
+const {db,admin,student,first,as,project,built,output}=await import('./test-robot-build-integration.mjs');await db.exec('reset role');
+await db.exec('create table events(id uuid primary key default gen_random_uuid(),name text,active boolean default true);create table frc_operational_items(id uuid primary key default gen_random_uuid(),area text,archived boolean default false,status text default \'open\');grant select on events,frc_operational_items to authenticated;');
+const sql=fs.readFileSync(new URL('../../../backend/supabase/robot_build_event_handoff_20261009.sql',import.meta.url),'utf8');await db.exec(sql);await db.exec(sql);
+const event=(await first("insert into events(name)values('Workshop competition QA')returning id")).id,packing=(await first("insert into frc_operational_items(area)values('packing')returning id")).id,kit=(await first('select id from robot_build_kits limit 1')).id;
+const request='98000000-0000-0000-0000-000000000031',stock=await first('select quantity from frc_parts_inventory where id=$1',[output]);
+const save=(configuration=built,note='Robot and spare kit at pit shelf A',id=request)=>db.query('select record_robot_build_handoff($1,$2,$3,$4,$5,$6,$7)',[project,event,configuration,packing,kit,note,id]);
+await as(student);await assert.rejects(save(),/leader/);await as(admin);
+const design=(await first("select id from project_robot_configurations where configuration_kind='designed' limit 1")).id;
+await assert.rejects(save(design),/physical configuration/);await save();await save();assert.equal((await first('select count(*)::int n from robot_build_event_handoffs')).n,1);
+await assert.rejects(save(built,'Different scope'),/identity/);await assert.rejects(db.query('delete from robot_build_event_handoffs'),/permission/);
+assert.deepEqual(await first('select quantity from frc_parts_inventory where id=$1',[output]),stock);
+assert.equal((await first('select status from frc_operational_items where id=$1',[packing])).status,'open','packing not automatically completed');
+await db.exec('reset role');await db.query('update robot_build_kits set retired_at=now() where id=$1',[kit]);await as(admin);await assert.rejects(save(built,'New handoff',crypto.randomUUID()),/current kit/);
+await db.exec('reset role');await db.query('update team_projects set hidden_from=$1 where id=$2',[student,project]);await as(student);assert.equal((await first('select count(*)::int n from robot_build_event_handoffs')).n,0);
+console.log('PASS event/physical configuration scope, historical retry, retired kit refusal, project visibility, no stock or packing side effects');await db.close();
