@@ -3,6 +3,7 @@ import {Link} from 'react-router-dom';
 import {supabase} from '../supabase';
 import {useLocalization} from '../lib/localization';
 import {readBuildPages} from '../lib/robotBuildWorkspace';
+import BuildSubsystems from './BuildSubsystems';
 import type {ReviewGate} from './ProjectTaskReview';
 type Gate={task_id:string;decision_type:string;current_submission:string|null};
 type Job={id:string;task_id:string;release_task_id:string;release_submission_id:string;part_name:string};
@@ -29,6 +30,7 @@ export default function BuildReadiness({projectId}:{projectId:string}){
  const blocked=data.jobs.filter(j=>!releases.some(g=>g.task_id===j.release_task_id&&g.current_submission===j.release_submission_id));
  const checks=data.gates.filter(g=>['verified_on_robot','competition_ready'].includes(g.decision_type));
  return <section className="build-readiness"><h2>{pick('What needs attention','מה דורש תשומת לב')}</h2><dl><div><dt>{pick('Current manufacturing releases','שחרורי ייצור עדכניים')}</dt><dd><bdi dir="ltr">{releases.length} / {releaseGates.length}</bdi></dd></div><div><dt>{pick('Jobs needing release review','עבודות הדורשות בדיקת שחרור')}</dt><dd>{blocked.length}</dd></div><div><dt>{pick('Recorded installations · not retired','התקנות שנרשמו · לא הוחלפו')}</dt><dd>{data.kits.filter(k=>k.installed_at&&!k.retired_at).length}</dd></div><div><dt>{pick('Current robot verification checkpoints','נקודות אימות רובוט עדכניות')}</dt><dd><bdi dir="ltr">{checks.filter(g=>verified(g.task_id)).length} / {checks.length}</bdi></dd></div></dl>
+ <BuildSubsystems projectId={projectId} readiness={{gates:data.gates,jobs:data.jobs,verified,held:id=>data.holds.some(h=>h.task_id===id)}}/>
  {!checks.length&&<p>{pick('No robot verification checkpoints are configured. Installation alone does not establish robot readiness.','לא הוגדרו נקודות אימות לרובוט. התקנה לבדה אינה מוכיחה מוכנות.')}</p>}
  {!!data.issues.length&&<div role="status"><strong>{pick('Open robot issues still need attention','תקלות רובוט פתוחות עדיין דורשות טיפול')}: {data.issues.length}</strong><p>{pick('Approved checkpoints do not clear these open faults.','נקודות ביקורת מאושרות אינן סוגרות תקלות פתוחות אלה.')}</p><ul>{data.issues.slice(0,8).map(i=><li key={i.id}><Link to={`/robot-issues?issue=${i.id}`}>{i.title}</Link></li>)}</ul>{data.issues.length>8&&<Link to="/robot-issues">{pick('Open issue board','פתיחת לוח התקלות')}</Link>}</div>}
  {!!data.holds.length&&<ul>{data.holds.map(h=><li key={h.task_id}><strong>{pick('Release on hold','השחרור נעצר')}: </strong>{h.reason} <Link to={`/robot-build?project=${projectId}&view=work&queue=team&task=${h.task_id}`}>{pick('Review hold','בדיקת העצירה')}</Link></li>)}</ul>}

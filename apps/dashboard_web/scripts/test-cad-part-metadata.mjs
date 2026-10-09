@@ -13,7 +13,7 @@ assert.throws(()=>normalizePartMetadata([row],[...observation,...observation],'n
 assert.throws(()=>normalizePartMetadata([row],[{...observation[0],microversionId:'wrong'}],'now'),/mismatch/);
 assert.throws(()=>normalizePartMetadata([row],{},'now'),/Unexpected/);
 const store=new Map();let calls=0;
-const db={from(){let filters={},insert;const q={select(){return q;},eq(k,v){filters[k]=v;return q;},limit(){return q;},single(){return q;},upsert(v){insert=v;return q;},then(resolve){if(insert&&!store.has(insert.group_key))store.set(insert.group_key,insert);const data=filters.group_key?store.get(filters.group_key):[...store.values()];return Promise.resolve({data,error:null}).then(resolve);}};return q;}};
+const db={from(){let filters={},insert;const q={select(){return q;},eq(k,v){filters[k]=v;return q;},limit(){return q;},single(){return q;},upsert(v){insert=v;return q;},then(resolve){const key=v=>v.observation_id+':'+v.group_key;if(insert&&!store.has(key(insert)))store.set(key(insert),insert);const data=filters.group_key?store.get(key(filters)):[...store.values()].filter(v=>v.observation_id===filters.observation_id);return Promise.resolve({data,error:null}).then(resolve);}};return q;}};
 const read=async()=>{calls++;return [...observation,{...observation[0],partId:'sibling',partNumber:'G3-002'}];};
 let enriched=await enrichBomMetadata(db,read,'snapshot',[row],true);assert.equal(calls,1);assert.equal(enriched.metadataProgress.pending,0);
 const sibling={...row,partId:'sibling',key:JSON.stringify([base.documentId,base.microversion,base.elementId,base.configuration,'sibling'])};
@@ -21,4 +21,7 @@ enriched=await enrichBomMetadata(db,read,'snapshot',[row,sibling],true);assert.e
 const missing={...row,partId:'absent',key:'absent'};enriched=await enrichBomMetadata(db,read,'snapshot',[missing],true);assert.equal(enriched.metadataProgress.pending,0);assert.equal(enriched.rows[0].metadata.status,'missing');
 const another={...row,microversion:'d'.repeat(24)};enriched=await enrichBomMetadata(db,read,'snapshot',[another],false);assert.equal(enriched.metadataProgress.pending,1);assert.equal(calls,1);
 enriched=await enrichBomMetadata(db,read,'snapshot',[{...row,partId:'@assembly'}],true);assert.equal(enriched.rows[0].metadata.status,'unsupported');assert.equal(calls,1);
+const observationId='74000000-0000-0000-0000-000000000001';
+const refreshed=await enrichBomMetadata(db,async()=>[{...observation[0],material:{displayName:'7075-T6'}}],'snapshot',[row],true,observationId);assert.equal(refreshed.rows[0].metadata.material,'7075-T6');
+const original=await enrichBomMetadata(db,read,'snapshot',[row],false);assert.equal(original.rows[0].metadata.material,'6061-T6','original observation remains immutable');
 console.log('PASS pinned metadata, encoded configuration, missing/ambiguous/revision mismatch, no inferred process, resumable bounded cache and boundary changes');

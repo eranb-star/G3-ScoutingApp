@@ -15,11 +15,11 @@ export default function BuildSourceFreshness({boms}:{boms:Bom[]}){
   const sourceBoms=boms.filter(b=>b.snapshot_id);
   const hidden=()=>document.visibilityState==='hidden';
   async function refresh(force=false){
-   if(cancelled||running||hidden()||(!force&&Date.now()-lastAttempt<30000))return;
+   if(cancelled||running||(!force&&Date.now()-lastAttempt<30000))return;
    lastAttempt=Date.now();running=true;setBusy(true);setFailed(false);
    try{
-    if(profile?.role==='admin')for(const bom of sourceBoms.filter(b=>b.owner_id===profile.id)){
-     if(cancelled||hidden())break;
+    if((force||!hidden())&&profile?.role==='admin')for(const bom of sourceBoms.filter(b=>b.owner_id===profile.id)){
+     if(cancelled||(!force&&hidden()))break;
      const r=await supabase.functions.invoke('onshape-connector',{body:{action:'build-freshness',bomId:bom.id}});
      if(r.error||r.data?.error){if(!cancelled)setFailed(true);break;}
     }
@@ -32,7 +32,7 @@ export default function BuildSourceFreshness({boms}:{boms:Bom[]}){
    }catch{if(!cancelled)setFailed(true);}finally{running=false;if(!cancelled)setBusy(false);}
   }
   setChecks([]);trigger.current=()=>void refresh(true);void refresh();
-  const timer=setInterval(()=>void refresh(),300000),wake=()=>void refresh();
+  const wake=()=>{if(!hidden())void refresh();},timer=setInterval(wake,300000);
   window.addEventListener('focus',wake);document.addEventListener('visibilitychange',wake);
   return()=>{cancelled=true;clearInterval(timer);window.removeEventListener('focus',wake);document.removeEventListener('visibilitychange',wake);};
  },[identity,profile?.id,profile?.role]);
