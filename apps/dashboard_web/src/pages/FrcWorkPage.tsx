@@ -22,13 +22,6 @@ type Issue={id:string;severity:string;status:string};
 type Component={id:string;name:string;status:string;service_interval_days:number|null;last_serviced_at:string|null};
 
 const frcAreas=frcTeams;
-const operationalAreas=[
-  {key:"fundraising",en:"Fundraising & Production",he:"גיוס כספים וייצור",detailEn:"Print products, filament, event sales and income",detailHe:"מוצרי הדפסה, פילמנט, מכירות באירועים והכנסות",path:"/fundraising"},
-  {key:"inventory",en:"Tools & inventory",he:"כלים ומלאי",detailEn:"Parts, equipment, stock and purchase requests",detailHe:"חלקים, ציוד, מלאי ובקשות רכש",path:"/tools"},
-  {key:"decisions",en:"Decision log",he:"יומן החלטות",detailEn:"Technical decisions and rationale",detailHe:"החלטות טכניות והסיבות להן"},
-  {key:"packing",en:"Pit & packing",he:"פיט ואריזה",detailEn:"Competition packing and readiness",detailHe:"אריזה לתחרות ומוכנות"},
-  {key:"assignments",en:"Assignments",he:"שיבוצים",detailEn:"Event and workshop roles",detailHe:"תפקידי אירוע וסדנה"},
-] as const;
 function areaMatches(subteam:string|null|undefined,key:string){return teamMatches(subteam,key);}
 
 export default function FrcWorkPage(){
@@ -36,7 +29,7 @@ export default function FrcWorkPage(){
   const {pick}=useLocalization(),{profile}=useMemberAuth(),isAdmin=useAdminStatus(),navigate=useNavigate(),[params,setParams]=useSearchParams();
   const [projects,setProjects]=useState<Project[]>([]),[tasks,setTasks]=useState<Task[]>([]),[courses,setCourses]=useState<Course[]>([]),[modules,setModules]=useState<Module[]>([]),[enrollments,setEnrollments]=useState<Enrollment[]>([]),[evidence,setEvidence]=useState<Evidence[]>([]),[issues,setIssues]=useState<Issue[]>([]),[components,setComponents]=useState<Component[]>([]);
   const [departmentsOpen,setDepartmentsOpen]=useState(()=>!Capacitor.isNativePlatform());
-  const [operationsOpen,setOperationsOpen]=useState(()=>!Capacitor.isNativePlatform());
+
   function loadWork(){if(!profile)return;return Promise.all([
     supabase.from("team_projects").select("id,name,status,subteam,due_at").neq("status","archived").order("updated_at",{ascending:false}).limit(100),
     supabase.from("project_tasks").select("id,project_id,title,status,due_at,assignee_id").eq("archived",false).order("due_at",{ascending:true,nullsFirst:false}).limit(250),
@@ -85,6 +78,6 @@ export default function FrcWorkPage(){
     <button className="work-engineering-banner" onClick={()=>navigate("/engineering")}><span>DEV</span><span><small>{pick("Shared engineering system","מערכת הנדסית משותפת")}</small><strong>{pick("Engineering Hub","מרכז הנדסה")}</strong><em>{pick("One read-only doorway to robot code, CAD, scouting data and experiments across every department.","שער אחד לקריאה בלבד לקוד רובוט, CAD, נתוני סקאוטינג וניסויים מכל התחומים.")}</em></span><b>{pick("Open hub","פתיחת המרכז")} →</b></button>
 
     {(can("view_field_twin")||can("view_evidence_search"))&&<section className="work-destination-section"><header><h2>{pick("Engineering lab","מעבדת הנדסה")}</h2></header><div className="work-destination-grid">{can("view_field_twin")&&<button onClick={()=>navigate('/field-twin')}><span>3D</span><strong>{pick('Field & robot studio','סטודיו מגרש ורובוט')}</strong><small>{pick('2026 field, KitBot, driving and replay','מגרש 2026, KitBot, נהיגה ושחזור')}</small><b>→</b></button>}{can("view_evidence_search")&&<button onClick={()=>navigate('/knowledge')}><span>SOURCE</span><strong>{pick('Evidence search','חיפוש מקורות')}</strong><small>{pick('2026 references and historical pilot','מקורות 2026 ופיילוט היסטורי')}</small><b>→</b></button>}</div></section>}
-    <section className="work-destination-section work-coordination-group"><header><div><small>{pick("Cross-team coordination","תיאום חוצה־צוותים")}</small><h2>{pick("Team operations","תפעול הקבוצה")}</h2></div><button className="work-section-toggle" type="button" aria-expanded={operationsOpen} aria-controls="team-operation-destinations" onClick={()=>setOperationsOpen(value=>!value)}><span>{operationalAreas.length+1} {pick("systems","מערכות")}</span><b aria-hidden="true">⌄</b></button></header><div id="team-operation-destinations" className="work-destination-grid" hidden={!operationsOpen}>{operationalAreas.map(area=><button key={area.key} onClick={()=>navigate("path" in area?area.path:`/frc-operations?area=${area.key}`)}><span>{area.key==="inventory"?"STOCK":"G3"}</span><strong>{pick(area.en,area.he)}</strong><small>{pick(area.detailEn,area.detailHe)}</small><b>→</b></button>)}<button onClick={()=>navigate("/season-planning")}><span>PLAN</span><strong>{pick("Season roadmap","מפת העונה")}</strong><small>{pick("Milestones, dependencies and engineering decisions","אבני דרך, תלויות והחלטות הנדסיות")}</small><b>→</b></button></div></section>
+    <button className="work-operations-link" onClick={()=>navigate('/team-operations')}><strong>{pick('Team operations','תפעול הקבוצה')}</strong><span>{pick('Fundraising, inventory, packing and coordination','גיוס כספים, מלאי, אריזה ותיאום')} →</span></button>
   </main>;
 }

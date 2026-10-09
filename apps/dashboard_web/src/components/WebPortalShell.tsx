@@ -10,6 +10,7 @@ import { supabase } from "../supabase";
 const links = [
   ["/home", "Home", "בית"],
   ["/work", "Work", "עבודה"],
+  ["/team-operations", "Team operations", "תפעול הקבוצה"],
   ["/growth", "Skills Academy", "אקדמיית מיומנויות"],
   ["/knowledge", "FRC knowledge", "ידע FRC"],
   ["/competition", "Competition", "תחרות"],

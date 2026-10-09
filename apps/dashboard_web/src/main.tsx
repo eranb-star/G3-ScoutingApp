@@ -36,6 +36,7 @@ import RobotBuildFilePage from './pages/RobotBuildFilePage';
 import RobotBuildPage from "./pages/RobotBuildPage";
 import UpdatesPage from "./pages/UpdatesPage";
 import FrcWorkPage from "./pages/FrcWorkPage";
+import TeamOperationsPage from "./pages/TeamOperationsPage";
 import SecurityAdminPage from "./pages/SecurityAdminPage";
 import RobotIssuesPage from "./pages/RobotIssuesPage";
 import RobotReliabilityPage from "./pages/RobotReliabilityPage";
@@ -824,7 +825,7 @@ function AppShell() {
   useEffect(()=>{window.scrollTo({top:0,left:0,behavior:"auto"});},[location.pathname,location.search]);
   useEffect(()=>{setWebAssistantOpen(false);},[location.pathname]);
   const isAuthScreen = location.pathname === "/login" || location.pathname === "/change-password";
-  const isPrimaryDestination=["/home","/work","/schedule","/updates","/growth","/more","/admin"].includes(location.pathname);
+  const isPrimaryDestination=["/home","/work","/team-operations","/schedule","/updates","/growth","/more","/admin"].includes(location.pathname);
   const activeIssue=location.pathname==="/robot-issues"?new URLSearchParams(location.search).get("issue"):null;
   const assistantPath=activeIssue?`/assistant?issue=${activeIssue}`:"/assistant";
   const isDisplayScreen=location.pathname==="/competition/display";
@@ -841,6 +842,7 @@ function AppShell() {
         <Route path="/schedule" element={<MemberGate><UnifiedCalendarPage /></MemberGate>} />
         <Route path="/check-in" element={<MemberGate><CheckInPage /></MemberGate>} />
         <Route path="/work" element={<MemberGate><FrcWorkPage /></MemberGate>} />
+        <Route path="/team-operations" element={<MemberGate><TeamOperationsPage /></MemberGate>} />
         <Route path="/updates" element={<MemberGate><UpdatesPage /></MemberGate>} />
         <Route path="/messages" element={<Navigate to="/updates?view=announcements" replace />} />
         <Route path="/more" element={<MemberGate><MorePage isAdmin={isAdmin} /></MemberGate>} />
