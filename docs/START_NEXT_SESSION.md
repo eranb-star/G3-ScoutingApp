@@ -1,3 +1,13 @@
+# Current authoritative status — reconciled against 698bea9
+
+Read section 12 of ROBOT_BUILD_PREDEVELOPMENT_MASTER_20261009.md and the first sections of ROBOT_BUILD_IMPLEMENTATION_20261009.md. Twenty-one additions remain undeployed. Material specification/remnant controls and actual-schema tests have now been added; read the latest implementation entry. Freshness, metadata observations, subsystem coverage, WIP adoption, downstream holds and impact visibility are implemented; do not describe them as wholly unstarted.
+
+Remaining: material/remnant final acceptance; substitutions; partial assembly/disassembly; approved CAD-change dispositions; complete form draft/navigation protection; provider/files and cross-system acceptance; current recovery, final CI/regression, deployment and production checks. Preserve G01–G17/S01–S11/A01–A22. No new paid recovery project. Preserve unrelated Android IDE/local assets.
+
+The user has authorized completion. Do not request another phase-selection approval. A final answer stops execution: do not imply background continuation when none is running. The repeated partial-final failure is recorded in WORKING_EXPECTATIONS.md and must not recur.
+
+## Historical checkpoints below — status superseded by the current master ledger
+
 # Latest continuation: subsystem scope and WIP adoption
 Nineteen additive migrations are undeployed. Read ROBOT_BUILD_IMPLEMENTATION_20261009.md. SQL tests, TypeScript and synthetic readiness UI pass; production is unchanged. Continue the full authorized scope and release gates, not another partial final.
 

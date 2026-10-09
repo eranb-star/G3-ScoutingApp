@@ -247,17 +247,19 @@ Run targeted tests after meaningful changes; broaden at integration/release gate
 
 For each package record: date; G/S/A IDs; changed files/RPCs/migrations; exact commit and preview/release identifiers; schema preflight; tests with results; screenshots/observed role journeys; permissions/grants affected; migration/rollback notes; provider/device/physical limits; unresolved items with next action. Never paste credentials, private source payloads or unnecessary personal data.
 
-Initial execution ledger:
+Current execution ledger — reconciled against pushed source `698bea9`. Historical checkpoint entries do not override this table. All expanded work remains undeployed. Recorded production baseline: `d0e6231` / implementation `589943e`; reading this ledger is not a new live verification.
 
 | Package | Status | Evidence / next action |
 |---|---|---|
 | P0 | In progress | Live function fingerprints and constraints captured; 34 function bodies matched, dynamic review-context body inspected. Provider/recovery gates remain. See implementation checkpoint. |
 | P1 | In progress, local only | Direct entry, scope setup, role queues, guided preparation, accessible leave dialog and Back guard implemented. Full role/auth/device acceptance and all-form draft contract remain. |
 | P2 | In progress, local only | Observed metadata and immutable uploaded files/scoped downloads verified in isolated tests. Provider association/export and live file acceptance remain. |
-| P3 | In progress, local only | Raw reservations, partial lots, exact kits, ordered operations, shared inventory-equipment reservations and pack purchasing pass isolated tests. Stock assemblies, remnants, substitutions and remaining quantity contracts remain. |
-| P4 | In progress, local only | Explicit release holds and overview blockers added; approvals/history preserved. Automated change comparison, refresh/freshness and complete subsystem readiness remain. |
-| P5 | In progress, local only | Explicit maintenance links, atomic faults, protected repair/retest closure, removal handoff and approved existing-installation adoption tested. WIP adoption and remaining evidence/sourcing contracts stay open. |
-| P6 | Planned | All required requirements/evidence satisfied before completion claim |
+| P3 | In progress, local only | Reservations, partial lots, exact kits, ordered operations, shared equipment, pack purchasing and whole stock-assembly receipt tested. Material specification/dimension matching and measured same-unit remnants now pass actual-schema tests. Their final acceptance, scoped substitutions, partial assembly output and disassembly/recovery remain. |
+| P4 | In progress, local only | Imported revision comparison, source freshness, separate property observations, downstream holds, linked impact view and subsystem coverage implemented. Approved downstream dispositions/compatibility and complete source-failure/readiness acceptance remain. Impact visibility is not disposition approval. |
+| P5 | In progress, local only | Maintenance links, protected repair/retest closure, existing-installation and initial WIP adoption tested. Remaining learning/code/simulator/pit handoffs and complete existing-robot repair journey acceptance remain. |
+| P6 | In progress, not released | TypeScript and twenty-one-migration combined rehearsal passed. Existing recovery schema reconstructed, but current data/cloud-file recovery is unproven. Final-source CI/regression, live provider/file/role acceptance, deployment and production verification remain. APK/device evidence is separate. |
+
+Execution order: finish functional gaps; validate the connected lifecycle and failures; complete provider/recovery/permission acceptance; deploy database, backend and frontend in dependency order; verify production and record exact evidence. Existing authorization is sufficient. No new paid recovery project is authorized. Do not narrow G/S/A scope or equate a commit with completion.
 
 ## 13. Completion definition
 

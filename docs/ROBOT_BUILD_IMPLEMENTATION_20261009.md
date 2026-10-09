@@ -1,6 +1,14 @@
 # Robot Build implementation checkpoint — 9 October 2026
 
-Status: development in progress. Frontend and nineteen additive SQL migrations are local, not a production release or completion of P0–P6. Follow ROBOT_BUILD_PREDEVELOPMENT_MASTER_20261009.md for the complete scope. The user has authorized end-to-end execution; do not ask for another phase-selection approval.
+Status: development in progress. Frontend and twenty-one additive SQL migrations are local, not a production release or completion of P0–P6. Follow ROBOT_BUILD_PREDEVELOPMENT_MASTER_20261009.md for the complete scope. The user has authorized end-to-end execution; do not ask for another phase-selection approval.
+
+## Material suitability and measured remnants — current continuation
+
+- Added `robot_build_material_specs_20261009.sql` and `robot_build_remnants_20261009.sql` after the prior nineteen additions. These are local only; not yet cloud-rehearsed or deployed. Combined twenty-one-migration replay passes twice; TypeScript passes.
+- Stock specifications record material, condition, profile and dimensions. A job requirement must match identity and thickness, and fit the recorded orientation before reserving/consuming specified stock. Used specifications and units cannot be silently relabelled. No cutting-yield calculation, automatic engineering approval, or inferred dimensions. Legacy stock without a recorded specification remains explicitly unknown rather than retroactively fabricated.
+- A measured usable offcut goes to a distinct same-unit inventory item with compatible smaller dimensions. It reduces net material consumption and adds the recovered quantity exactly once; the original full blank is not refunded. Existing purchasing/finance are unchanged. Source and destination specifications, operator, quantity and location/evidence are retained. Scrap is not automatically returned.
+- Actual-schema tests cover wrong thickness/condition/size, missing requirement, permission denial, request replay, immutable used identity, excess recovery and source/destination/net-consumption conservation. Workshop UI has EN/HE specification and recovery controls and aligned responsive inputs; synthetic browser flow reached the correct same-unit offcut selection and measured-dimension form. Synthetic UI is not physical or production acceptance.
+- Remaining master gaps and release gates continue. The documents were reconciled to remove stale claims that WIP adoption/freshness/subsystem coverage were wholly unstarted. No scope was dropped.
 
 ## Subsystem scope and initial workshop work
 
