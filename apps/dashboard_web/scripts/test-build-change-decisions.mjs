@@ -46,4 +46,21 @@ assert.equal(Number((await first('select quantity from frc_parts_inventory where
 const stopped=await submit(stop,'CHG-'+id(76));await approve(stop,stopped);await as(admin);await db.query('select activate_robot_build_change($1)',[id(76)]);
 await assert.rejects(issue(1,2,id(79)),/change disposition/);
 await assert.rejects(db.query('select activate_robot_build_change($1)',[id(70)]),/newer/);
-console.log('PASS CAD change dispositions: immediate hold, exact independent approval, scoped destinations, stale decisions, quarantine and traceable returns');await db.close();
+// Pre-requirement kits must also be held. Fixture setup links the original manufactured batch.
+await db.exec('reset role');
+const legacy=await first("select i.kit_id,i.batch_id,b.job_id,k.task_id from robot_build_kit_items i join robot_build_batches b on b.id=i.batch_id join robot_build_kits k on k.id=i.kit_id where b.job_id is not null and i.line_id is null limit 1");
+assert.ok(legacy);
+await as(admin);await db.query('select add_robot_build_requirement($1,$2,4,$3,$4)',[project,'Legacy manufactured bracket demand','Legacy destination acceptance fixture',id(90)]);
+await db.query("select reconcile_robot_build_line($1,1,'independent',null,'[]',$2)",[id(90),'Independent legacy manufactured requirement']);
+await db.exec('reset role');await db.query("update robot_build_bom_lines set job_id=$2,disposition='make' where id=$1",[id(90),legacy.job_id]);
+const legacyLine=await first('select revision from robot_build_bom_lines where id=$1',[id(90)]);
+const legacyReview=await task('Review original legacy destination');await configure(legacyReview,'design_review_passed');await as(admin);
+await db.query('select propose_robot_build_change($1,null,$2,null,$3,$4,$5,$6)',[id(90),legacyLine.revision,'continue_old',legacyReview,'Retain only the four already issued original brackets',id(91)]);
+assert.equal((await first('select held from robot_build_hold_context($1) where task_id=$2',[project,legacy.task_id])).held,true);
+await db.exec('reset role');assert.equal((await first('select robot_build_change_allows($1,$2) allowed',[id(90),legacy.kit_id])).allowed,false);
+const legacyApproval=await submit(legacyReview,'CHG-'+id(91));await approve(legacyReview,legacyApproval);await as(admin);await db.query('select activate_robot_build_change($1)',[id(91)]);
+await db.exec('reset role');assert.equal((await first('select robot_build_change_allows($1,$2) allowed',[id(90),legacy.kit_id])).allowed,true);
+await assert.rejects(db.query('update robot_build_kit_items set quantity=quantity+1 where kit_id=$1 and batch_id=$2',[legacy.kit_id,legacy.batch_id]),/change disposition/);
+await db.query('update robot_build_kit_items set quantity=quantity-1 where kit_id=$1 and batch_id=$2',[legacy.kit_id,legacy.batch_id]);
+assert.equal((await first('select robot_build_change_allows($1,$2) allowed',[id(90),legacy.kit_id])).allowed,false,'changed legacy physical scope requires another review');
+console.log('PASS CAD change dispositions: immediate hold, exact independent approval, scoped and legacy destinations, stale decisions, quarantine and traceable returns');await db.close();

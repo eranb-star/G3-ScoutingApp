@@ -247,7 +247,7 @@ Run targeted tests after meaningful changes; broaden at integration/release gate
 
 For each package record: date; G/S/A IDs; changed files/RPCs/migrations; exact commit and preview/release identifiers; schema preflight; tests with results; screenshots/observed role journeys; permissions/grants affected; migration/rollback notes; provider/device/physical limits; unresolved items with next action. Never paste credentials, private source payloads or unnecessary personal data.
 
-Current execution ledger — reconciled against pushed source `b3269b0`. Historical checkpoint entries do not override this table. All expanded work remains undeployed. Recorded production baseline: `d0e6231` / implementation `589943e`; reading this ledger is not a new live verification.
+Current execution ledger — reconciled against pushed source `39486c9` and the current draft/legacy acceptance increment. Historical checkpoint entries do not override this table. All expanded work remains undeployed. Recorded production baseline: `d0e6231` / implementation `589943e`; reading this ledger is not a new live verification.
 
 | Package | Status | Evidence / next action |
 |---|---|---|
@@ -255,7 +255,7 @@ Current execution ledger — reconciled against pushed source `b3269b0`. Histori
 | P1 | In progress, local only | Direct entry, scope setup, role queues, guided preparation, accessible leave dialog and Back guard implemented. Full role/auth/device acceptance and all-form draft contract remain. |
 | P2 | In progress, local only | Observed metadata and immutable uploaded files/scoped downloads verified in isolated tests. Provider association/export and live file acceptance remain. |
 | P3 | In progress, local only | Reservations, partial lots, exact kits, ordered operations, shared equipment, pack purchasing and whole stock-assembly receipt tested. Material specification/dimension matching and measured same-unit remnants now pass actual-schema tests. Partial assembly output and independently inspected disassembly/recovery now pass actual-schema tests. Scoped substitutions now pass actual-schema tests and have integrated UI; complete workflow acceptance remains. |
-| P4 | In progress, local only | Imported revision comparison, source freshness, separate property observations, downstream holds, linked impact view and subsystem coverage implemented. Independent scoped downstream dispositions now have server enforcement and UI; integrated legacy/cross-system and source-failure/readiness acceptance remain. |
+| P4 | In progress, local only | Imported revision comparison, source freshness, separate property observations, downstream holds, linked impact view and subsystem coverage implemented. Independent scoped downstream dispositions now have server enforcement and UI; legacy exact-destination acceptance now passes; cross-system and source-failure/readiness acceptance remain. |
 | P5 | In progress, local only | Maintenance links, protected repair/retest closure, existing-installation and initial WIP adoption tested. Remaining learning/code/simulator/pit handoffs and complete existing-robot repair journey acceptance remain. |
 | P6 | In progress, not released | TypeScript and twenty-five-migration combined rehearsal passed. Existing recovery schema reconstructed, but current data/cloud-file recovery is unproven. Final-source CI/regression, live provider/file/role acceptance, deployment and production verification remain. APK/device evidence is separate. |
 
