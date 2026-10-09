@@ -65,6 +65,8 @@ jobs:
           node scripts/test-build-draft-registry.mjs
           node scripts/test-build-learning.mjs
           node scripts/test-build-software.mjs
+          node scripts/test-build-simulation.mjs
+          node scripts/test-build-event-handoff.mjs
           node scripts/test-build-part-geometry.mjs
           node scripts/test-build-change-decisions.mjs
           node scripts/test-robot-build-scope.mjs
@@ -78,12 +80,6 @@ jobs:
           node scripts/test-browser-attendance.mjs
           node scripts/verify-mobile-notification-stability.mjs
       # Exercise the current permission-controlled catalogue, not obsolete token/URL strings.
-      - name: Build simulation references
-        working-directory: apps/dashboard_web
-        run: node scripts/test-build-simulation.mjs
-      - name: Build event handoff
-        working-directory: apps/dashboard_web
-        run: node scripts/test-build-event-handoff.mjs
       - name: Private repository access boundaries
         run: node scripts/test-private-repositories.mjs
       - name: Private CAD authorization, revisions and review evidence
