@@ -4,6 +4,7 @@ This is the entry point for current status and decisions. It reconciles existing
 
 ## Read order for a new session
 1. This checkpoint and the current user request.
+   For future priorities, read [NEXT_PHASES_MASTER_20261010.md](NEXT_PHASES_MASTER_20261010.md). It supersedes earlier roadmap ordering and separates delivered functionality, remaining development, conditional work and physical acceptance. Planning only; no new phase is authorized by that document.
 2. WORKING_EXPECTATIONS.md, especially proportional verification and token/time discipline.
 3. The release/design record for the specific area being changed. Do not reread the entire archive by default.
 4. For Robot Build: ROBOT_BUILD_RELEASE_20261009.md, then the predevelopment master only when its requirements are relevant.
