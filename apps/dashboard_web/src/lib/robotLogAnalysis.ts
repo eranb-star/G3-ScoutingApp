@@ -3,10 +3,11 @@ export type LogIdentity={project:string|null;repository:string|null;commit:strin
 const text=(c:LogChannel)=>c.samples.filter(s=>typeof s.value==='string').map(s=>String(s.value));
 export function logIdentity(log:RobotLog):LogIdentity{
  const values=(names:string[])=>[...new Set(log.channels.filter(c=>names.some(n=>c.name===n)).flatMap(text))];
- const project=values(['/Metadata/ProjectName','Metadata/ProjectName']);
- const repository=values(['/Metadata/GitRepository','Metadata/GitRepository']);
- const commit=values(['/Metadata/GitSHA','Metadata/GitSHA']);
- const dirtyChannels=log.channels.filter(c=>['/Metadata/GitDirty','Metadata/GitDirty'].includes(c.name));
+ const names=(key:string)=>['/Metadata/','Metadata/','/RealMetadata/','RealMetadata/'].map(prefix=>prefix+key);
+ const project=values(names('ProjectName'));
+ const repository=values(names('GitRepository'));
+ const commit=values(names('GitSHA'));
+ const dirtyChannels=log.channels.filter(c=>names('GitDirty').includes(c.name));
  const dirtyValues=dirtyChannels.flatMap(c=>c.samples.map(s=>s.value));
  const dirty=dirtyValues.length?dirtyValues.every(v=>v===false||v===0||v==='0')?false:dirtyValues.every(v=>v===true||v===1||v==='1')?true:null:null;
  return {project:project.length===1?project[0]:null,repository:repository.length===1?repository[0]:null,commit:commit.length===1&&/^[a-f0-9]{40}$/i.test(commit[0])?commit[0].toLowerCase():null,dirty,conflicts:project.length>1||repository.length>1||commit.length>1};

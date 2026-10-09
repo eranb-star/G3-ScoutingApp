@@ -1,6 +1,7 @@
 import {privateRobotContext} from '../lib/robotRepositories';
 import AssistAnswer from '../components/AssistAnswer';
 import {assistDraftKey} from '../lib/assistDecision';
+import {logAssistKey,readLogAssistDraft} from '../lib/robotLogAssist';
 import SoftwareReviewHandoff from '../components/SoftwareReviewHandoff';
 import SoftwareMentorContext,{type SoftwareSelection} from '../components/SoftwareMentorContext';
 import { useG3AssistAccess } from "../lib/useG3AssistAccess";
@@ -56,6 +57,7 @@ export default function FrcAssistantPage() {
   const [privacyConfirmed, setPrivacyConfirmed] = useState(false);
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState("");
+  const [logDraft,setLogDraft]=useState<string|null>(null);
   const [remaining, setRemaining] = useState<number | null>(null);
   const [issueContext,setIssueContext]=useState<IssueContext|null>(null);
   const endRef = useRef<HTMLDivElement>(null);
@@ -200,6 +202,7 @@ export default function FrcAssistantPage() {
   useEffect(() => {
     if (!profile) return;
     void refreshHistory();
+    if(params.get('logDraft')){try{setLogDraft(readLogAssistDraft(sessionStorage.getItem(logAssistKey(profile.id))));}catch{setStatus(pick('Local log draft unavailable. Return to log inspection.','טיוטת הלוג אינה זמינה. חזרו לבדיקת הלוג.'));}return;}
     const activeId = sessionStorage.getItem(ACTIVE_CONVERSATION_KEY);
     if (activeId&&!params.get('robotRepository')) void loadConversation(activeId, false);
   }, [profile?.id]);
@@ -257,6 +260,7 @@ export default function FrcAssistantPage() {
   function createTaskDraft(message:ChatMessage){if(!profile||privateRobotContext(software?.repository))return;if(!/^[0-9a-f-]{36}$/i.test(message.id)){setStatus(pick('Reopen this saved conversation before creating a task. The answer must be saved first.','פתחו מחדש את השיחה השמורה לפני יצירת משימה. יש לשמור את התשובה תחילה.'));return;}try{const key=assistDraftKey(profile.id);if(sessionStorage.getItem(key)){setStatus(pick('A task draft already exists. Open Projects to finish or discard it first.','כבר קיימת טיוטת משימה. פתחו פרויקטים כדי להשלים או לבטל אותה תחילה.'));return;}const i=messages.findIndex(m=>m.id===message.id),question=[...messages.slice(0,i)].reverse().find(m=>m.role==='user')?.content??'G3 Assist decision';sessionStorage.setItem(key,JSON.stringify({version:1,member:profile.id,message:message.id,request:crypto.randomUUID(),title:question.slice(0,150)}));navigate('/projects?assistantDraft=1');}catch{setStatus(pick('Could not save the task draft on this device.','לא ניתן לשמור טיוטת משימה במכשיר זה.'));}}
 
   return <main className="assistant-page">
+    {logDraft&&<section className="assistant-evidence-context"><div><strong>{pick('Review selected robot-log evidence','בדיקת ראיות נבחרות מלוג הרובוט')}</strong><p>{pick('Nothing has been sent. Loading places this excerpt in a new question. Sending then shares it with Gemini and saves it in your conversation history. The raw file is not uploaded.','דבר לא נשלח. טעינה מציבה את הקטע בשאלה חדשה. שליחה תשתף אותו עם Gemini ותשמור אותו בהיסטוריית השיחה. הקובץ הגולמי אינו מועלה.')}</p><details><summary>{pick('Inspect the exact excerpt','בדיקת הקטע המדויק')}</summary><pre style={{whiteSpace:'pre-wrap',overflowWrap:'anywhere'}}>{logDraft}</pre></details><button disabled={busy||!!pendingRequest||!!question||!!conversationId} onClick={()=>{setQuestion(logDraft);try{if(profile)sessionStorage.removeItem(logAssistKey(profile.id));}catch{}setLogDraft(null);}}>{pick('Load into new question','טעינה לשאלה חדשה')}</button><button disabled={busy} onClick={()=>{try{if(profile)sessionStorage.removeItem(logAssistKey(profile.id));}catch{}setLogDraft(null);}}>{pick('Discard local draft','ביטול טיוטה מקומית')}</button></div></section>}
     <header className="assistant-header">
       <button className="assistant-back" type="button" onClick={() => navigate(-1)} aria-label={pick("Back", "חזרה")}>‹</button>
       <div className="assistant-identity"><div className="assistant-avatar assistant-avatar-large" aria-hidden="true"><img src="/g3-assistant.png" alt="" /><span>✦</span></div><div><div className="hub-eyebrow">G3 6740 · FRC</div><h1>G3 Assist</h1><p>{pick("Workshop-ready help for robot, code, electrical and strategy questions.", "עזרה מוכנה לסדנה בשאלות רובוט, תוכנה, אלקטרוניקה ואסטרטגיה.")}</p></div></div>

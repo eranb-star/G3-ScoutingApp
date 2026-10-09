@@ -17,6 +17,7 @@ This is the entry point for current status and decisions. It reconciles existing
 - Latest signed APK remains 2.4.0/code27, built against prior release 9f11bee. It does NOT bundle the new reminder/navigation changes. No physical-device acceptance of that APK has been performed. Do not imply website deployment updates its bundled frontend.
 
 ## User decisions that remain binding
+- 10 October: keep robot GitHub access read-only. App-triggered build/test execution is deliberately deferred; remind the user in the next software review that it would return compile/test results for a selected revision inside G3 and requires separately approved Actions permission. Do not expand access or write the robot repositories. Local/manual builds remain available.
 - Keep today's Robot Build/CAD/manufacturing functionality as delivered while the user reviews it with students. Do not start another CAD/CAM integration from earlier speculative planning.
 - Onshape CAM Studio is not currently used or selected by the team. G3-native CAM is not authorized. Automatic native manufacturing exports remain unbuilt and are optional next work, not a prerequisite to use the existing uploaded-file workflow.
 - No new paid Supabase recovery project. Reuse existing approved resources where feasible; do not infer permission for a paid service.
