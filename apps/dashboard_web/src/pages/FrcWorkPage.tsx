@@ -12,6 +12,16 @@ import { frcTeams, teamMatches } from "../lib/frcTeams";
 import { memberTeams } from "../lib/accessControl";
 
 
+const workIcons = {
+  academy: 'M3 4h6a4 4 0 0 1 3 1 4 4 0 0 1 3-1h6v15h-6a4 4 0 0 0-3 1 4 4 0 0 0-3-1H3z M12 5v15',
+  projects: 'M3 7h7l2 2h9v11H3z M3 7V4h7l2 3h7v2',
+  build: 'M12 3 3 8l9 5 9-5-9-5z M3 8v9l9 5 9-5V8 M12 13v9 M7 5l9 5',
+  engineering: 'm8 7-5 5 5 5 M16 7l5 5-5 5 M14 4l-4 16',
+  health: 'M3 12h4l3-7 4 14 3-7h4',
+};
+function WorkIcon({kind}:{kind:keyof typeof workIcons}) {
+  return <span className="work-destination-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d={workIcons[kind]}/></svg></span>;
+}
 type Project={id:string;name:string;status:string;subteam:string|null;due_at:string|null};
 type Task={id:string;project_id:string;title:string;status:string;due_at:string|null;assignee_id:string|null};
 type Course={id:string;title:string};
@@ -67,10 +77,10 @@ export default function FrcWorkPage(){
 
 
     </section>
-    <section className="work-project-entry" aria-labelledby="work-academy"><div><h2 id="work-academy">{pick('Skills Academy','אקדמיית מיומנויות')}</h2><p>{nextCourse?pick('Next: ','הבא: ')+nextCourse.title:pick('No course currently assigned','אין קורס מוקצה כרגע')}</p>{underway.length>0&&<small>{underway.length} {pick('courses in progress','קורסים בתהליך')} · {skillPercent}% {pick('assigned modules approved','מהמודולים המוקצים אושרו')}</small>}</div><button className="hub-button" onClick={()=>navigate(nextCourse?'/growth?course='+encodeURIComponent(nextCourse.id):'/growth')}>{nextCourse?pick('Continue learning','המשך למידה'):pick('Open Academy','פתיחת האקדמיה')}</button></section>
-    <section className="work-project-entry" aria-labelledby="work-projects"><div><h2 id="work-projects">{pick('Team Projects','פרויקטי צוות')}</h2><p>{myAreas.length?myAreas.map(area=>pick(area.name,area.nameHe)).join(' · '):pick('Projects across all team workspaces','פרויקטים בכל מרחבי הצוות')}</p>{myAreas.length>0&&<small>{myProjects.length} {pick('active projects in your teams','פרויקטים פעילים בצוותים שלכם')} · {myWorkspaceTasks.length} {pick('open tasks','משימות פתוחות')}</small>}</div><button className="hub-button" onClick={()=>navigate(myAreas.length===1?`/projects?subteam=${myArea.key}`:'/projects')}>{pick('Open team projects','פתיחת פרויקטי צוות')}</button></section>
-    <section className="work-project-entry" aria-labelledby="work-build"><div><h2 id="work-build">{pick('Robot Build','בניית הרובוט')}</h2><p>{pick('Choose a build to review parts, manufacturing and installation.','בחרו בנייה לבדיקת חלקים, ייצור והתקנה.')}</p></div><button className="hub-button" onClick={()=>navigate('/robot-build')}>{pick('Open Robot Build','פתיחת בניית הרובוט')}</button></section>
-    <section className="work-project-entry" aria-labelledby="work-engineering"><div><h2 id="work-engineering">{pick('Engineering Hub','מרכז הנדסה')}</h2><p>{pick('Code review, log diagnosis, autonomous planning and CAD.','סקירת קוד, אבחון לוגים, תכנון אוטונומי ו-CAD.')}</p></div><button className="hub-button" onClick={()=>navigate('/engineering')}>{pick('Open Engineering Hub','פתיחת מרכז ההנדסה')}</button></section>
-    <section className="work-project-entry" aria-labelledby="work-health"><div><h2 id="work-health">{pick('Robot Health','בריאות הרובוט')}</h2><p>{issues.length} {pick('open issues','תקלות פתוחות')} · {serviceAlerts} {pick('service alerts','התראות שירות')}</p></div><button className="hub-button" onClick={()=>navigate('/robot-reliability')}>{pick('Open Robot Health','פתיחת בריאות הרובוט')}</button></section>
+    <section className="work-project-entry" aria-labelledby="work-academy"><WorkIcon kind="academy"/><div><h2 id="work-academy">{pick('Skills Academy','אקדמיית מיומנויות')}</h2><p>{nextCourse?pick('Next: ','הבא: ')+nextCourse.title:pick('No course currently assigned','אין קורס מוקצה כרגע')}</p>{underway.length>0&&<small>{underway.length} {pick('courses in progress','קורסים בתהליך')} · {skillPercent}% {pick('assigned modules approved','מהמודולים המוקצים אושרו')}</small>}</div><button className="work-destination-action" onClick={()=>navigate(nextCourse?'/growth?course='+encodeURIComponent(nextCourse.id):'/growth')}>{nextCourse?pick('Continue learning','המשך למידה'):pick('Open Academy','פתיחת האקדמיה')}</button></section>
+    <section className="work-project-entry" aria-labelledby="work-projects"><WorkIcon kind="projects"/><div><h2 id="work-projects">{pick('Team Projects','פרויקטי צוות')}</h2><p>{myAreas.length?myAreas.map(area=>pick(area.name,area.nameHe)).join(' · '):pick('Projects across all team workspaces','פרויקטים בכל מרחבי הצוות')}</p>{myAreas.length>0&&<small>{myProjects.length} {pick('active projects in your teams','פרויקטים פעילים בצוותים שלכם')} · {myWorkspaceTasks.length} {pick('open tasks','משימות פתוחות')}</small>}</div><button className="work-destination-action" onClick={()=>navigate(myAreas.length===1?`/projects?subteam=${myArea.key}`:'/projects')}>{pick('Open team projects','פתיחת פרויקטי צוות')}</button></section>
+    <section className="work-project-entry" aria-labelledby="work-build"><WorkIcon kind="build"/><div><h2 id="work-build">{pick('Robot Build','בניית הרובוט')}</h2><p>{pick('Choose a build to review parts, manufacturing and installation.','בחרו בנייה לבדיקת חלקים, ייצור והתקנה.')}</p></div><button className="work-destination-action" onClick={()=>navigate('/robot-build')}>{pick('Open Robot Build','פתיחת בניית הרובוט')}</button></section>
+    <section className="work-project-entry" aria-labelledby="work-engineering"><WorkIcon kind="engineering"/><div><h2 id="work-engineering">{pick('Engineering Hub','מרכז הנדסה')}</h2><p>{pick('Code review, log diagnosis, autonomous planning and CAD.','סקירת קוד, אבחון לוגים, תכנון אוטונומי ו-CAD.')}</p></div><button className="work-destination-action" onClick={()=>navigate('/engineering')}>{pick('Open Engineering Hub','פתיחת מרכז ההנדסה')}</button></section>
+    <section className="work-project-entry" aria-labelledby="work-health"><WorkIcon kind="health"/><div><h2 id="work-health">{pick('Robot Health','בריאות הרובוט')}</h2><p>{issues.length} {pick('open issues','תקלות פתוחות')} · {serviceAlerts} {pick('service alerts','התראות שירות')}</p></div><button className="work-destination-action" onClick={()=>navigate('/robot-reliability')}>{pick('Open Robot Health','פתיחת בריאות הרובוט')}</button></section>
   </main>;
 }
