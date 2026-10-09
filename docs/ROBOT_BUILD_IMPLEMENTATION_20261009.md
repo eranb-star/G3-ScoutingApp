@@ -1,6 +1,15 @@
 # Robot Build implementation checkpoint — 9 October 2026
 
-Status: development in progress. Frontend and five additive SQL migrations are local, not a production release or completion of P0/P1/P3. Follow ROBOT_BUILD_PREDEVELOPMENT_MASTER_20261009.md for the complete scope. The user has authorized end-to-end execution; do not ask for another phase-selection approval.
+Status: development in progress. Frontend and seven additive SQL migrations are local, not a production release or completion of P0/P1/P3. Follow ROBOT_BUILD_PREDEVELOPMENT_MASTER_20261009.md for the complete scope. The user has authorized end-to-end execution; do not ask for another phase-selection approval.
+
+## Controlled work files continuation — local, not deployed
+
+- Added robot_build_files_20261009.sql and robot_build_file_storage_20261009.sql: immutable manifests, private upload-only bucket policy, exact checkpoint/revision/fingerprint evidence binding, and explicit assigned-worker sharing after current release approval. No existing CAD geometry is automatically shared.
+- New robot-build-files function checks caller RLS before signing, computes SHA-256 from stored bytes, and returns attachment URLs valid for 60 seconds. Existing downloaded files cannot be recalled. No client update/delete or direct bucket-read policy was added.
+- Release task and manufacturing panels expose the files. The existing evidence editor selects verified uploads directly and presents them as a compact immutable card; no manual hash/source-ID copying is required. /robot-build/file is authenticated. Uploads are a controlled manual path, not automatic Onshape exports or verified drawing-to-part association.
+- Actual engineering fixture plus storage-policy fixture passed: migration rerun, uploader/worker/reviewer boundaries, inactive denial, immutable finalize/retry, managed-link bypass rejection, revision/hash matching and loss of worker access after a superseding release. The actual function handler test passed auth, owner-only hashing and 60-second signed attachment behavior using isolated mocks.
+- Browser verified auto-filled evidence and compact managed-file display on synthetic data; screenshot staging/robot-build-file-picker-local-20261009.png. TypeScript and Vite passed. No production upload, new live grant or real student assignment was performed.
+- Total new migrations now seven (the previous five, then file manifest and storage). Deploy the new robot-build-files function before the dependent client. Storage restoration, real upload/download and phone/APK acceptance remain unverified; complete P2 also requires provider export/association and broader handoffs.
 
 ## CAD metadata continuation — local, provider acceptance pending
 

@@ -1,0 +1,16 @@
+import fs from 'node:fs';import assert from 'node:assert/strict';import ts from 'typescript';
+let handler,authenticated=true,visible=true,owner='member',signedCalls=0,finalized,blob=new Blob(['controlled drawing']);
+const id='92000000-0000-0000-0000-000000000001';
+const client={auth:{getUser:async()=>({data:{user:authenticated?{id:'member'}:null}})},from(){const q={select(){return q;},eq(){return q;},maybeSingle:async()=>({data:visible?{id,created_by:owner,status:'ready',name:'drawing.pdf',revision:'A',sha256:'a'.repeat(64)}:null})};return q;},rpc:async(name,args)=>{finalized={name,args};return{error:null};},storage:{from(){return{download:async()=>({data:blob}),createSignedUrl:async(key,seconds,options)=>{signedCalls++;assert.equal(seconds,60);assert.equal(options.download,'drawing.pdf');assert.equal(key,'member/'+id);return{data:{signedUrl:'https://project.supabase.co/storage/signed'}};}}}}};
+globalThis.__fileClient=()=>client;globalThis.__fileDeno={env:{get:()=> 'test'},serve:fn=>handler=fn};
+let source=fs.readFileSync('../../backend/supabase/functions/robot-build-files/index.ts','utf8').replace(/import \{createClient\} from '[^']+';/,'const createClient=globalThis.__fileClient;const Deno=globalThis.__fileDeno;');
+await import('data:text/javascript;base64,'+Buffer.from(ts.transpileModule(source,{compilerOptions:{target:99,module:99}}).outputText).toString('base64'));
+const call=(action,auth='Bearer valid')=>handler(new Request('https://project.supabase.co/functions/v1/robot-build-files',{method:'POST',headers:{Authorization:auth},body:JSON.stringify({action,fileId:id})}));
+assert.equal((await call('download','')).status,401);authenticated=false;assert.equal((await call('download')).status,401);authenticated=true;
+visible=false;assert.equal((await call('download')).status,403);assert.equal(signedCalls,0);visible=true;
+owner='another';assert.equal((await call('finalize')).status,403);owner='member';
+let response=await call('finalize');assert.equal(response.status,200);assert.equal(finalized.args.p_size,blob.size);assert.match(finalized.args.p_hash,/^[a-f0-9]{64}$/);
+const expected=Buffer.from(await crypto.subtle.digest('SHA-256',await blob.arrayBuffer())).toString('hex');assert.equal(finalized.args.p_hash,expected);
+response=await call('download');assert.equal(response.status,200);assert.equal(response.headers.get('cache-control'),'no-store');assert.equal(signedCalls,1);
+blob=new Blob([]);assert.equal((await call('finalize')).status,400);
+console.log('PASS work-file handler: authentication, scoped lookup before signing, owner-only finalization, actual SHA-256 and 60-second attachment download');
