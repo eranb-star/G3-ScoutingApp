@@ -24,6 +24,18 @@ const inventoryBoundary = read("../../backend/supabase/inventory_admin_boundary_
 const competitionBoundary = read("../../backend/supabase/competition_access_boundary_20260905.sql");
 const academyBoundary = read("../../backend/supabase/skills_academy_access_boundary_20260905.sql");
 
+// Exercise the actual boolean expression; formatting and additional guards are valid.
+function academyEditScopeIsCorrect(){
+  const expression=academy.match(/const\s+canEdit\s*=\s*([^;]+);/)?.[1];
+  if(!expression)return false;
+  const evaluate=new Function('instructor','studentPreview','access','active','return ('+expression+');');
+  for(const instructor of [false,true])for(const studentPreview of [false,true])for(const allowed of [false,true]){
+    const calls=[];const actual=evaluate(instructor,studentPreview,{can:(permission,team)=>{calls.push([permission,team]);return allowed;}},{target_subteam:'mechanical'});
+    if(actual!==(instructor&&!studentPreview&&allowed))return false;
+    if(instructor&&!studentPreview&&(calls.length!==1||calls[0][0]!=='manage_training'||calls[0][1]!=='mechanical'))return false;
+  }
+  return true;
+}
 const checks = [
   ["Work treats qualified training as complete", work.includes('status!=="qualified"') && !work.includes('status!=="completed"')],
   ["Home has a single responsibility list", (home.match(/<HomeActionInbox\b/g)??[]).length===1 && !home.includes("home-my-work")],
@@ -38,7 +50,7 @@ const checks = [
   ["Only administrators manage inventory by default", !access.match(/team_leader:\[[^\]]*manage_inventory/) && !access.match(/mentor:\[[^\]]*manage_inventory/) && Boolean(access.match(/admin:\[[^\]]*manage_inventory/))],
   ["Team leaders submit purchase requests without inventory control", Boolean(access.match(/team_leader:\[[^\]]*submit_purchase_requests/)) && inventoryBoundary.includes("('team_leader', 'manage_inventory', false)")],
   ["Inventory boundary is enforced for every role", inventoryBoundary.includes("('member', 'manage_inventory', false)") && inventoryBoundary.includes("('mentor', 'manage_inventory', false)") && inventoryBoundary.includes("('admin', 'manage_inventory', true)")],
-  ["Skills Academy edits are scoped to the selected course", academy.includes('const canEdit=access.can("manage_training",active?.target_subteam)')],
+  ["Skills Academy edits are scoped to the selected course", academyEditScopeIsCorrect()],
   ["Team leaders default new courses to a led department", academy.includes('target_subteam:profile?.role==="team_leader"')],
   ["Unauthorized course targets are rejected before submission", academy.includes('Choose a department you are authorized to lead.')],
   ["Project status updates verify ownership or team authority", projects.includes('project.owner_id!==profile?.id&&!access.can("manage_team_projects",project.subteam)')],
