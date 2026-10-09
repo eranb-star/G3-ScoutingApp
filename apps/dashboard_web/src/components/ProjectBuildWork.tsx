@@ -1,4 +1,4 @@
-import {useEffect,useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
 import {supabase} from '../supabase';
 import {useLocalization} from '../lib/localization';
 import {useMemberAuth} from '../lib/memberAuth';
@@ -8,40 +8,55 @@ import ProjectBom from './ProjectBom';
 import BuildManufacturing from './BuildManufacturing';
 import BuildKits from './BuildKits';
 import BuildOperations from './BuildOperations';
+import {readBuildPages} from '../lib/robotBuildWorkspace';
 type Task={id:string;title:string;status:string;assignee_id:string|null};
 type Job={id:string;task_id:string;part_name:string;part_revision:string;instructions:string;required_quantity:number;completed_quantity:number;revision:number;operations?:{id:number;title:string;completed:number}[]};
 type Release={task_id:string;current_submission:string;revision:string};
-export default function ProjectBuildWork({projectId,tasks,canManage,canStock,canBuy,focusedTask,initiallyOpen=false}:{projectId:string;tasks:Task[];canManage:boolean;canStock:boolean;canBuy:boolean;focusedTask?:string|null;initiallyOpen?:boolean}){
+export default function ProjectBuildWork({projectId,tasks,canManage,canStock,canBuy,focusedTask,initiallyOpen=false,workspaceView,confirmDiscard=()=>true}:{projectId:string;tasks:Task[];canManage:boolean;canStock:boolean;canBuy:boolean;focusedTask?:string|null;initiallyOpen?:boolean;workspaceView?:'parts'|'work'|'assembly';confirmDiscard?:()=>boolean}){
  const {pick}=useLocalization(),{profile}=useMemberAuth();
  const [open,setOpen]=useState(false),[jobs,setJobs]=useState<Job[]>([]),[releases,setReleases]=useState<Release[]>([]),[qc,setQc]=useState<string[]>([]);
- const [view,setView]=useState<'parts'|'work'|'assembly'>(initiallyOpen?'parts':'work');
+ const [localView,setView]=useState<'parts'|'work'|'assembly'>(initiallyOpen?'parts':'work');
+ const view=workspaceView??localView;
  const [loaded,setLoaded]=useState(false),[busy,setBusy]=useState(false),[message,setMessage]=useState('');
+ const loadGeneration=useRef(0);
  const [adding,setAdding]=useState(false),[task,setTask]=useState(''),[release,setRelease]=useState(''),[name,setName]=useState(''),[instructions,setInstructions]=useState(''),[quantity,setQuantity]=useState('1');
  async function load(){
+  const generation=++loadGeneration.current;
   setLoaded(false);setMessage('');
   try{
    const ids=tasks.map(t=>t.id);if(!ids.length){setJobs([]);setReleases([]);setQc([]);setLoaded(true);return;}
-   const [j,g]=await Promise.all([supabase.from('robot_build_jobs').select('*').in('task_id',ids),supabase.from('project_review_gates').select('task_id,current_submission,decision_type,enabled').in('task_id',ids)]);
-   if(j.error||g.error)throw Error();
-   const gates=(g.data??[]).filter(g=>g.enabled);setQc(gates.filter(g=>g.decision_type==='qc_accepted').map(g=>g.task_id));
+   const jobs:Job[]=[],gates:{task_id:string;current_submission:string|null;decision_type:string;enabled:boolean}[]=[];
+   for(let offset=0;offset<ids.length;offset+=100){
+    const chunk=ids.slice(offset,offset+100);
+    const [j,g]=await Promise.all([
+     readBuildPages<Job>((a,z)=>supabase.from('robot_build_jobs').select('*').in('task_id',chunk).order('id').range(a,z)),
+     readBuildPages<{task_id:string;current_submission:string|null;decision_type:string;enabled:boolean}>((a,z)=>supabase.from('project_review_gates').select('task_id,current_submission,decision_type,enabled').in('task_id',chunk).order('task_id').range(a,z)),
+    ]);
+    jobs.push(...j);gates.push(...g.filter(g=>g.enabled));
+   }
    const candidates=gates.filter(g=>g.decision_type==='released_for_manufacturing'&&g.current_submission);
    let accepted:Release[]=[];
-   if(candidates.length){const s=await supabase.from('project_review_submissions').select('id,revision,status').in('id',candidates.map(g=>g.current_submission));if(s.error)throw Error();
-    accepted=candidates.flatMap(g=>{const submission=s.data?.find(s=>s.id===g.current_submission&&['approved','overridden'].includes(s.status));return submission?[{task_id:g.task_id,current_submission:submission.id,revision:submission.revision}]:[];});}
-   setJobs(j.data??[]);setReleases(accepted);setLoaded(true);
-  }catch{setMessage(pick('Build records could not be loaded. Retry before changing work.','לא ניתן לטעון רשומות בנייה. נסו שוב לפני שינוי העבודה.'));}
+   for(let offset=0;offset<candidates.length;offset+=100){const chunk=candidates.slice(offset,offset+100);
+    const submissions=await readBuildPages<{id:string;revision:string;status:string}>((a,z)=>supabase.from('project_review_submissions').select('id,revision,status').in('id',chunk.map(g=>g.current_submission!)).order('id').range(a,z));
+    accepted.push(...chunk.flatMap(g=>{const submission=submissions.find(s=>s.id===g.current_submission&&['approved','overridden'].includes(s.status));return submission?[{task_id:g.task_id,current_submission:submission.id,revision:submission.revision}]:[];}));
+   }
+   if(generation!==loadGeneration.current)return;
+   setQc(gates.filter(g=>g.decision_type==='qc_accepted').map(g=>g.task_id));setJobs(jobs);setReleases(accepted);setLoaded(true);
+  }catch{if(generation===loadGeneration.current)setMessage(pick('Build records could not be loaded. Retry before changing work.','לא ניתן לטעון רשומות בנייה. נסו שוב לפני שינוי העבודה.'));}
  }
+ useEffect(()=>()=>{loadGeneration.current++;},[projectId]);
  const focusedHere=!!focusedTask&&tasks.some(t=>t.id===focusedTask);
  useEffect(()=>{if(focusedHere||initiallyOpen){setOpen(true);void load();}},[focusedHere,focusedTask,initiallyOpen]);
  const chosen=releases.find(r=>r.task_id===release);
  return <section className="project-build-work">
-  <button type="button" aria-expanded={open} onClick={()=>{setOpen(!open);if(!open)void load();}}>{pick('Robot build · manufacturing work','בניית הרובוט · עבודות ייצור')}</button>
+  {!workspaceView&&<p><a href={`/robot-build?project=${projectId}&view=parts`}>{pick('Open Robot Build workspace','פתיחת סביבת בניית הרובוט')} →</a></p>}
+  {!workspaceView&&<button type="button" aria-expanded={open} onClick={()=>{setOpen(!open);if(!open)void load();}}>{pick('Robot build · manufacturing work','בניית הרובוט · עבודות ייצור')}</button>}
   {open&&<div className="build-work-content">
    <p>{pick('Work stays linked to existing tasks and engineering checkpoints. Reported quantities are not accepted stock.','העבודה מקושרת למשימות ולנקודות הביקורת הקיימות. כמות שדווחה אינה מלאי שאושר.')}</p>
-   <nav className="build-work-tabs" aria-label={pick('Build workflow','תהליך הבנייה')}>{(['parts','work','assembly'] as const).map(v=><button type="button" key={v} aria-pressed={view===v} onClick={()=>setView(v)}>{v==='parts'?pick('1 · Parts & sourcing','1 · חלקים ומקורות'):v==='work'?pick('2 · Manufacture & inspect','2 · ייצור ובדיקה'):pick('3 · Assemble & install','3 · הרכבה והתקנה')}</button>)}</nav>
-   <div className="build-work-actions"><button type="button" disabled={busy} onClick={()=>void load()}>{pick('Refresh','רענון')}</button>{canManage&&loaded&&view==='work'&&<button type="button" onClick={()=>setAdding(!adding)}>{pick('Attach manufacturing work','קישור עבודת ייצור')}</button>}</div>
+   {!workspaceView&&<nav className="build-work-tabs" aria-label={pick('Build workflow','תהליך הבנייה')}>{(['parts','work','assembly'] as const).map(v=><button type="button" key={v} aria-pressed={view===v} onClick={()=>setView(v)}>{v==='parts'?pick('1 · Parts & sourcing','1 · חלקים ומקורות'):v==='work'?pick('2 · Manufacture & inspect','2 · ייצור ובדיקה'):pick('3 · Assemble & install','3 · הרכבה והתקנה')}</button>)}</nav>}
+   <div className="build-work-actions"><button type="button" disabled={busy} onClick={()=>{if(confirmDiscard())void load();}}>{pick('Refresh','רענון')}</button>{canManage&&loaded&&view==='work'&&<button type="button" onClick={()=>{if(confirmDiscard())setAdding(!adding);}}>{pick('Attach manufacturing work','קישור עבודת ייצור')}</button>}</div>
    <p role="status">{message||(!loaded?pick('Loading…','טוען…'):'')}</p>
-   {loaded&&view==='parts'&&<ProjectBom projectId={projectId} canManage={canManage} canStock={canStock} canBuy={canBuy} jobs={jobs} onChanged={load}/>}
+   {loaded&&view==='parts'&&<ProjectBom confirmDiscard={confirmDiscard} compact={!!workspaceView} projectId={projectId} canManage={canManage} canStock={canStock} canBuy={canBuy} jobs={jobs} onChanged={load}/>}
    {loaded&&view==='work'&&adding&&canManage&&<form onSubmit={async e=>{e.preventDefault();if(busy||!chosen)return;setBusy(true);try{
     const r=await supabase.rpc('create_robot_build_job',{p_task:task,p_release_task:release,p_submission:chosen.current_submission,p_name:name,p_revision:chosen.revision,p_instructions:instructions,p_quantity:Number(quantity)});
     if(r.error)throw Error(r.error.message);setAdding(false);await load();setMessage(pick('Manufacturing work linked to the task.','עבודת הייצור קושרה למשימה.'));notifyProjectChange();
@@ -57,16 +72,16 @@ export default function ProjectBuildWork({projectId,tasks,canManage,canStock,can
     </fieldset></form>}
    {loaded&&view==='work'&&!jobs.length&&<p>{pick('No manufacturing jobs linked to this project yet.','עדיין לא קושרו עבודות ייצור לפרויקט זה.')}</p>}
    {loaded&&view==='assembly'&&<BuildKits projectId={projectId} tasks={tasks} canManage={canManage} canStock={canStock}/>}
-   {loaded&&view==='work'&&jobs.map(job=><div key={`${job.id}/${job.revision}`}><BuildProgress job={job} task={tasks.find(t=>t.id===job.task_id)} projectId={projectId} editable={canManage||tasks.find(t=>t.id===job.task_id)?.assignee_id===profile?.id} onSaved={async()=>{await load();setMessage(pick('Progress saved. Reported quantities still require inspection.','ההתקדמות נשמרה. הכמויות שדווחו עדיין דורשות בדיקה.'));}}/><BuildOperations job={job} canManage={canManage} editable={tasks.find(t=>t.id===job.task_id)?.status!=='done'&&(canManage||tasks.find(t=>t.id===job.task_id)?.assignee_id===profile?.id)} saved={load}/><BuildManufacturing job={job} canManage={canManage} canStock={canStock} editable={canManage||tasks.find(t=>t.id===job.task_id)?.assignee_id===profile?.id} done={tasks.find(t=>t.id===job.task_id)?.status==='done'} saved={load}/></div>)}
+   {loaded&&view==='work'&&jobs.map(job=><div key={`${job.id}/${job.revision}`}><BuildProgress expanded={!!workspaceView} job={job} task={tasks.find(t=>t.id===job.task_id)} projectId={projectId} editable={canManage||tasks.find(t=>t.id===job.task_id)?.assignee_id===profile?.id} onSaved={async()=>{await load();setMessage(pick('Progress saved. Reported quantities still require inspection.','ההתקדמות נשמרה. הכמויות שדווחו עדיין דורשות בדיקה.'));}}/><BuildOperations job={job} canManage={canManage} editable={tasks.find(t=>t.id===job.task_id)?.status!=='done'&&(canManage||tasks.find(t=>t.id===job.task_id)?.assignee_id===profile?.id)} saved={load}/><BuildManufacturing job={job} canManage={canManage} canStock={canStock} editable={canManage||tasks.find(t=>t.id===job.task_id)?.assignee_id===profile?.id} done={tasks.find(t=>t.id===job.task_id)?.status==='done'} saved={load}/></div>)}
   </div>}
  </section>;
 }
-function BuildProgress({job,task,projectId,editable,onSaved}:{job:Job;task?:Task;projectId:string;editable:boolean;onSaved:()=>Promise<void>}){
+function BuildProgress({job,task,projectId,editable,onSaved,expanded=false}:{expanded?:boolean;job:Job;task?:Task;projectId:string;editable:boolean;onSaved:()=>Promise<void>}){
  const {pick}=useLocalization();const [quantity,setQuantity]=useState(String(job.completed_quantity)),[note,setNote]=useState(''),[busy,setBusy]=useState(false),[message,setMessage]=useState('');
  const [request,setRequest]=useState(()=>crypto.randomUUID());
  return <article className="build-job"><div className="build-job-summary"><div><strong>{job.part_name}</strong><small>{pick('Revision','גרסה')} {job.part_revision} · {task?.title}</small></div><strong>{job.completed_quantity} / {job.required_quantity}</strong></div>
   <p>{task?.status==='done'?pick('Task completed through its inspection checkpoint.','המשימה הושלמה דרך נקודת ביקורת האיכות.'):job.completed_quantity===job.required_quantity?pick('Quantity reported. Inspection is still required.','הכמות דווחה. עדיין נדרשת בדיקת איכות.'):pick('Reported progress — not yet accepted.','התקדמות מדווחת — טרם אושרה.')}</p>
-  <details><summary>{pick('Instructions & progress','הוראות והתקדמות')}</summary><p className="build-instructions">{job.instructions}</p>
+  <details open={expanded?true:undefined}><summary>{pick('Instructions & progress','הוראות והתקדמות')}</summary><p className="build-instructions">{job.instructions}</p>
    {editable&&task?.status!=='done'&&<form onSubmit={async e=>{e.preventDefault();if(busy)return;setBusy(true);try{const r=await supabase.rpc('record_robot_build_progress',{p_job:job.id,p_expected_revision:job.revision,p_completed:Number(quantity),p_note:note,p_request:request});if(r.error)throw Error(r.error.message);setMessage(pick('Progress saved.','ההתקדמות נשמרה.'));notifyProjectChange();await onSaved();}catch(e){setMessage(e instanceof Error?e.message:pick('Save not confirmed. Retry unchanged values or refresh.','השמירה לא אושרה. נסו שוב ללא שינוי או רעננו.'));}finally{setBusy(false);}}}>
     <fieldset disabled={busy}><label>{pick('Total completed quantity so far','סך הכמות שהושלמה עד כה')}<input type="number" required min={0} max={job.required_quantity} step={1} value={quantity} onChange={e=>{setQuantity(e.target.value);setRequest(crypto.randomUUID());}}/></label><label>{pick('Work completed / reason for correction','עבודה שבוצעה / סיבה לתיקון')}<textarea required minLength={3} maxLength={2000} value={note} onChange={e=>{setNote(e.target.value);setRequest(crypto.randomUUID());}}/></label><button>{busy?pick('Saving…','שומר…'):pick('Save progress','שמירת התקדמות')}</button></fieldset></form>}
    <p role="status">{message}</p>

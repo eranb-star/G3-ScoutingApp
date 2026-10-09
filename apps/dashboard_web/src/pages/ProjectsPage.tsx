@@ -45,7 +45,7 @@ export default function ProjectsPage() {
   const [creatingTask,setCreatingTask]=useState(false);
   const [people,setPeople]=useState<{id:string;display_name:string}[]>([]);
   const [ownerDrafts,setOwnerDrafts]=useState<Record<string,string>>({});
-  const [archived, setArchived] = useState(false);
+  const [archived, setArchived] = useState(params.get('archived')==='1');
   const [message, setMessage] = useState("");
   const [taskDrafts,setTaskDrafts]=useState<Record<string,string>>({});
   const [savingTask,setSavingTask]=useState<string|null>(null);
