@@ -62,3 +62,6 @@ Delivered continuation: repository-specific drive/wait Java export, reviewed coo
 
 ## Software workflow update — 10 October
 See SOFTWARE_WORKSPACE_20261010.md for the current implementation and acceptance. Production reviewed-follow-up RPC is installed and rollback acceptance passed. Frontend deployed and accepted as recorded above. GitHub stays read-only.
+
+## Work navigation cleanup — 10 October
+User requested removal of duplicate Engineering lab (Field & robot studio / Evidence search) and Team operations shortcuts from Work. These carried no workflow context; the main-menu destinations remain. Engineering Hub and contextual assignment/learning/robot-health entries are retained. Focused JSX/type verification; required CI and deployment pending.

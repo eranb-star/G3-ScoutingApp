@@ -9,7 +9,7 @@ import { useAdminStatus } from "../lib/useAdminStatus";
 import { supabase } from "../supabase";
 import HomeActionInbox from "../components/HomeActionInbox";
 import { frcTeams, teamMatches } from "../lib/frcTeams";
-import { memberTeams, useAccessControl } from "../lib/accessControl";
+import { memberTeams } from "../lib/accessControl";
 import { Capacitor } from "@capacitor/core";
 
 type Project={id:string;name:string;status:string;subteam:string|null;due_at:string|null};
@@ -25,7 +25,6 @@ const frcAreas=frcTeams;
 function areaMatches(subteam:string|null|undefined,key:string){return teamMatches(subteam,key);}
 
 export default function FrcWorkPage(){
- const {can}=useAccessControl();
   const {pick}=useLocalization(),{profile}=useMemberAuth(),isAdmin=useAdminStatus(),navigate=useNavigate(),[params,setParams]=useSearchParams();
   const [projects,setProjects]=useState<Project[]>([]),[tasks,setTasks]=useState<Task[]>([]),[courses,setCourses]=useState<Course[]>([]),[modules,setModules]=useState<Module[]>([]),[enrollments,setEnrollments]=useState<Enrollment[]>([]),[evidence,setEvidence]=useState<Evidence[]>([]),[issues,setIssues]=useState<Issue[]>([]),[components,setComponents]=useState<Component[]>([]);
   const [departmentsOpen,setDepartmentsOpen]=useState(()=>!Capacitor.isNativePlatform());
@@ -77,7 +76,5 @@ export default function FrcWorkPage(){
 
     <button className="work-engineering-banner" onClick={()=>navigate("/engineering")}><span>DEV</span><span><small>{pick("Shared engineering system","מערכת הנדסית משותפת")}</small><strong>{pick("Engineering Hub","מרכז הנדסה")}</strong><em>{pick("One read-only doorway to robot code, CAD, scouting data and experiments across every department.","שער אחד לקריאה בלבד לקוד רובוט, CAD, נתוני סקאוטינג וניסויים מכל התחומים.")}</em></span><b>{pick("Open hub","פתיחת המרכז")} →</b></button>
 
-    {(can("view_field_twin")||can("view_evidence_search"))&&<section className="work-destination-section"><header><h2>{pick("Engineering lab","מעבדת הנדסה")}</h2></header><div className="work-destination-grid">{can("view_field_twin")&&<button onClick={()=>navigate('/field-twin')}><span>3D</span><strong>{pick('Field & robot studio','סטודיו מגרש ורובוט')}</strong><small>{pick('2026 field, KitBot, driving and replay','מגרש 2026, KitBot, נהיגה ושחזור')}</small><b>→</b></button>}{can("view_evidence_search")&&<button onClick={()=>navigate('/knowledge')}><span>SOURCE</span><strong>{pick('Evidence search','חיפוש מקורות')}</strong><small>{pick('2026 references and historical pilot','מקורות 2026 ופיילוט היסטורי')}</small><b>→</b></button>}</div></section>}
-    <button className="work-operations-link" onClick={()=>navigate('/team-operations')}><strong>{pick('Team operations','תפעול הקבוצה')}</strong><span>{pick('Fundraising, inventory, packing and coordination','גיוס כספים, מלאי, אריזה ותיאום')} →</span></button>
   </main>;
 }
