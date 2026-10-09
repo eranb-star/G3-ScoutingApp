@@ -47,6 +47,10 @@ jobs:
           node scripts/test-robot-build-purchase-reuse.mjs
           node scripts/test-robot-build-workspace.mjs
           node scripts/test-build-revision-comparison.mjs
+          node scripts/test-robot-build-maintenance.mjs
+          node scripts/test-workshop-resources.mjs
+          node scripts/test-robot-build-pack-purchasing.mjs
+          node scripts/test-robot-build-adoption.mjs
           node scripts/test-robot-build-scope.mjs
           node scripts/test-build-preparation.mjs
           node scripts/test-build-material-reservations.mjs

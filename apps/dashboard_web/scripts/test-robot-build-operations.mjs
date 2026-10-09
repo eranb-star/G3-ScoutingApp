@@ -4,6 +4,7 @@ const {db,manager,job}=await import('./test-robot-build-manufacturing.mjs');
 const {project,worker}=await import('./test-robot-build-jobs.mjs');
 await db.exec('reset role');
 const sql=fs.readFileSync(new URL('../../../backend/supabase/robot_build_operations_20261009.sql',import.meta.url),'utf8');await db.exec(sql);await db.exec(sql);
+const ordered=fs.readFileSync(new URL('../../../backend/supabase/robot_build_operation_order_20261009.sql',import.meta.url),'utf8');await db.exec(ordered);await db.exec(ordered);
 const id=n=>`50000000-0000-0000-0000-${String(n).padStart(12,'0')}`;
 const task=id(1),newJob=id(2);
 await db.query("insert into project_tasks(id,project_id,assignee_id,status,archived)values($1,$2,$3,'in_progress',false)",[task,project,worker]);
@@ -14,7 +15,9 @@ await db.query('select set_robot_build_operations($1,1,$2)',[newJob,['Cut to dra
 await assert.rejects(db.query('select record_robot_build_progress($1,2,2,$2,$3)',[newJob,'Finished two pieces',id(3)]),/Complete each planned operation/);
 const record=(step,qty,rev,n)=>db.query('select record_robot_build_operation($1,$2,$3,$4,$5,$6)',[newJob,step,qty,rev,'Verified at bench',id(n)]);
 await db.exec(`set test.uid='${worker}'`);
+await assert.rejects(record(2,1,2,9),/preceding operation/);
 await record(1,2,2,4);await record(1,2,2,4);
+await assert.rejects(record(2,3,3,10),/preceding operation/);
 await assert.rejects(record(2,2,2,5),/changed or closed/);
 await record(2,2,3,5);
 await db.query('select record_robot_build_progress($1,4,2,$2,$3)',[newJob,'Both steps complete',id(6)]);

@@ -1,0 +1,23 @@
+import fs from 'node:fs';import assert from 'node:assert/strict';
+process.env.G3_BUILD_LOT_FIXTURE='1';
+const {db,admin,student,project,first,as,task,configure,submit,approve,built}=await import('./test-robot-build-integration.mjs');
+await db.exec('reset role');
+await db.exec('grant select on frc_stock_movements to authenticated');
+for(const file of ['robot_build_kit_requirements_20261009.sql','robot_build_release_holds_20261009.sql','robot_build_adoption_20261009.sql']){const sql=fs.readFileSync(new URL('../../../backend/supabase/'+file,import.meta.url),'utf8');await db.exec(sql);await db.exec(sql);}
+const installation=await task('Inspect existing hardware for adoption'),retest=await task('Verify adopted hardware');await configure(installation,'installed');await configure(retest,'verified_on_robot');
+const asset=(await first('select identity_snapshot from project_robot_configurations where id=$1',[built])).identity_snapshot.asset.id;
+await as(admin);
+const config=(await first('select create_tracked_configuration($1,$2,$3,$4,$5,$6,$7,$8,$9) id',[project,'Existing physical mechanism','E1','as_installed','Documented existing mechanism',asset,built,'Not applicable','Physical identity inspection'])).id;
+const request='99000000-0000-0000-0000-000000000001';
+const adopt=(cfg=config,note='Existing hardware inspected; historical stock movements unavailable')=>first('select adopt_robot_build_installation($1,$2,$3,$4,$5,$6) id',[installation,cfg,retest,'Existing mechanism',note,request]);
+await as(student);await assert.rejects(adopt(),/leader/);
+await as(admin);await assert.rejects(adopt(),/Approve/);
+const evidence=await submit(installation,'E1');await approve(installation,evidence,config);await as(admin);
+const movements=(await first('select count(*)::int n from frc_stock_movements')).n;
+assert.equal((await adopt()).id,request);assert.equal((await adopt()).id,request);
+await assert.rejects(adopt(config,'Changed history explanation'),/identity/);
+await assert.rejects(first('select adopt_robot_build_installation($1,$2,$3,$4,$5,$6)',[installation,config,retest,'Existing mechanism','Another attempted adoption','99000000-0000-0000-0000-000000000002']),/already recorded/);
+assert.equal((await first('select count(*)::int n from frc_stock_movements')).n,movements);
+const row=await first('select * from robot_build_kits where id=$1',[request]);assert.equal(row.configuration_id,config);assert.equal(row.retest_task_id,retest);assert.equal(row.installation_submission,evidence.id);
+assert.equal((await first('select count(*)::int n from robot_build_kit_items where kit_id=$1',[request])).n,0);
+console.log('PASS existing installation adoption requires approved exact physical evidence, preserves retry and retest, and creates no inventory history');await db.close();

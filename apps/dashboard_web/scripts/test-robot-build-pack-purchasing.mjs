@@ -1,0 +1,27 @@
+import fs from 'node:fs';import assert from 'node:assert/strict';
+process.env.G3_BUILD_MATERIAL_FIXTURE='1';
+const {db,manager,bom}=await import('./test-robot-build-reconciliation.mjs');
+await db.exec('reset role');
+const sql=fs.readFileSync(new URL('../../../backend/supabase/robot_build_pack_purchasing_20261009.sql',import.meta.url),'utf8');await db.exec(sql);await db.exec(sql);
+const first=async(q,a=[])=>(await db.query(q,a)).rows[0];const id=n=>`98000000-0000-0000-0000-${String(n).padStart(12,'0')}`;
+const inventory=(await first("insert into frc_parts_inventory(name,quantity)values('Pack bolts',0)returning id")).id;
+const line=(await first("insert into robot_build_bom_lines(bom_id,source_key,source_identity,occurrence_paths,name,design_quantity,required_quantity,disposition,inventory_id,scope_decision)values($1,'pack-bolts','{}','[]','Bolts',7,7,'buy',$2,'independent')returning id",[bom,inventory])).id;
+await db.exec(`set role authenticated;set test.uid='${manager}'`);
+const buy=(packs,size,key)=>first('select request_robot_build_pack_purchase($1,$2,$3,$4) id',[line,packs,size,id(key)]);
+await assert.rejects(buy(3,5,1),/uncovered demand/);
+const purchase=(await buy(2,5,1)).id;assert.equal((await buy(2,5,1)).id,purchase);
+await assert.rejects(buy(1,10,1),/different values/);
+await assert.rejects(buy(1,1,2),/uncovered demand/);
+await db.exec('reset role');
+assert.equal(Number((await first('select quantity from frc_purchase_requests where id=$1',[purchase])).quantity),10);
+assert.equal((await first('select units_per_pack from robot_build_purchases where purchase_id=$1',[purchase])).units_per_pack,5);
+// Partial approval creates only one outstanding remainder, never two copies of it.
+await db.query("update frc_purchase_requests set status='received',approved_quantity=5,deferred_quantity=5 where id=$1",[purchase]);
+await db.query('update frc_parts_inventory set quantity=5 where id=$1',[inventory]);
+await db.query("insert into frc_purchase_requests(part_id,item_name,quantity,requested_by,source_purchase_id)values($1,'Bolts remainder',5,$2,$3)",[inventory,manager,purchase]);
+await db.exec('set role authenticated');await assert.rejects(buy(1,5,2),/uncovered demand/);
+await db.exec('reset role');await db.query("update frc_purchase_requests set status='cancelled' where source_purchase_id=$1",[purchase]);
+await db.exec('set role authenticated');await buy(1,5,2);
+await assert.rejects(buy(100000,100000,3),/100000/);
+assert.equal((await first('select count(*)::int n from robot_build_purchases where line_id=$1',[line])).n,2);
+console.log('PASS pack conversion, bounded surplus, exact retry, changed-pack rejection, partial receipt/remainder and cancellation coverage');await db.close();
