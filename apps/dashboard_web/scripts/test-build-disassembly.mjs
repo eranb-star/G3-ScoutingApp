@@ -1,0 +1,25 @@
+import fs from 'node:fs';import assert from 'node:assert/strict';
+process.env.G3_ASSEMBLY_RECOVERY_FIXTURE='1';
+const {db,admin,student,first,as,task,configure,submit,approve,built,part,output,id}=await import('./test-robot-build-stock-assembly.mjs');
+await db.exec('reset role');const sql=fs.readFileSync('../../backend/supabase/robot_build_disassembly_20261009.sql','utf8');await db.exec(sql);await db.exec(sql);
+const dismantle=(qty=1)=>db.query('select disassemble_robot_stock($1,$2,0,$3,$4)',[id(6),qty,'Dismantled one bench assembly for inspected component reuse',id(20)]);
+await as(student);await assert.rejects(dismantle(),/manager/);await as(admin);await assert.rejects(dismantle(3),/unissued/);await dismantle();await dismantle();await assert.rejects(dismantle(2),/identity/);
+assert.equal(Number((await first('select quantity from frc_parts_inventory where id=$1',[output])).quantity),1);
+assert.equal(Number((await first('select quantity from frc_parts_inventory where id=$1',[part])).quantity),6,'components still quarantined until inspection');
+assert.equal((await first('select quantity,retired_quantity from robot_build_batches where id=$1',[id(6)])).retired_quantity,1);
+await db.exec('reset role');
+const inspection=await task('Inspect recovered components');await configure(inspection,'qc_accepted');
+const recover=(qty=2)=>first('select receive_robot_recovered_component($1,$2,$3,$4,$5,$6,$7) id',[id(20),id(1),qty,inspection,built,'Two recovered components inspected, shelf C',id(21)]);
+await as(admin);await assert.rejects(recover(),/independent physical QC/);
+const accepted=await submit(inspection,'A');await approve(inspection,accepted,built);await as(admin);
+await assert.rejects(recover(3),/exceeds/);assert.equal((await recover()).id,id(21));assert.equal((await recover()).id,id(21));
+assert.equal(Number((await first('select quantity from frc_parts_inventory where id=$1',[part])).quantity),8);
+assert.equal((await first('select origin from robot_build_batches where id=$1',[id(21)])).origin,'recovered');
+await assert.rejects(db.query('select receive_robot_recovered_component($1,$2,1,$3,$4,$5,$6)',[id(20),id(1),inspection,built,'Cannot recover again',id(22)]),/exceeds/);
+// Every kit path must enforce retirement, even if an older RPC prechecks the original receipt quantity.
+await db.exec('reset role');
+const otherTask=await task('Another assembly');await db.exec('reset role');
+await db.query('insert into robot_build_kits(id,task_id,name,created_by)values($1,$2,$3,$4)',[id(23),otherTask,'Test issue destination',admin]);
+await assert.rejects(db.query('insert into robot_build_kit_items(kit_id,batch_id,quantity)values($1,$2,2)',[id(23),id(6)]),/retired/);
+assert.equal((await first('select count(*)::int n from robot_build_disassemblies')).n,1);
+console.log('PASS assembly retirement preserves original receipts, quarantines components, requires new physical QC, conserves recovered counts and blocks legacy overissue');await db.close();
