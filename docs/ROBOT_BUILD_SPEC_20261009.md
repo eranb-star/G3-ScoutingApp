@@ -1,6 +1,6 @@
 # Robot Build — implementation contract
 
-Status: development authorized 9 October 2026. Not deployed. This document consolidates the agreed design; it is not a completion claim.
+Status: integrated Robot Build workflow deployed 9 October 2026. See ROBOT_BUILD_RELEASE_20261009.md for exact evidence and operational boundaries. Historical increments below are retained as history.
 
 ## Integration and ownership
 
@@ -96,6 +96,6 @@ Migration order: jobs, bom, stock, manual, reconciliation, manufacturing, instal
 
 Validation so far: full SQL fixture lifecycle and actual existing engineering release → manufacturing → physical QC → stock → kit → exact installation chain pass. Tests cover retries, stale writes, protected stock, scrap, existing-stock conservation, replacement retest requirement and existing-purchase adoption. TypeScript and Vite pass; existing bundle-size warnings remain. Production schema preflight of all nine migrations passed inside a rollback-only transaction. EN/HE synthetic browser flow checked at phone width (client/scroll both 375px); proof `staging/robot-build-lifecycle-he-20261009.png`. These are not claims of live operational acceptance or physical robot verification.
 
-Remaining release checks: apply migrations, deploy connector/frontend, green remote CI, real Onshape structural comparison and authenticated production entry checks. APK is still 2.3.1/code26 and has not been rebuilt or device-tested for Robot Build.
+Release checks subsequently completed: nine migrations applied, connector/frontend deployed, CI 300/301 passed, real rake assembly structural quantities and private project draft persistence verified. See ROBOT_BUILD_RELEASE_20261009.md. APK is still 2.3.1/code26 and has not been rebuilt or device-tested for Robot Build.
 
 Operational boundaries: whole-job final QC is required before an output batch; split independent inspection lots into separate existing tasks/jobs. Parent/child scope warnings are conservative and require a leader decision. Purchased components need physical QC before becoming installation batches. Machine scheduling, native Onshape editing, inferred CAD geometry equivalence and automatic robot certification are not provided. Existing issue/dependency/review/configuration systems remain authoritative rather than being replaced by new approval engines.
