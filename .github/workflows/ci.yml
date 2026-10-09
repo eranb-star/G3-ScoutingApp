@@ -35,6 +35,7 @@ jobs:
           node scripts/test-review-draft.mjs
           node scripts/test-fundraising.mjs
           node scripts/test-operational-clarity.mjs
+          node scripts/test-robot-build-jobs.mjs
           node scripts/test-browser-attendance.mjs
           node scripts/verify-mobile-notification-stability.mjs
       # Exercise the current permission-controlled catalogue, not obsolete token/URL strings.
