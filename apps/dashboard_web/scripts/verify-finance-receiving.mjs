@@ -2,7 +2,7 @@ import fs from "node:fs";
 const root=new URL("../",import.meta.url),read=path=>fs.readFileSync(new URL(path,root),"utf8");
 const tools=read("src/pages/ToolsInventoryPage.tsx"),finance=read("src/pages/FinanceAdminPage.tsx"),shell=read("src/components/WebPortalShell.tsx"),calendar=read("src/pages/UnifiedCalendarPage.tsx"),css=read("src/teamHub.css"),sql=read("../../backend/supabase/operations_finance_receiving_20260907.sql"),paymentSql=read("../../backend/supabase/purchase_payment_finance_link_20260907.sql"),main=read("src/main.tsx");
 const checks=[
- ["attendance is first-class web navigation",shell.includes('["/attendance", "Attendance"')],
+ ["attendance is first-class web navigation",shell.includes('["/attendance", "Attendance Center"')],
  ["calendar opens event-scoped absence request",calendar.includes("/attendance?view=absences&event=${selected.id}")],
  ["dialog primary button contrast is explicit",css.includes(".attendance-dialog footer .hub-button")&&css.includes("color:#fff!important")],
  ["receiving uses atomic governed RPC",tools.includes('supabase.rpc("receive_purchase_request"')],
@@ -14,8 +14,8 @@ const checks=[
  ["stock and expense are recorded in one receive transaction",sql.includes("insert into public.frc_stock_movements")&&sql.includes("insert into public.finance_expenses")],
  ["double receiving is rejected",sql.includes("request.status<>'ordered'")],
  ["reimbursements cannot exceed the balance",sql.includes("new_total>expense.amount")],
- ["finance dashboard tracks personal debt",finance.includes("Team owes personally")&&finance.includes("reimbursed_amount")],
- ["finance dashboard includes approved ordered and legacy purchases",finance.includes("Committed and legacy purchases")&&finance.includes('status==="approved"||x.status==="ordered"')&&finance.includes("legacyReceived")],
+ ["finance dashboard tracks personal debt",finance.includes("Owed to members")&&finance.includes("reimbursed_amount")],
+ ["finance dashboard includes approved ordered and legacy purchases",finance.includes("Purchase commitments")&&finance.includes('status==="approved"||x.status==="ordered"')&&finance.includes("legacyReceived")],
  ["ordered purchases expose explicit payment capture",finance.includes("Record payment")&&finance.includes('supabase.rpc("record_purchase_payment"')],
  ["personal payment requires a named payer",finance.includes("Who paid personally?")&&paymentSql.includes("p_payment_source='personal' and p_paid_by is null")],
  ["payment creates or updates the linked expense",paymentSql.includes("on conflict(purchase_id) do update")&&paymentSql.includes("reimbursement_status")],

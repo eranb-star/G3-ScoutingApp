@@ -1,3 +1,9 @@
+# Release holds and overview — local continuation
+Read the latest sections of ROBOT_BUILD_IMPLEMENTATION_20261009.md. Nine new SQL migrations remain undeployed. Exact kit requirements and hold-aware build consumers pass actual engineering-fixture tests, and 40 regression suites pass locally. No full-programme completion, restore, physical device acceptance or production rollout is claimed. Continue remaining master-plan work; do not silently narrow scope.
+
+# Assembly requirement continuation — local
+Read ROBOT_BUILD_IMPLEMENTATION_20261009.md. Eight new migrations are local; exact kit demand, reservation transfer and installation checks passed isolated engineering acceptance. Do not call the full programme or production rollout complete. Continue the authorized scope using the master traceability matrix.
+
 # Controlled work files — local continuation
 Read ROBOT_BUILD_IMPLEMENTATION_20261009.md first. Seven new migrations and two connector/function changes are local. File access, revision binding and browser evidence selection passed isolated verification. Full programme and production acceptance remain open; continue the authorized end-to-end work.
 

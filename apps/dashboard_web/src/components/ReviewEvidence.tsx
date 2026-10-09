@@ -1,11 +1,12 @@
 import {useLocalization} from '../lib/localization';
 import {useEffect,useState} from 'react';
 import {supabase} from '../supabase';
+import {readBuildPages} from '../lib/robotBuildWorkspace';
 export type EvidenceItem={title:string;revision:string;url:string;artifact_type?:string;source_id?:string;sha256?:string};
 export function ReviewEvidenceEditor({items,onChange,disabled,taskId}:{items:EvidenceItem[];onChange:(items:EvidenceItem[])=>void;disabled:boolean;taskId?:string}){
  const {pick}=useLocalization();
  const [files,setFiles]=useState<{id:string;name:string;revision:string;sha256:string}[]>([]);
- useEffect(()=>{let active=true;if(taskId)void supabase.from('robot_build_files').select('id,name,revision,sha256').eq('task_id',taskId).eq('status','ready').limit(100).then(r=>{if(active)setFiles(r.error?[]:r.data??[]);});return()=>{active=false;};},[taskId]);
+ useEffect(()=>{let active=true;if(taskId)void readBuildPages<{id:string;name:string;revision:string;sha256:string}>((a,z)=>supabase.from('robot_build_files').select('id,name,revision,sha256').eq('task_id',taskId).eq('status','ready').order('id').range(a,z)).then(rows=>{if(active)setFiles(rows);}).catch(()=>{if(active)setFiles([]);});return()=>{active=false;};},[taskId]);
  function change(index:number,field:keyof EvidenceItem,value:string){onChange(items.map((item,i)=>i===index?{...item,[field]:value}:item));}
  return <fieldset className="review-evidence-editor" disabled={disabled}><legend>{pick('Evidence for this review','ראיות לביקורת זו')}</legend>
  <p>{pick('Add a fixed version link for each drawing, code change or test result.','הוסיפו קישור לגרסה קבועה לכל שרטוט, שינוי קוד או תוצאת בדיקה.')}</p>
