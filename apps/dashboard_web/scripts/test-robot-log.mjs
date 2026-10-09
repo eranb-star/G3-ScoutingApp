@@ -23,5 +23,10 @@ assert.equal(parse(header,start(1,'a','double'),record(1,Buffer.alloc(3))).compl
 const large=Buffer.alloc(8);large.writeBigInt64LE(9007199254740993n);
 assert.equal(parse(header,start(1,'large','int64'),record(1,large)).channels[0].samples[0].value,'9007199254740993');
 assert.equal(parse(header,start(1,'flag','boolean'),record(1,Buffer.from([9]))).complete,false);
+const schemas=[start(1,'/.schema/struct:Rotation2d','structschema'),record(1,Buffer.from('double value')),start(2,'/.schema/struct:Translation2d','structschema'),record(2,Buffer.from('double x;double y')),start(3,'/.schema/struct:Pose2d','structschema'),record(3,Buffer.from('Translation2d translation;Rotation2d rotation'))];
+const pose=parse(header,...schemas,start(4,'pose','struct:Pose2d'),record(4,Buffer.concat([dbl(1),dbl(2),dbl(3)])));
+assert.deepEqual(pose.channels[3].samples[0].value,[1,2,3]);assert.equal(pose.channels[3].unsupported,0);
+const badSchema=parse(header,...schemas,record(3,Buffer.from('double other')),start(4,'pose','struct:Pose2d'),record(4,Buffer.alloc(24)));
+assert.equal(badSchema.channels[3].unsupported,1);assert.equal(badSchema.channels[3].samples.length,0);
 if(process.argv[2]){const b=await fs.readFile(process.argv[2]);const actual=parse(b);console.log(JSON.stringify({records:actual.records,channels:actual.channels.length,duration:actual.end-actual.start,warnings:actual.warnings,unsupported:actual.channels.filter(c=>c.unsupported).length}));assert.ok(actual.records>0);}
 console.log('Robot log parser checks passed');
