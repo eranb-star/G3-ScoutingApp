@@ -1,0 +1,3 @@
+export type SoftwareWorkingContext={repository:string;revision:string};
+export function readSoftwareContext(member:string):SoftwareWorkingContext|null{try{const c=JSON.parse(sessionStorage.getItem('g3-software-context:'+member)??'null');return c&&/^GlueGun(?:And)?Glitter\/[A-Za-z0-9_.-]+$/.test(c.repository)&&/^[a-f0-9]{40}$/.test(c.revision)?c:null;}catch{return null;}}
+export function saveSoftwareContext(member:string,c:SoftwareWorkingContext|null){try{if(c)sessionStorage.setItem('g3-software-context:'+member,JSON.stringify(c));else sessionStorage.removeItem('g3-software-context:'+member);}catch{throw Error('STORAGE_UNAVAILABLE');}}

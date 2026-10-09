@@ -69,6 +69,7 @@ jobs:
           node scripts/test-build-software.mjs
           node scripts/test-robot-log.mjs
           node scripts/test-robot-integration.mjs
+          node scripts/test-software-followup.mjs
           node scripts/test-build-simulation.mjs
           node scripts/test-build-event-handoff.mjs
           node scripts/test-build-part-geometry.mjs

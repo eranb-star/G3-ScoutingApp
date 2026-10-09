@@ -1,7 +1,7 @@
-export type AssistTaskDraft={version:1;member:string;message:string;request:string;title:string};
+export type AssistTaskDraft={version:1;member:string;message:string;request:string;title:string;reviewedSummary?:string;criterion?:string};
 export const assistDraftKey=(member:string)=>`g3-assist-task:${member}`;
 export function parseAssistTaskDraft(raw:string|null,member:string):AssistTaskDraft|null{
- try{const d=JSON.parse(raw??'null');return d?.version===1&&d.member===member&&[d.message,d.request].every(x=>typeof x==='string'&&/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(x))&&typeof d.title==='string'&&d.title.trim().length>0&&d.title.length<=150?d:null;}catch{return null;}
+ try{const d=JSON.parse(raw??'null');return d?.version===1&&d.member===member&&[d.message,d.request].every(x=>typeof x==='string'&&/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(x))&&typeof d.title==='string'&&d.title.trim().length>0&&d.title.length<=150&&(d.reviewedSummary===undefined&&d.criterion===undefined||typeof d.reviewedSummary==='string'&&d.reviewedSummary.trim().length>=3&&d.reviewedSummary.length<=2000&&typeof d.criterion==='string'&&d.criterion.trim().length>=3&&d.criterion.length<=1000)?d:null;}catch{return null;}
 }
 export type AnswerBlock={kind:'heading'|'paragraph'|'list'|'table'|'code';lines:string[]};
 export function answerBlocks(text:string):AnswerBlock[]{
