@@ -1,6 +1,13 @@
 # Robot Build implementation checkpoint — 9 October 2026
 
-Status: development in progress. Frontend and fourteen additive SQL migrations are local, not a production release or completion of P0–P6. Follow ROBOT_BUILD_PREDEVELOPMENT_MASTER_20261009.md for the complete scope. The user has authorized end-to-end execution; do not ask for another phase-selection approval.
+Status: development in progress. Frontend and fifteen additive SQL migrations are local, not a production release or completion of P0–P6. Follow ROBOT_BUILD_PREDEVELOPMENT_MASTER_20261009.md for the complete scope. The user has authorized end-to-end execution; do not ask for another phase-selection approval.
+
+## Stock assembly continuation
+
+- `robot_build_stock_assembly_20261009.sql` runs after kit requirements and release holds. Bench assemblies reuse exact requirement-based kits, issued component batches and existing independent physical QC. Receiving creates one accepted parent batch and one shared-stock receipt; consumed child quantities remain frozen in the kit. Duplicate receipt is idempotent, altered retry is rejected, and the old return action cannot refund consumed components. Robot installation remains a separate workflow.
+- Assembly & tests exposes stock assembly planning and receipt with EN/HE labels, existing inventory items and exact as-built configurations. Existing manufacturing jobs are excluded from eligible assembly tasks. Whole planned output is received after QC; partial assembly acceptance and explicit disassembly/recovery remain unfinished.
+- Actual engineering-fixture stock-assembly, kit-demand and original installation tests pass. TypeScript and Vite pass (376 modules; existing chunk warning). Synthetic browser verified the form; no production transaction occurred.
+- Prior integrated commit `2184d45` is pushed to `codex/release-1-qa`; GitHub CI304 completed successfully: https://github.com/eranb-star/G3-ScoutingApp/actions/runs/37931571444 . The earlier combined local run passed 29 suites with zero failures. Neither this push nor green CI is production deployment. Continue remaining master requirements and release gates without requiring another instruction to proceed.
 
 ## Latest integrated work — shared resources, sourcing and installed hardware
 
