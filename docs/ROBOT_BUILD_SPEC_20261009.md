@@ -2,6 +2,8 @@
 
 Status: integrated Robot Build workflow deployed 9 October 2026. See ROBOT_BUILD_RELEASE_20261009.md for exact evidence and operational boundaries. Historical increments below are retained as history.
 
+Remaining completion design: [ROBOT_BUILD_COMPLETE_DESIGN_20261009.md](ROBOT_BUILD_COMPLETE_DESIGN_20261009.md), including two post-design challenge passes. This supplements the contract with the complete proposed UX and gap register; it does not change the delivered release status.
+
 ## Integration and ownership
 
 Extend existing team_projects, project_tasks, engineering records (requirements/interfaces/decisions), review gates, physical assets and designed/as-built/as-installed configurations. Do not create parallel assignment, approval, inventory, purchasing or finance systems. Onshape owns design geometry; immutable released build records own manufacturing instructions. Manufacturing events own accepted quantities; task completion must not bypass required acceptance. Existing configured test evidence owns physical verification.
