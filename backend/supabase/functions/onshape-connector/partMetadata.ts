@@ -23,11 +23,12 @@ export function normalizePartMetadata(rows:BomRow[],response:unknown,observedAt:
 }
 
 /** One bounded provider request per call; immutable observations resume across requests. */
-export async function enrichBomMetadata(db:any,read:(path:string)=>Promise<unknown>,snapshotId:string,rows:BomRow[],collect:boolean){
+export async function enrichBomMetadata(db:any,read:(path:string)=>Promise<unknown>,snapshotId:string,rows:BomRow[],collect:boolean,observationId='00000000-0000-0000-0000-000000000000'){
+ if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(observationId))throw Error('Invalid metadata observation');
  const groups=new Map<string,BomRow[]>();
  for(const row of rows)if(row.partId!=='@assembly'){const key=metadataGroup(row);groups.set(key,[...(groups.get(key)??[]),row]);}
  if(groups.size>500)throw Error('Metadata requires a smaller assembly (maximum 500 distinct Part Studio configurations)');
- const stored=await db.from('cad_part_metadata').select('group_key,parts').eq('snapshot_id',snapshotId).limit(501);
+ const stored=await db.from('cad_part_metadata').select('group_key,parts').eq('snapshot_id',snapshotId).eq('observation_id',observationId).limit(501);
  if(stored.error)throw Error('Part metadata storage unavailable');
  const cache=new Map<string,Record<string,PartMetadata>>((stored.data??[]).map((r:any)=>[r.group_key,r.parts]));
  const next=[...groups].find(([key])=>!cache.has(key));
@@ -44,10 +45,10 @@ export async function enrichBomMetadata(db:any,read:(path:string)=>Promise<unkno
    allRows.set(partKey,{...base,key:partKey,partId:part.partId});
   }
   const values=normalizePartMetadata([...allRows.values()],response,observedAt);
-  const saved=await db.from('cad_part_metadata').upsert({snapshot_id:snapshotId,group_key:key,parts:values,observed_at:observedAt},{onConflict:'snapshot_id,group_key',ignoreDuplicates:true});
+  const saved=await db.from('cad_part_metadata').upsert({snapshot_id:snapshotId,observation_id:observationId,group_key:key,parts:values,observed_at:observedAt},{onConflict:'snapshot_id,group_key,observation_id',ignoreDuplicates:true});
   if(saved.error)throw Error('Part metadata could not be retained');
   // Read the winning observation if another request collected the same group.
-  const confirmed=await db.from('cad_part_metadata').select('parts').eq('snapshot_id',snapshotId).eq('group_key',key).single();
+  const confirmed=await db.from('cad_part_metadata').select('parts').eq('snapshot_id',snapshotId).eq('observation_id',observationId).eq('group_key',key).single();
   if(confirmed.error||!confirmed.data)throw Error('Part metadata save not confirmed');
   cache.set(key,confirmed.data.parts);
  }

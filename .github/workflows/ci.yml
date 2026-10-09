@@ -53,6 +53,8 @@ jobs:
           node scripts/test-robot-build-adoption.mjs
           node scripts/test-robot-build-stock-assembly.mjs
           node scripts/test-robot-build-release-rehearsal.mjs
+          node scripts/test-build-freshness.mjs
+          node scripts/test-build-source-observations.mjs
           node scripts/test-robot-build-scope.mjs
           node scripts/test-build-preparation.mjs
           node scripts/test-build-material-reservations.mjs
