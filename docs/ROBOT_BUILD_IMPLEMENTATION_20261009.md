@@ -4,6 +4,8 @@ Status: development in progress. Frontend and fifteen additive SQL migrations ar
 
 ## Stock assembly continuation
 
+- The combined release-rehearsal test applies all fifteen additions twice over the nine-migration engineering baseline. It verifies private file storage, RPC-only writes, preserved shared review identity and absence of release-hold bypasses after later migrations. This passed locally; it is not a cloud restore or provider acceptance test.
+
 - `robot_build_stock_assembly_20261009.sql` runs after kit requirements and release holds. Bench assemblies reuse exact requirement-based kits, issued component batches and existing independent physical QC. Receiving creates one accepted parent batch and one shared-stock receipt; consumed child quantities remain frozen in the kit. Duplicate receipt is idempotent, altered retry is rejected, and the old return action cannot refund consumed components. Robot installation remains a separate workflow.
 - Assembly & tests exposes stock assembly planning and receipt with EN/HE labels, existing inventory items and exact as-built configurations. Existing manufacturing jobs are excluded from eligible assembly tasks. Whole planned output is received after QC; partial assembly acceptance and explicit disassembly/recovery remain unfinished.
 - Actual engineering-fixture stock-assembly, kit-demand and original installation tests pass. TypeScript and Vite pass (376 modules; existing chunk warning). Synthetic browser verified the form; no production transaction occurred.
