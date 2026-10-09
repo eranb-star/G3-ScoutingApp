@@ -1,0 +1,28 @@
+import fs from 'node:fs';import assert from 'node:assert/strict';
+process.env.G3_BUILD_LOT_FIXTURE='1';
+const {db,admin,student,other,first,as,task,configure,submit,approve}=await import('./test-robot-build-integration.mjs');
+await db.exec('reset role');const before=(await first("select 'project_review_passed(uuid)'::regprocedure::oid as id")).id;
+for(const file of ['robot_build_workspace_20261009.sql','robot_build_material_reservations_20261009.sql','robot_build_preparation_20261009.sql','robot_build_lots_20261009.sql','cad_part_metadata_20261009.sql','robot_build_files_20261009.sql','robot_build_kit_requirements_20261009.sql']){const body=fs.readFileSync(new URL('../../../backend/supabase/'+file,import.meta.url),'utf8');await db.exec(body);await db.exec(body);}
+const sql=fs.readFileSync(new URL('../../../backend/supabase/robot_build_release_holds_20261009.sql',import.meta.url),'utf8');await db.exec(sql);await db.exec(sql);
+assert.equal((await first("select 'project_review_passed(uuid)'::regprocedure::oid as id")).id,before);
+assert.equal((await first("select count(*)::int n from pg_proc p join pg_namespace ns on ns.oid=p.pronamespace where ns.nspname='public' and p.proname like '%robot_build%' and p.proname not in ('record_robot_build_hold','robot_build_review_usable') and position('public.project_review_passed(' in p.prosrc)>0")).n,0,'all existing build approval consumers apply holds');
+const release=await task('Hold-sensitive release'),work=await task('Hold-sensitive manufacturing');
+await configure(release,'released_for_manufacturing');await configure(work,'qc_accepted');
+const approved=await submit(release,'H1');await approve(release,approved);await as(admin);
+const job=(await first('select create_robot_build_job($1,$2,$3,$4,$5,$6,3) id',[work,release,approved.id,'Held part','H1','Use exact approved design'])).id;
+const id=n=>`94000000-0000-0000-0000-${String(n).padStart(12,'0')}`;
+const hold=(action,rev,n,note='CAD changed; review clearance before machining')=>db.query('select record_robot_build_hold($1,$2,$3,$4,$5)',[release,action,rev,note,id(n)]);
+await as(student);await assert.rejects(hold('hold',0,1),/leader/);await as(admin);
+await hold('hold',0,1);await hold('hold',0,1);await assert.rejects(hold('hold',0,1,'Changed reason'),/identity/);
+await assert.rejects(hold('resolve',1,2),/different reviewer/);
+await as(student);await assert.rejects(db.query('select record_robot_build_progress($1,1,1,$2,$3)',[job,'Old screen reports progress',id(3)]),/release needs review/);
+await as(other);await hold('resolve',1,2,'Reviewed unchanged H1 drawing; clearance meets measured requirement');
+await as(student);await db.query('select record_robot_build_progress($1,1,1,$2,$3)',[job,'Allowed after independent resolution',id(3)]);
+await as(admin);await hold('hold',2,4,'New defect investigation requires renewed release');
+const replacement=await submit(release,'H2');await as(other);
+await assert.rejects(hold('resolve',3,5,'Cannot resolve a pending replacement approval'),/valid approval/);
+assert.equal((await first('select active from robot_build_release_holds where task_id=$1',[release])).active,true,'failed resolution rolls back atomically');
+await approve(release,replacement);await as(other);await hold('resolve',3,5,'Approved replacement H2 after independent review');
+await db.exec('reset role');assert.equal((await first('select status from project_review_submissions where id=$1',[approved.id])).status,'approved','historical approval retained');
+assert.equal((await first('select count(*)::int n from robot_build_hold_events where task_id=$1',[release])).n,4);
+console.log('PASS release hold preserves review identity/history, blocks old-screen manufacturing, independent resolution, retries and atomic failed-resolution rollback');await db.close();

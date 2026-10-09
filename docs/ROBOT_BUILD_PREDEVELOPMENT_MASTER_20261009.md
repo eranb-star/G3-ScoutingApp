@@ -253,9 +253,9 @@ Initial execution ledger:
 |---|---|---|
 | P0 | In progress | Live function fingerprints and constraints captured; 34 function bodies matched, dynamic review-context body inspected. Provider/recovery gates remain. See implementation checkpoint. |
 | P1 | In progress, local only | Direct entry, scope setup, role queues, guided preparation, accessible leave dialog and Back guard implemented. Full role/auth/device acceptance and all-form draft contract remain. |
-| P2 | Planned | Requires P0 source/file identity; preserve existing CAD access |
-| P3 | In progress, local only | Raw-material reservations and shared fundraising stock-floor tests pass. Partial inspection lots and other quantity/authority contracts remain. |
-| P4 | Planned | Requires pinned source and release model; no automatic work rewrite |
+| P2 | In progress, local only | Observed metadata and immutable uploaded files/scoped downloads verified in isolated tests. Provider association/export and live file acceptance remain. |
+| P3 | In progress, local only | Raw reservations, partial lots and exact kit requirements/reservation transfer pass isolated tests. Other quantity, resource and sourcing contracts remain. |
+| P4 | In progress, local only | Explicit release holds and overview blockers added; approvals/history preserved. Automated change comparison, refresh/freshness and complete subsystem readiness remain. |
 | P5 | Planned | Requires explicit cross-registry mappings and existing evidence integration |
 | P6 | Planned | All required requirements/evidence satisfied before completion claim |
 

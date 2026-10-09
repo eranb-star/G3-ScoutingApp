@@ -51,6 +51,8 @@ jobs:
           node scripts/test-build-material-reservations.mjs
           node scripts/test-robot-build-lots.mjs
           node scripts/test-robot-build-files.mjs
+          node scripts/test-robot-build-kit-requirements.mjs
+          node scripts/test-robot-build-holds.mjs
           node scripts/test-build-file-handler.mjs
           node scripts/test-browser-attendance.mjs
           node scripts/verify-mobile-notification-stability.mjs

@@ -14,3 +14,9 @@
 @media(max-width:600px){.build-parts-row{grid-template-columns:minmax(0,1fr) 55px 90px;gap:8px;padding:8px;font-size:.88rem}}
 @media(max-width:600px){.robot-build-navigation{display:grid;grid-template-columns:1fr 1fr}.robot-build-destinations,.robot-build-projects{grid-template-columns:1fr}.robot-build-header-actions{width:100%}.robot-build-page{padding:16px}.robot-build-page button{white-space:normal;overflow-wrap:anywhere}}
 .build-inspection-lots{margin-block:1rem;padding:1rem;border:1px solid #ded4e1;border-radius:12px;background:var(--surface,#fff)}.build-lot-totals{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1rem}.build-lot-totals dd{margin:0;font-size:1.5rem;font-weight:750}.build-lot-totals dt{font-size:.9rem}.build-inspection-lots fieldset{display:grid;gap:1rem;border:0;padding:1rem 0}.build-inspection-lots label{display:grid;gap:.4rem}.build-inspection-lots select,.build-inspection-lots input,.build-inspection-lots textarea{max-width:100%;min-width:0}.build-inspection-lots .build-job-summary{align-items:start;gap:1rem}@media(max-width:600px){.build-lot-totals{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.build-readiness { border-block-end: 1px solid #ddd4df; padding-block-end: 1.25rem; margin-block-end: 1.5rem; }
+.build-readiness dl { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr)); gap:1rem; }
+.build-readiness dl>div { border-inline-start:3px solid #a00078; padding-inline-start: .85rem; }
+.build-readiness dt { font-size:.9rem; line-height:1.4; }
+.build-readiness dd { font-size:1.6rem; font-weight:750; margin:.4rem 0 0; }
+.build-release-hold:has([role="status"]) { border-inline-start:4px solid #9a5500; padding:1rem; background:#fff8eb; margin-block:1rem; }
