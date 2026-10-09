@@ -1,3 +1,11 @@
+# Shared review draft acceptance — 9 October, local only
+
+Review configuration, submission evidence, individual requirement findings, artifact checks, decision notes, reviewer policy, stage changes and independent exception countersigns now use member/task/submission-scoped drafts. A saved finding/check does not clear a separate approval note. Existing legacy submission drafts remain readable. No automatic submission, approval, qualification or authorization is added.
+
+TypeScript and review-draft identity/stale-token validation pass. The database-backed synthetic browser harness verified: full reload restored evidence values and fixed source identity; submission reached pending; reopening a new submission was blank; independent mentor artifact verification preserved the approval note; approval completed the source checkpoint while the dependent task remained todo. Evidence: docs/staging/robot-build-review-drafts-20261009.png. These were local synthetic records, not production or physical evidence.
+
+Previous draft/legacy increment is pushed as f34a8d3. This review increment is not deployed. Provider/recovery, cross-system/mobile acceptance and final release gates remain; continue the complete master scope.
+
 # Draft and legacy CAD acceptance — 9 October, local only
 
 Expanded independent drafts now cover parts sourcing/manual demand, manufacturing attachment/progress/materials, stock/kit/inspection controls, subsystem editing, physical asset/configuration registration, shared equipment, maintenance links/repair plans and work-file metadata. Separate saves clear only their own draft. Subsystem/repair selection requires explicit discard before replacing edits. File blobs are never persisted or automatically uploaded; restored metadata asks for file selection again. Manufacturing and sourcing drafts pin expected revisions rather than silently adopting refreshed versions. Shared review/configuration subflows still need final draft integration and complete role/device acceptance.
