@@ -62,6 +62,8 @@ jobs:
           node scripts/test-build-disassembly.mjs
           node scripts/test-build-assembly-lots.mjs
           node scripts/test-build-substitutions.mjs
+          node scripts/test-build-draft-registry.mjs
+          node scripts/test-build-change-decisions.mjs
           node scripts/test-robot-build-scope.mjs
           node scripts/test-build-preparation.mjs
           node scripts/test-build-material-reservations.mjs

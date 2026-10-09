@@ -27,7 +27,7 @@ export default function ProjectBuildWork({projectId,tasks,canManage,canStock,can
  const [adding,setAdding]=useState(false),[task,setTask]=useState(''),[release,setRelease]=useState(''),[name,setName]=useState(''),[instructions,setInstructions]=useState(''),[quantity,setQuantity]=useState('1');
  async function load(){
   const generation=++loadGeneration.current;
-  setLoaded(false);setMessage('');
+  setMessage('');
   try{
    const ids=tasks.map(t=>t.id);if(!ids.length){setJobs([]);setReleases([]);setQc([]);setLoaded(true);return;}
    const jobs:Job[]=[],gates:{task_id:string;current_submission:string|null;decision_type:string;enabled:boolean}[]=[];

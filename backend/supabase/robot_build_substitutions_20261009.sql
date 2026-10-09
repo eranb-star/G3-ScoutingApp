@@ -52,7 +52,7 @@ begin
 end$$;
 create or replace function public.guard_robot_build_substituted_kit()returns trigger language plpgsql security definer set search_path=public,pg_temp as $$
 begin
- if (new.installed_at is distinct from old.installed_at and new.installed_at is not null) or (new.stock_received_at is distinct from old.stock_received_at and new.stock_received_at is not null) then
+ if (new.installed_at is distinct from old.installed_at and new.installed_at is not null) or (new.stock_received_at is not null and (new.stock_received_at is distinct from old.stock_received_at or new.retirement_note is distinct from old.retirement_note)) then
  if exists(select 1 from public.robot_build_kit_items where kit_id=new.id and quantity>0 and substitution_id is not null and not public.robot_build_substitution_usable(substitution_id)) then raise exception 'A scoped substitution approval is stale or held; review before installation or assembly receipt';end if;
  end if;return new;
 end$$;

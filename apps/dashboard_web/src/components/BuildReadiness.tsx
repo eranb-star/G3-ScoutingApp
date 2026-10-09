@@ -11,22 +11,23 @@ type Job={id:string;task_id:string;release_task_id:string;release_submission_id:
 type Hold={task_id:string;reason:string};
 export default function BuildReadiness({projectId}:{projectId:string}){
  const {pick}=useLocalization(),generation=useRef(0);
- const [data,setData]=useState<{dependencies:{task_id:string;prerequisite_id:string}[];gates:Gate[];reviews:ReviewGate[];jobs:Job[];holds:Hold[];issues:{id:string;title:string}[];kits:{id:string;installed_at:string|null;retired_at:string|null}[]}|null>(null),[failed,setFailed]=useState(false);
+ const [data,setData]=useState<{effectiveHolds:{task_id:string;held:boolean}[];dependencies:{task_id:string;prerequisite_id:string}[];gates:Gate[];reviews:ReviewGate[];jobs:Job[];holds:Hold[];issues:{id:string;title:string}[];kits:{id:string;installed_at:string|null;retired_at:string|null}[]}|null>(null),[failed,setFailed]=useState(false);
  async function load(){const token=++generation.current;setFailed(false);try{
-  const [gates,reviews,jobs,holds,kits,issues,dependencies]=await Promise.all([
+  const [gates,reviews,jobs,holds,kits,issues,dependencies,effectiveHolds]=await Promise.all([
    readBuildPages<Gate>((a,z)=>supabase.from('project_review_gates').select('task_id,decision_type,current_submission,project_tasks!inner(project_id)').eq('project_tasks.project_id',projectId).eq('enabled',true).order('task_id').range(a,z)),
    supabase.rpc('project_review_context',{p_all:true}),
    readBuildPages<Job>((a,z)=>supabase.from('robot_build_jobs').select('id,task_id,release_task_id,release_submission_id,part_name,project_tasks!robot_build_jobs_task_id_fkey!inner(project_id)').eq('project_tasks.project_id',projectId).order('id').range(a,z)),
    readBuildPages<Hold>((a,z)=>supabase.from('robot_build_release_holds').select('task_id,reason,project_tasks!inner(project_id)').eq('project_tasks.project_id',projectId).eq('active',true).order('task_id').range(a,z)),
    readBuildPages<{id:string;installed_at:string|null;retired_at:string|null}>((a,z)=>supabase.from('robot_build_kits').select('id,installed_at,retired_at,project_tasks!inner(project_id)').eq('project_tasks.project_id',projectId).order('id').range(a,z)),
    readBuildPages<{id:string;title:string}>((a,z)=>supabase.from('robot_issues').select('id,title').eq('project_id',projectId).eq('archived',false).neq('status','resolved').order('id').range(a,z)),
-   readBuildPages<{task_id:string;prerequisite_id:string}>((a,z)=>supabase.from('project_task_dependencies').select('task_id,prerequisite_id').order('task_id').order('prerequisite_id').range(a,z))]);
-  if(reviews.error||!Array.isArray(reviews.data))throw Error();if(token===generation.current)setData({dependencies,gates,reviews:reviews.data.filter((r:ReviewGate)=>r.project_id===projectId),jobs,holds,kits,issues});
+   readBuildPages<{task_id:string;prerequisite_id:string}>((a,z)=>supabase.from('project_task_dependencies').select('task_id,prerequisite_id').order('task_id').order('prerequisite_id').range(a,z)),
+   readBuildPages<{task_id:string;held:boolean}>((a,z)=>supabase.rpc('robot_build_hold_context',{p_project:projectId}).range(a,z))]);
+  if(reviews.error||!Array.isArray(reviews.data))throw Error();if(token===generation.current)setData({effectiveHolds,dependencies,gates,reviews:reviews.data.filter((r:ReviewGate)=>r.project_id===projectId),jobs,holds,kits,issues});
  }catch{if(token===generation.current)setFailed(true);}}
  useEffect(()=>{setData(null);void load();return()=>{generation.current++;};},[projectId]);
  if(failed)return <p role="alert">{pick('Build status could not be verified.','לא ניתן לאמת את מצב הבנייה.')} <button onClick={()=>void load()}>{pick('Retry','ניסיון חוזר')}</button></p>;
  if(!data)return <p role="status">{pick('Checking releases and installation records…','בודק שחרורים ורשומות התקנה…')}</p>;
- const held=buildHeldTasks(data.holds,data.dependencies);
+ const held=buildHeldTasks([...data.holds,...data.effectiveHolds.filter(h=>h.held)],data.dependencies);
  const verified=(task:string)=>{const s=data.reviews.find(r=>r.task_id===task)?.submission;return !held.has(task)&&!!s&&['approved','overridden'].includes(s.status)&&s.valid_current===true;};
  const releaseGates=data.gates.filter(g=>g.decision_type==='released_for_manufacturing');
  const releases=releaseGates.filter(g=>verified(g.task_id)&&!data.holds.some(h=>h.task_id===g.task_id));

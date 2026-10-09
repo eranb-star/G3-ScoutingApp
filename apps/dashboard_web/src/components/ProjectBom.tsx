@@ -8,6 +8,7 @@ import BuildDemandReview from './BuildDemandReview';
 import BuildRevisionComparison from './BuildRevisionComparison';
 import BuildSourceFreshness from './BuildSourceFreshness';
 import BuildChangeImpact from './BuildChangeImpact';
+import BuildChangeDecisions from './BuildChangeDecisions';
 import {readBuildPages} from '../lib/robotBuildWorkspace';
 type Bom={id:string;name:string;snapshot_id:string|null;owner_id:string;revision:number;shared_at:string|null;created_at:string};
 type Line={id:string;bom_id:string;name:string;design_quantity:number;required_quantity:number;disposition:string;inventory_id:string|null;job_id:string|null;review_note:string;revision:number;source_identity?:{kind?:string;provenance?:string;metadata?:CadMetadata}};
@@ -46,7 +47,7 @@ function LineEditor({projectId,line:l,candidates,stock,jobs,editable,canStock,ca
  const item=stock.find(s=>s.id===l.inventory_id);
  return <article id={`build-part-${l.id}`} className="build-job"><div className="build-job-summary"><strong>{l.name}</strong><span>{pick(...labels[l.disposition])} · {l.required_quantity}</span></div><small>{l.source_identity?.kind==='manual'?pick('Originally requested','כמות מקורית שהתבקשה'):pick('Imported quantity','כמות שיובאה')}: {l.design_quantity}</small>
  {l.source_identity?.kind!=='manual'&&<CadPartMetadata value={l.source_identity?.metadata}/>}
- <BuildChangeImpact lineId={l.id} jobId={l.job_id} projectId={projectId}/>
+ <BuildChangeImpact lineId={l.id} jobId={l.job_id} projectId={projectId}/><BuildChangeDecisions projectId={projectId} line={l} candidates={candidates} editable={editable}/>
  {l.source_identity?.provenance&&<p>{pick('Source / reason','מקור / סיבה')}: {l.source_identity.provenance}</p>}
  {editable&&<BuildDemandReview line={l.id} bom={l.bom_id} revision={l.revision} candidates={candidates} saved={saved}/>}
  {item&&<p>{item.name} · {pick('Physical stock','מלאי פיזי')}: {item.quantity} {item.unit} · {pick('Availability must account for other reservations.','יש להתחשב בהקצאות אחרות לפני קביעת זמינות.')}</p>}

@@ -35,7 +35,7 @@ do $$declare f record;definition text;
 begin
  for f in select p.oid from pg_proc p join pg_namespace n on n.oid=p.pronamespace
  where n.nspname='public' and p.proname like '%robot_build%'
- and p.proname not in ('robot_build_review_usable','record_robot_build_hold')
+ and p.proname not in ('robot_build_review_usable','record_robot_build_hold','robot_build_change_review_valid')
  and position('public.project_review_passed(' in p.prosrc)>0 loop
   definition:=pg_get_functiondef(f.oid);
   execute replace(definition,'public.project_review_passed(','public.robot_build_review_usable(');
