@@ -1,4 +1,4 @@
-# Current authoritative status — reconciled against 39486c9 plus current local work
+# Current authoritative status — reconciled against f34a8d3 plus shared-review draft acceptance
 
 Read section 12 of ROBOT_BUILD_PREDEVELOPMENT_MASTER_20261009.md and the first sections of ROBOT_BUILD_IMPLEMENTATION_20261009.md. Twenty-five additions remain undeployed. CAD disposition enforcement and scoped form drafts are now implemented locally; read the latest implementation entries. Scoped engineering substitutions now have server enforcement, UI and actual-schema tests. Partial assembly receipts and inspected disassembly/recovery now have actual-schema tests. Material specification/remnant controls and actual-schema tests have now been added; read the latest implementation entry. Freshness, metadata observations, subsystem coverage, WIP adoption, downstream holds and impact visibility are implemented; do not describe them as wholly unstarted.
 
@@ -8,7 +8,7 @@ The user has authorized completion. Do not request another phase-selection appro
 
 ## Active continuation
 
-TypeScript passed after the expanded draft conversion (stock/material actions, inspection lots, operations, demand review and material specifications). These changes are undeployed. The final 25-migration rehearsal passed after the receipt guard; legacy CAD destination targeted and combined acceptance now pass. Continue remaining shared/legacy form coverage and the release gates above. A successful build is not evidence of production deployment.
+TypeScript passed after the expanded draft conversion (stock/material actions, inspection lots, operations, demand review and material specifications). These changes are undeployed. The final 25-migration rehearsal passed after the receipt guard; legacy CAD destination targeted and combined acceptance now pass. Shared review drafts now pass database-backed reload/submission/independent-approval browser acceptance. Continue provider/files, cross-system and release gates above. A successful build is not evidence of production deployment.
 
 ## Historical checkpoints below — status superseded by the current master ledger
 
