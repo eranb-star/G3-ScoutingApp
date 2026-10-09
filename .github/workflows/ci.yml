@@ -81,6 +81,9 @@ jobs:
       - name: Build simulation references
         working-directory: apps/dashboard_web
         run: node scripts/test-build-simulation.mjs
+      - name: Build event handoff
+        working-directory: apps/dashboard_web
+        run: node scripts/test-build-event-handoff.mjs
       - name: Private repository access boundaries
         run: node scripts/test-private-repositories.mjs
       - name: Private CAD authorization, revisions and review evidence
