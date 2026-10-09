@@ -407,6 +407,7 @@ export function MorePage({ isAdmin }: { isAdmin: boolean }) {
   const navigate = useNavigate();
   const { t, pick } = useLocalization();
   const rows = [
+    [pick("Team operations","תפעול הקבוצה"), pick("Fundraising, inventory and coordination","גיוס כספים, מלאי ותיאום"), "/team-operations"],
     [t("attendance"), pick("Personal history and verified workshop hours","היסטוריה אישית ושעות סדנה מאומתות"), "/attendance"],
     [pick("Team Media","מדיה קבוצתית"), pick("Robot, CAD, workshop and event gallery","גלריית רובוט, CAD, סדנה ואירועים"), "/media"],
     [pick("Feedback Center","מרכז משוב"), pick("Share an idea or report a problem","שליחת רעיון או דיווח על בעיה"), "/feedback"],

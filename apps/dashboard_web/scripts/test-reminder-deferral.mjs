@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {visibleResponsibilities,customReminderTime,reminderAfterDays} from '../src/lib/responsibilityVisibility.ts';
+const now=Date.parse('2026-10-09T10:00:00Z');
+const meeting={id:'meeting',action_type:'meeting',priority:'high',due_at:'2027-01-09T10:00:00Z'};
+assert.equal(visibleResponsibilities([meeting],[],'home',now).length,0);
+assert.equal(visibleResponsibilities([meeting],[],'work',now).length,1);
+assert.equal(visibleResponsibilities([{...meeting,action_type:'assignment'}],[],'home',now).length,1);
+const state={action_id:'meeting',status:'snoozed',snoozed_until:'2026-10-16T10:00:00Z'};
+assert.equal(visibleResponsibilities([meeting],[state],'work',now).length,0);
+assert.equal(visibleResponsibilities([meeting],[state],'work',Date.parse(state.snoozed_until)).length,1);
+assert.equal(visibleResponsibilities([meeting],[{...state,status:'acknowledged',snoozed_until:null}],'work',now).length,1);
+assert.equal(customReminderTime('invalid',now),null);
+assert.equal(customReminderTime('2026-10-08T10:00:00Z',now),null);
+assert.equal(customReminderTime('2026-10-16T10:00:00Z',now),new Date(state.snoozed_until).toISOString());
+const local=new Date(2026,9,9,15,30);const target=new Date(reminderAfterDays(30,local));
+assert.equal(target.getHours(),15);assert.equal(target.getDate(),8);assert.equal(target.getMonth(),10);
+assert.equal(meeting.due_at,'2027-01-09T10:00:00Z');
+console.log('PASS future-meeting horizon, urgent tasks, defer expiry, restore, custom validation, calendar presets and unchanged source date');

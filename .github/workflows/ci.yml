@@ -28,6 +28,8 @@ jobs:
         env:
           PGLITE_MODULE: ${{ runner.temp }}/g3-sql/node_modules/@electric-sql/pglite/dist/index.js
         run: |
+          node scripts/test-reminder-deferral.mjs
+          node scripts/test-readiness-priorities.mjs
           node scripts/test-project-action-consistency.mjs
           node scripts/test-engineering-records.mjs
           node scripts/test-project-archive.mjs
