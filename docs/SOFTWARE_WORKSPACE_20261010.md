@@ -27,7 +27,9 @@ Production acceptance transaction created the synthetic task/context, checked re
 - Existing simulation/VR computation untouched; planner export entry presentation changed. No new paid AI generation or physical robot test performed.
 
 ## Release status
-Application commit/CI/deployment evidence will be recorded in the authoritative checkpoint after release. Previous live release before this change: d93cf777 / Vercel 6KDis92EGZSSSiX8fLTpw2WdZQwh. Additive SQL can remain if frontend is rolled back.
+Deployed source: release 41e5f1b483adb9456ab67c7552b2ff852f22e7b4; development ffb4a04d5cf946f80f0ed2f9b56fdda63609e716. CI338 release and CI337 development passed. Production EFaP2HHpxYzzNfQEAudvQtMp5Eno Ready, g3-6740.com alias, 10 October 01:29:29 GMT+3. Immutable URL: https://g3-scouting-app-5qpe-crqvjdang-eranbos-projects.vercel.app.
+
+Authenticated live acceptance: 13 repositories accessible; OFFSEASON_2026 main resolved/pinned to 1fe6cca0… using existing read-only endpoint; actual supplied file parsed and teleop produced 499 voltage samples; Tests & results loaded, return preserved interval/signal/pin. No new paid AI call or real shared result written. Screenshot: docs/staging/software-workspace-production-20261010.png (local evidence). Previous live release before this change: d93cf777 / Vercel 6KDis92EGZSSSiX8fLTpw2WdZQwh. Additive SQL can remain if frontend is rolled back.
 
 ## Deliberately open
 GitHub remains read-only at user request. App-triggered fixed build/test workflow would return compile results for a selected revision inside G3, but requires separate Actions authorization/token permissions and is deferred. No automatic robot deployment. Installed APK remains older; this release targets the website. Physical acceptance and mechanism-specific autonomous integration are not implied by the software workflow release.
