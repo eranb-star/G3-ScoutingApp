@@ -1,4 +1,6 @@
 .robot-build-page{max-width:1440px;margin:0 auto;padding:clamp(16px,3vw,36px);color:var(--text,#282434)}
+.build-leave-dialog{max-width:480px;width:calc(100% - 48px);border:1px solid #dacede;border-radius:16px;padding:24px;color:#282434}.build-leave-dialog::backdrop{background:#20142599}.build-leave-dialog h2{margin-top:0}.build-leave-dialog p{line-height:1.6}
+.build-task-queue{margin-block:20px}.build-queue-list{display:grid;gap:8px;margin-block:12px}.build-queue-list button{display:flex;justify-content:space-between;align-items:center;gap:16px;text-align:start}.robot-build-page button[aria-pressed=true]{border-color:#a00078;background:#fff1fa}.build-selected-task{padding:16px;border:1px solid #ddd3df;border-radius:12px;background:white}@media(max-width:600px){.build-queue-list button{display:grid;gap:5px}}
 .robot-build-header{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;margin-bottom:24px}
 .robot-build-header h1{font-size:clamp(26px,3vw,38px);margin:8px 0}.robot-build-header p{margin:0;color:#615867}
 .robot-build-page a{color:#97006c}.robot-build-page button{font:inherit;min-height:44px;border:1px solid #d9cfdc;border-radius:10px;padding:10px 16px;background:#fff;color:#352b3b;cursor:pointer}

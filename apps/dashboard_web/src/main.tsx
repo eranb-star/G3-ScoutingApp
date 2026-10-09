@@ -3,7 +3,7 @@ import { useG3AssistAccess } from "./lib/useG3AssistAccess";
 import LabScreenGate from './components/LabScreenGate';
 import React, { createContext, lazy, Suspense, useContext, useEffect, useMemo, useRef, useState } from "react";
 import ReactDOM from "react-dom/client";
-import { BrowserRouter, NavLink, Route, Routes, Navigate, useLocation, useNavigate } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, NavLink, Route, Routes, Navigate, useLocation, useNavigate } from "react-router-dom";
 
 import ScoutingPage from "./pages/ScoutingPage";
 import AnalysisPage from "./pages/AnalysisPage";
@@ -922,13 +922,14 @@ function AppShell() {
   );
 }
 
-ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <BrowserRouter>
+const appRouter = createBrowserRouter([{path: "*", element:
       <AdminProvider>
         <LocalizationProvider><MemberAuthProvider><AppShell /></MemberAuthProvider></LocalizationProvider>
       </AdminProvider>
-    </BrowserRouter>
+}]);
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    <RouterProvider router={appRouter}/>
   </React.StrictMode>
 );
 

@@ -1,0 +1,212 @@
+[
+  {
+    "proname": "add_robot_build_requirement",
+    "args": "p_project uuid, p_name text, p_quantity integer, p_source text, p_request uuid",
+    "body_md5": "4f53e46d39ccca814a998a6582b30691",
+    "security_definer": true
+  },
+  {
+    "proname": "configure_project_review",
+    "args": "p_task uuid, p_reviewer uuid, p_criteria text, p_reason text",
+    "body_md5": "3814f543cd5e0a3227f4b21b071dd36d",
+    "security_definer": true
+  },
+  {
+    "proname": "create_robot_build_job",
+    "args": "p_task uuid, p_release_task uuid, p_submission uuid, p_name text, p_revision text, p_instructions text, p_quantity integer",
+    "body_md5": "40e2ecc131d46b37a254ecfe0ccdba58",
+    "security_definer": true
+  },
+  {
+    "proname": "create_robot_build_kit",
+    "args": "p_task uuid, p_name text, p_request uuid",
+    "body_md5": "75973368316c94e26b3ce6f03081e4e9",
+    "security_definer": true
+  },
+  {
+    "proname": "create_tracked_configuration",
+    "args": "p_project uuid, p_name text, p_revision text, p_kind text, p_details text, p_asset uuid, p_parent uuid, p_software text, p_calibration text",
+    "body_md5": "893b95b36fedb5ec4c35c27d8c922127",
+    "security_definer": true
+  },
+  {
+    "proname": "guard_robot_build_completion",
+    "args": "",
+    "body_md5": "cdb315eecead9bc9eca52061c868dc3a",
+    "security_definer": true
+  },
+  {
+    "proname": "guard_robot_build_covered_demand",
+    "args": "",
+    "body_md5": "1b40c594453e25ab9eab1d72ece66961",
+    "security_definer": true
+  },
+  {
+    "proname": "guard_robot_build_operations",
+    "args": "",
+    "body_md5": "642b51222c6fb7cfdcfb92f6da5f1bb3",
+    "security_definer": true
+  },
+  {
+    "proname": "guard_robot_build_project_close",
+    "args": "",
+    "body_md5": "eb302413e2c381030ae485c6887986d2",
+    "security_definer": true
+  },
+  {
+    "proname": "guard_robot_build_purchase_identity",
+    "args": "",
+    "body_md5": "cb6021b81341f789a4943b482cec7e56",
+    "security_definer": true
+  },
+  {
+    "proname": "guard_robot_build_scope",
+    "args": "",
+    "body_md5": "0daf0b26dc7d1993c86898bec3782e93",
+    "security_definer": true
+  },
+  {
+    "proname": "guard_robot_build_work_scope",
+    "args": "",
+    "body_md5": "89ddef928b02adc0bf602d00833983c3",
+    "security_definer": true
+  },
+  {
+    "proname": "import_robot_build_bom",
+    "args": "p_actor uuid, p_project uuid, p_snapshot uuid, p_rows jsonb",
+    "body_md5": "1b737cd41190fb975162644d020431c9",
+    "security_definer": true
+  },
+  {
+    "proname": "install_robot_build_kit",
+    "args": "p_kit uuid, p_configuration uuid, p_note text, p_request uuid",
+    "body_md5": "49fc137d51e70d2162a646a01edde923",
+    "security_definer": true
+  },
+  {
+    "proname": "link_robot_build_line",
+    "args": "p_line uuid, p_expected integer, p_job uuid",
+    "body_md5": "3125e31f264d3fc6cd8202c972160c77",
+    "security_definer": true
+  },
+  {
+    "proname": "link_robot_build_purchase",
+    "args": "p_line uuid, p_purchase uuid, p_request uuid",
+    "body_md5": "666956a28a30d99e74b88922d9a97a24",
+    "security_definer": true
+  },
+  {
+    "proname": "move_robot_build_kit",
+    "args": "p_kit uuid, p_batch uuid, p_action text, p_quantity integer, p_expected integer, p_note text, p_request uuid",
+    "body_md5": "77855ea0b15bbb90e996955b68a7a7a0",
+    "security_definer": true
+  },
+  {
+    "proname": "move_robot_build_stock",
+    "args": "p_line uuid, p_action text, p_amount integer, p_expected integer, p_note text, p_request uuid",
+    "body_md5": "309d7faa1b7f6d8a014536c305bb55e8",
+    "security_definer": true
+  },
+  {
+    "proname": "plan_robot_build_material",
+    "args": "p_job uuid, p_part uuid, p_quantity numeric, p_expected integer, p_note text",
+    "body_md5": "35fa864fb96d3902ea1e2bd6db20caab",
+    "security_definer": true
+  },
+  {
+    "proname": "project_review_context",
+    "args": "p_task uuid, p_all boolean",
+    "body_md5": "c984c0d35ddbcd992a10304eef637feb",
+    "security_definer": false
+  },
+  {
+    "proname": "receive_robot_build_batch",
+    "args": "p_job uuid, p_part uuid, p_note text, p_request uuid",
+    "body_md5": "c05118262cda1347db7740ccfb5c5421",
+    "security_definer": true
+  },
+  {
+    "proname": "reconcile_robot_build_existing_stock",
+    "args": "p_task uuid, p_part uuid, p_quantity integer, p_note text, p_request uuid",
+    "body_md5": "281af190952a7b219c47836030c66c4b",
+    "security_definer": true
+  },
+  {
+    "proname": "reconcile_robot_build_line",
+    "args": "p_line uuid, p_expected integer, p_decision text, p_target uuid, p_peers jsonb, p_note text",
+    "body_md5": "c8a63c786e6eeae9e2cd0f951f8c68cc",
+    "security_definer": true
+  },
+  {
+    "proname": "record_robot_build_operation",
+    "args": "p_job uuid, p_step integer, p_quantity integer, p_expected integer, p_note text, p_request uuid",
+    "body_md5": "5d64984c3a8e636801342c5534aa75a7",
+    "security_definer": true
+  },
+  {
+    "proname": "record_robot_build_progress",
+    "args": "p_job uuid, p_expected_revision integer, p_completed integer, p_note text, p_request uuid",
+    "body_md5": "e9326ad5887fd42c6763f38fa4a46ac0",
+    "security_definer": true
+  },
+  {
+    "proname": "record_robot_build_work",
+    "args": "p_job uuid, p_action text, p_material uuid, p_amount numeric, p_expected integer, p_note text, p_request uuid",
+    "body_md5": "c2d2b7c39e2057c83ef6cee4afcefebd",
+    "security_definer": true
+  },
+  {
+    "proname": "register_project_asset",
+    "args": "p_project uuid, p_serial text, p_name text, p_kind text",
+    "body_md5": "0cf85f92ff10c4bfe5c9261e1756d144",
+    "security_definer": true
+  },
+  {
+    "proname": "replace_robot_build_kit",
+    "args": "p_previous uuid, p_replacement uuid, p_note text, p_request uuid, p_retest uuid",
+    "body_md5": "ccfe52b6e2f52bab7ffcd1883c358bed",
+    "security_definer": true
+  },
+  {
+    "proname": "request_robot_build_purchase",
+    "args": "p_line uuid, p_quantity integer, p_request uuid",
+    "body_md5": "73eb94f73ecb9ddc02c451e8b7786cf0",
+    "security_definer": true
+  },
+  {
+    "proname": "review_robot_build_line",
+    "args": "p_line uuid, p_expected integer, p_disposition text, p_quantity integer, p_inventory uuid, p_note text",
+    "body_md5": "c9a1416ca3230b6eea6ee5c9b56b6873",
+    "security_definer": true
+  },
+  {
+    "proname": "robot_build_overlap_ids",
+    "args": "p_line uuid",
+    "body_md5": "4ff2a6b35b89d679afe5f911eb82164d",
+    "security_definer": true
+  },
+  {
+    "proname": "robot_build_reconciliation_context",
+    "args": "p_bom uuid, p_line uuid",
+    "body_md5": "cb604aa18bf079ff12d7299548787373",
+    "security_definer": true
+  },
+  {
+    "proname": "robot_build_reserved",
+    "args": "p_part uuid",
+    "body_md5": "3b696c8edb0f4180913ad5a8253ea61a",
+    "security_definer": true
+  },
+  {
+    "proname": "set_robot_build_operations",
+    "args": "p_job uuid, p_expected integer, p_steps jsonb",
+    "body_md5": "effb87e3cd7cfc1e4ac0d50c9067b625",
+    "security_definer": true
+  },
+  {
+    "proname": "share_robot_build_bom",
+    "args": "p_bom uuid, p_expected integer",
+    "body_md5": "d57a8cac2e94fa7fb903200174150388",
+    "security_definer": true
+  }
+]

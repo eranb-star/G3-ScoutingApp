@@ -1,6 +1,6 @@
 # Robot Build — authoritative pre-development and implementation plan
 
-Date: 9 October 2026. Status: **planning complete for review; implementation not started under this plan**. User requested a detailed document to follow, consolidating the agreed design and regression precautions. This is the execution authority for the next Robot Build development, not evidence of delivered functionality. No design document can guarantee no regressions; the mandatory gates below make completion demonstrable.
+Date: 9 October 2026. Status: **implementation in progress; local changes are not yet deployed**. The user authorized end-to-end development. This document remains the execution authority; the implementation checkpoint records actual delivery and unresolved acceptance. No design document can guarantee no regressions; the mandatory gates below make completion demonstrable.
 
 ## 0. Reading order, precedence and change control
 
@@ -251,10 +251,10 @@ Initial execution ledger:
 
 | Package | Status | Evidence / next action |
 |---|---|---|
-| P0 | In progress | Eight deployed table columns/RLS checked read-only; functions/constraints/provider/recovery gates remain. See implementation checkpoint. |
-| P1 | In progress, local only | Direct entry/four views/compact parts/paginated reads implemented; guided setup, complete drafts/role flows and acceptance remain. See implementation checkpoint. |
+| P0 | In progress | Live function fingerprints and constraints captured; 34 function bodies matched, dynamic review-context body inspected. Provider/recovery gates remain. See implementation checkpoint. |
+| P1 | In progress, local only | Direct entry, scope setup, role queues, guided preparation, accessible leave dialog and Back guard implemented. Full role/auth/device acceptance and all-form draft contract remain. |
 | P2 | Planned | Requires P0 source/file identity; preserve existing CAD access |
-| P3 | Planned | Requires quantity/authority contracts; additive lot/reservation implementation |
+| P3 | In progress, local only | Raw-material reservations and shared fundraising stock-floor tests pass. Partial inspection lots and other quantity/authority contracts remain. |
 | P4 | Planned | Requires pinned source and release model; no automatic work rewrite |
 | P5 | Planned | Requires explicit cross-registry mappings and existing evidence integration |
 | P6 | Planned | All required requirements/evidence satisfied before completion claim |
