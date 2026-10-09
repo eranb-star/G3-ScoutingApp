@@ -11,8 +11,7 @@ export default function BuildPartModel({snapshotId,paths,partId}:{snapshotId:str
  useEffect(()=>{setGeometry(null);setError('');setOccurrence('');},[snapshotId,partId]);
  if(!snapshotId)return null;
  async function open(){setBusy(true);setError('');setGeometry(null);try{
- const snap=await supabase.from('cad_snapshots').select('id,source_id').eq('id',snapshotId).maybeSingle();if(snap.error||!snap.data)throw Error(pick('This CAD snapshot is not accessible to your account. Use the released work files or ask the source owner for a scoped file. Sharing a parts list does not grant private CAD access.','תמונת מצב זו אינה זמינה לחשבונכם. השתמשו בקובצי העבודה המשוחררים או בקשו קובץ ממוקד מבעלי המקור. שיתוף רשימת חלקים אינו מעניק גישה ל-CAD פרטי.'));
- const asset=await supabase.functions.invoke('onshape-connector',{body:{action:'geometry',sourceId:snap.data.source_id,snapshotId}});if(asset.error||asset.data?.error||asset.data?.snapshotId!==snapshotId)throw Error(pick('The pinned CAD revision could not be opened. No newer revision was substituted.','לא ניתן לפתוח את גרסת ה-CAD המקובעת. לא הוחלפה בגרסה חדשה יותר.'));
+ const asset=await supabase.functions.invoke('onshape-connector',{body:{action:'geometry',snapshotId}});if(asset.error||asset.data?.error||asset.data?.snapshotId!==snapshotId)throw Error(pick('The pinned CAD revision could not be opened. No newer revision was substituted.','לא ניתן לפתוח את גרסת ה-CAD המקובעת. לא הוחלפה בגרסה חדשה יותר.'));
  const url=new URL(asset.data.url);if(url.origin!=='https://hnqwhuuxlqfyawqymaaz.supabase.co'||!url.pathname.startsWith('/storage/v1/object/sign/cad-design-assets/'))throw Error('Invalid geometry destination');
  const r=await fetch(url,{cache:'no-store'});if(!r.ok)throw Error(pick('Geometry download failed. Retry.','הורדת הגאומטריה נכשלה. נסו שוב.'));const model=await r.json() as CadGeometry;
  if(model.units!=='m'||!Array.isArray(model.meshes))throw Error('Unsupported geometry');
