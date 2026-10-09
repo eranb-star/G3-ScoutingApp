@@ -3,7 +3,7 @@
  */
 export type LogValue = number | boolean | string | (number | boolean | string)[];
 export type LogSample = { time: number; value: LogValue };
-export type LogChannel = { id: number; generation: number; name: string; type: string; metadata: string; samples: LogSample[]; records: number; unsupported: number };
+export type LogChannel = { id: number; generation: number; name: string; type: string; metadata: string; samples: LogSample[]; records: number; unsupported: number; components?: string[] };
 export type RobotLog = { channels: LogChannel[]; records: number; start: number; end: number; warnings: string[]; extraHeader: string; complete: boolean };
 const decoder = new TextDecoder('utf-8', { fatal: true });
 const MAX_BYTES = 32 * 1024 * 1024;
@@ -20,6 +20,7 @@ export function parseRobotLog(buffer: ArrayBuffer): RobotLog {
   if (extraSize > bytes.length - 12) throw Error('INCOMPLETE_LOG_HEADER');
   const result: RobotLog = { channels: [], records: 0, start: Infinity, end: -Infinity, warnings: [], extraHeader: decoder.decode(bytes.subarray(12, 12 + extraSize)), complete: true };
   const active = new Map<number, LogChannel>();
+  const structures:{channel:LogChannel;time:number;offset:number;size:number}[]=[];
   let offset = 12 + extraSize, values = 0;
   const warn = (message: string) => { result.complete = false; if (!result.warnings.includes(message)) result.warnings.push(message); };
   const uint = (position: number, size: number) => {
@@ -85,7 +86,7 @@ export function parseRobotLog(buffer: ArrayBuffer): RobotLog {
       };
       const widths: Record<string, number> = { boolean: 1, float: 4, double: 8, int64: 8 };
       let value: LogValue;
-      if (channel.type === 'string') value = decoder.decode(data);
+      if (channel.type === 'string' || channel.type === 'structschema' || channel.type === 'json') value = decoder.decode(data);
       else if (channel.type === 'string[]') {
         if (size < 4) throw Error('MALFORMED_RECORD');
         const count = payload.getUint32(0, true); cursor = 4;
@@ -94,7 +95,7 @@ export function parseRobotLog(buffer: ArrayBuffer): RobotLog {
         if (cursor !== size) throw Error('MALFORMED_RECORD');
       } else {
         const array = channel.type.endsWith('[]'), type = array ? channel.type.slice(0, -2) : channel.type, width = widths[type];
-        if (!width) { channel.unsupported++; continue; }
+        if (!width) { channel.unsupported++; if(channel.type.startsWith('struct:'))structures.push({channel,time,offset:offset-size,size}); continue; }
         if ((!array && size !== width) || size % width) throw Error('MALFORMED_RECORD');
         if (size / width > 10000) throw Error('ARRAY_LIMIT');
         value = array ? Array.from({ length: size / width }, (_, i) => scalar(type, i * width)) : scalar(type, 0);
@@ -103,6 +104,23 @@ export function parseRobotLog(buffer: ArrayBuffer): RobotLog {
       if (values > MAX_VALUES) { warn('VALUE_LIMIT'); break; }
       channel.samples.push({ time, value });
     } catch (error) { warn(error instanceof Error ? error.message : 'MALFORMED_RECORD'); }
+  }
+  // Decode only known WPILib layouts whose embedded schemas match exactly.
+  const schemas=new Map<string,Set<string>>();
+  for(const c of result.channels)if(c.type==='structschema')for(const s of c.samples)if(typeof s.value==='string'){
+    const key=c.name.replace(/^\//,'');const set=schemas.get(key)??new Set<string>();set.add(s.value.replace(/\s/g,'').replace(/;$/,''));schemas.set(key,set);
+  }
+  const schema=(name:string,expected:string)=>{const set=schemas.get('.schema/struct:'+name);return set?.size===1&&set.has(expected);};
+  const rotation=schema('Rotation2d','doublevalue'),translation=schema('Translation2d','doublex;doubley');
+  for(const s of structures){
+    const name=s.channel.type.replace(/^struct:/,'').replace(/\[\]$/,''),array=s.channel.type.endsWith('[]');
+    const fields=name==='Pose2d'&&rotation&&translation&&schema(name,'Translation2dtranslation;Rotation2drotation')?['x (m)','y (m)','heading (rad)']:name==='SwerveModuleState'&&rotation&&schema(name,'doublespeed;Rotation2dangle')?['speed (m/s)','angle (rad)']:null;
+    if(!fields)continue;
+    const width=fields.length*8;if(s.size%width||(!array&&s.size!==width)||s.size/width>16){warn('MALFORMED_STRUCT');continue;}
+    if(values+s.size/8>MAX_VALUES){warn('VALUE_LIMIT');break;}
+    const payload=new DataView(buffer,s.offset,s.size),value=Array.from({length:s.size/8},(_,i)=>payload.getFloat64(i*8,true));values+=value.length;
+    s.channel.samples.push({time:s.time,value});s.channel.unsupported--;
+    s.channel.components=Array.from({length:value.length},(_,i)=>array?`${Math.floor(i/fields.length)+1}: ${fields[i%fields.length]}`:fields[i]);
   }
   for (const channel of result.channels) channel.samples.sort((a, b) => a.time - b.time);
   if (!Number.isFinite(result.start)) result.start = result.end = 0;

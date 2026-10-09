@@ -1,0 +1,25 @@
+import fs from 'node:fs';import assert from 'node:assert/strict';import ts from 'typescript';
+const cache=new Map();
+function moduleUrl(file){if(cache.has(file.href))return cache.get(file.href);let code;if(file.search==='?raw'){file=new URL(file);file.search='';code='export default '+JSON.stringify(fs.readFileSync(file,'utf8'));}else{code=ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText;code=code.replace(/from ['"](\.[^'"]+)['"]/g,(_,p)=>'from '+JSON.stringify(moduleUrl(new URL(p.includes('?raw')||p.endsWith('.ts')?p:p+'.ts',file))));}const url='data:text/javascript;base64,'+Buffer.from(code).toString('base64');cache.set(file.href,url);return url;}
+const {repositoryAutoJava,toOdometry}=await import(moduleUrl(new URL('../src/lib/repositoryAutoExport.ts',import.meta.url)));
+const {logIdentity,logModes,compareLogChannels,boundedLogEvidence}=await import(moduleUrl(new URL('../src/lib/robotLogAnalysis.ts',import.meta.url)));
+const {parseLogTrialDraft,logTrialDraftKey}=await import(moduleUrl(new URL('../src/lib/robotLogTrialDraft.ts',import.meta.url)));
+const frame={x:8,y:4,yaw:Math.PI,reviewed:true};const p=toOdometry({x:2,y:1,heading:0},frame);assert.equal(p.x,6);assert.equal(p.y,3);assert.equal(p.heading,Math.PI);assert.throws(()=>toOdometry({x:0,y:0,heading:0},{...frame,reviewed:false}));
+const point=x=>({x,y:0,heading:0,action:'none',seconds:0,points:0,success:1});
+const plan={season:{schema:1,season:2026,revision:'fixture',name:'fixture',field:{length:20,width:12,geometry:'proxy',obstacles:[],tags:[]},autonomous:{seconds:20,reviewed:false},supportedInteractions:['intake','shoot','wait']},robot:{length:1,width:1,speed:2,acceleration:2,turnRate:1,clearance:.1,measured:false,alliance:1},route:[point(0),point(1)]};
+const source=repositoryAutoJava(plan,'a'.repeat(40),frame);assert.ok(source.includes('public final class G3GeneratedPlan'));assert.ok(source.includes('Alliance: BLUE'));assert.ok(!source.includes('G3DrivePlan'));assert.throws(()=>repositoryAutoJava({...plan,route:[point(0),{...point(1),action:'intake'}]},'a'.repeat(40),frame),/MECHANISM/);
+assert.throws(()=>repositoryAutoJava(plan,'main',frame),/COMMIT/);
+const channel=(name,type,samples,metadata='')=>({name,type,samples,metadata,id:1,generation:0,records:samples.length,unsupported:0});
+const sample=(time,value)=>({time,value});
+const enabled=channel('enabled','boolean',[sample(0,false),sample(1,true),sample(4,false)]),auto=channel('auto','boolean',[sample(0,true),sample(3,false)]),test=channel('test','boolean',[sample(0,false)]);
+const log={start:0,end:5,complete:true,channels:[enabled,auto,test],warnings:[],records:8,extraHeader:''};
+assert.deepEqual(logModes(log,enabled,auto,test).map(i=>[i.start,i.end,i.mode]),[[0,1,'disabled'],[1,3,'autonomous'],[3,4,'teleop'],[4,5,'disabled']]);
+assert.equal(logModes(log,enabled,auto).find(i=>i.start===3).mode,'unknown');
+const commit=channel('/Metadata/GitSHA','string',[sample(0,'b'.repeat(40))]);assert.equal(logIdentity({...log,channels:[commit]}).commit,'b'.repeat(40));assert.equal(logIdentity({...log,channels:[commit]}).dirty,null);
+assert.equal(compareLogChannels(channel('v','double',[]),channel('v','double',[])).compatible,false);
+assert.equal(compareLogChannels(channel('v','double',[],'{"unit":"m/s"}'),channel('v','double',[],'{"unit":"rpm"}')).compatible,false);
+assert.throws(()=>boundedLogEvidence(log,enabled,-1,2));assert.equal(boundedLogEvidence(log,enabled,0,3).totalSamples,2);
+const draft={schema:1,fileSha256:'a'.repeat(64),start:1,end:2,repository:'GlueGunAndGlitter/OFFSEASON_2026',commit:'',kind:'simulated',partial:true};
+assert.equal(parseLogTrialDraft(draft).kind,'simulated');assert.throws(()=>parseLogTrialDraft({...draft,end:0}));assert.throws(()=>parseLogTrialDraft({...draft,kind:'passed'}));assert.notEqual(logTrialDraftKey('member1'),logTrialDraftKey('member2'));
+if(process.argv[2])fs.writeFileSync(process.argv[2],source);
+console.log('Robot integration: frame, action blocking, generated source, modes, identity and units checks passed');

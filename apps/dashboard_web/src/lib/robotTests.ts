@@ -1,5 +1,6 @@
+import type {LogTrialDraft} from './robotLogTrialDraft';
 export type Trial={seconds:number;attempted:number;successful:number;faults:number;passed:boolean;note:string};
-export type TestSetup={robot:string;mechanism:string;codeRevision:string|null;batteryId:string|null;batteryVolts:number|null;conditions:string;procedure:string;criterion:string;units:'seconds/counts/volts';simulation?:unknown};
+export type TestSetup={robot:string;mechanism:string;codeRevision:string|null;batteryId:string|null;batteryVolts:number|null;conditions:string;procedure:string;criterion:string;units:'seconds/counts/volts';simulation?:unknown;logEvidence?:LogTrialDraft};
 export type TestRun={id:string;created_at:string;created_by:string;title:string;protocol:'can'|'intake'|'shooting'|'auto'|'driver';protocol_version:number;test_plan_id?:string|null;evidence_kind:'physical'|'simulated';setup:TestSetup;trials:Trial[];baseline_id:string|null;change_note:string;repair_task_id:string|null;correction_of:string|null};
 export const protocols={
  driver:['Simulator driver mission','משימת נהיגה בסימולטור'],
