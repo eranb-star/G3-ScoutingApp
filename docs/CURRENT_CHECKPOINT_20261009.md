@@ -75,3 +75,6 @@ Authorized compact order: Personal command, Skills Academy, Team Projects, Robot
 
 ## Work visual refinement — 10 October
 Focused visual follow-up: consistent 216x48 desktop destination actions, full-width phone actions, uniform font weight, decorative section icons and restrained G3 pink/plum accents. Academy has the primary filled action; remaining navigation actions are outlined. Order, routes and data unchanged. Hebrew phone reviewed at 375px without horizontal overflow. Deployed and visually verified on g3-6740.com; CI344/343 passed. Screenshot: docs/staging/work-polish-production-20261010.png. No route, data or permission changes.
+
+## Roadmap correction — 10 October
+NEXT_PHASES_MASTER_20261010.md now separates R1–R6 remote product extensions, B1–B2 robot-input-dependent work, delivered-feature acceptance, release obligations and deferred options. Completed software/log integration is not a new priority-1 phase. Its former blended 8–15-day estimate is withdrawn. Recommended next remote scope is deeper practical learning, then reproducible simulator training. No new implementation authorized by this correction.
