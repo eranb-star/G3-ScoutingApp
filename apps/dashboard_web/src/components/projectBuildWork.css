@@ -16,3 +16,12 @@
 .project-build-work p,.project-build-work li,.project-build-work strong{overflow-wrap:anywhere}
 @media(max-width:600px){.build-work-tabs{grid-template-columns:1fr}.build-work-tabs button{text-align:start}.build-work-content{padding-inline:0}}
 .project-build-work :is(button,input,textarea,select,summary,a):focus-visible{outline:3px solid #aa0078;outline-offset:3px}
+.build-revision-comparison{border:1px solid #ded4df;border-inline-start:4px solid #ad007a;border-radius:12px;padding:1rem;margin-block:1rem;background:#fff}
+.build-comparison-selectors{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}
+.build-comparison-selectors label{min-width:0;display:grid;gap:.4rem}
+.build-comparison-selectors select{width:100%;min-width:0}
+.build-change-list{list-style:none;padding:0;margin-block:1rem}
+.build-change-list li{display:grid;gap:.5rem;padding-block:.75rem;border-bottom:1px solid #ded4df;overflow-wrap:anywhere}
+.build-change-list li>div{display:flex;flex-wrap:wrap;gap:.5rem}
+.build-change-list button{max-width:100%;white-space:normal;text-align:start}
+@media(max-width:600px){.build-comparison-selectors{grid-template-columns:1fr}}

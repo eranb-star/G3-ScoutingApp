@@ -1,3 +1,6 @@
+# CAD revision comparison — latest local continuation
+Read ROBOT_BUILD_IMPLEMENTATION_20261009.md. Imported revision comparison and complete paginated parts lists are now implemented and locally verified, including navigation to existing work. Nine new migrations remain undeployed; no production completion or full P0–P6 completion is claimed. Preserve all remaining master-plan requirements and continue the authorized end-to-end scope.
+
 # Release holds and overview — local continuation
 Read the latest sections of ROBOT_BUILD_IMPLEMENTATION_20261009.md. Nine new SQL migrations remain undeployed. Exact kit requirements and hold-aware build consumers pass actual engineering-fixture tests, and 40 regression suites pass locally. No full-programme completion, restore, physical device acceptance or production rollout is claimed. Continue remaining master-plan work; do not silently narrow scope.
 
