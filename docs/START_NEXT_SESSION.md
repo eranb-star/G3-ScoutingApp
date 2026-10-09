@@ -1,3 +1,13 @@
+# Production acceptance update — 9 October 2026
+
+The expanded Robot Build release is deployed: all 30 additive migrations, onshape-connector, github-repositories and robot-build-files. Website release ec7d118 is live at g3-6740.com (Vercel HMxvJVWbvM1pShu4ohYP3ZjDEN4M); GitHub CI 324 passed. Actual existing BOM geometry and both gear occurrences were checked in production, including source freshness and live part metadata.
+
+**Release acceptance is not complete:** Assembly & tests exposed ambiguous task relationships in PostgREST reads. Production schema confirms separate task_id and retest_task_id links for kits, and task_id and release_task_id links for jobs. All affected frontend queries are being corrected to select the primary task relationship explicitly. Deploy the correction and verify the production assembly/readiness/handoff workflows before claiming completion.
+
+Android 2.4.0 (27) has built, passed lint, matched the existing signing certificate and bundled the deployed web files. It must be rebuilt after the query correction; do not distribute the intermediate APK. Physical phone/workshop acceptance remains unperformed. Scoped current Robot Build database and storage recovery passed in the existing recovery project; full application disaster recovery/RTO is not proven. No new paid project was created.
+
+Continue the authorized work without another phase approval. Earlier undeployed statuses below are historical and superseded by this entry.
+
 # Current release verification — 9 October 2026
 
 Source `507bc39` is pushed. All 59 CI scripts passed locally and GitHub CI run 320 passed, including the final build. Runs 318/319 failed because two new SQL tests ran outside the configured PGLite environment; 507bc39 corrected their placement. Thirty additive migrations passed the combined rehearsal twice. None of this expanded release is deployed yet.
