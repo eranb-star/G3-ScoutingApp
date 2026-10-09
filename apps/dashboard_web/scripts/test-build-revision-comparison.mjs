@@ -1,0 +1,18 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+import ts from 'typescript';
+const code=ts.transpileModule(fs.readFileSync('src/lib/buildRevisionComparison.ts','utf8'),{compilerOptions:{target:99,module:99}}).outputText;
+const {compareBuildRevisions:compare}=await import('data:text/javascript;base64,'+Buffer.from(code).toString('base64'));
+const row=(id,source={})=>({id,name:'Plate',design_quantity:2,job_id:null,source_identity:{documentId:'d',elementId:'e',partId:'p',configuration:'default',microversion:'v1',metadata:{status:'available',material:'6061',observedAt:'today'},...source}});
+const a=row('old'),b=row('new');
+assert.equal(compare([a],[b])[0].kind,'unchanged');
+const changed={...b,design_quantity:3,source_identity:{...b.source_identity,microversion:'v2',metadata:{status:'available',material:'7075'}}};
+assert.deepEqual(compare([a],[changed])[0].fields,['quantity','microversion','material']);
+assert.equal(compare([a],[row('new',{configuration:'alternate'})]).length,2,'configurations never merged');
+assert.equal(compare([a],[row('new',{documentId:'different'})]).length,2,'same names are not identities');
+assert.equal(compare([a,a],[b])[0].kind,'ambiguous','duplicate identities are not summed or guessed');
+assert.equal(compare([row('old',{kind:'manual'})],[row('new',{kind:'manual'})]).length,2);
+assert.equal(compare([a],[row('new',{metadata:{status:'available',material:'6061',observedAt:'tomorrow'}})])[0].kind,'unchanged','observation timestamps do not imply design changes');
+assert.equal(compare([a],[])[0].kind,'removed');assert.equal(compare([],[b])[0].kind,'added');
+assert.equal(a.design_quantity,2,'comparison does not rewrite approved demand');
+console.log('PASS revision comparison: provider identity/configuration, ambiguity, quantity/revision/material changes, missing/manual identity and immutable inputs');
