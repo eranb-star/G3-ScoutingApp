@@ -34,6 +34,7 @@ begin
  'allocation',(select to_jsonb(a) from public.robot_build_allocations a where line_id=l.id),
  'purchases',coalesce((select jsonb_agg(to_jsonb(p) order by p.purchase_id) from public.robot_build_purchases p where line_id=l.id),'[]'),
  'destinations',coalesce((select jsonb_agg(to_jsonb(r) order by r.kit_id) from public.robot_build_kit_requirements r where line_id=l.id),'[]'),
+ 'legacy_destinations',coalesce((select jsonb_agg(jsonb_build_object('kit_id',i.kit_id,'batch_id',i.batch_id,'quantity',i.quantity) order by i.kit_id,i.batch_id) from public.robot_build_kit_items i join public.robot_build_batches x on x.id=i.batch_id where x.job_id=l.job_id and i.line_id is null and i.quantity>0),'[]'),
  'batches',coalesce((select jsonb_agg(jsonb_build_object('id',x.id,'quantity',x.quantity) order by x.id) from public.robot_build_batches x where x.job_id=l.job_id),'[]')) into snapshot;
  insert into public.robot_build_change_decisions(id,line_id,candidate_id,line_revision,candidate_revision,decision,review_task_id,scope_snapshot,proposed_by,note)
  values(p_request,l.id,c.id,l.revision,c.revision,p_decision,p_review,snapshot,auth.uid(),trim(p_note));
@@ -63,7 +64,11 @@ begin
  or exists(select 1 from public.robot_build_release_holds where task_id=d.review_task_id and active) then return false;end if;
  if p_kit is not null then
  select * into r from public.robot_build_kit_requirements where kit_id=p_kit and line_id=p_line;
- return r.kit_id is not null and exists(select 1 from jsonb_array_elements(d.scope_snapshot->'destinations') x where x->>'kit_id'=p_kit::text and (x->>'quantity')::integer=r.quantity and (x->>'line_revision')::integer=r.line_revision);
+ if r.kit_id is not null then
+ return exists(select 1 from jsonb_array_elements(d.scope_snapshot->'destinations') x where x->>'kit_id'=p_kit::text and (x->>'quantity')::integer=r.quantity and (x->>'line_revision')::integer=r.line_revision);
+ end if;
+ return exists(select 1 from jsonb_array_elements(d.scope_snapshot->'legacy_destinations') x where x->>'kit_id'=p_kit::text)
+ and not exists(select 1 from public.robot_build_kit_items i join public.robot_build_batches b on b.id=i.batch_id join public.robot_build_bom_lines l on l.job_id=b.job_id where i.kit_id=p_kit and l.id=p_line and i.quantity>0 and not exists(select 1 from jsonb_array_elements(d.scope_snapshot->'legacy_destinations') x where x->>'kit_id'=p_kit::text and x->>'batch_id'=i.batch_id::text and (x->>'quantity')::integer=i.quantity));
  end if;
  return true;
 end$$;
@@ -85,7 +90,8 @@ create or replace function public.robot_build_task_held(p_task uuid)returns bool
  with recursive ancestors(id)as(select p_task union select d.prerequisite_id from public.project_task_dependencies d join ancestors a on a.id=d.task_id)
  select exists(select 1 from public.robot_build_release_holds h join ancestors a on a.id=h.task_id where h.active)
  or exists(select 1 from public.robot_build_jobs j join ancestors a on a.id in(j.task_id,j.release_task_id) join public.robot_build_bom_lines l on l.job_id=j.id where not public.robot_build_change_allows(l.id))
- or exists(select 1 from public.robot_build_kits k join ancestors a on a.id=k.task_id join public.robot_build_kit_requirements r on r.kit_id=k.id where not public.robot_build_change_allows(r.line_id,k.id));
+ or exists(select 1 from public.robot_build_kits k join ancestors a on a.id=k.task_id join public.robot_build_kit_requirements r on r.kit_id=k.id where not public.robot_build_change_allows(r.line_id,k.id))
+ or exists(select 1 from public.robot_build_kits k join ancestors a on a.id=k.task_id join public.robot_build_kit_items i on i.kit_id=k.id join public.robot_build_batches b on b.id=i.batch_id join public.robot_build_bom_lines l on l.job_id=b.job_id where i.line_id is null and i.quantity>0 and not public.robot_build_change_allows(l.id,k.id));
 $$;
 
 -- Existing task-read policy permits active team members. Return only task IDs and a
@@ -107,6 +113,7 @@ begin
  if not public.robot_build_change_allows(new.line_id) then raise exception 'CAD change disposition blocks new purchasing coverage; existing orders require explicit purchasing review';end if;
  elsif tg_table_name='robot_build_kit_items' then
  if new.quantity>coalesce(old.quantity,0) and new.line_id is not null and not public.robot_build_change_allows(new.line_id,new.kit_id) then raise exception 'CAD change disposition does not permit this destination';end if;
+ if new.quantity>coalesce(old.quantity,0) and new.line_id is null and exists(select 1 from public.robot_build_batches b join public.robot_build_bom_lines l on l.job_id=b.job_id join public.robot_build_change_decisions d on d.line_id=l.id where b.id=new.batch_id) then raise exception 'CAD change disposition requires explicit requirement coverage for new legacy issue';end if;
  end if;
  return new;
 end$$;

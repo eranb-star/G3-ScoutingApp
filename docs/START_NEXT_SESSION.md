@@ -1,10 +1,14 @@
-# Current authoritative status — reconciled against b3269b0
+# Current authoritative status — reconciled against 39486c9 plus current local work
 
 Read section 12 of ROBOT_BUILD_PREDEVELOPMENT_MASTER_20261009.md and the first sections of ROBOT_BUILD_IMPLEMENTATION_20261009.md. Twenty-five additions remain undeployed. CAD disposition enforcement and scoped form drafts are now implemented locally; read the latest implementation entries. Scoped engineering substitutions now have server enforcement, UI and actual-schema tests. Partial assembly receipts and inspected disassembly/recovery now have actual-schema tests. Material specification/remnant controls and actual-schema tests have now been added; read the latest implementation entry. Freshness, metadata observations, subsystem coverage, WIP adoption, downstream holds and impact visibility are implemented; do not describe them as wholly unstarted.
 
 Remaining: material/remnant final acceptance; substitution and assembly/recovery integrated acceptance; CAD disposition integration/legacy acceptance; complete form draft/navigation protection; provider/files and cross-system acceptance; current recovery, final CI/regression, deployment and production checks. Preserve G01–G17/S01–S11/A01–A22. No new paid recovery project. Preserve unrelated Android IDE/local assets.
 
 The user has authorized completion. Do not request another phase-selection approval. A final answer stops execution: do not imply background continuation when none is running. The repeated partial-final failure is recorded in WORKING_EXPECTATIONS.md and must not recur.
+
+## Active continuation
+
+TypeScript passed after the expanded draft conversion (stock/material actions, inspection lots, operations, demand review and material specifications). These changes are undeployed. The final 25-migration rehearsal passed after the receipt guard; legacy CAD destination targeted and combined acceptance now pass. Continue remaining shared/legacy form coverage and the release gates above. A successful build is not evidence of production deployment.
 
 ## Historical checkpoints below — status superseded by the current master ledger
 
