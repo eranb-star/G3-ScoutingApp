@@ -1,6 +1,15 @@
 # Robot Build implementation checkpoint — 9 October 2026
 
-Status: development in progress. Frontend and three additive SQL migrations are local, not a production release or completion of P0/P1/P3. Follow ROBOT_BUILD_PREDEVELOPMENT_MASTER_20261009.md for the complete scope. The user has authorized end-to-end execution; do not ask for another phase-selection approval.
+Status: development in progress. Frontend and four additive SQL migrations are local, not a production release or completion of P0/P1/P3. Follow ROBOT_BUILD_PREDEVELOPMENT_MASTER_20261009.md for the complete scope. The user has authorized end-to-end execution; do not ask for another phase-selection approval.
+
+## Partial inspection continuation — local verification
+
+- Added inspection lots using existing review tasks, physical evidence, stock batches and kit transactions. A job can receive and issue accepted pieces while other pieces await inspection or rework. Old whole-job receipt is blocked once partial lots exist; the legacy internal function is not callable by clients.
+- Hold, return-to-inspection, scrap and conserved two-way splitting preserve parent history. Split children receive fresh checkpoints without inherited approval; held/rework state is retained. Accepted lots cannot be rewritten. Current release and QC are rechecked before stock issue.
+- Added visible quantity totals, reviewer filtering, result forms, split explanation and protection for unfinished notes when switching lots. Existing parent job closeout approval remains required; no automated physical acceptance.
+- Combined isolated database rehearsal applied workspace, reservations, preparation and lots twice on the real engineering fixture. It passed release → manufacturing → partial physical QC → stock → early kit issue, 6 accepted/2 rework/1 scrap/1 pending, replacement conservation, hold/split lineage, fresh child review, permissions and exact-once retries. This is not production restore or simultaneous-session stress testing.
+- Browser confirmed rework/split actions and Stay/Discard note retention in synthetic data. Screenshot: staging/robot-build-lot-split-local-20261009.png. TypeScript passed after hold/split UI. Vite passed before hold/split additions and must run again before release.
+- Fourth new migration: robot_build_lots_20261009.sql, after workspace/material-reservations/preparation and the existing nine migrations. None of these new increments is deployed. P2 metadata/packages, remaining P3 sourcing/material quantities, P4/P5 and full P6 remain.
 
 ## Latest continuation (supersedes earlier navigation-test status below)
 

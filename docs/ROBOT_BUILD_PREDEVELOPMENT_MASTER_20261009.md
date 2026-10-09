@@ -266,3 +266,6 @@ Execution evidence and unresolved work: [ROBOT_BUILD_IMPLEMENTATION_20261009.md]
 Complete means required G01–G17 and S01–S11 are implemented or have an explicit user-approved scope disposition, mapped A01–A22 acceptance has evidence, required regressions/CI and deployment checks pass, and device/provider/physical boundaries are reported accurately. Optional later conveniences remain explicitly outside this milestone. Do not call a phase complete because the budget or turn is ending.
 
 The initial design, two challenge passes, subsequent discoverability/direct-entry reviews and system integration findings are incorporated by reference and traceability above. Before each package, check its dependencies and referenced details; after it, reconcile implementation back to this ledger. New discoveries extend the plan with evidence, rather than disappearing into chat history.
+
+### Partial-lot execution evidence — 9 October
+P3 partial QC is implemented and locally tested, including holds, conserved splits, independent child inspection, partial receipt/issue and replacement after scrap. Four new migrations passed a combined isolated rehearsal and rerun. P3 as a whole and production acceptance remain open. See implementation checkpoint for exact evidence and remaining gates.
