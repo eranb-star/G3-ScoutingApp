@@ -1,3 +1,54 @@
+# Robot Build expanded release — 9 October 2026
+
+Current application source: `ec94263`; release branch application source: `9f11bee`. GitHub CI [326](https://github.com/eranb-star/G3-ScoutingApp/actions/runs/37962126289) and [327](https://github.com/eranb-star/G3-ScoutingApp/actions/runs/37962126850) passed. Production `HAs6G4y62ksGT4YU7rCGtHwoJHfG` is Ready and aliased to https://g3-6740.com. Post-deployment authenticated acceptance passed for Work → Open Robot Build, existing Parts, Workshop, Overview readiness, Assembly kits, maintenance links and event handoff. The previously failing assembly reads now load successfully; the browser reported no console errors during the final navigation. No physical records were fabricated.
+
+## Delivered scope
+
+- Direct **Work → Robot Build** entrance over existing projects: Overview, Parts, Workshop, Assembly & tests, plus Build details and Activity. Existing project/CAD links continue to open the same records.
+- Revision-pinned Onshape BOM, exact-occurrence model inspection, live property observations, explicit missing metadata, freshness checks and conservative overlap/change review. Private geometry stays behind the existing owner-scoped CAD connection.
+- Guided preparation, immutable uploaded work files with server hashes and checked part/revision association, scoped worker downloads, existing release/QC approvals, persistent form drafts and guarded navigation.
+- Raw-material reservations shared with printing; dimensional/material checks; measured remnants; ordered operations; shared workshop resources; partial accepted/rework/scrap/held lots; conserved stock assemblies and inspected disassembly.
+- Existing procurement/finance continuation including pack quantities and partial coverage; exact kit requirements; independently approved substitutions; downstream holds and scoped CAD-change decisions.
+- Existing installation/WIP adoption without invented warehouse history; maintenance component/repair/retest links; subsystem readiness; Academy links and completion reuse; intended repository/commit provenance; pinned simulation-plan references; event/physical-configuration/packing handoff.
+
+## Deployment evidence
+
+All 30 additive migrations listed in `apps/dashboard_web/scripts/test-robot-build-release-rehearsal.mjs` were applied to production after passing the combined rehearsal twice. Existing one BOM/two lines remain; no manufacturing jobs or output batches were fabricated. The new work-file bucket is private. Direct handoff mutation is denied; mutations use authorized RPCs.
+
+`onshape-connector`, `github-repositories` and `robot-build-files` were deployed and their editor source compared with the tested bundles. Existing callback/authentication settings were retained. No role-default permission expansion or public CAD sharing was performed.
+
+Final acceptance found and fixed two actual integration defects: pinned model inspection incorrectly queried private CAD tables from the browser; it now resolves the snapshot through the owner-scoped backend. Assembly/readiness/handoff queries ambiguously joined tasks through both primary and retest/release foreign keys; the corrected release explicitly selects the primary task relationship.
+
+## Verification and limits
+
+All 59 configured CI scripts and web build passed. Local TypeScript/Vite, Onshape handler/identity tests, simulator/VR regression and database-backed engineering/review acceptance passed. Connected acceptance used the existing real rake BOM: correct two distinct parts/three occurrences, separate selection of both gear occurrences, fullscreen, source freshness and real property reads. Missing Onshape values are shown as missing rather than inferred. Linked-plan tests verify explicit load, exact revision, denied access and preserved draft.
+
+Quantity, retry, concurrency, permissions, substitution, release holds, purchasing and maintenance chains were tested against isolated schema fixtures. Live production read acceptance does not prove physical manufacturing, purchasing or inspection. No fake orders, stock movements, student certifications or physical test evidence were created.
+
+Scoped recovery succeeded using the existing recovery project: current Robot Build records restored and compared; all 21 Storage objects restored locally with matching hashes; actual BOM geometry restored to the private cloud bucket and downloaded with the same hash. No new paid project. This is not a full-current-application disaster-recovery or RTO certification.
+
+## Android deliverable
+
+`releases/G3-Team-Hub-2.4.0.apk`, package `com.g3.scouting`, version 2.4.0/code 27. Release assembly and lint passed. All 106 bundled web files match release `9f11bee`. Existing signing certificate is preserved.
+
+- Size: 69,933,645 bytes.
+- APK SHA-256: `9DF888521619FFDDF54BBCFD62B152F7C24890B1AB4550EA19A70759E82D7469`.
+- Certificate SHA-256: `45675cd568ffd23d78afd54eae2e7a71d5988819809e95c650d5c27102eba580`.
+- Physical Android installation/login/download acceptance has not been performed. Do not call a signed build a device test.
+
+## Explicit remaining acceptance and provider boundaries
+
+1. Real workshop pilot: team leader selects a genuine released part; student performs the operation; independent reviewer inspects actual output; inventory/installation/retest are recorded from real observations. Software supports this chain; physical evidence cannot be manufactured by a remote test.
+2. Install this APK on a physical supported phone and exercise authentication, assigned work, file downloads and deep links. Browser/synthetic responsive checks do not replace this.
+3. Automatic native Onshape drawing/STEP/DXF export is not delivered. The supported release-file path is an uploaded, immutable, human-checked revision association. CAD model inspection and Onshape deep links are available.
+4. Full application recovery timing and all-domain disaster recovery remain separate from the verified Robot Build scope.
+
+Rollback: restore a compatible prior frontend/backend only after considering the new records. Keep additive tables, stock/audit history and server gates. Do not drop history or weaken access to work around a UI failure.
+
+---
+
+## Historical first release — superseded where the expanded release differs
+
 # Robot Build — production release, 9 October 2026
 
 Production: https://g3-6740.com/projects. Existing project → Robot build → Parts & sourcing / Manufacture & inspect / Assemble & install. CAD entry: Engineering Hub → CAD Mentor → Assembly parts → Save private project draft → Review project parts.

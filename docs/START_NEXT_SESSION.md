@@ -1,3 +1,15 @@
+# Current release — 9 October 2026, verified after deployment
+
+The expanded Robot Build software is deployed at https://g3-6740.com/robot-build. Source `ec94263`, release application commit `9f11bee`, production `HAs6G4y62ksGT4YU7rCGtHwoJHfG`; GitHub CI326/327 passed. Thirty additive migrations and three backend functions are deployed. Final production read/navigation acceptance passed, including the corrected assembly/readiness/handoff task relationships and actual owner-scoped BOM geometry.
+
+Read [ROBOT_BUILD_RELEASE_20261009.md](ROBOT_BUILD_RELEASE_20261009.md) first for the delivered scope, APK fingerprint, evidence, rollback and remaining acceptance. Read the master plan for preserved G01–G17/S01–S11/A01–A22 scope. Earlier checkpoints below are historical, including statements that this release is undeployed.
+
+Android 2.4.0/code27 is built and signed at `releases/G3-Team-Hub-2.4.0.apk`; assemble/lint and all 106 bundled-file comparisons passed. Physical-device acceptance has not been performed. Real workshop manufacturing/inspection/installation/retest pilot remains outstanding; never invent evidence. Automatic native Onshape drawing/STEP/DXF export is not delivered; immutable uploaded revision-checked files are supported. Scoped current Robot Build recovery passed in the existing project; full-app recovery/RTO is not certified. No new paid project is authorized or created.
+
+There is no known remaining production loading defect from this acceptance. Do not equate this deployed software milestone with universal physical/device validation. Do not restart implementation already delivered, discard existing records, or ask for phase approval already granted. Preserve unrelated Android IDE edits and ignored local data.
+
+## Historical checkpoints — superseded by the current release above
+
 # Production acceptance update — 9 October 2026
 
 The expanded Robot Build release is deployed: all 30 additive migrations, onshape-connector, github-repositories and robot-build-files. Website release ec7d118 is live at g3-6740.com (Vercel HMxvJVWbvM1pShu4ohYP3ZjDEN4M); GitHub CI 324 passed. Actual existing BOM geometry and both gear occurrences were checked in production, including source freshness and live part metadata.
