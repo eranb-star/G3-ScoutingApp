@@ -1,3 +1,4 @@
+import {buildLearningReturn} from '../lib/buildLearning';
 import OfficialTraining,{type OfficialCourse} from '../components/OfficialTraining';
 import CourseSourceReview from '../components/CourseSourceReview';
 import type {LearningRobot,StudyArea} from '../lib/robotLearning';
@@ -200,7 +201,9 @@ export default function TrainingCenterPage(){
   const learningEnrollments=enrollments.map(e=>({...e,official_training:officialCatalog.some(c=>c.course_id===e.course_id)}));
   const officialProps={pick,memberId:profile?.id,catalog:officialCatalog,canReview:instructor&&canReview,canAssign:instructor&&!studentPreview&&canCreate,assignableMemberIds:people.filter(p=>access.can("manage_training")||memberTeams(p).some(team=>access.can("manage_training",team))).map(p=>p.id),people,open:(id:string)=>openCourse(id),onChange:()=>void load(),previewOnly:studentPreview};
   const quizTotal=quizQuestions.reduce((sum,item)=>sum+(Number(item.points)||0),0);
+  const buildReturn=buildLearningReturn(searchParams.get("return"));
   return <main className="hub-page training-center-page">
+    {buildReturn&&<div className="academy-context-bar"><Link to={buildReturn}>{pick("Return to workshop job","חזרה לעבודת הסדנה")}</Link><span>{pick("Your existing learning and verified certificates are reused.","הלמידה והתעודות המאומתות הקיימות שלך נשמרות לשימוש חוזר.")}</span></div>}
     <header className="training-hero academy-compact-hero"><div><div className="hub-eyebrow">FRC 6740 · {pick("Structured qualification","הסמכה מובנית")}</div><h1>{pick("Skills Academy","אקדמיית מיומנויות")}</h1><p>{pick("Your next step, your feedback and your progress — in one place.","הצעד הבא, המשוב וההתקדמות שלך — במקום אחד.")}</p></div>{instructor&&canCreate&&!studentPreview?<button onClick={()=>{setAcademyView("content");setCourse({...blank,target_subteam:profile?.role==="team_leader"?(profile.leader_subteams?.[0]??""):""});setFormMode(formMode==="create"?"closed":"create");}}>+ {pick("Create course","יצירת קורס")}</button>:null}</header>
     {message?<div className="hub-message" role="status">{message}</div>:null}
     <nav className="academy-primary-nav" aria-label={pick("Skills Academy sections","אזורי האקדמיה")}>

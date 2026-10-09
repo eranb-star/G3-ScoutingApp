@@ -1,3 +1,9 @@
+# Operation learning connection — 9 October, local only
+
+`robot_build_learning_20261009.sql` is addition 27. Project leaders attach an existing Academy course to a current manufacturing operation, with the operation title retained to identify later process changes. Existing job/course visibility applies. Students see their existing enrollment or verified official completion; linking never enrolls, awards qualifications, changes work progress or grants machine authority. Archived references are identified. Academy preserves a validated return to the same build/job. The operation reference is visible alongside workshop instructions, not buried inside process editing. Separate edits retain their own draft.
+
+TypeScript, actual-schema authorization/current-revision/RLS/no-enrollment tests and all 27 migrations applied twice passed. Synthetic browser opened a previously completed course, displayed Completed in Academy, and returned to the same build. Exact UUID task preservation is covered by the URL test; the synthetic task uses a non-UUID fixture ID. No real course, enrollment or work record was changed. Added the regression to CI. Full role/mobile acceptance and the other master release gates remain. Production is unchanged.
+
 # Checked work-file association — 9 October, local only
 
 The twenty-sixth additive migration, `robot_build_file_associations_20261009.sql`, links a pending controlled file to one visible build part and exact reviewed line revision. It snapshots the part identity and CAD source/occurrence information, records who checked the association and why, rejects stale revisions and changed retries, and inherits existing file visibility. The upload flow explicitly offers this association and distinguishes unassociated files. This is a human-checked association, not automatic native Onshape export verification. No broader CAD permissions or disclosure were added.
