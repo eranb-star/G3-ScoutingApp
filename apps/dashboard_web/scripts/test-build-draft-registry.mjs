@@ -1,0 +1,15 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+import ts from 'typescript';
+const code=ts.transpileModule(fs.readFileSync('src/lib/buildDraftRegistry.ts','utf8'),{compilerOptions:{target:99,module:99}}).outputText;
+const {BuildDraftRegistry}=await import('data:text/javascript;base64,'+Buffer.from(code).toString('base64'));
+const r=new BuildDraftRegistry();let discarded=[];
+assert.equal(r.dirty,false);
+r.mark('scope',()=>discarded.push('scope'));r.mark('stock',()=>discarded.push('stock'));
+r.saved('scope');assert.equal(r.dirty,true,'saving scope preserves another unfinished form');
+r.saved('unrelated');assert.equal(r.dirty,true);
+r.discard();assert.deepEqual(discarded,['stock']);assert.equal(r.dirty,false);
+r.mark('plan',()=>discarded.push('obsolete'));r.mark('plan',()=>discarded.push('latest'));r.discard();
+assert.deepEqual(discarded,['stock','latest'],'discard uses current form state once');
+r.mark('receipt');r.saved('receipt');assert.equal(r.dirty,false,'confirmed receipt leaves no false warning');
+console.log('PASS independent dirty forms, precise save, explicit discard and replacement callback');

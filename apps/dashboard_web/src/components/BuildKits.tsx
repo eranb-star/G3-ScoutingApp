@@ -15,7 +15,7 @@ export default function BuildKits({projectId,tasks,canManage,canStock}:{projectI
  const [task,setTask]=useState(''),[name,setName]=useState(''),[kit,setKit]=useState(''),[batch,setBatch]=useState(''),[action,setAction]=useState('issue'),[quantity,setQuantity]=useState('1'),[configuration,setConfiguration]=useState(''),[replacement,setReplacement]=useState(''),[retest,setRetest]=useState(''),[note,setNote]=useState(''),[request,setRequest]=useState(()=>crypto.randomUUID());
  const [substitutions,setSubstitutions]=useState<{kit_id:string;line_id:string;batch_id:string;review_submission_id:string|null}[]>([]);
  const generation=useRef(0);
- async function load(){const token=++generation.current;setLoaded(false);try{
+ async function load(){const token=++generation.current;try{
   const [k,g,c,b]=await Promise.all([
    readBuildPages<Kit>((a,z)=>supabase.from('robot_build_kits').select('*,project_tasks!inner(project_id)').eq('project_tasks.project_id',projectId).order('id').range(a,z)),
    readBuildPages<{task_id:string;decision_type:string}>((a,z)=>supabase.from('project_review_gates').select('task_id,decision_type,project_tasks!inner(project_id)').eq('project_tasks.project_id',projectId).eq('enabled',true).order('task_id').range(a,z)),

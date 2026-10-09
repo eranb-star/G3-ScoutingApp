@@ -4,14 +4,14 @@ import {supabase} from '../supabase';
 import {useMemberAuth} from '../lib/memberAuth';
 import {useLocalization} from '../lib/localization';
 type Hold={active:boolean;revision:number;reason:string;raised_by:string;raised_at:string;resolution:string|null};
-export default function BuildReleaseHold({taskId,canManage,scope='manufacturing'}:{taskId:string;canManage:boolean;scope?:'manufacturing'|'substitution'}){
+export default function BuildReleaseHold({taskId,canManage,scope='manufacturing'}:{taskId:string;canManage:boolean;scope?:'manufacturing'|'substitution'|'change'}){
  const {profile}=useMemberAuth(),{pick}=useLocalization();
  const [hold,setHold]=useState<Hold|null>(null),[gate,setGate]=useState<{decision_type:string;reviewer_id:string|null;current_submission:string|null}|null>(null),[error,setError]=useState(''),[note,setNote]=useState(''),[busy,setBusy]=useState(false),[loaded,setLoaded]=useState(false),[request,setRequest]=useState(()=>crypto.randomUUID());
  const generation=useRef(0);
  async function load(){const token=++generation.current;try{const [h,g]=await Promise.all([supabase.from('robot_build_release_holds').select('active,revision,reason,raised_by,raised_at,resolution').eq('task_id',taskId).maybeSingle(),supabase.from('project_review_gates').select('decision_type,reviewer_id,current_submission').eq('task_id',taskId).maybeSingle()]);if(h.error||g.error)throw Error();if(token===generation.current){setHold(h.data);setGate(g.data);setLoaded(true);}}catch{if(token===generation.current)setError(pick('Release hold status could not be checked. Refresh before continuing work.','לא ניתן לבדוק את מצב עצירת השחרור. רעננו לפני המשך העבודה.'));}}
  useEffect(()=>{setLoaded(false);setHold(null);setNote('');void load();return()=>{generation.current++;};},[taskId]);
  if(error&&!loaded)return <p role="alert">{error} <button onClick={()=>{setError('');void load();}}>{pick('Retry','ניסיון חוזר')}</button></p>;
- if(!loaded||!(scope==='substitution'?['design_review_passed','cleared_for_installation']:['released_for_manufacturing']).includes(gate?.decision_type??'')||!gate?.current_submission)return null;
+ if(!loaded||!(scope!=='manufacturing'?['design_review_passed','cleared_for_installation']:['released_for_manufacturing']).includes(gate?.decision_type??'')||!gate?.current_submission)return null;
  const resolve=hold?.active&&hold.raised_by!==profile?.id&&(gate.reviewer_id===profile?.id||profile?.role==='admin');
  return <section aria-label={pick('Release status','מצב השחרור')} className="build-release-hold">
  {hold?.active?<><h3>{pick('Work paused — release on hold','העבודה מושהית — השחרור נעצר')}</h3><p role="status">{hold.reason}</p><p>{pick('Manufacturing, accepted-stock receipt and issue are blocked for this release. Previously recorded work stays in history. A different authorized reviewer must check the resolution.','ייצור, קליטת מלאי מאושר ומסירה חסומים לשחרור זה. העבודה שנרשמה נשמרת בהיסטוריה. סוקר מורשה אחר נדרש לבדוק את הפתרון.')}</p></>:hold?.resolution?<p>{pick('Previous hold resolved','עצירה קודמת נפתרה')}: {hold.resolution}</p>:null}
