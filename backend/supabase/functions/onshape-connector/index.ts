@@ -1,6 +1,7 @@
 import {createClient} from 'https://esm.sh/@supabase/supabase-js@2';
 import {CadError,onshapeId,parseSource,sha256,seal,unseal,boundedJson,providerReader} from './security.ts';
 import {captureSnapshot,inspectEvidence} from './snapshot.ts';
+import {structuralBom} from './bom.ts';
 import {geometryFor} from './geometry.ts';
 import {reviewDesign,designEvidence} from './review.ts';
 
@@ -117,7 +118,7 @@ Deno.serve(async request=>{
    return reply({sources:result.data});
   }
   const read=providerReader(await accessToken(db,row));
-  if(['geometry','workspace','requirements','finding','review','evidence'].includes(body.action)){
+  if(['geometry','workspace','requirements','finding','review','evidence','bom'].includes(body.action)){
    const selected=await db.from('cad_sources').select('*').eq('id',body.sourceId).eq('connection_id',row.id).is('archived_at',null).maybeSingle();
    if(selected.error||!selected.data)throw new CadError('SOURCE_UNAVAILABLE','Select one of your connected designs.',404);
    if(body.action==='requirements'){
@@ -138,6 +139,7 @@ Deno.serve(async request=>{
    }
    const snapshot=await db.from('cad_snapshots').select('*').eq('source_id',selected.data.id).eq('id',body.snapshotId).maybeSingle();
    if(snapshot.error||!snapshot.data)throw new CadError('SNAPSHOT_REQUIRED','Import the design revision first.',409);
+   if(body.action==='bom')return reply({snapshotId:snapshot.data.id,microversion:snapshot.data.microversion,...structuralBom(snapshot.data.evidence,selected.data.element_type)});
    if(body.action==='evidence')return reply(designEvidence(selected.data,snapshot.data));
    if(body.action==='review')return reply(await reviewDesign(db,caller,user.id,selected.data,snapshot.data,body,env('GEMINI_API_KEY')));
    if(body.action==='finding'){

@@ -1,0 +1,15 @@
+.cad-build-parts{min-width:0}
+.cad-build-summary{display:flex;flex-wrap:wrap;gap:1rem;padding-block:.75rem;border-block:1px solid #ded6df}
+.cad-build-summary strong{font-size:1.25rem}
+.cad-build-parts label{display:grid;gap:.4rem;max-width:32rem;margin-block:1rem}
+.cad-build-table{overflow:auto;max-height:65vh;border:1px solid #ded6df;border-radius:.75rem}
+.cad-build-table table{width:100%;border-collapse:collapse;text-align:start}
+.cad-build-table caption{text-align:start;padding:.75rem;color:#635a68}
+.cad-build-table th{position:sticky;top:0;background:#f6f3f7;z-index:1}
+.cad-build-table td,.cad-build-table th{text-align:start;padding:.75rem;border-bottom:1px solid #e6dfe8;vertical-align:top}
+.cad-build-table td:first-child{overflow-wrap:anywhere}
+.cad-build-table small{display:block;color:#635a68}
+.cad-build-table code{overflow-wrap:anywhere}
+.cad-build-table summary{cursor:pointer;min-height:2rem}
+.cad-build-parts input:focus-visible,.cad-build-parts button:focus-visible,.cad-build-parts summary:focus-visible{outline:3px solid #aa0078;outline-offset:3px}
+@media(max-width:600px){.cad-build-table td,.cad-build-table th{padding:.5rem}.cad-build-summary{gap:.5rem;font-size:.9rem}}
