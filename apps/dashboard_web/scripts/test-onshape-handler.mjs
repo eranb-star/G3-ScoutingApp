@@ -19,6 +19,7 @@ globalThis.__cadClient=()=>client;globalThis.__cadDeno={env:{get:name=>({G3_ONSH
 let source=fs.readFileSync(root+'index.ts','utf8').replace(/import \{createClient\} from '[^']+';/,'const createClient=globalThis.__cadClient;const Deno=globalThis.__cadDeno;').replace("'./security.ts'",JSON.stringify(security)).replace("'./snapshot.ts'",JSON.stringify(snapshot));
 source=source.replace("'./geometry.ts'",JSON.stringify(geometry)).replace("'./review.ts'",JSON.stringify(review)).replace("'./bom.ts'",JSON.stringify(bom)).replace("'./partMetadata.ts'",JSON.stringify(metadata));
 source=source.replace("'./buildFreshness.ts'",JSON.stringify(freshness));
+source=source.replace("'./pinned-source.ts'",JSON.stringify(url(fs.readFileSync(root+'pinned-source.ts','utf8'))));
 await import(url(source));
 const call=(body,authorization='Bearer test')=>handler(new Request('https://project.supabase.co/functions/v1/onshape-connector',{method:'POST',headers:authorization?{Authorization:authorization}:{},body:JSON.stringify(body)}));
 assert.equal((await call({action:'status'},'')).status,401);

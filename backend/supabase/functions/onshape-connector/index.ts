@@ -1,3 +1,4 @@
+import {pinnedGeometrySource} from './pinned-source.ts';
 import {createClient} from 'https://esm.sh/@supabase/supabase-js@2';
 import {CadError,onshapeId,parseSource,sha256,seal,unseal,boundedJson,providerReader} from './security.ts';
 import {captureSnapshot,inspectEvidence} from './snapshot.ts';
@@ -121,6 +122,10 @@ Deno.serve(async request=>{
   }
   const read=providerReader(await accessToken(db,row));
   if(body.action==='build-freshness')return reply(await checkBuildSource(db,read,user.id,row.id,body.bomId));
+  if(body.action==='geometry'&&!body.sourceId){
+   body.sourceId=await pinnedGeometrySource(db,row.id,body.snapshotId);
+   if(!body.sourceId)throw new CadError('SOURCE_UNAVAILABLE','This pinned design is not available to your connected account.',404);
+  }
   if(['geometry','workspace','requirements','finding','review','evidence','bom','import-bom'].includes(body.action)){
    const selected=await db.from('cad_sources').select('*').eq('id',body.sourceId).eq('connection_id',row.id).is('archived_at',null).maybeSingle();
    if(selected.error||!selected.data)throw new CadError('SOURCE_UNAVAILABLE','Select one of your connected designs.',404);
