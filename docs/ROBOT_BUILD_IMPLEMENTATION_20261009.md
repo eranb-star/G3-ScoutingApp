@@ -1,6 +1,32 @@
 # Robot Build implementation checkpoint — 9 October 2026
 
-Status: development in progress. This is a local frontend increment, not a production release or completion of P0/P1. Follow ROBOT_BUILD_PREDEVELOPMENT_MASTER_20261009.md for the complete scope.
+Status: development in progress. Frontend and three additive SQL migrations are local, not a production release or completion of P0/P1/P3. Follow ROBOT_BUILD_PREDEVELOPMENT_MASTER_20261009.md for the complete scope. The user has authorized end-to-end execution; do not ask for another phase-selection approval.
+
+## Latest continuation (supersedes earlier navigation-test status below)
+
+- Added guided scope/type/year setup with optional existing physical asset, optimistic revision and immutable idempotent receipts (`robot_build_workspace_20261009.sql`). Build discovery includes scope/preparation records, so a new build needs neither a BOM nor an existing job to be found.
+- Added My work / Team work / Inspections and selected-task review using the existing engineering review engine. Invalid queue values fall back to My work. No new role grants.
+- Added preparation that creates existing release and manufacturing/inspection tasks, dependency and structured requirements together (`robot_build_preparation_20261009.sql`). Creating a job still requires an independently approved release. Optional reviewed shared BOM requirement selection binds the eventual job; legacy attachment remains.
+- Added raw-material reserve/release and transactional consumption of the job's own reservation (`robot_build_material_reservations_20261009.sql`). The shared reservation function includes component allocations and raw material; active fundraising jobs retain their stock floor. No finance mutation.
+- Replaced native confirm with an accessible dialog. Migrated the root router to createBrowserRouter/RouterProvider while retaining existing descendant routes/providers, allowing useBlocker to protect Browser Back and global SPA links. External/new-tab links are no longer incorrectly intercepted and passed to navigate. Full-document navigation retains beforeunload.
+- Scope and preparation forms retain account/project-scoped session drafts. Explicit logout removes these new draft prefixes. Explicit discard clears the applicable draft. This does not implement durable drafts for every legacy form; coarse dirty tracking can still warn after a successful child form save.
+- Fixed duplicate React sibling keys found in the preview. Existing work remains mounted during same-project refresh.
+
+### Checks actually performed
+
+- TypeScript passed after the router, scope draft, preparation draft and logout changes; repeat after the latest BOM selector addition.
+- Vite production build passed after initial router change; existing large-chunk warnings remain. Repeat final bundle before release.
+- New scope, preparation and raw-material-reservation database suites passed, including migration rerun, authorization, stale writes/idempotency, independent release approval, premature-start denial and shared print/build reservation floors. These use isolated database fixtures, not production writes or concurrent multi-connection stress tests.
+- Existing Robot Build integration and operations suites passed: actual review chain from release through QC, stock, kit and exact physical installation; changed release invalidates completion. Existing fundraising suite passed.
+- `verify-finance-receiving.mjs` still fails three source-text checks: old Attendance label, old personal-debt heading and old commitments heading. The affected FinanceAdminPage/WebPortalShell files have no changes in this continuation; inspection confirms renamed headings and existing calculations/commitment filters. Do not call this script green or silently weaken its checks.
+- Isolated browser confirmed Back → Stay retains the typed manufacturing note; Back → Discard removes the selected task and reaches the previous route. A Work link also raised the dialog. Scope edits → Parts → Stay retained purpose/description. Evidence: `docs/staging/robot-build-scope-local-20261009.png` (synthetic local data).
+- Live read-only preflight captured 35 function fingerprints and 61 constraint/trigger records in staging JSON files. 34 function bodies match repository definitions (including CRLF handling); the dynamic review-context definition was inspected separately. This is not a backup/restore rehearsal.
+
+### Deployment order and remaining release gates
+
+Existing nine production migrations remain unchanged. Before the dependent frontend, apply and verify the three new migrations in order: workspace, material reservations, preparation. Rehearse combined migration/rollback compatibility first. Do not deploy this client against a backend missing the new tables. Production backup/restore evidence, full role/auth/mobile/router regression, preview acceptance, CI/push and production verification are still outstanding. Nothing in this continuation is deployed, and no real stock, finance, student task, approval or CAD-sharing transaction was created.
+
+The full programme remains incomplete: exact-revision source metadata/file packages and scoped student downloads (P2); partial QC lots/rework and remaining quantity workflows (P3); semantic CAD change impacts and readiness (P4); cross-registry maintenance/reliability handoffs (P5); full acceptance and production/device rollout (P6). Existing whole-job QC remains authoritative. Never label that partial-lot completion.
 
 ## Implemented locally
 

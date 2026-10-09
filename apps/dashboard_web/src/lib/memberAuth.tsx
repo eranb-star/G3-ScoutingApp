@@ -100,7 +100,15 @@ export function MemberAuthProvider({ children }: { children: React.ReactNode }) 
     const { data: listener } = supabase.auth.onAuthStateChange((event, nextSession) => {
       window.setTimeout(async () => {
         if (!alive) return;
-        if (event === "SIGNED_OUT") await loadProfile(null, true);
+        if (event === "SIGNED_OUT") {
+          // Remove private build drafts from shared workshop devices on explicit logout.
+          try {
+            for (const key of Object.keys(sessionStorage)) {
+              if (key.startsWith("g3-build-scope-draft:") || key.startsWith("g3-build-preparation-draft:")) sessionStorage.removeItem(key);
+            }
+          } catch { /* Storage may be disabled by the browser. */ }
+          await loadProfile(null, true);
+        }
         else await loadProfile(nextSession, event === "SIGNED_IN" && profileRef.current?.id !== nextSession?.user.id);
       }, 0);
     });

@@ -1,0 +1,368 @@
+[
+  {
+    "kind": "constraint",
+    "relation": "project_physical_assets",
+    "name": "project_physical_assets_asset_kind_check",
+    "definition": "CHECK ((asset_kind = ANY (ARRAY['robot'::text, 'prototype'::text, 'component'::text, 'instrument'::text])))"
+  },
+  {
+    "kind": "constraint",
+    "relation": "project_physical_assets",
+    "name": "project_physical_assets_name_check",
+    "definition": "CHECK (((length(TRIM(BOTH FROM name)) >= 3) AND (length(TRIM(BOTH FROM name)) <= 160)))"
+  },
+  {
+    "kind": "constraint",
+    "relation": "project_physical_assets",
+    "name": "project_physical_assets_pkey",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "kind": "constraint",
+    "relation": "project_physical_assets",
+    "name": "project_physical_assets_project_id_fkey",
+    "definition": "FOREIGN KEY (project_id) REFERENCES team_projects(id) ON DELETE RESTRICT"
+  },
+  {
+    "kind": "constraint",
+    "relation": "project_physical_assets",
+    "name": "project_physical_assets_project_id_serial_key",
+    "definition": "UNIQUE (project_id, serial)"
+  },
+  {
+    "kind": "constraint",
+    "relation": "project_physical_assets",
+    "name": "project_physical_assets_serial_check",
+    "definition": "CHECK (((length(TRIM(BOTH FROM serial)) >= 3) AND (length(TRIM(BOTH FROM serial)) <= 120)))"
+  },
+  {
+    "kind": "constraint",
+    "relation": "project_tasks",
+    "name": "project_tasks_assignee_id_fkey",
+    "definition": "FOREIGN KEY (assignee_id) REFERENCES team_members(id)"
+  },
+  {
+    "kind": "constraint",
+    "relation": "project_tasks",
+    "name": "project_tasks_created_by_fkey",
+    "definition": "FOREIGN KEY (created_by) REFERENCES team_members(id)"
+  },
+  {
+    "kind": "constraint",
+    "relation": "project_tasks",
+    "name": "project_tasks_pkey",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "kind": "constraint",
+    "relation": "project_tasks",
+    "name": "project_tasks_priority_check",
+    "definition": "CHECK ((priority = ANY (ARRAY['low'::text, 'normal'::text, 'high'::text, 'urgent'::text])))"
+  },
+  {
+    "kind": "constraint",
+    "relation": "project_tasks",
+    "name": "project_tasks_project_id_fkey",
+    "definition": "FOREIGN KEY (project_id) REFERENCES team_projects(id) ON DELETE CASCADE"
+  },
+  {
+    "kind": "constraint",
+    "relation": "project_tasks",
+    "name": "project_tasks_status_check",
+    "definition": "CHECK ((status = ANY (ARRAY['todo'::text, 'in_progress'::text, 'blocked'::text, 'done'::text])))"
+  },
+  {
+    "kind": "constraint",
+    "relation": "robot_build_batches",
+    "name": "robot_build_batches_actor_id_fkey",
+    "definition": "FOREIGN KEY (actor_id) REFERENCES team_members(id)"
+  },
+  {
+    "kind": "constraint",
+    "relation": "robot_build_batches",
+    "name": "robot_build_batches_job_id_fkey",
+    "definition": "FOREIGN KEY (job_id) REFERENCES robot_build_jobs(id)"
+  },
+  {
+    "kind": "constraint",
+    "relation": "robot_build_batches",
+    "name": "robot_build_batches_job_id_key",
+    "definition": "UNIQUE (job_id)"
+  },
+  {
+    "kind": "constraint",
+    "relation": "robot_build_batches",
+    "name": "robot_build_batches_origin_check",
+    "definition": "CHECK ((origin = ANY (ARRAY['manufactured'::text, 'existing_stock'::text])))"
+  },
+  {
+    "kind": "constraint",
+    "relation": "robot_build_batches",
+    "name": "robot_build_batches_part_id_fkey",
+    "definition": "FOREIGN KEY (part_id) REFERENCES frc_parts_inventory(id)"
+  },
+  {
+    "kind": "constraint",
+    "relation": "robot_build_batches",
+    "name": "robot_build_batches_pkey",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "kind": "constraint",
+    "relation": "robot_build_batches",
+    "name": "robot_build_batches_project_id_fkey",
+    "definition": "FOREIGN KEY (project_id) REFERENCES team_projects(id)"
+  },
+  {
+    "kind": "constraint",
+    "relation": "robot_build_batches",
+    "name": "robot_build_batches_qc_submission_id_fkey",
+    "definition": "FOREIGN KEY (qc_submission_id) REFERENCES project_review_submissions(id)"
+  },
+  {
+    "kind": "constraint",
+    "relation": "robot_build_batches",
+    "name": "robot_build_batches_quantity_check",
+    "definition": "CHECK ((quantity > 0))"
+  },
+  {
+    "kind": "constraint",
+    "relation": "robot_build_batches",
+    "name": "robot_build_batches_source_task_id_fkey",
+    "definition": "FOREIGN KEY (source_task_id) REFERENCES project_tasks(id)"
+  },
+  {
+    "kind": "constraint",
+    "relation": "robot_build_jobs",
+    "name": "robot_build_jobs_check",
+    "definition": "CHECK ((task_id <> release_task_id))"
+  },
+  {
+    "kind": "constraint",
+    "relation": "robot_build_jobs",
+    "name": "robot_build_jobs_check1",
+    "definition": "CHECK (((completed_quantity >= 0) AND (completed_quantity <= required_quantity)))"
+  },
+  {
+    "kind": "constraint",
+    "relation": "robot_build_jobs",
+    "name": "robot_build_jobs_created_by_fkey",
+    "definition": "FOREIGN KEY (created_by) REFERENCES team_members(id)"
+  },
+  {
+    "kind": "constraint",
+    "relation": "robot_build_jobs",
+    "name": "robot_build_jobs_instructions_check",
+    "definition": "CHECK (((length(TRIM(BOTH FROM instructions)) >= 3) AND (length(TRIM(BOTH FROM instructions)) <= 8000)))"
+  },
+  {
+    "kind": "constraint",
+    "relation": "robot_build_jobs",
+    "name": "robot_build_jobs_part_name_check",
+    "definition": "CHECK (((length(TRIM(BOTH FROM part_name)) >= 1) AND (length(TRIM(BOTH FROM part_name)) <= 180)))"
+  },
+  {
+    "kind": "constraint",
+    "relation": "robot_build_jobs",
+    "name": "robot_build_jobs_part_revision_check",
+    "definition": "CHECK (((length(TRIM(BOTH FROM part_revision)) >= 1) AND (length(TRIM(BOTH FROM part_revision)) <= 120)))"
+  },
+  {
+    "kind": "constraint",
+    "relation": "robot_build_jobs",
+    "name": "robot_build_jobs_pkey",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "kind": "constraint",
+    "relation": "robot_build_jobs",
+    "name": "robot_build_jobs_release_submission_id_fkey",
+    "definition": "FOREIGN KEY (release_submission_id) REFERENCES project_review_submissions(id) ON DELETE RESTRICT"
+  },
+  {
+    "kind": "constraint",
+    "relation": "robot_build_jobs",
+    "name": "robot_build_jobs_release_task_id_fkey",
+    "definition": "FOREIGN KEY (release_task_id) REFERENCES project_tasks(id) ON DELETE RESTRICT"
+  },
+  {
+    "kind": "constraint",
+    "relation": "robot_build_jobs",
+    "name": "robot_build_jobs_required_quantity_check",
+    "definition": "CHECK (((required_quantity >= 1) AND (required_quantity <= 100000)))"
+  },
+  {
+    "kind": "constraint",
+    "relation": "robot_build_jobs",
+    "name": "robot_build_jobs_task_id_fkey",
+    "definition": "FOREIGN KEY (task_id) REFERENCES project_tasks(id) ON DELETE RESTRICT"
+  },
+  {
+    "kind": "constraint",
+    "relation": "robot_build_jobs",
+    "name": "robot_build_jobs_task_id_key",
+    "definition": "UNIQUE (task_id)"
+  },
+  {
+    "kind": "constraint",
+    "relation": "robot_build_materials",
+    "name": "robot_build_materials_consumed_check",
+    "definition": "CHECK ((consumed >= (0)::numeric))"
+  },
+  {
+    "kind": "constraint",
+    "relation": "robot_build_materials",
+    "name": "robot_build_materials_job_id_fkey",
+    "definition": "FOREIGN KEY (job_id) REFERENCES robot_build_jobs(id)"
+  },
+  {
+    "kind": "constraint",
+    "relation": "robot_build_materials",
+    "name": "robot_build_materials_job_id_part_id_key",
+    "definition": "UNIQUE (job_id, part_id)"
+  },
+  {
+    "kind": "constraint",
+    "relation": "robot_build_materials",
+    "name": "robot_build_materials_part_id_fkey",
+    "definition": "FOREIGN KEY (part_id) REFERENCES frc_parts_inventory(id)"
+  },
+  {
+    "kind": "constraint",
+    "relation": "robot_build_materials",
+    "name": "robot_build_materials_pkey",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "kind": "constraint",
+    "relation": "robot_build_materials",
+    "name": "robot_build_materials_planned_check",
+    "definition": "CHECK ((planned > (0)::numeric))"
+  },
+  {
+    "kind": "constraint",
+    "relation": "team_projects",
+    "name": "team_projects_created_by_fkey",
+    "definition": "FOREIGN KEY (created_by) REFERENCES team_members(id)"
+  },
+  {
+    "kind": "constraint",
+    "relation": "team_projects",
+    "name": "team_projects_owner_id_fkey",
+    "definition": "FOREIGN KEY (owner_id) REFERENCES team_members(id)"
+  },
+  {
+    "kind": "constraint",
+    "relation": "team_projects",
+    "name": "team_projects_pkey",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "kind": "constraint",
+    "relation": "team_projects",
+    "name": "team_projects_status_check",
+    "definition": "CHECK ((status = ANY (ARRAY['planning'::text, 'active'::text, 'blocked'::text, 'completed'::text, 'archived'::text])))"
+  },
+  {
+    "kind": "trigger",
+    "relation": "frc_parts_inventory",
+    "name": "protect_print_reservations",
+    "definition": "CREATE TRIGGER protect_print_reservations BEFORE UPDATE OF quantity ON public.frc_parts_inventory FOR EACH ROW EXECUTE FUNCTION protect_print_reservations()"
+  },
+  {
+    "kind": "trigger",
+    "relation": "frc_parts_inventory",
+    "name": "qa_test_change_audit",
+    "definition": "CREATE TRIGGER qa_test_change_audit AFTER INSERT OR DELETE OR UPDATE ON public.frc_parts_inventory FOR EACH ROW EXECUTE FUNCTION audit_qa_test_change()"
+  },
+  {
+    "kind": "trigger",
+    "relation": "frc_parts_inventory",
+    "name": "stock_readiness_signal",
+    "definition": "CREATE TRIGGER stock_readiness_signal AFTER INSERT OR DELETE OR UPDATE ON public.frc_parts_inventory FOR EACH ROW EXECUTE FUNCTION source_readiness_changed()"
+  },
+  {
+    "kind": "trigger",
+    "relation": "project_tasks",
+    "name": "audit_tasks",
+    "definition": "CREATE TRIGGER audit_tasks AFTER INSERT OR DELETE OR UPDATE ON public.project_tasks FOR EACH ROW EXECUTE FUNCTION audit_team_change()"
+  },
+  {
+    "kind": "trigger",
+    "relation": "project_tasks",
+    "name": "enforce_project_review",
+    "definition": "CREATE TRIGGER enforce_project_review BEFORE INSERT OR UPDATE OF status ON public.project_tasks FOR EACH ROW EXECUTE FUNCTION enforce_project_review()"
+  },
+  {
+    "kind": "trigger",
+    "relation": "project_tasks",
+    "name": "enforce_upstream_release",
+    "definition": "CREATE TRIGGER enforce_upstream_release BEFORE INSERT OR UPDATE OF status ON public.project_tasks FOR EACH ROW EXECUTE FUNCTION enforce_upstream_release()"
+  },
+  {
+    "kind": "trigger",
+    "relation": "project_tasks",
+    "name": "guard_robot_build_completion",
+    "definition": "CREATE TRIGGER guard_robot_build_completion BEFORE UPDATE OF status ON public.project_tasks FOR EACH ROW EXECUTE FUNCTION guard_robot_build_completion()"
+  },
+  {
+    "kind": "trigger",
+    "relation": "project_tasks",
+    "name": "project_task_to_action",
+    "definition": "CREATE TRIGGER project_task_to_action AFTER INSERT OR DELETE OR UPDATE ON public.project_tasks FOR EACH ROW EXECUTE FUNCTION sync_project_task_action()"
+  },
+  {
+    "kind": "trigger",
+    "relation": "project_tasks",
+    "name": "qa_test_change_audit",
+    "definition": "CREATE TRIGGER qa_test_change_audit AFTER INSERT OR DELETE OR UPDATE ON public.project_tasks FOR EACH ROW EXECUTE FUNCTION audit_qa_test_change()"
+  },
+  {
+    "kind": "trigger",
+    "relation": "project_tasks",
+    "name": "task_collaborator_change",
+    "definition": "CREATE TRIGGER task_collaborator_change AFTER UPDATE ON public.project_tasks FOR EACH ROW EXECUTE FUNCTION task_collaborator_change()"
+  },
+  {
+    "kind": "trigger",
+    "relation": "robot_build_batches",
+    "name": "build_batch_scope",
+    "definition": "CREATE TRIGGER build_batch_scope BEFORE INSERT ON public.robot_build_batches FOR EACH ROW EXECUTE FUNCTION guard_robot_build_work_scope()"
+  },
+  {
+    "kind": "trigger",
+    "relation": "team_projects",
+    "name": "audit_projects",
+    "definition": "CREATE TRIGGER audit_projects AFTER INSERT OR DELETE OR UPDATE ON public.team_projects FOR EACH ROW EXECUTE FUNCTION audit_team_change()"
+  },
+  {
+    "kind": "trigger",
+    "relation": "team_projects",
+    "name": "enforce_project_review_completion",
+    "definition": "CREATE TRIGGER enforce_project_review_completion BEFORE UPDATE OF status ON public.team_projects FOR EACH ROW EXECUTE FUNCTION enforce_project_review_completion()"
+  },
+  {
+    "kind": "trigger",
+    "relation": "team_projects",
+    "name": "guard_robot_build_project_close",
+    "definition": "CREATE TRIGGER guard_robot_build_project_close BEFORE UPDATE OF status ON public.team_projects FOR EACH ROW EXECUTE FUNCTION guard_robot_build_project_close()"
+  },
+  {
+    "kind": "trigger",
+    "relation": "team_projects",
+    "name": "project_archive_to_actions",
+    "definition": "CREATE TRIGGER project_archive_to_actions AFTER UPDATE OF status, name ON public.team_projects FOR EACH ROW EXECUTE FUNCTION sync_project_actions_on_archive()"
+  },
+  {
+    "kind": "trigger",
+    "relation": "team_projects",
+    "name": "project_collaborator_change",
+    "definition": "CREATE TRIGGER project_collaborator_change AFTER UPDATE OF status, name ON public.team_projects FOR EACH ROW EXECUTE FUNCTION project_collaborator_change()"
+  },
+  {
+    "kind": "trigger",
+    "relation": "team_projects",
+    "name": "qa_test_change_audit",
+    "definition": "CREATE TRIGGER qa_test_change_audit AFTER INSERT OR DELETE OR UPDATE ON public.team_projects FOR EACH ROW EXECUTE FUNCTION audit_qa_test_change()"
+  }
+]
