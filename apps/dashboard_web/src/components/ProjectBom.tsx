@@ -1,3 +1,4 @@
+import BuildPartModel from './BuildPartModel';
 import {useBuildStringDraft} from '../lib/buildFormDraft';
 import BuildDraftNotice from './BuildDraftNotice';
 import {useEffect,useRef,useState} from 'react';
@@ -13,7 +14,7 @@ import BuildChangeImpact from './BuildChangeImpact';
 import BuildChangeDecisions from './BuildChangeDecisions';
 import {readBuildPages} from '../lib/robotBuildWorkspace';
 type Bom={id:string;name:string;snapshot_id:string|null;owner_id:string;revision:number;shared_at:string|null;created_at:string};
-type Line={id:string;bom_id:string;name:string;design_quantity:number;required_quantity:number;disposition:string;inventory_id:string|null;job_id:string|null;review_note:string;revision:number;source_identity?:{kind?:string;provenance?:string;metadata?:CadMetadata}};
+type Line={id:string;bom_id:string;name:string;design_quantity:number;required_quantity:number;disposition:string;inventory_id:string|null;job_id:string|null;review_note:string;revision:number;occurrence_paths?:string[][];source_identity?:{partId?:string;kind?:string;provenance?:string;metadata?:CadMetadata}};
 type Stock={id:string;name:string;quantity:number;unit:string};
 export default function ProjectBom({projectId,canManage,canStock,canBuy,jobs,onChanged,compact=false,confirmDiscard=async()=>true}:{projectId:string;canManage:boolean;canStock:boolean;canBuy:boolean;jobs:{id:string;task_id?:string;part_name:string;required_quantity:number}[];onChanged:()=>Promise<void>;compact?:boolean;confirmDiscard?:()=>Promise<boolean>}){
  const {pick}=useLocalization(),{profile}=useMemberAuth();
@@ -39,11 +40,11 @@ export default function ProjectBom({projectId,canManage,canStock,canBuy,jobs,onC
   <p>{pick('Each import remains a separate revision. Lists are not added together automatically; review overlapping assemblies and purchased subassemblies before creating work.','כל ייבוא נשמר כגרסה נפרדת. הרשימות אינן מחוברות אוטומטית; בדקו הרכבות חופפות ומכלולים קנויים לפני יצירת עבודה.')}</p>
   {!b.shared_at&&b.owner_id===profile?.id&&<div><p>{pick('Sharing exposes this parts list, source identifiers and review notes to members who can view this project. It does not share CAD geometry or AI reviews.','השיתוף חושף את רשימת החלקים, מזהי המקור והערות הסקירה לחברים שיכולים לצפות בפרויקט. הוא אינו משתף גאומטריה או סקירות AI.')}</p><button disabled={busy} onClick={async()=>{setBusy(true);try{const r=await supabase.rpc('share_robot_build_bom',{p_bom:b.id,p_expected:b.revision});if(r.error)throw Error(r.error.message);await load();}catch(e){setMessage(e instanceof Error?e.message:pick('Sharing failed.','השיתוף נכשל.'));}finally{setBusy(false);}}}>{pick('Share this parts list with project members','שיתוף רשימת החלקים עם חברי הפרויקט')}</button></div>}
   {compact&&<div className="build-parts-table" role="table" aria-label={pick('Parts list','רשימת חלקים')}><div className="build-parts-row build-parts-heading" role="row"><span role="columnheader">{pick('Part','חלק')}</span><span role="columnheader">{pick('Required','נדרש')}</span><span role="columnheader">{pick('Sourcing','מקור')}</span></div>{lines.filter(l=>l.bom_id===b.id&&l.name.toLocaleLowerCase().includes(search.toLocaleLowerCase())).slice(0,limit).map(l=><div role="row" className="build-parts-row" key={l.id}><span role="cell"><button type="button" aria-expanded={selectedLine===l.id} onClick={async()=>{if(await confirmDiscard())setSelectedLine(selectedLine===l.id?null:l.id);}}>{l.name}</button></span><span role="cell">{l.required_quantity} {pick('pcs','יח׳')}</span><span role="cell">{pick(...dispositions[l.disposition])}</span></div>)}</div>}
-  {lines.filter(l=>l.bom_id===b.id&&l.name.toLocaleLowerCase().includes(search.toLocaleLowerCase())).filter((l,i)=>compact?l.id===selectedLine:i<limit||l.id===selectedLine).map(l=><LineEditor key={l.id} projectId={projectId} line={l} candidates={lines} stock={stock} jobs={jobs} editable={canManage} canStock={canStock} canBuy={canBuy} shared={!!b.shared_at} saved={async()=>{await load();await onChanged();}}/>)}
+  {lines.filter(l=>l.bom_id===b.id&&l.name.toLocaleLowerCase().includes(search.toLocaleLowerCase())).filter((l,i)=>compact?l.id===selectedLine:i<limit||l.id===selectedLine).map(l=><LineEditor key={l.id} snapshotId={b.snapshot_id} projectId={projectId} line={l} candidates={lines} stock={stock} jobs={jobs} editable={canManage} canStock={canStock} canBuy={canBuy} shared={!!b.shared_at} saved={async()=>{await load();await onChanged();}}/>)}
   {lines.filter(l=>l.bom_id===b.id&&l.name.toLocaleLowerCase().includes(search.toLocaleLowerCase())).length>limit&&<button onClick={()=>setLimit(n=>n+50)}>{pick('Show 50 more parts','הצגת 50 חלקים נוספים')}</button>}
  </details>)}</section>;
 }
-function LineEditor({projectId,line:l,candidates,stock,jobs,editable,canStock,canBuy,shared,saved}:{projectId:string;line:Line;candidates:Line[];stock:Stock[];jobs:{id:string;task_id?:string;part_name:string;required_quantity:number}[];editable:boolean;canStock:boolean;canBuy:boolean;shared:boolean;saved:()=>Promise<void>}){
+function LineEditor({snapshotId,projectId,line:l,candidates,stock,jobs,editable,canStock,canBuy,shared,saved}:{snapshotId:string|null;projectId:string;line:Line;candidates:Line[];stock:Stock[];jobs:{id:string;task_id?:string;part_name:string;required_quantity:number}[];editable:boolean;canStock:boolean;canBuy:boolean;shared:boolean;saved:()=>Promise<void>}){
  const {pick}=useLocalization();
  const initial=()=>({disposition:l.disposition,qty:String(l.required_quantity),inventory:l.inventory_id??'',note:l.review_note,expected:String(l.revision)});
  const draft=useBuildStringDraft(`line-review:${l.id}`,initial,l.revision);const {disposition,qty,inventory,note}=draft.value;
@@ -54,6 +55,7 @@ function LineEditor({projectId,line:l,candidates,stock,jobs,editable,canStock,ca
  const item=stock.find(s=>s.id===l.inventory_id);
  return <article id={`build-part-${l.id}`} className="build-job"><div className="build-job-summary"><strong>{l.name}</strong><span>{pick(...labels[l.disposition])} · {l.required_quantity}</span></div><small>{l.source_identity?.kind==='manual'?pick('Originally requested','כמות מקורית שהתבקשה'):pick('Imported quantity','כמות שיובאה')}: {l.design_quantity}</small>
  {l.source_identity?.kind!=='manual'&&<CadPartMetadata value={l.source_identity?.metadata}/>}
+ <BuildPartModel snapshotId={snapshotId} paths={l.occurrence_paths} partId={l.source_identity?.partId}/>
  <BuildChangeImpact lineId={l.id} jobId={l.job_id} projectId={projectId}/><BuildChangeDecisions projectId={projectId} line={l} candidates={candidates} editable={editable}/>
  {l.source_identity?.provenance&&<p>{pick('Source / reason','מקור / סיבה')}: {l.source_identity.provenance}</p>}
  {editable&&<BuildDemandReview line={l.id} bom={l.bom_id} revision={l.revision} candidates={candidates} saved={saved}/>}
