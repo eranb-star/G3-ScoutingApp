@@ -58,6 +58,7 @@ jobs:
           node scripts/test-build-subsystems.mjs
           node scripts/test-build-wip-adoption.mjs
           node scripts/test-build-readiness-holds.mjs
+          node scripts/test-build-material-specs.mjs
           node scripts/test-robot-build-scope.mjs
           node scripts/test-build-preparation.mjs
           node scripts/test-build-material-reservations.mjs

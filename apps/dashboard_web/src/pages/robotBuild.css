@@ -20,3 +20,7 @@
 .build-readiness dt { font-size:.9rem; line-height:1.4; }
 .build-readiness dd { font-size:1.6rem; font-weight:750; margin:.4rem 0 0; }
 .build-release-hold:has([role="status"]) { border-inline-start:4px solid #9a5500; padding:1rem; background:#fff8eb; margin-block:1rem; }
+
+.robot-build-page .build-spec-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px;align-items:end}
+.robot-build-page .build-spec-fields label{display:flex;flex-direction:column;gap:6px;min-width:0}
+.robot-build-page .build-spec-fields input,.robot-build-page .build-spec-fields select{width:100%;box-sizing:border-box}
