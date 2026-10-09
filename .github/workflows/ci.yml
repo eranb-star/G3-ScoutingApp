@@ -49,3 +49,4 @@ jobs:
           node scripts/test-onshape-snapshot.mjs
           node scripts/test-onshape-storage.mjs
           node scripts/test-cad-review.mjs
+          node scripts/test-robot-build-bom.mjs
