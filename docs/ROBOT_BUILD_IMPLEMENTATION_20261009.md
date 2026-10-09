@@ -1,3 +1,9 @@
+# Checked work-file association — 9 October, local only
+
+The twenty-sixth additive migration, `robot_build_file_associations_20261009.sql`, links a pending controlled file to one visible build part and exact reviewed line revision. It snapshots the part identity and CAD source/occurrence information, records who checked the association and why, rejects stale revisions and changed retries, and inherits existing file visibility. The upload flow explicitly offers this association and distinguishes unassociated files. This is a human-checked association, not automatic native Onshape export verification. No broader CAD permissions or disclosure were added.
+
+Actual-schema file tests, TypeScript and combined double application of all 26 additions passed. The review task remains mounted during refresh to preserve independent drafts. Shared review draft acceptance is pushed as `44a7510`. These changes are not deployed. Remaining work includes connected learning/context and pit acceptance, provider/export validation, current recovery, final role/device/regression checks and deployment. Continue the authorized full scope; no new paid project.
+
 # Shared review draft acceptance — 9 October, local only
 
 Review configuration, submission evidence, individual requirement findings, artifact checks, decision notes, reviewer policy, stage changes and independent exception countersigns now use member/task/submission-scoped drafts. A saved finding/check does not clear a separate approval note. Existing legacy submission drafts remain readable. No automatic submission, approval, qualification or authorization is added.
