@@ -65,6 +65,7 @@ jobs:
           node scripts/test-build-draft-registry.mjs
           node scripts/test-build-learning.mjs
           node scripts/test-build-software.mjs
+          node scripts/test-build-part-geometry.mjs
           node scripts/test-build-change-decisions.mjs
           node scripts/test-robot-build-scope.mjs
           node scripts/test-build-preparation.mjs

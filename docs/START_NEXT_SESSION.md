@@ -1,4 +1,4 @@
-# Current authoritative status — reconciled against df7323c plus intended software references
+# Current authoritative status — reconciled against 874fb0d plus exact part inspection
 
 Read section 12 of ROBOT_BUILD_PREDEVELOPMENT_MASTER_20261009.md and the first sections of ROBOT_BUILD_IMPLEMENTATION_20261009.md. Twenty-eight additions remain undeployed. CAD disposition enforcement and scoped form drafts are now implemented locally; read the latest implementation entries. Scoped engineering substitutions now have server enforcement, UI and actual-schema tests. Partial assembly receipts and inspected disassembly/recovery now have actual-schema tests. Material specification/remnant controls and actual-schema tests have now been added; read the latest implementation entry. Freshness, metadata observations, subsystem coverage, WIP adoption, downstream holds and impact visibility are implemented; do not describe them as wholly unstarted.
 
@@ -7,6 +7,8 @@ Remaining: material/remnant final acceptance; substitution and assembly/recovery
 The user has authorized completion. Do not request another phase-selection approval. A final answer stops execution: do not imply background continuation when none is running. The repeated partial-final failure is recorded in WORKING_EXPECTATIONS.md and must not recur.
 
 ## Active continuation
+
+Exact-occurrence CAD inspection is implemented locally from parts-list detail; identity tests, TypeScript and synthetic desktop/phone fullscreen/resize/Escape acceptance pass. Read the newest implementation entry for permissions and provider limits. No new SQL addition; total remains 28. Continue simulator-profile compatibility and pit continuity, connected lifecycle/provider/recovery acceptance and release. Do not stop after committing this checkpoint.
 
 TypeScript passed after the expanded draft conversion (stock/material actions, inspection lots, operations, demand review and material specifications). These changes are undeployed. The final 28-migration rehearsal passed twice including checked file associations; legacy CAD destination targeted and combined acceptance now pass. Shared review drafts now pass database-backed reload/submission/independent-approval browser acceptance. Continue provider/files, cross-system and release gates above. A successful build is not evidence of production deployment.
 

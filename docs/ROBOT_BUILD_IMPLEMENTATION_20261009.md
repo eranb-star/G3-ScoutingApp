@@ -1,10 +1,16 @@
+# Exact part inspection — 9 October, local only
+
+Parts-list detail now opens the pinned snapshot and selects/isolate-fits the exact occurrence path, including repeated instances. It never substitutes a similarly named part or a newer snapshot. Missing geometry and denied private-source access are explicit; released work files remain the alternative. Existing CAD source permissions are unchanged. Native annotations/dimensions remain in Onshape.
+
+Exact-identity tests and TypeScript pass. Synthetic browser acceptance checked the second of two similarly named occurrences, desktop and 390×844 phone fullscreen, resize fitting and Escape restoration. A resize framing defect was found and fixed. Evidence: docs/staging/robot-build-exact-model-phone-20261009.png. This is local synthetic UI evidence, not live provider or physical-device acceptance. No additional SQL migration; 28 additions remain undeployed. Latest pushed software increment is 874fb0d.
+
 # Intended software reference — 9 October, local only
 
 Addition 28 (`robot_build_software_20261009.sql`) records immutable intended repository/commit references per build, with reasons and history. It is deliberately not deployment evidence. Existing physical configuration software/calibration fields remain authoritative for what was actually tested. The UI is in Build details. Private-code permission and visible project scope are both required; no role grant was added.
 
 The existing `github-repositories` function now has a bounded `check-commit` read action using the same three-repository allowlist and server secret. It returns only repository/commit metadata, requires active membership/private-code permission, rejects mismatches, and does not use Gemini or require paid Assist access. The UI checks the commit before recording it; the stored record is labelled intent, not a server-certified deployment or engineering approval. Deploy this function before this frontend. No GitHub write occurs.
 
-Actual-schema intent permission/history/retry tests, actual handler tests and all 28 additive migrations applied twice pass. TypeScript is being checked with the new permission type (no default permissions changed). Simulation profile linkage/change warning, pit continuity/provider/live acceptance and final recovery/release gates remain. Learning increment is pushed as `df7323c`; production remains unchanged.
+Actual-schema intent permission/history/retry tests, actual handler tests, TypeScript and all 28 additive migrations applied twice pass (no default permissions changed). Simulation profile linkage/change warning, pit continuity/provider/live acceptance and final recovery/release gates remain. Software increment is pushed as `874fb0d`; production remains unchanged.
 
 # Operation learning connection — 9 October, local only
 
