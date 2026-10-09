@@ -20,7 +20,7 @@ export default function BuildMaintenanceLinks({projectId,kits,tasks,canManage}:{
  async function load(){const token=++generation.current;setError('');try{
   const [components,links,issues,repairs,gates,project]=await Promise.all([
    readBuildPages<Component>((a,z)=>supabase.from('robot_components').select('id,name,serial_number,status').order('id').range(a,z)),
-   readBuildPages<Mapping>((a,z)=>supabase.from('robot_build_component_links').select('*,robot_build_kits!inner(project_tasks!inner(project_id))').eq('robot_build_kits.project_tasks.project_id',projectId).order('id').range(a,z)),
+   readBuildPages<Mapping>((a,z)=>supabase.from('robot_build_component_links').select('*,robot_build_kits!inner(project_tasks!robot_build_kits_task_id_fkey!inner(project_id))').eq('robot_build_kits.project_tasks.project_id',projectId).order('id').range(a,z)),
    readBuildPages<Issue>((a,z)=>supabase.from('robot_issues').select('id,title,status').eq('project_id',projectId).eq('archived',false).order('id').range(a,z)),
    readBuildPages<Repair>((a,z)=>supabase.from('robot_build_issue_links').select('*,robot_issues!inner(project_id)').eq('robot_issues.project_id',projectId).order('issue_id').range(a,z)),
    readBuildPages<{task_id:string;decision_type:string}>((a,z)=>supabase.from('project_review_gates').select('task_id,decision_type,project_tasks!inner(project_id)').eq('project_tasks.project_id',projectId).eq('enabled',true).order('task_id').range(a,z)),

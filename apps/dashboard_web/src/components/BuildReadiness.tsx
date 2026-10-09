@@ -18,7 +18,7 @@ export default function BuildReadiness({projectId}:{projectId:string}){
    supabase.rpc('project_review_context',{p_all:true}),
    readBuildPages<Job>((a,z)=>supabase.from('robot_build_jobs').select('id,task_id,release_task_id,release_submission_id,part_name,project_tasks!robot_build_jobs_task_id_fkey!inner(project_id)').eq('project_tasks.project_id',projectId).order('id').range(a,z)),
    readBuildPages<Hold>((a,z)=>supabase.from('robot_build_release_holds').select('task_id,reason,project_tasks!inner(project_id)').eq('project_tasks.project_id',projectId).eq('active',true).order('task_id').range(a,z)),
-   readBuildPages<{id:string;installed_at:string|null;retired_at:string|null}>((a,z)=>supabase.from('robot_build_kits').select('id,installed_at,retired_at,project_tasks!inner(project_id)').eq('project_tasks.project_id',projectId).order('id').range(a,z)),
+   readBuildPages<{id:string;installed_at:string|null;retired_at:string|null}>((a,z)=>supabase.from('robot_build_kits').select('id,installed_at,retired_at,project_tasks!robot_build_kits_task_id_fkey!inner(project_id)').eq('project_tasks.project_id',projectId).order('id').range(a,z)),
    readBuildPages<{id:string;title:string}>((a,z)=>supabase.from('robot_issues').select('id,title').eq('project_id',projectId).eq('archived',false).neq('status','resolved').order('id').range(a,z)),
    readBuildPages<{task_id:string;prerequisite_id:string}>((a,z)=>supabase.from('project_task_dependencies').select('task_id,prerequisite_id').order('task_id').order('prerequisite_id').range(a,z)),
    readBuildPages<{task_id:string;held:boolean}>((a,z)=>supabase.rpc('robot_build_hold_context',{p_project:projectId}).range(a,z))]);
