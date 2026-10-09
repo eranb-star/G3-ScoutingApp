@@ -39,6 +39,7 @@ jobs:
           node scripts/test-robot-build-bom-storage.mjs
           node scripts/test-robot-build-stock.mjs
           node scripts/test-robot-build-integration.mjs
+          node scripts/test-robot-build-manual.mjs
           node scripts/test-browser-attendance.mjs
           node scripts/verify-mobile-notification-stability.mjs
       # Exercise the current permission-controlled catalogue, not obsolete token/URL strings.

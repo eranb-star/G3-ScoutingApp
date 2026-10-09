@@ -1,0 +1,18 @@
+import fs from 'node:fs';import assert from 'node:assert/strict';
+process.env.G3_BUILD_STOCK_FIXTURE='1';
+const {db,manager,stranger,project}=await import('./test-robot-build-bom-storage.mjs');
+await db.exec('reset role');
+const sql=fs.readFileSync(new URL('../../../backend/supabase/robot_build_manual_20261009.sql',import.meta.url),'utf8');
+await db.exec(sql);await db.exec(sql);
+const id='10000000-0000-0000-0000-000000000001';
+const add=(n=8)=>db.query('select add_robot_build_requirement($1,$2,$3,$4,$5) id',[project,'CAN connectors',n,'Electrical drawing revision B',id]);
+await db.exec(`set role authenticated;set test.uid='${stranger}'`);await assert.rejects(add,/permission/);
+await db.exec(`set test.uid='${manager}'`);assert.equal((await add()).rows[0].id,id);assert.equal((await add()).rows[0].id,id);
+await assert.rejects(add(9),/different values/);
+assert.equal((await db.query('select count(*)::int n from robot_build_bom_lines where id=$1',[id])).rows[0].n,1);
+await db.query('select review_robot_build_line($1,1,$2,0,null,$3)',[id,'exclude','Already covered by harness assembly']);
+assert.equal((await db.query('select design_quantity,required_quantity from robot_build_bom_lines where id=$1',[id])).rows[0].design_quantity,8);
+await db.exec(`set test.uid='${stranger}'`);
+assert.equal((await db.query('select source_identity from robot_build_bom_lines where id=$1',[id])).rows[0].source_identity.provenance,'Electrical drawing revision B');
+console.log('PASS manual requirements: scoped creation, explicit project visibility, retry, immutable provenance, reviewed exclusion');
+await db.close();
