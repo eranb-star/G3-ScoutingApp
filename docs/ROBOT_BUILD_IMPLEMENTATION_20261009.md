@@ -1,6 +1,15 @@
 # Robot Build implementation checkpoint — 9 October 2026
 
-Status: development in progress. Frontend and four additive SQL migrations are local, not a production release or completion of P0/P1/P3. Follow ROBOT_BUILD_PREDEVELOPMENT_MASTER_20261009.md for the complete scope. The user has authorized end-to-end execution; do not ask for another phase-selection approval.
+Status: development in progress. Frontend and five additive SQL migrations are local, not a production release or completion of P0/P1/P3. Follow ROBOT_BUILD_PREDEVELOPMENT_MASTER_20261009.md for the complete scope. The user has authorized end-to-end execution; do not ask for another phase-selection approval.
+
+## CAD metadata continuation — local, provider acceptance pending
+
+- Added a server-only observation cache (cad_part_metadata_20261009.sql), bounded one-group-per-request collection at the exact document/microversion/element/configuration, and material/part-number/vendor/revision display. Purchased assembly boundaries are explicitly unsupported for this metadata path; missing fields stay unknown. Manufacturing process is never inferred.
+- Import waits for the metadata check, embeds observed values/provenance in the existing source_identity, and preserves previously imported rows on retry. Existing imports are not silently backfilled. Metadata timestamps are separate from geometry identity. The cache retains its first observation; refreshing metadata independently of unchanged geometry remains part of the P4 change workflow.
+- Browser verified the synthetic selected-part view displays material, part number, vendor, source revision and observation time (staging/robot-build-metadata-local-20261009.png). This is not live provider acceptance.
+- Local tests passed: normalization/missing/ambiguous/revision mismatch, bounded resumed reads, purchased-boundary changes, immutable BOM metadata, cache denied to browser roles, existing connector authentication and security. The handler test loader was extended for the new module. These do not certify an actual Onshape response for team designs.
+- Final Vite build passed after hold/split and metadata additions; existing large-chunk warning remains. TypeScript passed after the final metadata UI changes.
+- Deployment now requires five new SQL files: workspace, material reservations, preparation, lots, CAD metadata, followed by the updated connector (including partMetadata.ts) and frontend. This is still local development, not a released or complete P2/P3 programme.
 
 ## Partial inspection continuation — local verification
 

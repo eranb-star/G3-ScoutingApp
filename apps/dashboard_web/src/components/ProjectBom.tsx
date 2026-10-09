@@ -3,9 +3,10 @@ import {supabase} from '../supabase';
 import {useLocalization} from '../lib/localization';
 import {useMemberAuth} from '../lib/memberAuth';
 import BuildStockActions from './BuildStockActions';
+import CadPartMetadata,{type CadMetadata} from './CadPartMetadata';
 import BuildDemandReview from './BuildDemandReview';
 type Bom={id:string;name:string;snapshot_id:string|null;owner_id:string;revision:number;shared_at:string|null;created_at:string};
-type Line={id:string;bom_id:string;name:string;design_quantity:number;required_quantity:number;disposition:string;inventory_id:string|null;job_id:string|null;review_note:string;revision:number;source_identity?:{kind?:string;provenance?:string}};
+type Line={id:string;bom_id:string;name:string;design_quantity:number;required_quantity:number;disposition:string;inventory_id:string|null;job_id:string|null;review_note:string;revision:number;source_identity?:{kind?:string;provenance?:string;metadata?:CadMetadata}};
 type Stock={id:string;name:string;quantity:number;unit:string};
 export default function ProjectBom({projectId,canManage,canStock,canBuy,jobs,onChanged,compact=false,confirmDiscard=async()=>true}:{projectId:string;canManage:boolean;canStock:boolean;canBuy:boolean;jobs:{id:string;part_name:string;required_quantity:number}[];onChanged:()=>Promise<void>;compact?:boolean;confirmDiscard?:()=>Promise<boolean>}){
  const {pick}=useLocalization(),{profile}=useMemberAuth();
@@ -35,6 +36,7 @@ function LineEditor({line:l,candidates,stock,jobs,editable,canStock,canBuy,share
  const labels:Record<string,[string,string]>={review:['Needs review','דרושה סקירה'],make:['Make','ייצור'],buy:['Buy','רכש'],reuse:['Reuse','שימוש חוזר'],exclude:['Exclude','לא נדרש']};
  const item=stock.find(s=>s.id===l.inventory_id);
  return <article className="build-job"><div className="build-job-summary"><strong>{l.name}</strong><span>{pick(...labels[l.disposition])} · {l.required_quantity}</span></div><small>{l.source_identity?.kind==='manual'?pick('Originally requested','כמות מקורית שהתבקשה'):pick('Imported quantity','כמות שיובאה')}: {l.design_quantity}</small>
+ {l.source_identity?.kind!=='manual'&&<CadPartMetadata value={l.source_identity?.metadata}/>}
  {l.source_identity?.provenance&&<p>{pick('Source / reason','מקור / סיבה')}: {l.source_identity.provenance}</p>}
  {editable&&<BuildDemandReview line={l.id} bom={l.bom_id} revision={l.revision} candidates={candidates} saved={saved}/>}
  {item&&<p>{item.name} · {pick('Physical stock','מלאי פיזי')}: {item.quantity} {item.unit} · {pick('Availability must account for other reservations.','יש להתחשב בהקצאות אחרות לפני קביעת זמינות.')}</p>}

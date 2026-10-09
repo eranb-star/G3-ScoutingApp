@@ -1,3 +1,6 @@
+# CAD metadata continuation — local, not deployed
+First read the CAD metadata and partial inspection continuation sections of ROBOT_BUILD_IMPLEMENTATION_20261009.md. Five new migrations plus connector/frontend await provider acceptance and remaining programme work. Do not treat builds or synthetic tests as full completion.
+
 # Partial lot inspection continuation — local, not deployed
 Read the partial inspection section in ROBOT_BUILD_IMPLEMENTATION_20261009.md. Combined four-migration rehearsal and hold/split/partial-output integration passed. Preserve the unfinished programme; continue end to end without another phase-selection question.
 
