@@ -29,4 +29,5 @@ assert.equal(Number((await first('select quantity from frc_parts_inventory where
 assert.equal(Number((await first('select quantity from frc_parts_inventory where id=$1',[part])).quantity),6);
 await assert.rejects(db.query("select move_robot_build_kit_requirement($1,$2,'return',4,1,$3,$4,$5)",[id(2),id(1),'Cannot recover consumed components',id(7),id(3)]),/closed|immutable|Installed/);
 const batch=await first('select origin,assembly_kit_id from robot_build_batches where id=$1',[id(6)]);assert.equal(batch.origin,'stock_assembly');assert.equal(batch.assembly_kit_id,id(2));
-console.log('PASS stock assembly consumes exact components once, requires physical QC, produces accepted parents once and prevents component return');await db.close();
+console.log('PASS stock assembly consumes exact components once, requires physical QC, produces accepted parents once and prevents component return');if(process.env.G3_ASSEMBLY_RECOVERY_FIXTURE!=='1')await db.close();
+export {db,admin,student,project,first,as,task,configure,submit,approve,built,part,output,id};

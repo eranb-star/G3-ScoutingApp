@@ -1,6 +1,14 @@
 # Robot Build implementation checkpoint — 9 October 2026
 
-Status: development in progress. Frontend and twenty-one additive SQL migrations are local, not a production release or completion of P0–P6. Follow ROBOT_BUILD_PREDEVELOPMENT_MASTER_20261009.md for the complete scope. The user has authorized end-to-end execution; do not ask for another phase-selection approval.
+Status: development in progress. Frontend and twenty-three additive SQL migrations are local, not a production release or completion of P0–P6. Follow ROBOT_BUILD_PREDEVELOPMENT_MASTER_20261009.md for the complete scope. The user has authorized end-to-end execution; do not ask for another phase-selection approval.
+
+## Partial assembly receipts and inspected recovery — current continuation
+
+- Added `robot_build_disassembly_20261009.sql` then `robot_build_assembly_lots_20261009.sql` after material specs/remnants (23 additions total). Local only. Independent physical QC is reused; no second approval engine.
+- Stock disassembly withdraws only unissued/unreserved accepted assemblies, retains original receipt quantity and records retired quantity. Components remain unavailable until a new physical QC submitted after disassembly references their exact configuration. Recovery is capped by original component ratios, with separate traceable accepted batches. A trigger prevents older issue paths from allocating retired parent quantities.
+- Partial assembly inspection lots pin quantity to separate existing unsubmitted QC tasks. Each receipt requires its own current physical approval and the same as-built configuration. Components are issued once; whole receipt is blocked once lots exist. Ratio calculations for disassembly use total planned assembly output, not the smaller receipt lot.
+- Actual-schema tests pass for quantity caps, retry identity, permission denial, independent inspection, receipt/withdrawal conservation, original receipt preservation, legacy issue protection, partial QC and proportional component recovery. TypeScript passed before the latest small batch-count label improvement; integrated build/UX acceptance follows.
+- UI controls are integrated into Assembly & tests. Existing stock batch selection now distinguishes unissued quantity from historical receipt count. Production and recovery deployment remain unchanged. Final provider/file/form/cross-system/release gates and substitutions/approved CAD dispositions remain open.
 
 ## Material suitability and measured remnants — current continuation
 
