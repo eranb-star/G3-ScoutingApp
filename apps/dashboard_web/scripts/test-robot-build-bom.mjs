@@ -24,4 +24,8 @@ assert.equal(structuralBom({},'ASSEMBLY').coverage,'incomplete');
 assert.equal(structuralBom({parts:[part('a')]},'PARTSTUDIO').coverage,'unsupported');
 r=run(Array.from({length:1200},(_,i)=>part(String(i),{partId:'part'+i})));assert.equal(r.rows.length,1200);assert.equal(r.coverage,'resolved');
 assert.equal(run([]).rows.length,0);
+const assemblyEvidence={assembly:{rootAssembly:{instances:[instance('left'),instance('right')]},subAssemblies:[sub]}};
+const purchased=structuralBom(assemblyEvidence,'ASSEMBLY',[['left'],['right']]);assert.equal(purchased.coverage,'resolved');assert.equal(purchased.rows.length,1);assert.equal(purchased.rows[0].quantity,2);assert.equal(purchased.rows[0].partId,'@assembly');
+assert.equal(structuralBom(assemblyEvidence,'ASSEMBLY',[['missing']]).coverage,'incomplete');
+assert.equal(structuralBom(assemblyEvidence,'ASSEMBLY',[['left'],['left','p']]).coverage,'incomplete','nested contradictory boundaries cannot silently disappear');
 console.log('Robot Build structural BOM: nested/repeated/configured/suppressed/missing/cyclic/large/unsupported cases passed.');

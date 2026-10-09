@@ -42,7 +42,7 @@ Students enter through existing personal work: ready, continuing, waiting and re
 10. Installation/test/repair references exact physical configuration; changed configuration requires appropriate rechecks.
 11. Role access, revoked connection, empty/error/large-model states, phone EN/HE and supported APK verified separately.
 
-## Implementation progress
+## Implementation progress (historical increments; latest status below)
 
 - Structural extraction module started; no geometry dependency, explicit unresolved coverage, pinned part keys and occurrence paths. This is a candidate leaf-parts list, NOT a released manufacturing BOM: metadata mapping, make/buy boundaries, source-scope reconciliation and provider acceptance remain required.
 - Pending: project database/RPC lifecycle, task coupling, inventory allocation integration, releases/inspection/installation, team grants, complete UI journeys and deployment. Do not describe these as implemented.
@@ -56,3 +56,28 @@ Implemented locally: additive robot_build_jobs/progress migration and project-le
 Job records and audit cannot be directly modified by authenticated clients. Task deletion with manufacturing history is deliberately restricted by foreign keys; friendly deletion UI remains pending. Project-wide metadata follows existing task access; no private CAD payload is copied into it. No stock is created/consumed by this increment. Reported quantities are NOT accepted inventory. Input instructions are manually supplied and must not be described as an automatically released CAD drawing package.
 
 SQL fixture tests cover rerun, retry/conflict, stale update, worker scope, invalid quantities, correction, release invalidation, QC gating, direct-write denial, atomic rollback and history deletion restriction. Existing engineering regression suite, TypeScript and Vite passed independently. Full combined real-schema lifecycle and visual acceptance remain outstanding. CI includes SQL tests. Migration NOT applied to production; source branch only. Remaining: BOM-to-job reviewed mappings/scope/make-buy reconciliation, stock/purchase integration, complete operation/rework/installation lifecycle, shared CAD permissions and release acceptance.
+
+### BOM / stock integration (9 October, local only)
+
+Supersedes earlier statements that all mapping/stock work is pending:
+
+- Server recomputes a complete structural import from the owned immutable snapshot. Purchased subassembly boundaries stop child expansion; invalid or contradictory boundaries reject import. Existing reviewed imports cannot be silently replaced with different boundaries.
+- Private project BOM drafts, explicit share of parts metadata, immutable imported quantities/identities, reviewed make/buy/reuse/exclude decisions, and links to existing manufacturing jobs. Sharing does not expose CAD geometry, credentials or AI reviews. Only the importing active admin can share; scoped project managers can review shared rows.
+- Shared piece-counted buy/reuse lines support reservations, release, issue and return through existing inventory and stock movements. Immutable events, retries and optimistic allocation revisions; project plus inventory permissions required. Active printing and build reservations share the stock floor. Issuing is not installation, quality acceptance or financial expenditure.
+- Buy lines create existing purchase requests only for uncovered quantities after allocations, available stock and linked purchase/remainder chains. Existing approval/receiving/finance flows remain authoritative. Identity guards prevent repurposing linked requests or detaching their remainder chains. Requirements with purchasing history retain their part/quantity; changes need a new reviewed requirement.
+- Project work expands to the parent card width. EN/HE layouts, persistent progress receipt, existing task/inspection navigation, source-review and stock controls. Purchase-only users start on the purchase action.
+
+Migration order after existing production prerequisites: `robot_build_jobs_20261009.sql`, `robot_build_bom_20261009.sql`, `robot_build_stock_20261009.sql`. Stock migration assumes existing fundraising reservation trigger and partial purchasing columns. No migration has been applied live. No source/code uploaded to AI. No new runtime permissions enabled.
+
+Validation: structural cases, actual connector handler authorization, jobs/BOM/stock SQL suites, TypeScript and Vite production build passed. New `test-robot-build-integration.mjs` loads the existing engineering migration/test chain and verifies actual release approval, partial/full reporting, physical configuration-backed QC, automatic task completion and changed-release denial. Stock tests cover retry/stale writes, printing conflict, issue/return conservation, partial purchase/remainder coverage and identity protection. All new tests added to CI; remote CI not yet run. Existing large-bundle warnings remain. Synthetic EN/HE browser review passed; Hebrew DOM width and scroll width both 304px. Screenshot: `staging/robot-build-mobile-he-20261009.png`. This is isolated UI evidence, not live provider or production acceptance.
+
+### Remaining required scope — not complete / do not deploy as the full workflow
+
+1. Cross-root overlap reconciliation and superseded BOM change impact. Separate imported lists are currently not summed automatically, but that alone does not prevent duplicate work across sources. Add reviewed scope and demand identity before calling this a complete BOM system.
+2. Manual non-CAD requirements and initial reconciliation of existing stock, purchased, built and installed quantities without fabricating history.
+3. Process/operation templates, partial rejection/scrap/rework, raw-material recipes/consumption, accepted-output stock and batch allocation. Current absolute progress plus whole-job QC does not implement these.
+4. Kits and exact accepted-batch installation links to existing physical configurations, replacement/retest actions and linked issue closure. Existing engineering records provide configuration/testing, but build quantities are not yet connected to them.
+5. Complete student next-action journey and manager setup, actionable localized errors, friendly history-protected task deletion, source freshness/change explanations, purchase status and exact request navigation. Current setup still requires separate existing release/QC configuration.
+6. Real Onshape BOM comparison, combined inventory/purchasing/finance production-schema acceptance, cancellation/receipt/revision scenarios, broader phone/browser and APK regression acceptance, additive deployment with green CI and documented live verification.
+
+The user has already authorized this remaining development. Do not ask whether to continue, call the whole feature complete, or repeat these implemented increments as new proposals.

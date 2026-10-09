@@ -1,4 +1,5 @@
 .project-build-work{margin-block:1rem;border-block:1px solid #ded6df;padding-block:.75rem;min-width:0}
+.project-card:has(.build-work-content){grid-column:1 / -1}
 .build-work-content{padding-block:1rem}
 .build-work-actions,.build-job-summary{display:flex;gap:.75rem;align-items:center;justify-content:space-between;flex-wrap:wrap}
 .build-job{padding-block:1rem;border-bottom:1px solid #ded6df}

@@ -55,4 +55,5 @@ await db.exec('reset role');
 await assert.rejects(db.exec(`delete from project_tasks where id='${task}'`),/foreign key/);
 assert.equal((await db.query('select count(*)::int n from robot_build_progress')).rows[0].n,3);
 console.log('PASS Robot Build SQL: rerun, assignment, retry, stale writes, corrections, release invalidation, QC gate and write protection');
-await db.close();
+export {db,manager,worker,stranger,project,release,task,releaseSubmission,qcSubmission,job};
+if(process.env.G3_BUILD_FIXTURE!=='1')await db.close();

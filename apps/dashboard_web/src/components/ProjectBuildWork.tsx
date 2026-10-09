@@ -4,10 +4,11 @@ import {useLocalization} from '../lib/localization';
 import {useMemberAuth} from '../lib/memberAuth';
 import {notifyProjectChange} from '../lib/projectRefresh';
 import './projectBuildWork.css';
+import ProjectBom from './ProjectBom';
 type Task={id:string;title:string;status:string;assignee_id:string|null};
 type Job={id:string;task_id:string;part_name:string;part_revision:string;instructions:string;required_quantity:number;completed_quantity:number;revision:number};
 type Release={task_id:string;current_submission:string;revision:string};
-export default function ProjectBuildWork({projectId,tasks,canManage,focusedTask}:{projectId:string;tasks:Task[];canManage:boolean;focusedTask?:string|null}){
+export default function ProjectBuildWork({projectId,tasks,canManage,canStock,canBuy,focusedTask,initiallyOpen=false}:{projectId:string;tasks:Task[];canManage:boolean;canStock:boolean;canBuy:boolean;focusedTask?:string|null;initiallyOpen?:boolean}){
  const {pick}=useLocalization(),{profile}=useMemberAuth();
  const [open,setOpen]=useState(false),[jobs,setJobs]=useState<Job[]>([]),[releases,setReleases]=useState<Release[]>([]),[qc,setQc]=useState<string[]>([]);
  const [loaded,setLoaded]=useState(false),[busy,setBusy]=useState(false),[message,setMessage]=useState('');
@@ -27,7 +28,7 @@ export default function ProjectBuildWork({projectId,tasks,canManage,focusedTask}
   }catch{setMessage(pick('Build records could not be loaded. Retry before changing work.','לא ניתן לטעון רשומות בנייה. נסו שוב לפני שינוי העבודה.'));}
  }
  const focusedHere=!!focusedTask&&tasks.some(t=>t.id===focusedTask);
- useEffect(()=>{if(focusedHere){setOpen(true);void load();}},[focusedHere,focusedTask]);
+ useEffect(()=>{if(focusedHere||initiallyOpen){setOpen(true);void load();}},[focusedHere,focusedTask,initiallyOpen]);
  const chosen=releases.find(r=>r.task_id===release);
  return <section className="project-build-work">
   <button type="button" aria-expanded={open} onClick={()=>{setOpen(!open);if(!open)void load();}}>{pick('Robot build · manufacturing work','בניית הרובוט · עבודות ייצור')}</button>
@@ -35,6 +36,7 @@ export default function ProjectBuildWork({projectId,tasks,canManage,focusedTask}
    <p>{pick('Work stays linked to existing tasks and engineering checkpoints. Reported quantities are not accepted stock.','העבודה מקושרת למשימות ולנקודות הביקורת הקיימות. כמות שדווחה אינה מלאי שאושר.')}</p>
    <div className="build-work-actions"><button type="button" disabled={busy} onClick={()=>void load()}>{pick('Refresh','רענון')}</button>{canManage&&loaded&&<button type="button" onClick={()=>setAdding(!adding)}>{pick('Attach manufacturing work','קישור עבודת ייצור')}</button>}</div>
    <p role="status">{message||(!loaded?pick('Loading…','טוען…'):'')}</p>
+   {loaded&&<details open={initiallyOpen}><summary>{pick('Project parts & sourcing','חלקי הפרויקט ומקורות')}</summary><ProjectBom projectId={projectId} canManage={canManage} canStock={canStock} canBuy={canBuy} jobs={jobs} onChanged={load}/></details>}
    {loaded&&adding&&canManage&&<form onSubmit={async e=>{e.preventDefault();if(busy||!chosen)return;setBusy(true);try{
     const r=await supabase.rpc('create_robot_build_job',{p_task:task,p_release_task:release,p_submission:chosen.current_submission,p_name:name,p_revision:chosen.revision,p_instructions:instructions,p_quantity:Number(quantity)});
     if(r.error)throw Error(r.error.message);setAdding(false);await load();setMessage(pick('Manufacturing work linked to the task.','עבודת הייצור קושרה למשימה.'));notifyProjectChange();
