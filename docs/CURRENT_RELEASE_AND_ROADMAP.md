@@ -1,3 +1,13 @@
+# Start here — current as of 9 October 2026
+
+Read [CURRENT_CHECKPOINT_20261009.md](CURRENT_CHECKPOINT_20261009.md) for the authoritative consolidated status, capability index, remaining acceptance and latest decisions. Then read [WORKING_EXPECTATIONS.md](WORKING_EXPECTATIONS.md) for proportional testing and execution discipline.
+
+Latest website release: fa0acc6, production BYTTLawTaXZHYV5aaREsY56SH69M at https://g3-6740.com. Compact reminders and separate Team Operations are live; the stale Skills Academy check is fixed. Robot Build/CAD remain as delivered pending the user's student review. No Onshape CAM adoption or native CAM development is selected. APK2.4.0/code27 predates the latest web changes.
+
+Everything below is historical where superseded by that checkpoint; do not treat old pending/next-step statements as current authorization.
+
+---
+
 **Current authority:** Read [CURRENT_PHASES_20260924.md](CURRENT_PHASES_20260924.md) and [START_NEXT_SESSION.md](START_NEXT_SESSION.md). The status, selected-next and remaining-effort statements below are historical wherever superseded; detailed feature requirements remain useful. The reusable future-season agreement and current APK/AI/recovery gaps are captured in the current authority.
 
 **Latest production release — 24 September 2026:** All three authorized increments have progressed: decision-support UI and saved-answer task provenance are deployed; focused production permission fixes are applied; the existing student/mentor review and dependency flow passed synthetic end-to-end acceptance. Website source `8fb99dc`, Vercel `NefhtgnnVSdxYfQDPDRTYc3XbaRm` (Ready). Backend scoring retrieval and answer-quality follow-ups are recorded in [the authoritative programme and release record](THREE_INCREMENT_PROGRAMME_20260924.md). Fresh encrypted local backup/restoration passed. Full disaster recovery remains incomplete: approved offsite destination/key custody, portable/full-service restore and physical acceptance are still pending. Older production/awaiting-selection notices below are historical; do not restart delivered work.

@@ -1,3 +1,11 @@
+# Current project handoff — 9 October 2026
+
+Start with [the consolidated checkpoint](docs/CURRENT_CHECKPOINT_20261009.md), then [working expectations and proportional verification](docs/WORKING_EXPECTATIONS.md). The checkpoint links every major delivered workstream and its remaining acceptance. Read only the relevant feature records for the current task.
+
+Latest website: fa0acc6, production BYTTLawTaXZHYV5aaREsY56SH69M, https://g3-6740.com. See [reminder/navigation release](docs/REMINDER_UX_20261009.md). Robot Build/CAD enhancements are paused for the user's student review; no CAM solution has been selected.
+
+## Historical handoff — superseded
+
 # Current handover — 2026-09-14
 
 Start with [the current release and roadmap](docs/CURRENT_RELEASE_AND_ROADMAP.md), then [the complete remaining programme](docs/PAUSE_HANDOVER_20260913.md). These are the current authorities; old logs are historical.

@@ -1,3 +1,13 @@
+# Start here — current as of 9 October 2026
+
+Read [CURRENT_CHECKPOINT_20261009.md](CURRENT_CHECKPOINT_20261009.md) for the authoritative consolidated status, capability index, remaining acceptance and latest decisions. Then read [WORKING_EXPECTATIONS.md](WORKING_EXPECTATIONS.md) for proportional testing and execution discipline.
+
+Latest website release: fa0acc6, production BYTTLawTaXZHYV5aaREsY56SH69M at https://g3-6740.com. Compact reminders and separate Team Operations are live; the stale Skills Academy check is fixed. Robot Build/CAD remain as delivered pending the user's student review. No Onshape CAM adoption or native CAM development is selected. APK2.4.0/code27 predates the latest web changes.
+
+Everything below is historical where superseded by that checkpoint; do not treat old pending/next-step statements as current authorization.
+
+---
+
 # Current release — 9 October 2026, verified after deployment
 
 The expanded Robot Build software is deployed at https://g3-6740.com/robot-build. Source `ec94263`, release application commit `9f11bee`, production `HAs6G4y62ksGT4YU7rCGtHwoJHfG`; GitHub CI326/327 passed. Thirty additive migrations and three backend functions are deployed. Final production read/navigation acceptance passed, including the corrected assembly/readiness/handoff task relationships and actual owner-scoped BOM geometry.

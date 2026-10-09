@@ -1,3 +1,25 @@
+# Proportional verification and release discipline — agreed 9 October 2026
+
+This policy refines earlier broad QA wording below. Prevent regressions with checks proportional to changed behavior, not by repeating the full system suite for every edit.
+
+| Change | Default verification |
+|---|---|
+| Documentation only | Read the diff; check changed relative links and status consistency. No build, browser tour or regression suite. |
+| Text/spacing/alignment | Inspect the affected screen and relevant breakpoint/language; build/type check only when the change warrants it. |
+| Small behavioral change | Focused behavior tests and immediate dependencies; relevant compile check. |
+| Permissions/database/shared infrastructure | Broader relevant integration and authorization/migration checks. |
+| Major redesign/cross-system release | Full regression coverage appropriate to the release. |
+
+- Once relevant checks pass, do not repeat them without a new change, failure or unresolved concern. Do not run unrelated CAD/manufacturing/simulator suites for a reminder-only change.
+- Preserve required repository and deployment checks. Do not silently disable or bypass existing CI/security protections. Current CI runs broadly on both branches; trigger optimization is a separate unimplemented improvement.
+- Batch related changes and documentation. Avoid duplicating a full run across equivalent commits when the approved pipeline permits reusing exact evidence. Do not rerun merely for a status report.
+- Poll builds sparingly; prefer completion signals or bounded waits. Keep tool output and commentary concise. No repeated paid AI validation for unchanged inputs/results.
+- GitHub runner execution itself is not model-token usage; model analysis/tool result processing is. Do not claim an exact usage percentage without evidence.
+- Distinguish code complete, committed, pushed, deployed and real-device/workshop acceptance. Keep a short durable record of checks actually run and any limitations.
+- For documentation-only checkpoints, commit locally without a push by default when pushing would trigger another broad CI/deployment cycle and the user has not requested remote publication. State that boundary clearly; local commits persist for future sessions in this repository. Honor any explicit request to push.
+
+---
+
 - October 4 repository regression: test Engineering Hub → Ask G3 Assist → type → Send without manually attaching code. A prepared picker is not evidence attached to a request. Inspect saved software_context, actual retrieved implementation files and full answer, not just valid citations. Whole-file size budgets can silently prefer tiny constants over the required subsystem; preserve bounded source excerpts with original line numbers and reject citations to omitted lines. Never equate a cited AI example with a compiled patch.
 
 # Working expectations and lessons
