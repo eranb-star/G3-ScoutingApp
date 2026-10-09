@@ -1,3 +1,6 @@
+# Latest continuation: stock assemblies
+Read the first section of ROBOT_BUILD_IMPLEMENTATION_20261009.md. Fifteen additive migrations are undeployed. Exact stock-assembly transformation passes local engineering tests; disassembly and the remaining master scope are unfinished. CI304 passed for pushed 2184d45. Do not claim end-to-end deployment. Continue the authorized full scope.
+
 # Integrated build continuation — latest state
 Read the first section of ROBOT_BUILD_IMPLEMENTATION_20261009.md. Fourteen additive migrations remain undeployed. Shared equipment uses existing workshop tools/certifications, pack purchasing retains pieces in finance, ordered operations and approved existing-hardware adoption pass local tests. Continue remaining master requirements and deployment; no end-to-end production completion claim is valid.
 
