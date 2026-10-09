@@ -2,6 +2,13 @@
 
 Status: development in progress. Frontend and fifteen additive SQL migrations are local, not a production release or completion of P0–P6. Follow ROBOT_BUILD_PREDEVELOPMENT_MASTER_20261009.md for the complete scope. The user has authorized end-to-end execution; do not ask for another phase-selection approval.
 
+## Existing recovery environment — subsequent verified rehearsal
+
+- Replayed 27 reviewed migrations (missing filament/fundraising/CAD prerequisites, nine deployed build baseline migrations, and fifteen additions) in existing recovery project `ooqwgylckjvfpkshhexm`. Rollback-only rehearsal passed before commit. Committed reconstruction then returned success. Read-only verification confirms `robot_build_kits` and `workshop_resource_claims` exist, the build-file bucket is private, and active scheduled jobs remain zero. Screenshot: `staging/robot-build-recovery-schema-20261009.png`.
+- A rejected SQL-editor insertion produced a syntax error and made no schema changes; the editor was fully cleared before retry. Transaction termination was explicitly checked after normalizing Windows line endings. The subsequent committed result and schema query, rather than the attempted action, establish the result.
+- This is relevant-schema reconstruction in the existing September recovery copy. It does not restore later production records, upload current file bytes to the cloud, copy live secrets, prove actual Onshape/file-service acceptance, or establish full application recovery/RTO. No additional paid project or production mutation occurred. Earlier statements below that these build tables are absent in recovery are superseded.
+- Source `2184d45` passed CI304 and is pushed. Stock-assembly source `9344a5c` and combined rehearsal `c01462d` are pushed on the same working branch. Production remains the previously recorded release. Full remaining programme scope must still be implemented and verified; this is not authorization to narrow it.
+
 ## Stock assembly continuation
 
 - The combined release-rehearsal test applies all fifteen additions twice over the nine-migration engineering baseline. It verifies private file storage, RPC-only writes, preserved shared review identity and absence of release-hold bypasses after later migrations. This passed locally; it is not a cloud restore or provider acceptance test.
