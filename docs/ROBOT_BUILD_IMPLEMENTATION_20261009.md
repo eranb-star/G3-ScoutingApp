@@ -1,6 +1,13 @@
 # Robot Build implementation checkpoint — 9 October 2026
 
-Status: development in progress. Frontend and fifteen additive SQL migrations are local, not a production release or completion of P0–P6. Follow ROBOT_BUILD_PREDEVELOPMENT_MASTER_20261009.md for the complete scope. The user has authorized end-to-end execution; do not ask for another phase-selection approval.
+Status: development in progress. Frontend and seventeen additive SQL migrations are local, not a production release or completion of P0–P6. Follow ROBOT_BUILD_PREDEVELOPMENT_MASTER_20261009.md for the complete scope. The user has authorized end-to-end execution; do not ask for another phase-selection approval.
+
+## Source freshness and independent property observations
+
+- Added advisory source checks owned by the existing Onshape connection, with service-only claims, a 45-second lease and 30-second cooldown. The build parts screen checks on opening/return and every five visible minutes; other authorized members see saved results. Failed checks retain the last success and never confirm freshness. Fixed references are explicitly distinguished from tracking a workspace. No import, release, stock, or AI changes occur on checks.
+- Added immutable metadata observation generations. Refreshing materials/part properties can create a new private BOM candidate even when geometry is unchanged; the original four-argument import API still resolves its original observation. Original released/linked metadata stays unchanged. This is explicit refresh, not a webhook or a claim of automatic metadata synchronization.
+- Actual SQL tests verify original/candidate separation, retry identity, private candidate visibility, service-only claims, owner checks and cooldown. Handler tests verify provider path and failed-check provenance. TypeScript passed; all seventeen additive migrations applied twice in the combined rehearsal. Provider/live browser acceptance and release remain outstanding.
+- GitHub CI305 (9344a5c) and CI306 (c01462d) both visibly passed. Production remains unchanged. Remaining master-plan requirements are not waived.
 
 ## Existing recovery environment — subsequent verified rehearsal
 

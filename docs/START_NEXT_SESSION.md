@@ -1,3 +1,6 @@
+# Latest continuation: source freshness and metadata observations
+Read the first section of ROBOT_BUILD_IMPLEMENTATION_20261009.md. Seventeen additions remain undeployed. Source checks and independent metadata observation candidates pass SQL/module tests and combined rehearsal. Continue the full authorized master scope and production acceptance; do not stop at another partial checkpoint.
+
 # Latest continuation: stock assemblies
 Read the first section of ROBOT_BUILD_IMPLEMENTATION_20261009.md. Fifteen additive migrations are undeployed. Exact stock-assembly transformation passes local engineering tests; disassembly and the remaining master scope are unfinished. CI304 passed for pushed 2184d45. Do not claim end-to-end deployment. Continue the authorized full scope.
 

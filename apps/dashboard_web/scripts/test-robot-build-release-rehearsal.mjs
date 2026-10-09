@@ -19,7 +19,7 @@ await db.exec(read('robot_build_operations_20261009.sql'));
 await db.exec(read('robot_build_purchase_reuse_20261009.sql'));
 const issues=read('robot_issue_tracking_20260830.sql');await db.exec(issues.slice(0,issues.indexOf('insert into storage.buckets'))+'commit;');
 await db.exec(read('predictive_maintenance_phase_20260831.sql'));
-const files=['robot_build_workspace_20261009.sql','robot_build_material_reservations_20261009.sql','robot_build_preparation_20261009.sql','robot_build_lots_20261009.sql','cad_part_metadata_20261009.sql','robot_build_files_20261009.sql','robot_build_file_storage_20261009.sql','robot_build_kit_requirements_20261009.sql','robot_build_release_holds_20261009.sql','robot_build_maintenance_20261009.sql','workshop_resources_20261009.sql','robot_build_operation_order_20261009.sql','robot_build_pack_purchasing_20261009.sql','robot_build_adoption_20261009.sql','robot_build_stock_assembly_20261009.sql'];
+const files=['robot_build_workspace_20261009.sql','robot_build_material_reservations_20261009.sql','robot_build_preparation_20261009.sql','robot_build_lots_20261009.sql','cad_part_metadata_20261009.sql','robot_build_files_20261009.sql','robot_build_file_storage_20261009.sql','robot_build_kit_requirements_20261009.sql','robot_build_release_holds_20261009.sql','robot_build_maintenance_20261009.sql','workshop_resources_20261009.sql','robot_build_operation_order_20261009.sql','robot_build_pack_purchasing_20261009.sql','robot_build_adoption_20261009.sql','robot_build_stock_assembly_20261009.sql','robot_build_freshness_20261009.sql','robot_build_metadata_refresh_20261009.sql'];
 const reviewOid=(await first("select 'project_review_passed(uuid)'::regprocedure::oid as id")).id;
 for(let pass=0;pass<2;pass++)for(const file of files)await db.exec(read(file));
 assert.equal((await first("select 'project_review_passed(uuid)'::regprocedure::oid as id")).id,reviewOid,'shared review engine identity retained');
@@ -29,4 +29,4 @@ for(const table of ['robot_build_kits','robot_build_batches','robot_build_materi
  assert.equal((await first('select has_table_privilege($1,$2,$3) allowed',['authenticated',table,'INSERT,UPDATE,DELETE'])).allowed,false,table+' remains RPC-only');
 }
 assert.equal((await first("select count(*)::int n from pg_trigger where tgname in ('guard_stock_assembly_installation','guard_kit_demand_complete')")).n,2);
-console.log('PASS all 15 additive migrations applied twice together, private bucket, RPC-only writes, unchanged shared review and no release-hold bypass');await db.close();
+console.log('PASS all 17 additive migrations applied twice together, private bucket, RPC-only writes, unchanged shared review and no release-hold bypass');await db.close();

@@ -3,6 +3,7 @@ import {CadError,onshapeId,parseSource,sha256,seal,unseal,boundedJson,providerRe
 import {captureSnapshot,inspectEvidence} from './snapshot.ts';
 import {structuralBom} from './bom.ts';
 import {enrichBomMetadata} from './partMetadata.ts';
+import {checkBuildSource} from './buildFreshness.ts';
 import {geometryFor} from './geometry.ts';
 import {reviewDesign,designEvidence} from './review.ts';
 
@@ -119,6 +120,7 @@ Deno.serve(async request=>{
    return reply({sources:result.data});
   }
   const read=providerReader(await accessToken(db,row));
+  if(body.action==='build-freshness')return reply(await checkBuildSource(db,read,user.id,row.id,body.bomId));
   if(['geometry','workspace','requirements','finding','review','evidence','bom','import-bom'].includes(body.action)){
    const selected=await db.from('cad_sources').select('*').eq('id',body.sourceId).eq('connection_id',row.id).is('archived_at',null).maybeSingle();
    if(selected.error||!selected.data)throw new CadError('SOURCE_UNAVAILABLE','Select one of your connected designs.',404);
@@ -142,16 +144,16 @@ Deno.serve(async request=>{
    if(snapshot.error||!snapshot.data)throw new CadError('SNAPSHOT_REQUIRED','Import the design revision first.',409);
    if(body.action==='bom'){
     const bom=structuralBom(snapshot.data.evidence,selected.data.element_type,body.purchasedAssemblies??[]);
-    const metadata=bom.coverage==='resolved'?await enrichBomMetadata(db,read,snapshot.data.id,bom.rows,true):{};
+    const metadata=bom.coverage==='resolved'?await enrichBomMetadata(db,read,snapshot.data.id,bom.rows,true,body.metadataObservation):{};
     return reply({snapshotId:snapshot.data.id,microversion:snapshot.data.microversion,...bom,...metadata});
    }
    if(body.action==='import-bom'){
     const bom=structuralBom(snapshot.data.evidence,selected.data.element_type,body.purchasedAssemblies??[]);
     if(bom.coverage!=='resolved'||!bom.rows.length)throw new CadError('BOM_INCOMPLETE','Resolve the assembly structure before importing a project parts list.',409);
     if(!/^[0-9a-f-]{36}$/i.test(body.projectId||''))throw new CadError('PROJECT_REQUIRED','Choose a project.');
-    const metadata=await enrichBomMetadata(db,read,snapshot.data.id,bom.rows,false);
+    const metadata=await enrichBomMetadata(db,read,snapshot.data.id,bom.rows,false,body.metadataObservation);
     if(metadata.metadataProgress.pending)throw new CadError('METADATA_PENDING','Wait for the part metadata check before saving this draft.',409);
-    const imported=await db.rpc('import_robot_build_bom',{p_actor:user.id,p_project:body.projectId,p_snapshot:snapshot.data.id,p_rows:metadata.rows});
+    const imported=await db.rpc('import_robot_build_bom_observation',{p_actor:user.id,p_project:body.projectId,p_snapshot:snapshot.data.id,p_rows:metadata.rows,p_observation:body.metadataObservation??'00000000-0000-0000-0000-000000000000'});
     if(imported.error)throw new CadError('BOM_IMPORT_FAILED','The project parts list could not be saved. Check project status and try again.',409);
     return reply({bomId:imported.data,projectId:body.projectId});
    }

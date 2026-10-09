@@ -6,6 +6,7 @@ import BuildStockActions from './BuildStockActions';
 import CadPartMetadata,{type CadMetadata} from './CadPartMetadata';
 import BuildDemandReview from './BuildDemandReview';
 import BuildRevisionComparison from './BuildRevisionComparison';
+import BuildSourceFreshness from './BuildSourceFreshness';
 import {readBuildPages} from '../lib/robotBuildWorkspace';
 type Bom={id:string;name:string;snapshot_id:string|null;owner_id:string;revision:number;shared_at:string|null;created_at:string};
 type Line={id:string;bom_id:string;name:string;design_quantity:number;required_quantity:number;disposition:string;inventory_id:string|null;job_id:string|null;review_note:string;revision:number;source_identity?:{kind?:string;provenance?:string;metadata?:CadMetadata}};
@@ -25,6 +26,7 @@ export default function ProjectBom({projectId,canManage,canStock,canBuy,jobs,onC
  useEffect(()=>{setBoms([]);setLines([]);setSelectedLine(null);void load();return()=>{generation.current++;};},[projectId]);
  return <section aria-label={pick('Project parts review','סקירת חלקי הפרויקט')}><h3>{pick('Parts to make, buy or reuse','חלקים לייצור, לרכש או לשימוש חוזר')}</h3><p role="status">{loading?pick('Loading parts…','טוען חלקים…'):message}</p>
  {canManage&&<ManualRequirement projectId={projectId} saved={load}/>}
+ {!loading&&<BuildSourceFreshness key={projectId} boms={boms}/>}
  {!loading&&<BuildRevisionComparison key={projectId} boms={boms} lines={lines} onSelect={async id=>{if(await confirmDiscard()){setSearch('');setLimit(50);setSelectedLine(id);requestAnimationFrame(()=>document.getElementById(`build-part-${id}`)?.scrollIntoView({behavior:'smooth',block:'center'}));}}}/>}
  {!!lines.length&&<label>{pick('Find a part','חיפוש חלק')}<input type="search" value={search} onChange={async e=>{const value=e.target.value;if(await confirmDiscard()){setSearch(value);setLimit(50);}}}/></label>}
  {!loading&&!boms.length&&!message&&<p>{pick('Import an assembly draft from CAD Mentor → Assembly parts. Existing tasks can be used independently.','יבאו טיוטת הרכבה ממנטור CAD ← חלקי ההרכבה. ניתן להשתמש במשימות הקיימות בנפרד.')} <a href="/engineering/cad">{pick('Open CAD Mentor','פתיחת מנטור CAD')}</a></p>}
