@@ -18,7 +18,7 @@ const designed=(await first('select create_tracked_configuration($1,$2,$3,$4,$5,
 const built=(await first('select create_tracked_configuration($1,$2,$3,$4,$5,$6,$7,$8,$9) id',[project,'Bracket batch','A','as_built','Four manufactured brackets',asset,designed,'Not applicable','Caliper calibration 001'])).id;
 async function configure(id,stage){
  await as(admin);
- await db.query('select configure_engineering_requirements($1,$2,$3,$4)',[id,other,[{requirement:'Dimensions',acceptance:'Matches controlled drawing',method:stage==='qc_accepted'?'test':'inspection'}],'Controlled build acceptance']);
+ await db.query('select configure_engineering_requirements($1,$2,$3,$4)',[id,other,[{requirement:'Dimensions',acceptance:'Matches controlled drawing',method:['qc_accepted','installed'].includes(stage)?'test':'inspection'}],'Controlled build acceptance']);
  await db.query('select configure_project_review_stage($1,$2,$3)',[id,stage,'Build lifecycle integration']);
 }
 async function submit(id,rev){
@@ -27,10 +27,10 @@ async function submit(id,rev){
  await db.query('select submit_engineering_review($1,$2,$3,$4,$5)',[id,rev,[{title:'Controlled evidence',revision:rev,url:'https://example.com/immutable/'+rev,artifact_type:'drawing',source_id:'fixture-'+id+'-'+rev}],current,'Inspect exact revision']);
  return (await first('select project_review_context($1) data',[id])).data[0].submission;
 }
-async function approve(id,s){
+async function approve(id,s,physicalConfiguration=null){
  await as(other);
  await db.query('select check_engineering_artifact($1,$2,$3,$4)',[s.id,0,'verified','Matched controlled evidence']);
- await db.query('select record_structured_requirement_result($1,$2,$3,$4,$5,$6,$7,$8)',[s.id,s.requirements[0].id,'passed',0,'Dimensions inspected',id===work?built:null,null,id===work?{value:10,unit:'mm',samples:4,instrument:'Caliper 001',calibration:'Calibration 001',conditions:'Workshop bench',asset:'BUILD-001'}:null]);
+ await db.query('select record_structured_requirement_result($1,$2,$3,$4,$5,$6,$7,$8)',[s.id,s.requirements[0].id,'passed',0,'Dimensions inspected',physicalConfiguration??(id===work?built:null),null,(id===work||physicalConfiguration)?{value:10,unit:'mm',samples:4,instrument:'Caliper 001',calibration:'Calibration 001',conditions:'Workshop bench',asset:'BUILD-001'}:null]);
  await db.query('select decide_engineering_review($1,$2,$3,$4)',[id,s.id,'approved','Independent inspection complete']);
 }
 await configure(release,'released_for_manufacturing');
@@ -46,7 +46,27 @@ const inspected=await submit(work,'A');
 await assert.rejects(db.query('select record_robot_build_progress($1,3,3,$2,$3)',[job,'One needs correction','10000000-0000-0000-0000-000000000003']),/Reopen/);
 await approve(work,inspected);
 assert.equal((await first('select status from project_tasks where id=$1',[work])).status,'done');
+await db.exec('reset role');
+await db.exec(`create role service_role;
+create table frc_parts_inventory(id uuid primary key default gen_random_uuid(),name text,unit text default 'pcs',quantity numeric default 0,archived boolean default false,updated_at timestamptz);
+create table frc_stock_movements(id uuid primary key default gen_random_uuid(),part_id uuid,quantity_delta numeric,reason text,note text,member_id uuid);
+create table fundraising_jobs(id uuid primary key default gen_random_uuid(),status text,snapshot jsonb,quantity integer);
+create table frc_purchase_requests(id uuid primary key default gen_random_uuid(),part_id uuid,item_name text,quantity numeric,reason text,requested_by uuid,status text default 'requested',source_purchase_id uuid,approved_quantity numeric,deferred_quantity numeric default 0);
+grant select on frc_parts_inventory to authenticated;`);
+for(const migration of ['cad_onshape_connection_20261004.sql','robot_build_bom_20261009.sql','robot_build_stock_20261009.sql','robot_build_manual_20261009.sql','robot_build_reconciliation_20261009.sql','robot_build_manufacturing_20261009.sql','robot_build_installation_20261009.sql'])await db.exec(fs.readFileSync(new URL('../../../backend/supabase/'+migration,import.meta.url),'utf8'));
+const output=(await first("insert into frc_parts_inventory(name)values('Bracket A')returning id")).id;
+const installationTask=await task('Install inspected bracket batch');
+await configure(installationTask,'installed');
+await as(admin);
+const batch=(await first('select receive_robot_build_batch($1,$2,$3,$4) id',[job,output,'Batch A shelf 1','10000000-0000-0000-0000-000000000004'])).id;
+const kit=(await first('select create_robot_build_kit($1,$2,$3) id',[installationTask,'Install bracket kit','10000000-0000-0000-0000-000000000005'])).id;
+await db.query('select move_robot_build_kit($1,$2,$3,4,0,$4,$5)',[kit,batch,'issue','Assembly station','10000000-0000-0000-0000-000000000006']);
+const installed=(await first('select create_tracked_configuration($1,$2,$3,$4,$5,$6,$7,$8,$9) id',[project,'Installed brackets','I1','as_installed','Four installed brackets',asset,built,'Not applicable','Caliper calibration 001'])).id;
+const installationEvidence=await submit(installationTask,'I1');await approve(installationTask,installationEvidence,installed);
+await as(admin);await db.query('select install_robot_build_kit($1,$2,$3,$4)',[kit,installed,'Independent physical installation inspection','10000000-0000-0000-0000-000000000007']);
+assert.equal((await first('select configuration_id from robot_build_kits where id=$1',[kit])).configuration_id,installed);
+assert.equal(Number((await first('select quantity from frc_parts_inventory where id=$1',[output])).quantity),0);
 await submit(release,'B');
 await assert.rejects(db.query("update project_tasks set status='done' where id=$1",[work]),/release|review/i);
-console.log('PASS actual engineering gates: release → manufacturing progress → independent QC → completion; changed release invalidates completion');
+console.log('PASS actual engineering gates: release → manufacturing → physical QC → accepted stock → kit → exact physical installation; changed release invalidates completion');
 await db.close();

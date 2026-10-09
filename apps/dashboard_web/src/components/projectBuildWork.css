@@ -10,4 +10,9 @@
 .project-build-work input,.project-build-work textarea,.project-build-work select{width:100%;box-sizing:border-box;min-width:0}
 .build-instructions{white-space:pre-wrap;overflow-wrap:anywhere}
 .project-build-work summary{cursor:pointer;padding-block:.6rem}
+.build-work-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.5rem;margin-block:1rem}
+.build-work-tabs button{min-height:44px;text-wrap:balance;border:1px solid #ded6df;border-radius:.6rem;padding:.75rem;background:#fff;color:#34283b}
+.build-work-tabs button[aria-pressed=true]{background:#92006b;color:white;border-color:#92006b}
+.project-build-work p,.project-build-work li,.project-build-work strong{overflow-wrap:anywhere}
+@media(max-width:600px){.build-work-tabs{grid-template-columns:1fr}.build-work-tabs button{text-align:start}.build-work-content{padding-inline:0}}
 .project-build-work :is(button,input,textarea,select,summary,a):focus-visible{outline:3px solid #aa0078;outline-offset:3px}

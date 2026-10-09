@@ -40,6 +40,11 @@ jobs:
           node scripts/test-robot-build-stock.mjs
           node scripts/test-robot-build-integration.mjs
           node scripts/test-robot-build-manual.mjs
+          node scripts/test-robot-build-reconciliation.mjs
+          node scripts/test-robot-build-manufacturing.mjs
+          node scripts/test-robot-build-installation.mjs
+          node scripts/test-robot-build-operations.mjs
+          node scripts/test-robot-build-purchase-reuse.mjs
           node scripts/test-browser-attendance.mjs
           node scripts/verify-mobile-notification-stability.mjs
       # Exercise the current permission-controlled catalogue, not obsolete token/URL strings.

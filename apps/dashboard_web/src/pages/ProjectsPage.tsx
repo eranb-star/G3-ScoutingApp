@@ -123,7 +123,7 @@ export default function ProjectsPage() {
     setDeletingTask(true);
     try {
       const {error}=await supabase.rpc("admin_delete_project_task",{p_task:task.id});
-      if(error){setMessage(error.message);return;}
+      if(error){setMessage(error.code==='23503'?pick('This task has linked build or engineering history. Archive it instead to preserve the manufacturing and stock records.','למשימה יש היסטוריית בנייה או הנדסה מקושרת. העבירו אותה לארכיון כדי לשמור את רשומות הייצור והמלאי.'):error.message);return;}
       setDeleteOffer(null);
       setMessage(pick("Task permanently deleted.","המשימה נמחקה לצמיתות."));
       notifyProjectChange();await load();
