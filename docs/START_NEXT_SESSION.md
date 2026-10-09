@@ -1,3 +1,6 @@
+# Latest continuation: subsystem scope and WIP adoption
+Nineteen additive migrations are undeployed. Read ROBOT_BUILD_IMPLEMENTATION_20261009.md. SQL tests, TypeScript and synthetic readiness UI pass; production is unchanged. Continue the full authorized scope and release gates, not another partial final.
+
 # Latest continuation: source freshness and metadata observations
 Read the first section of ROBOT_BUILD_IMPLEMENTATION_20261009.md. Seventeen additions remain undeployed. Source checks and independent metadata observation candidates pass SQL/module tests and combined rehearsal. Continue the full authorized master scope and production acceptance; do not stop at another partial checkpoint.
 

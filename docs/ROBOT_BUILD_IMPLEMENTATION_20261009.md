@@ -1,6 +1,13 @@
 # Robot Build implementation checkpoint — 9 October 2026
 
-Status: development in progress. Frontend and seventeen additive SQL migrations are local, not a production release or completion of P0–P6. Follow ROBOT_BUILD_PREDEVELOPMENT_MASTER_20261009.md for the complete scope. The user has authorized end-to-end execution; do not ask for another phase-selection approval.
+Status: development in progress. Frontend and nineteen additive SQL migrations are local, not a production release or completion of P0–P6. Follow ROBOT_BUILD_PREDEVELOPMENT_MASTER_20261009.md for the complete scope. The user has authorized end-to-end execution; do not ask for another phase-selection approval.
+
+## Subsystem scope and initial workshop work
+
+- Subsystem definitions group existing project tasks, including shared tasks without double-counted aggregate readiness. Overview separates completed recorded work, current manufacturing releases and physical verification; missing verification coverage is explicit. Scope edits have server authority checks, expected revision, idempotency and an append-only audit. No task or approval is recreated.
+- Initial WIP adoption is leader-only and allowed once before any job reporting/inspection. It requires the current manufacturing release and records observed quantity/date/location/history gaps. It does not create accepted stock, material withdrawals, expenses, progress contributions or qualifications. Existing QC is still required. Historical baseline is displayed in the job.
+- Actual SQL tests pass for both additions, including altered retries, stale edits, wrong tasks, permission denial and absence of stock/progress side effects. TypeScript passed. Browser synthetic acceptance shows a held intake release as 0/1 and absent physical checks as 0/0 with an explicit missing-coverage message. The source result is visible on background tabs without unnecessary provider calls.
+- These additions remain undeployed. Nineteen migrations now follow the original nine baseline migrations. Continue the outstanding master-plan requirements and release gates.
 
 ## Source freshness and independent property observations
 
