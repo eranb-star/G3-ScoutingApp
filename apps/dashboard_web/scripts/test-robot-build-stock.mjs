@@ -45,4 +45,5 @@ await db.query('select request_robot_build_purchase($1,3,$2)',[line,req(8)]);
 assert.equal((await first('select quantity from frc_parts_inventory where id=$1',[inv])).quantity,'0');
 assert.equal((await first('select count(*)::int n from frc_stock_movements')).n,2);
 console.log('PASS shared stock: reservation floor, print overbooking denial, issue/return ledger, retry, correction protection, linked purchase deduplication');
-await db.close();
+export {db,manager,bom,line,inv};
+if(process.env.G3_BUILD_LIFECYCLE_FIXTURE!=='1')await db.close();

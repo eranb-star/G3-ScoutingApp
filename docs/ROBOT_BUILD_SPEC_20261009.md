@@ -71,7 +71,7 @@ Migration order after existing production prerequisites: `robot_build_jobs_20261
 
 Validation: structural cases, actual connector handler authorization, jobs/BOM/stock SQL suites, TypeScript and Vite production build passed. New `test-robot-build-integration.mjs` loads the existing engineering migration/test chain and verifies actual release approval, partial/full reporting, physical configuration-backed QC, automatic task completion and changed-release denial. Stock tests cover retry/stale writes, printing conflict, issue/return conservation, partial purchase/remainder coverage and identity protection. All new tests added to CI; remote CI not yet run. Existing large-bundle warnings remain. Synthetic EN/HE browser review passed; Hebrew DOM width and scroll width both 304px. Screenshot: `staging/robot-build-mobile-he-20261009.png`. This is isolated UI evidence, not live provider or production acceptance.
 
-### Remaining required scope — not complete / do not deploy as the full workflow
+### Previous remaining scope — superseded by lifecycle implementation below
 
 1. Cross-root overlap reconciliation and superseded BOM change impact. Separate imported lists are currently not summed automatically, but that alone does not prevent duplicate work across sources. Add reviewed scope and demand identity before calling this a complete BOM system.
 2. Initial reconciliation of existing stock, purchased, built and installed quantities without fabricating history. Manual non-CAD piece-counted requirements are now implemented; measurable raw-material requirements are still pending.
@@ -81,3 +81,21 @@ Validation: structural cases, actual connector handler authorization, jobs/BOM/s
 6. Real Onshape BOM comparison, combined inventory/purchasing/finance production-schema acceptance, cancellation/receipt/revision scenarios, broader phone/browser and APK regression acceptance, additive deployment with green CI and documented live verification.
 
 The user has already authorized this remaining development. Do not ask whether to continue, call the whole feature complete, or repeat these implemented increments as new proposals.
+
+### Integrated lifecycle implementation — 9 October, release acceptance underway
+
+Implemented after the historical list above:
+- Demand overlap review detects logical parts across revisions and parent/child assembly sources. Explicit independent/additional/covered decisions block execution until current. Covered demand cannot be restored silently or have its covering requirement reduced. Existing work/history remains immutable; automatic geometric equivalence is not inferred.
+- Verified existing stock enters accepted batches through an existing physical QC task without increasing inventory. Existing open purchase requests can be adopted without a duplicate order (original requests without partial-order children; previously received stock follows stock reconciliation).
+- Optional editable operation templates (cutting, printing, assembly), per-step partial counts, immutable work events and final quantity gating. Scrap reduces finished/operation counts; replacement work repeats its operations. Released instructions and existing supervision/review requirements remain authoritative.
+- Raw materials are planned in the inventory unit, with audited plan changes and actual consumption/return through the stock ledger. Plans do not reserve raw materials. Both active printing and build allocations protect availability. Finished stock is received once, only after the existing physical QC and exact released revision pass.
+- Accepted batches enter installation kits through atomic issue/return. Installation requires an existing passed installation review referencing the exact as-installed configuration. Replacements preserve the old kit and require an open robot-verification task; removed pieces are not automatically returned to usable stock.
+- Project workflow separates Parts & sourcing, Manufacture & inspect, Assemble & install. Existing task/review links remain the entry to assignment, evidence, blockers and approvals. History-protected deletion has an actionable archive message. BOM reads paginate independently of viewer limits.
+
+Migration order: jobs, bom, stock, manual, reconciliation, manufacturing, installation, operations, purchase_reuse (all `robot_build_<name>_20261009.sql`). Nine additive migrations; do not omit the final operations/purchase reuse files. No role-permission defaults, CAD geometry visibility, finance approvals or AI disclosures change. Imported CAD metadata is private until its owner explicitly shares it with its existing project.
+
+Validation so far: full SQL fixture lifecycle and actual existing engineering release → manufacturing → physical QC → stock → kit → exact installation chain pass. Tests cover retries, stale writes, protected stock, scrap, existing-stock conservation, replacement retest requirement and existing-purchase adoption. TypeScript and Vite pass; existing bundle-size warnings remain. Production schema preflight of all nine migrations passed inside a rollback-only transaction. EN/HE synthetic browser flow checked at phone width (client/scroll both 375px); proof `staging/robot-build-lifecycle-he-20261009.png`. These are not claims of live operational acceptance or physical robot verification.
+
+Remaining release checks: apply migrations, deploy connector/frontend, green remote CI, real Onshape structural comparison and authenticated production entry checks. APK is still 2.3.1/code26 and has not been rebuilt or device-tested for Robot Build.
+
+Operational boundaries: whole-job final QC is required before an output batch; split independent inspection lots into separate existing tasks/jobs. Parent/child scope warnings are conservative and require a leader decision. Purchased components need physical QC before becoming installation batches. Machine scheduling, native Onshape editing, inferred CAD geometry equivalence and automatic robot certification are not provided. Existing issue/dependency/review/configuration systems remain authoritative rather than being replaced by new approval engines.

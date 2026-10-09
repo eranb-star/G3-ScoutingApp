@@ -5,12 +5,16 @@ import {useMemberAuth} from '../lib/memberAuth';
 import {notifyProjectChange} from '../lib/projectRefresh';
 import './projectBuildWork.css';
 import ProjectBom from './ProjectBom';
+import BuildManufacturing from './BuildManufacturing';
+import BuildKits from './BuildKits';
+import BuildOperations from './BuildOperations';
 type Task={id:string;title:string;status:string;assignee_id:string|null};
-type Job={id:string;task_id:string;part_name:string;part_revision:string;instructions:string;required_quantity:number;completed_quantity:number;revision:number};
+type Job={id:string;task_id:string;part_name:string;part_revision:string;instructions:string;required_quantity:number;completed_quantity:number;revision:number;operations?:{id:number;title:string;completed:number}[]};
 type Release={task_id:string;current_submission:string;revision:string};
 export default function ProjectBuildWork({projectId,tasks,canManage,canStock,canBuy,focusedTask,initiallyOpen=false}:{projectId:string;tasks:Task[];canManage:boolean;canStock:boolean;canBuy:boolean;focusedTask?:string|null;initiallyOpen?:boolean}){
  const {pick}=useLocalization(),{profile}=useMemberAuth();
  const [open,setOpen]=useState(false),[jobs,setJobs]=useState<Job[]>([]),[releases,setReleases]=useState<Release[]>([]),[qc,setQc]=useState<string[]>([]);
+ const [view,setView]=useState<'parts'|'work'|'assembly'>(initiallyOpen?'parts':'work');
  const [loaded,setLoaded]=useState(false),[busy,setBusy]=useState(false),[message,setMessage]=useState('');
  const [adding,setAdding]=useState(false),[task,setTask]=useState(''),[release,setRelease]=useState(''),[name,setName]=useState(''),[instructions,setInstructions]=useState(''),[quantity,setQuantity]=useState('1');
  async function load(){
@@ -34,10 +38,11 @@ export default function ProjectBuildWork({projectId,tasks,canManage,canStock,can
   <button type="button" aria-expanded={open} onClick={()=>{setOpen(!open);if(!open)void load();}}>{pick('Robot build · manufacturing work','בניית הרובוט · עבודות ייצור')}</button>
   {open&&<div className="build-work-content">
    <p>{pick('Work stays linked to existing tasks and engineering checkpoints. Reported quantities are not accepted stock.','העבודה מקושרת למשימות ולנקודות הביקורת הקיימות. כמות שדווחה אינה מלאי שאושר.')}</p>
-   <div className="build-work-actions"><button type="button" disabled={busy} onClick={()=>void load()}>{pick('Refresh','רענון')}</button>{canManage&&loaded&&<button type="button" onClick={()=>setAdding(!adding)}>{pick('Attach manufacturing work','קישור עבודת ייצור')}</button>}</div>
+   <nav className="build-work-tabs" aria-label={pick('Build workflow','תהליך הבנייה')}>{(['parts','work','assembly'] as const).map(v=><button type="button" key={v} aria-pressed={view===v} onClick={()=>setView(v)}>{v==='parts'?pick('1 · Parts & sourcing','1 · חלקים ומקורות'):v==='work'?pick('2 · Manufacture & inspect','2 · ייצור ובדיקה'):pick('3 · Assemble & install','3 · הרכבה והתקנה')}</button>)}</nav>
+   <div className="build-work-actions"><button type="button" disabled={busy} onClick={()=>void load()}>{pick('Refresh','רענון')}</button>{canManage&&loaded&&view==='work'&&<button type="button" onClick={()=>setAdding(!adding)}>{pick('Attach manufacturing work','קישור עבודת ייצור')}</button>}</div>
    <p role="status">{message||(!loaded?pick('Loading…','טוען…'):'')}</p>
-   {loaded&&<details open={initiallyOpen}><summary>{pick('Project parts & sourcing','חלקי הפרויקט ומקורות')}</summary><ProjectBom projectId={projectId} canManage={canManage} canStock={canStock} canBuy={canBuy} jobs={jobs} onChanged={load}/></details>}
-   {loaded&&adding&&canManage&&<form onSubmit={async e=>{e.preventDefault();if(busy||!chosen)return;setBusy(true);try{
+   {loaded&&view==='parts'&&<ProjectBom projectId={projectId} canManage={canManage} canStock={canStock} canBuy={canBuy} jobs={jobs} onChanged={load}/>}
+   {loaded&&view==='work'&&adding&&canManage&&<form onSubmit={async e=>{e.preventDefault();if(busy||!chosen)return;setBusy(true);try{
     const r=await supabase.rpc('create_robot_build_job',{p_task:task,p_release_task:release,p_submission:chosen.current_submission,p_name:name,p_revision:chosen.revision,p_instructions:instructions,p_quantity:Number(quantity)});
     if(r.error)throw Error(r.error.message);setAdding(false);await load();setMessage(pick('Manufacturing work linked to the task.','עבודת הייצור קושרה למשימה.'));notifyProjectChange();
    }catch(e){setMessage(e instanceof Error?e.message:pick('Save was not confirmed. Refresh before retrying.','השמירה לא אושרה. רעננו לפני ניסיון נוסף.'));}finally{setBusy(false);}}}>
@@ -50,8 +55,9 @@ export default function ProjectBuildWork({projectId,tasks,canManage,canStock,can
     <label>{pick('Instructions for this revision','הוראות לגרסה זו')}<textarea required minLength={3} maxLength={8000} value={instructions} onChange={e=>setInstructions(e.target.value)}/></label>
     <button disabled={!chosen||!task}>{pick('Link work','קישור העבודה')}</button>
     </fieldset></form>}
-   {loaded&&!jobs.length&&<p>{pick('No manufacturing jobs linked to this project yet.','עדיין לא קושרו עבודות ייצור לפרויקט זה.')}</p>}
-   {loaded&&jobs.map(job=><BuildProgress key={`${job.id}/${job.revision}`} job={job} task={tasks.find(t=>t.id===job.task_id)} projectId={projectId} editable={canManage||tasks.find(t=>t.id===job.task_id)?.assignee_id===profile?.id} onSaved={async()=>{await load();setMessage(pick('Progress saved. Reported quantities still require inspection.','ההתקדמות נשמרה. הכמויות שדווחו עדיין דורשות בדיקה.'));}}/>)}
+   {loaded&&view==='work'&&!jobs.length&&<p>{pick('No manufacturing jobs linked to this project yet.','עדיין לא קושרו עבודות ייצור לפרויקט זה.')}</p>}
+   {loaded&&view==='assembly'&&<BuildKits projectId={projectId} tasks={tasks} canManage={canManage} canStock={canStock}/>}
+   {loaded&&view==='work'&&jobs.map(job=><div key={`${job.id}/${job.revision}`}><BuildProgress job={job} task={tasks.find(t=>t.id===job.task_id)} projectId={projectId} editable={canManage||tasks.find(t=>t.id===job.task_id)?.assignee_id===profile?.id} onSaved={async()=>{await load();setMessage(pick('Progress saved. Reported quantities still require inspection.','ההתקדמות נשמרה. הכמויות שדווחו עדיין דורשות בדיקה.'));}}/><BuildOperations job={job} canManage={canManage} editable={tasks.find(t=>t.id===job.task_id)?.status!=='done'&&(canManage||tasks.find(t=>t.id===job.task_id)?.assignee_id===profile?.id)} saved={load}/><BuildManufacturing job={job} canManage={canManage} canStock={canStock} editable={canManage||tasks.find(t=>t.id===job.task_id)?.assignee_id===profile?.id} done={tasks.find(t=>t.id===job.task_id)?.status==='done'} saved={load}/></div>)}
   </div>}
  </section>;
 }

@@ -1,0 +1,14 @@
+import fs from 'node:fs';import assert from 'node:assert/strict';
+process.env.G3_BUILD_MATERIAL_FIXTURE='1';
+const {db,manager,bom,inv}=await import('./test-robot-build-reconciliation.mjs');
+await db.exec('reset role');await db.exec('create or replace function is_admin() returns boolean language sql stable as $$select false$$');
+const sql=fs.readFileSync(new URL('../../../backend/supabase/robot_build_purchase_reuse_20261009.sql',import.meta.url),'utf8');await db.exec(sql);await db.exec(sql);
+const first=async(q,a=[])=>(await db.query(q,a)).rows[0];
+const line=(await first("insert into robot_build_bom_lines(bom_id,source_key,source_identity,occurrence_paths,name,design_quantity,required_quantity,disposition,inventory_id,scope_decision)values($1,'existing-order','{}','[]','Existing order',5,5,'buy',$2,'independent')returning id",[bom,inv])).id;
+const purchase=(await first("insert into frc_purchase_requests(part_id,item_name,quantity,requested_by) values($1,'Bearing',5,$2)returning id",[inv,manager])).id;
+const request='60000000-0000-0000-0000-000000000001';
+await db.exec(`set role authenticated;set test.uid='${manager}'`);
+await db.query('select link_robot_build_purchase($1,$2,$3)',[line,purchase,request]);await db.query('select link_robot_build_purchase($1,$2,$3)',[line,purchase,request]);
+assert.equal((await first('select count(*)::int n from robot_build_purchases where line_id=$1',[line])).n,1);
+await assert.rejects(db.query('select request_robot_build_purchase($1,1,$2)',[line,'60000000-0000-0000-0000-000000000002']),/uncovered/);
+console.log('PASS existing purchase adoption, retry and duplicate-demand protection');await db.close();
