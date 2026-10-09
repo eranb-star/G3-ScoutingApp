@@ -1,4 +1,11 @@
-# CAD revision comparison — latest local continuation
+# Integrated build continuation — latest state
+Read the first section of ROBOT_BUILD_IMPLEMENTATION_20261009.md. Fourteen additive migrations remain undeployed. Shared equipment uses existing workshop tools/certifications, pack purchasing retains pieces in finance, ordered operations and approved existing-hardware adoption pass local tests. Continue remaining master requirements and deployment; no end-to-end production completion claim is valid.
+
+# Build/maintenance physical handoff — preceding continuation
+Recovery cost decision: the user declined another paid Supabase project on 9 October. Creation was canceled and no new project exists. Continue with the existing recovery environment where feasible; the successful 20-file local restore does not prove current database recovery. Do not reintroduce the declined charge.
+Read ROBOT_BUILD_IMPLEMENTATION_20261009.md first. Ten new migrations remain local; maintenance must run after release holds. Physical component links, atomic linked faults and repair→exact post-repair retest→issue closure passed actual engineering-fixture acceptance. This is not full P5 or production completion. Continue the entire authorized master-plan scope without another phase-selection question.
+
+# CAD revision comparison — preceding local continuation
 Read ROBOT_BUILD_IMPLEMENTATION_20261009.md. Imported revision comparison and complete paginated parts lists are now implemented and locally verified, including navigation to existing work. Nine new migrations remain undeployed; no production completion or full P0–P6 completion is claimed. Preserve all remaining master-plan requirements and continue the authorized end-to-end scope.
 
 # Release holds and overview — local continuation

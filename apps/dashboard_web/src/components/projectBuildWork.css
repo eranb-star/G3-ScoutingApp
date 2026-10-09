@@ -24,4 +24,9 @@
 .build-change-list li{display:grid;gap:.5rem;padding-block:.75rem;border-bottom:1px solid #ded4df;overflow-wrap:anywhere}
 .build-change-list li>div{display:flex;flex-wrap:wrap;gap:.5rem}
 .build-change-list button{max-width:100%;white-space:normal;text-align:start}
+.build-maintenance-links{border-top:1px solid #ded4df;margin-block:1.5rem;padding-block:1rem}
+.build-maintenance-links fieldset{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.9rem;padding:1rem;border:1px solid #ded4df;border-radius:10px}
+.build-maintenance-links fieldset label:has(textarea){grid-column:1/-1}
+.build-maintenance-links fieldset button{justify-self:start;align-self:end;min-height:44px}
+@media(max-width:600px){.build-maintenance-links fieldset{grid-template-columns:1fr}}
 @media(max-width:600px){.build-comparison-selectors{grid-template-columns:1fr}}

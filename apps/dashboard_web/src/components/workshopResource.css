@@ -1,0 +1,8 @@
+.workshop-resource{border:1px solid var(--border-color,#ddd3df);border-radius:12px;padding:1rem;margin-block:1rem;min-width:0;background:var(--card-bg,#fff)}
+.workshop-resource-heading{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.workshop-resource fieldset{border:0;padding:0;margin-block:1rem;display:grid;grid-template-columns:repeat(2,minmax(0,1fr)) auto;gap:.75rem;align-items:end;min-width:0}
+.workshop-resource label{display:grid;gap:.35rem;min-width:0}
+.workshop-resource input,.workshop-resource select{width:100%;min-width:0;box-sizing:border-box;min-height:44px}
+.workshop-resource button,.workshop-resource summary{min-height:44px;cursor:pointer}
+.workshop-resource-help{font-size:.9rem;color:#625769;line-height:1.5}
+@media(max-width:720px){.workshop-resource fieldset{grid-template-columns:1fr}.workshop-resource-heading{align-items:flex-start}.workshop-resource button{white-space:normal}}

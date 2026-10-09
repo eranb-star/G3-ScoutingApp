@@ -9,15 +9,16 @@ type Job={id:string;task_id:string;release_task_id:string;release_submission_id:
 type Hold={task_id:string;reason:string};
 export default function BuildReadiness({projectId}:{projectId:string}){
  const {pick}=useLocalization(),generation=useRef(0);
- const [data,setData]=useState<{gates:Gate[];reviews:ReviewGate[];jobs:Job[];holds:Hold[];kits:{id:string;installed_at:string|null;retired_at:string|null}[]}|null>(null),[failed,setFailed]=useState(false);
+ const [data,setData]=useState<{gates:Gate[];reviews:ReviewGate[];jobs:Job[];holds:Hold[];issues:{id:string;title:string}[];kits:{id:string;installed_at:string|null;retired_at:string|null}[]}|null>(null),[failed,setFailed]=useState(false);
  async function load(){const token=++generation.current;setFailed(false);try{
-  const [gates,reviews,jobs,holds,kits]=await Promise.all([
+  const [gates,reviews,jobs,holds,kits,issues]=await Promise.all([
    readBuildPages<Gate>((a,z)=>supabase.from('project_review_gates').select('task_id,decision_type,current_submission,project_tasks!inner(project_id)').eq('project_tasks.project_id',projectId).eq('enabled',true).order('task_id').range(a,z)),
    supabase.rpc('project_review_context',{p_all:true}),
    readBuildPages<Job>((a,z)=>supabase.from('robot_build_jobs').select('id,task_id,release_task_id,release_submission_id,part_name,project_tasks!robot_build_jobs_task_id_fkey!inner(project_id)').eq('project_tasks.project_id',projectId).order('id').range(a,z)),
    readBuildPages<Hold>((a,z)=>supabase.from('robot_build_release_holds').select('task_id,reason,project_tasks!inner(project_id)').eq('project_tasks.project_id',projectId).eq('active',true).order('task_id').range(a,z)),
-   readBuildPages<{id:string;installed_at:string|null;retired_at:string|null}>((a,z)=>supabase.from('robot_build_kits').select('id,installed_at,retired_at,project_tasks!inner(project_id)').eq('project_tasks.project_id',projectId).order('id').range(a,z))]);
-  if(reviews.error||!Array.isArray(reviews.data))throw Error();if(token===generation.current)setData({gates,reviews:reviews.data.filter((r:ReviewGate)=>r.project_id===projectId),jobs,holds,kits});
+   readBuildPages<{id:string;installed_at:string|null;retired_at:string|null}>((a,z)=>supabase.from('robot_build_kits').select('id,installed_at,retired_at,project_tasks!inner(project_id)').eq('project_tasks.project_id',projectId).order('id').range(a,z)),
+   readBuildPages<{id:string;title:string}>((a,z)=>supabase.from('robot_issues').select('id,title').eq('project_id',projectId).eq('archived',false).neq('status','resolved').order('id').range(a,z))]);
+  if(reviews.error||!Array.isArray(reviews.data))throw Error();if(token===generation.current)setData({gates,reviews:reviews.data.filter((r:ReviewGate)=>r.project_id===projectId),jobs,holds,kits,issues});
  }catch{if(token===generation.current)setFailed(true);}}
  useEffect(()=>{setData(null);void load();return()=>{generation.current++;};},[projectId]);
  if(failed)return <p role="alert">{pick('Build status could not be verified.','לא ניתן לאמת את מצב הבנייה.')} <button onClick={()=>void load()}>{pick('Retry','ניסיון חוזר')}</button></p>;
@@ -29,6 +30,7 @@ export default function BuildReadiness({projectId}:{projectId:string}){
  const checks=data.gates.filter(g=>['verified_on_robot','competition_ready'].includes(g.decision_type));
  return <section className="build-readiness"><h2>{pick('What needs attention','מה דורש תשומת לב')}</h2><dl><div><dt>{pick('Current manufacturing releases','שחרורי ייצור עדכניים')}</dt><dd><bdi dir="ltr">{releases.length} / {releaseGates.length}</bdi></dd></div><div><dt>{pick('Jobs needing release review','עבודות הדורשות בדיקת שחרור')}</dt><dd>{blocked.length}</dd></div><div><dt>{pick('Recorded installations · not retired','התקנות שנרשמו · לא הוחלפו')}</dt><dd>{data.kits.filter(k=>k.installed_at&&!k.retired_at).length}</dd></div><div><dt>{pick('Current robot verification checkpoints','נקודות אימות רובוט עדכניות')}</dt><dd><bdi dir="ltr">{checks.filter(g=>verified(g.task_id)).length} / {checks.length}</bdi></dd></div></dl>
  {!checks.length&&<p>{pick('No robot verification checkpoints are configured. Installation alone does not establish robot readiness.','לא הוגדרו נקודות אימות לרובוט. התקנה לבדה אינה מוכיחה מוכנות.')}</p>}
+ {!!data.issues.length&&<div role="status"><strong>{pick('Open robot issues still need attention','תקלות רובוט פתוחות עדיין דורשות טיפול')}: {data.issues.length}</strong><p>{pick('Approved checkpoints do not clear these open faults.','נקודות ביקורת מאושרות אינן סוגרות תקלות פתוחות אלה.')}</p><ul>{data.issues.slice(0,8).map(i=><li key={i.id}><Link to={`/robot-issues?issue=${i.id}`}>{i.title}</Link></li>)}</ul>{data.issues.length>8&&<Link to="/robot-issues">{pick('Open issue board','פתיחת לוח התקלות')}</Link>}</div>}
  {!!data.holds.length&&<ul>{data.holds.map(h=><li key={h.task_id}><strong>{pick('Release on hold','השחרור נעצר')}: </strong>{h.reason} <Link to={`/robot-build?project=${projectId}&view=work&queue=team&task=${h.task_id}`}>{pick('Review hold','בדיקת העצירה')}</Link></li>)}</ul>}
  {!!blocked.length&&<ul>{blocked.slice(0,8).map(j=><li key={j.id}><Link to={`/robot-build?project=${projectId}&view=work&queue=team&task=${j.task_id}`}>{j.part_name} — {pick('review pinned release','בדיקת השחרור המקושר')}</Link></li>)}</ul>}
  {blocked.length>8&&<Link to={`/robot-build?project=${projectId}&view=work&queue=team`}>{pick('Open all workshop work','פתיחת כל עבודות הסדנה')}</Link>}
