@@ -118,7 +118,7 @@ Deno.serve(async request=>{
    return reply({sources:result.data});
   }
   const read=providerReader(await accessToken(db,row));
-  if(['geometry','workspace','requirements','finding','review','evidence','bom'].includes(body.action)){
+  if(['geometry','workspace','requirements','finding','review','evidence','bom','import-bom'].includes(body.action)){
    const selected=await db.from('cad_sources').select('*').eq('id',body.sourceId).eq('connection_id',row.id).is('archived_at',null).maybeSingle();
    if(selected.error||!selected.data)throw new CadError('SOURCE_UNAVAILABLE','Select one of your connected designs.',404);
    if(body.action==='requirements'){
@@ -139,7 +139,15 @@ Deno.serve(async request=>{
    }
    const snapshot=await db.from('cad_snapshots').select('*').eq('source_id',selected.data.id).eq('id',body.snapshotId).maybeSingle();
    if(snapshot.error||!snapshot.data)throw new CadError('SNAPSHOT_REQUIRED','Import the design revision first.',409);
-   if(body.action==='bom')return reply({snapshotId:snapshot.data.id,microversion:snapshot.data.microversion,...structuralBom(snapshot.data.evidence,selected.data.element_type)});
+   if(body.action==='bom')return reply({snapshotId:snapshot.data.id,microversion:snapshot.data.microversion,...structuralBom(snapshot.data.evidence,selected.data.element_type,body.purchasedAssemblies??[])});
+   if(body.action==='import-bom'){
+    const bom=structuralBom(snapshot.data.evidence,selected.data.element_type,body.purchasedAssemblies??[]);
+    if(bom.coverage!=='resolved'||!bom.rows.length)throw new CadError('BOM_INCOMPLETE','Resolve the assembly structure before importing a project parts list.',409);
+    if(!/^[0-9a-f-]{36}$/i.test(body.projectId||''))throw new CadError('PROJECT_REQUIRED','Choose a project.');
+    const imported=await db.rpc('import_robot_build_bom',{p_actor:user.id,p_project:body.projectId,p_snapshot:snapshot.data.id,p_rows:bom.rows});
+    if(imported.error)throw new CadError('BOM_IMPORT_FAILED','The project parts list could not be saved. Check project status and try again.',409);
+    return reply({bomId:imported.data,projectId:body.projectId});
+   }
    if(body.action==='evidence')return reply(designEvidence(selected.data,snapshot.data));
    if(body.action==='review')return reply(await reviewDesign(db,caller,user.id,selected.data,snapshot.data,body,env('GEMINI_API_KEY')));
    if(body.action==='finding'){
