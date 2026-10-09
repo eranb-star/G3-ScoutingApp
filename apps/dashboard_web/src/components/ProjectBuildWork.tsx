@@ -6,6 +6,7 @@ import {notifyProjectChange} from '../lib/projectRefresh';
 import './projectBuildWork.css';
 import ProjectBom from './ProjectBom';
 import BuildManufacturing from './BuildManufacturing';
+import BuildInspectionLots from './BuildInspectionLots';
 import BuildKits from './BuildKits';
 import BuildOperations from './BuildOperations';
 import {readBuildPages} from '../lib/robotBuildWorkspace';
@@ -72,7 +73,7 @@ export default function ProjectBuildWork({projectId,tasks,canManage,canStock,can
     </fieldset></form>}
    {loaded&&view==='work'&&!jobs.length&&<p>{pick('No manufacturing jobs linked to this project yet.','עדיין לא קושרו עבודות ייצור לפרויקט זה.')}</p>}
    {loaded&&view==='assembly'&&<BuildKits projectId={projectId} tasks={tasks} canManage={canManage} canStock={canStock}/>}
-   {loaded&&view==='work'&&jobs.filter(job=>!workspaceView||job.task_id===focusedTask).map(job=><div key={`${job.id}/${job.revision}`}><BuildProgress expanded={!!workspaceView} job={job} task={tasks.find(t=>t.id===job.task_id)} projectId={projectId} editable={canManage||tasks.find(t=>t.id===job.task_id)?.assignee_id===profile?.id} onSaved={async()=>{await load();setMessage(pick('Progress saved. Reported quantities still require inspection.','ההתקדמות נשמרה. הכמויות שדווחו עדיין דורשות בדיקה.'));}}/><BuildOperations job={job} canManage={canManage} editable={tasks.find(t=>t.id===job.task_id)?.status!=='done'&&(canManage||tasks.find(t=>t.id===job.task_id)?.assignee_id===profile?.id)} saved={load}/><BuildManufacturing job={job} canManage={canManage} canStock={canStock} editable={canManage||tasks.find(t=>t.id===job.task_id)?.assignee_id===profile?.id} done={tasks.find(t=>t.id===job.task_id)?.status==='done'} saved={load}/></div>)}
+   {loaded&&view==='work'&&jobs.filter(job=>!workspaceView||job.task_id===focusedTask).map(job=><div key={`${job.id}/${job.revision}`}><BuildProgress expanded={!!workspaceView} job={job} task={tasks.find(t=>t.id===job.task_id)} projectId={projectId} editable={canManage||tasks.find(t=>t.id===job.task_id)?.assignee_id===profile?.id} onSaved={async()=>{await load();setMessage(pick('Progress saved. Reported quantities still require inspection.','ההתקדמות נשמרה. הכמויות שדווחו עדיין דורשות בדיקה.'));}}/><BuildOperations job={job} canManage={canManage} editable={tasks.find(t=>t.id===job.task_id)?.status!=='done'&&(canManage||tasks.find(t=>t.id===job.task_id)?.assignee_id===profile?.id)} saved={load}/><BuildInspectionLots job={job} workerId={tasks.find(t=>t.id===job.task_id)?.assignee_id??undefined} projectId={projectId} canManage={canManage} canStock={canStock} done={tasks.find(t=>t.id===job.task_id)?.status==='done'} saved={async()=>{await load();notifyProjectChange();}}/><BuildManufacturing job={job} canManage={canManage} canStock={canStock} editable={canManage||tasks.find(t=>t.id===job.task_id)?.assignee_id===profile?.id} done={tasks.find(t=>t.id===job.task_id)?.status==='done'} saved={load}/></div>)}
   </div>}
  </section>;
 }

@@ -1,3 +1,6 @@
+# Partial lot inspection continuation — local, not deployed
+Read the partial inspection section in ROBOT_BUILD_IMPLEMENTATION_20261009.md. Combined four-migration rehearsal and hold/split/partial-output integration passed. Preserve the unfinished programme; continue end to end without another phase-selection question.
+
 # Robot Build development in progress — 9 October
 Read [ROBOT_BUILD_IMPLEMENTATION_20261009.md](ROBOT_BUILD_IMPLEMENTATION_20261009.md) first, especially its latest continuation. Scope setup, guided release/work preparation, role queues and raw-material reservations are local; P0/P1/P3 remain incomplete and nothing from this increment is deployed. The native-confirm failure was replaced and Back → Stay/Discard passed isolated browser checks. Full auth/role/device navigation and all-form draft acceptance remain. The user authorized end-to-end execution; continue without another phase-selection question. Three new SQL migrations must precede the dependent client after combined rehearsal and recovery checks.
 

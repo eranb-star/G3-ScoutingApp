@@ -69,4 +69,5 @@ assert.equal(Number((await first('select quantity from frc_parts_inventory where
 await submit(release,'B');
 await assert.rejects(db.query("update project_tasks set status='done' where id=$1",[work]),/release|review/i);
 console.log('PASS actual engineering gates: release → manufacturing → physical QC → accepted stock → kit → exact physical installation; changed release invalidates completion');
-await db.close();
+export {db,admin,student,other,project,first,as,task,configure,submit,approve,built,output};
+if(process.env.G3_BUILD_LOT_FIXTURE!=='1')await db.close();
