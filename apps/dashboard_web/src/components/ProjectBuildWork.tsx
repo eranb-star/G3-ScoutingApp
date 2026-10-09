@@ -7,11 +7,12 @@ import './projectBuildWork.css';
 import ProjectBom from './ProjectBom';
 import BuildManufacturing from './BuildManufacturing';
 import BuildInspectionLots from './BuildInspectionLots';
+import BuildWorkFiles from './BuildWorkFiles';
 import BuildKits from './BuildKits';
 import BuildOperations from './BuildOperations';
 import {readBuildPages} from '../lib/robotBuildWorkspace';
 type Task={id:string;title:string;status:string;assignee_id:string|null};
-type Job={id:string;task_id:string;part_name:string;part_revision:string;instructions:string;required_quantity:number;completed_quantity:number;revision:number;operations?:{id:number;title:string;completed:number}[]};
+type Job={id:string;task_id:string;release_task_id:string;part_name:string;part_revision:string;instructions:string;required_quantity:number;completed_quantity:number;revision:number;operations?:{id:number;title:string;completed:number}[]};
 type Release={task_id:string;current_submission:string;revision:string};
 export default function ProjectBuildWork({projectId,tasks,canManage,canStock,canBuy,focusedTask,initiallyOpen=false,workspaceView,confirmDiscard=async()=>true}:{projectId:string;tasks:Task[];canManage:boolean;canStock:boolean;canBuy:boolean;focusedTask?:string|null;initiallyOpen?:boolean;workspaceView?:'parts'|'work'|'assembly';confirmDiscard?:()=>Promise<boolean>}){
  const {pick}=useLocalization(),{profile}=useMemberAuth();
@@ -73,7 +74,7 @@ export default function ProjectBuildWork({projectId,tasks,canManage,canStock,can
     </fieldset></form>}
    {loaded&&view==='work'&&!jobs.length&&<p>{pick('No manufacturing jobs linked to this project yet.','עדיין לא קושרו עבודות ייצור לפרויקט זה.')}</p>}
    {loaded&&view==='assembly'&&<BuildKits projectId={projectId} tasks={tasks} canManage={canManage} canStock={canStock}/>}
-   {loaded&&view==='work'&&jobs.filter(job=>!workspaceView||job.task_id===focusedTask).map(job=><div key={`${job.id}/${job.revision}`}><BuildProgress expanded={!!workspaceView} job={job} task={tasks.find(t=>t.id===job.task_id)} projectId={projectId} editable={canManage||tasks.find(t=>t.id===job.task_id)?.assignee_id===profile?.id} onSaved={async()=>{await load();setMessage(pick('Progress saved. Reported quantities still require inspection.','ההתקדמות נשמרה. הכמויות שדווחו עדיין דורשות בדיקה.'));}}/><BuildOperations job={job} canManage={canManage} editable={tasks.find(t=>t.id===job.task_id)?.status!=='done'&&(canManage||tasks.find(t=>t.id===job.task_id)?.assignee_id===profile?.id)} saved={load}/><BuildInspectionLots job={job} workerId={tasks.find(t=>t.id===job.task_id)?.assignee_id??undefined} projectId={projectId} canManage={canManage} canStock={canStock} done={tasks.find(t=>t.id===job.task_id)?.status==='done'} saved={async()=>{await load();notifyProjectChange();}}/><BuildManufacturing job={job} canManage={canManage} canStock={canStock} editable={canManage||tasks.find(t=>t.id===job.task_id)?.assignee_id===profile?.id} done={tasks.find(t=>t.id===job.task_id)?.status==='done'} saved={load}/></div>)}
+   {loaded&&view==='work'&&jobs.filter(job=>!workspaceView||job.task_id===focusedTask).map(job=><div key={`${job.id}/${job.revision}`}><BuildWorkFiles taskId={job.release_task_id}/><BuildProgress expanded={!!workspaceView} job={job} task={tasks.find(t=>t.id===job.task_id)} projectId={projectId} editable={canManage||tasks.find(t=>t.id===job.task_id)?.assignee_id===profile?.id} onSaved={async()=>{await load();setMessage(pick('Progress saved. Reported quantities still require inspection.','ההתקדמות נשמרה. הכמויות שדווחו עדיין דורשות בדיקה.'));}}/><BuildOperations job={job} canManage={canManage} editable={tasks.find(t=>t.id===job.task_id)?.status!=='done'&&(canManage||tasks.find(t=>t.id===job.task_id)?.assignee_id===profile?.id)} saved={load}/><BuildInspectionLots job={job} workerId={tasks.find(t=>t.id===job.task_id)?.assignee_id??undefined} projectId={projectId} canManage={canManage} canStock={canStock} done={tasks.find(t=>t.id===job.task_id)?.status==='done'} saved={async()=>{await load();notifyProjectChange();}}/><BuildManufacturing job={job} canManage={canManage} canStock={canStock} editable={canManage||tasks.find(t=>t.id===job.task_id)?.assignee_id===profile?.id} done={tasks.find(t=>t.id===job.task_id)?.status==='done'} saved={load}/></div>)}
   </div>}
  </section>;
 }

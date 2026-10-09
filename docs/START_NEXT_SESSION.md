@@ -1,3 +1,6 @@
+# Controlled work files — local continuation
+Read ROBOT_BUILD_IMPLEMENTATION_20261009.md first. Seven new migrations and two connector/function changes are local. File access, revision binding and browser evidence selection passed isolated verification. Full programme and production acceptance remain open; continue the authorized end-to-end work.
+
 # CAD metadata continuation — local, not deployed
 First read the CAD metadata and partial inspection continuation sections of ROBOT_BUILD_IMPLEMENTATION_20261009.md. Five new migrations plus connector/frontend await provider acceptance and remaining programme work. Do not treat builds or synthetic tests as full completion.
 

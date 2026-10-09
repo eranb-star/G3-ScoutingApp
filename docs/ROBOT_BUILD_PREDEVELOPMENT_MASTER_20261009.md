@@ -269,3 +269,6 @@ The initial design, two challenge passes, subsequent discoverability/direct-entr
 
 ### Partial-lot execution evidence — 9 October
 P3 partial QC is implemented and locally tested, including holds, conserved splits, independent child inspection, partial receipt/issue and replacement after scrap. Four new migrations passed a combined isolated rehearsal and rerun. P3 as a whole and production acceptance remain open. See implementation checkpoint for exact evidence and remaining gates.
+
+### Controlled files execution evidence — 9 October
+P2 manual uploaded-file path implemented with immutable manifests, server-calculated fingerprints, explicit worker scope and release-bound downloads. SQL/handler/synthetic UI acceptance is recorded in the implementation checkpoint. Automatic provider export/drawing association, production storage recovery and physical phone acceptance are not certified.
