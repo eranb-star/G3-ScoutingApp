@@ -1,23 +1,37 @@
-# Phase 2 implementation — release preparation
+# Phase 2 — 3D Robot Studio implementation and release
 
-User authorized end-to-end development after the final design review. This record is a working checkpoint, not a completion or deployment claim. Follow ROBOT_BUILD_PHASE2_3D_DESIGN_20261010.md; do not silently reduce its release scope.
+User authorized end-to-end implementation. The approved scope is ROBOT_BUILD_PHASE2_3D_DESIGN_20261010.md. This record separates deployed software, production acceptance and physical/device evidence.
 
-## Latest checkpoint — 11 October, release preparation
+## Latest checkpoint — 11 October 2026
 
-Implementation includes the compose/edit/compare/present and reviewed-build journeys. Production is still Phase 1 at this checkpoint; no Phase 2 migration has been committed on the server and no frontend has been promoted.
+Phase 2 is deployed on g3-6740.com. Initial production release 51f17ad (development 8bd8da8), Vercel 9oMCw9wqyQhM8sb5sQAytiPFSyDX, Ready at 00:57:23 GMT+3. Final release **f7472a3** (development **a405261**) is Ready Production on **g3-6740.com**, Vercel **5bYQjpVGWhLJFeNb6iFCdM1taiJa**, at **01:11:47 GMT+3, 11 October 2026**, including fullscreen/reload continuity refinements.
 
-- Completed local CAD task handoff through the existing project-task RPC, immutable source-version links, assignment/source-access checks and retry protection.
-- Added approved-candidate reconciliation for changed adopted parts using the existing independent change-review decision. Old quantities and executed records remain unchanged. Repeated mapping cannot exceed the selected requirement quantity.
-- Added independent viewer alternative selection, named joint/exploded/cutaway presentation steps, reusable saved assemblies, explicit selected-copy dimension edits, acknowledged findings that reopen on changes, paged design/history access, and per-account proposal drafts.
-- Phone editor now uses bottom drawers for parts and numeric editing. Local 390px iframe checks exercised part selection and changing a copied hopper side from 600 to 650 mm; this is browser layout evidence, not a Samsung-device performance test. Final Hebrew-language fixture check is still being completed.
-- All 72 scripts listed in required CI passed locally. TypeScript passed. Production Vite build passed (442 modules; Studio chunk ~130 KB / ~41 KB gzip; existing large-chunk warnings). Vite and software-workflow initially hit sandbox directory restrictions and passed when rerun outside that restriction. No check was disabled.
-- Combined five-migration production-schema rehearsal returned nine tables, all RLS enabled, and ended with ROLLBACK. The production schema remains unchanged.
-- CAD sharing tests include refusal to share a scene whose recipient lacks its private snapshot access. Follow-up and changed-adoption tests include retries, denied access and preservation of prior quantities.
-- Team instructions: [3D Robot Studio guide](ROBOT_STUDIO_TEAM_GUIDE_20261011.md).
+### Delivered journeys
+- Robot Build → 3D Robot Studio; independent private concepts need no existing robot project.
+- Real attributed chassis/components, exact connected Onshape snapshots, private GLB/STL imports, eight dimensioned stock families and editable hopper example.
+- Placement/rotation, numeric phone controls, hierarchy, mounting frames, alignment, source-component extraction, saved-assembly reuse, independent duplicates and alternatives.
+- Known-mass coverage, bounded approximate geometry screening, review notes, source update/replacement, immutable versions, comments, access-controlled sharing and editing leases.
+- Comparison, named presentation views, limited/coupled joint demonstrations, exploded views, cutaways and attributed image export.
+- Reviewed instance-to-build proposals, existing-requirement matching, optional assembly placement, duplicate protection, approved-candidate reconciliation and normal project CAD follow-up tasks with exact source-version links.
 
-Remaining release work: commit and reconcile release checkout, required remote CI, apply additive migrations, deploy frontend, and authenticated mixed-source/save-reopen/build-handoff acceptance. Physical dimensions, named-device performance and an uncoached student pilot must remain explicitly unverified until observed. The catalogue is an attributed starter set, not an exhaustive FRC product library; missing batteries/controllers use the explicit import workflow. No fabricated centre-of-mass value is provided without centroid evidence.
+### Verified evidence
+- All 72 required CI scripts passed locally, TypeScript and production Vite build passed. Remote implementation CI355/356 and correction CI358 passed. Fullscreen CI359/360 passed. Final release CI361 passed (1m59s).
+- Five additive migrations committed in production after a successful rollback rehearsal. Production returned nine Studio tables, all RLS enabled. Private CAD publication remains empty unless its owner explicitly grants it; no access was expanded for testing.
+- Real private acceptance design: `99331628-4881-4339-89e2-dd881e48eb9a`, named **Phase 2 acceptance · mixed-source robot concept**. Published 6328 Darwin drivebase, four generated hopper panels and G3 `rake · Assembly 1` imported together. Rake source `9dd70a9a-ead8-4904-92e0-7fc5610773dd`, snapshot `11146054-e189-4932-9547-41a7c761b307`; envelope shown as 600 × 23.2 × 179.8 mm. Chassis envelope 711.2 × 685.8 × 156.5 mm. These are imported geometry dimensions, not physical measurements.
+- Cloud save/reopen retained both alternatives, edited positions, 550 mm copied bottom-panel width and presentation step. Comparison identified the single changed component. Original alternative retained its 500 mm width. Demonstration density explicitly labelled as an assumption produced 1.44 kg versus 1.58 kg known subtotal; five other masses stayed unknown.
+- Production joint controls exercised illustrative 0–45° rake motion and return-to-design pose. No physical joint correctness claimed. Geometry screening returned panel surface contacts and explicitly reported partial/budget-limited coverage.
+- Build UI loaded actual offseason requirements without error; opening before selecting a project now remains valid. Production transaction used the existing authenticated scene owner and real target build, proposed the saved hopper, accepted twice, asserted exactly one new requirement/mapping and then ROLLED BACK. No test manufacturing/demand records remain.
+- Actual production reload exposed a temporary stale editing lease; final refinement preserves this tab's client on reload while new/duplicated navigation gets a fresh client. TypeScript passed. Final production acceptance established a lease on the new release, reloaded the page, and confirmed Saved version 11 with New alternative still enabled immediately.
+- Local EN/HE 390 px iframe controls and dimension editing passed. Fullscreen refinement measured model and controls inside the viewport with no horizontal overflow. Final production fullscreen also verified its controls within the 720 px viewport. These are browser-layout checks, not physical Samsung performance evidence.
 
-The chronological entries below are superseded by this checkpoint where they describe earlier unfinished work.
+### Boundaries that remain explicit
+The starter catalogue is not every FRC part or a manufacturer-certified library. Missing battery/controller models use import. Mesh screening is bounded and approximate; no full robot clearance, strength, torque, dynamics, CAM, manufacturability or physical compatibility certification is claimed. No centre-of-mass number is fabricated without centroid data. The 500-instance desktop / 150-instance mobile performance targets are not measured device claims. Physical dimensions, real-device performance and the uncoached student/workshop pilot still need observations. No new APK, robot deployment, paid recovery project or GitHub write permission was introduced.
+
+Production screenshot: [mixed-source presentation](staging/robot-studio-phase2-production-20261011.jpg). The acceptance concept remains private for the owner to inspect; it is illustrative, not an approved robot design.
+
+Team workflow: [3D Robot Studio guide](ROBOT_STUDIO_TEAM_GUIDE_20261011.md). Frontend rollback baseline: Phase 1 deployment `2r4UPurQxeHhZw4E2q9sy29YThaL`; additive Studio data can remain while investigating a frontend rollback.
+
+The chronological notes below are historical. This checkpoint supersedes their earlier undeployed/unfinished status.
 
 ## Implemented locally so far
 - Lazy-loaded `/robot-build/studio`, direct Robot Build menu entry and existing build shortcut.
