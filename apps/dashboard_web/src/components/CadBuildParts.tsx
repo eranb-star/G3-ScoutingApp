@@ -1,4 +1,5 @@
 import {useEffect, useMemo, useState} from 'react';
+import {useSearchParams} from 'react-router-dom';
 import {supabase} from '../supabase';
 import {useLocalization} from '../lib/localization';
 import './cadBuildParts.css';
@@ -7,7 +8,7 @@ import CadPartMetadata,{type CadMetadata} from './CadPartMetadata';
 type Row = {metadata?:CadMetadata;key:string;name:string;quantity:number;partId:string;microversion:string;configuration:string;paths:string[][]};
 type Result = {metadataProgress?:{total:number;pending:number};snapshotId:string;microversion:string;coverage:'resolved'|'incomplete'|'unsupported';rows:Row[];assemblies?:{path:string[];name:string;selected:boolean}[];issues:{code:string;path:string[]}[];excludedInstances:number};
 export default function CadBuildParts({sourceId,snapshotId}:{sourceId:string;snapshotId:string}) {
-  const {pick}=useLocalization();
+  const {pick}=useLocalization();const [context]=useSearchParams();
   const issueLabels:Record<string,[string,string]>={
     ASSEMBLY_UNAVAILABLE:['Assembly data is missing. Refresh the design.','נתוני ההרכבה חסרים. רעננו את התכנון.'],
     UNRESOLVED_ASSEMBLY:['A referenced subassembly was not imported.','תת־הרכבה מקושרת לא יובאה.'],
@@ -24,7 +25,7 @@ export default function CadBuildParts({sourceId,snapshotId}:{sourceId:string;sna
   const [boundaries,setBoundaries]=useState<string[][]>([]);
   const [metadataObservation,setMetadataObservation]=useState('00000000-0000-0000-0000-000000000000');
   useEffect(()=>{setBoundaries([]);setMetadataObservation('00000000-0000-0000-0000-000000000000');},[snapshotId]);
-  const [projects,setProjects]=useState<{id:string;name:string}[]>([]),[project,setProject]=useState(''),[importing,setImporting]=useState(false),[importMessage,setImportMessage]=useState(''),[saved,setSaved]=useState(false);
+  const [projects,setProjects]=useState<{id:string;name:string}[]>([]),[project,setProject]=useState(context.get('project')??''),[importing,setImporting]=useState(false),[importMessage,setImportMessage]=useState(''),[saved,setSaved]=useState(false);
   useEffect(()=>{let active=true;setSaved(false);setImportMessage('');void supabase.from('team_projects').select('id,name').not('status','in','(archived,completed)').then(r=>{if(active){setProjects(r.data??[]);if(r.error)setImportMessage(pick('Projects could not be loaded.','לא ניתן לטעון פרויקטים.'));}});return()=>{active=false;};},[snapshotId]);
   useEffect(()=>{
     let current=true;setData(null);setError(false);
@@ -50,7 +51,7 @@ export default function CadBuildParts({sourceId,snapshotId}:{sourceId:string;sna
       {data.coverage==='resolved'&&data.rows.length>0&&<form onSubmit={async e=>{e.preventDefault();if(importing||!project)return;setImporting(true);setImportMessage('');try{const r=await supabase.functions.invoke('onshape-connector',{body:{action:'import-bom',sourceId,snapshotId,projectId:project,purchasedAssemblies:boundaries,metadataObservation}});if(r.error||r.data?.error)throw Error();setSaved(true);setImportMessage(pick('Private draft saved. Review it in the project before sharing or manufacturing.','טיוטה פרטית נשמרה. בדקו אותה בפרויקט לפני שיתוף או ייצור.'));}catch{setImportMessage(pick('Import was not confirmed. Retrying the same project and revision will not create a duplicate.','הייבוא לא אושר. ניסיון חוזר באותו פרויקט וגרסה לא ייצור כפילות.'));}finally{setImporting(false);}}}>
        <label>{pick('Robot project','פרויקט הרובוט')}<select required disabled={importing} value={project} onChange={e=>{setProject(e.target.value);setSaved(false);}}><option value="">{pick('Choose project','בחירת פרויקט')}</option>{projects.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select></label>
        <button disabled={importing||!project||!!data.metadataProgress?.pending}>{importing?pick('Importing…','מייבא…'):pick('Save private project draft','שמירת טיוטה פרטית בפרויקט')}</button>
-       <p role="status">{importMessage}</p>{saved&&<a href={`/robot-build?project=${project}&view=parts`}>{pick('Review project parts →','סקירת חלקי הפרויקט ←')}</a>}
+       <p role="status">{importMessage}</p>{saved&&<a href={`/robot-build?${new URLSearchParams({project,view:'parts',...(context.get('assembly')?{targetAssembly:context.get('assembly')!}:{})})}`}>{pick('Review project parts →','סקירת חלקי הפרויקט ←')}</a>}
       </form>}
       {!!data.issues.length&&<details><summary>{pick('Import issues','בעיות ייבוא')} ({data.issues.length})</summary><ul>{data.issues.map((issue,i)=><li key={i}>{pick(...(issueLabels[issue.code]??['An import issue requires review.','בעיית ייבוא דורשת בדיקה.']))}{issue.path.length>0&&<> · <code>{issue.path.join(' / ')}</code></>}</li>)}</ul></details>}
       <label>{pick('Find a part','חיפוש חלק')}<input type="search" value={query} onChange={e=>setQuery(e.target.value)}/></label>

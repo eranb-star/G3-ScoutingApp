@@ -125,7 +125,7 @@ Deno.serve(async request=>{
   }
   const read=providerReader(await accessToken(db,row));
   if(body.action==='build-freshness')return reply(await checkBuildSource(db,read,user.id,row.id,body.bomId));
-  if(body.action==='geometry'&&!body.sourceId){
+  if(['geometry','workspace'].includes(body.action)&&!body.sourceId){
    body.sourceId=await pinnedGeometrySource(db,row.id,body.snapshotId);
    if(!body.sourceId)throw new CadError('SOURCE_UNAVAILABLE','This pinned design is not available to your connected account.',404);
   }
@@ -141,6 +141,7 @@ Deno.serve(async request=>{
    if(body.action==='workspace'){
     const snapshots=await db.from('cad_snapshots').select('id,microversion,coverage,created_at').eq('source_id',selected.data.id).order('created_at',{ascending:false}).limit(30);
     if(snapshots.error)throw new CadError('STORAGE_UNAVAILABLE','Could not load design history.',503);
+    if(body.snapshotId&&!snapshots.data?.some((s:any)=>s.id===body.snapshotId)){const pinned=await db.from('cad_snapshots').select('id,microversion,coverage,created_at').eq('source_id',selected.data.id).eq('id',body.snapshotId).maybeSingle();if(pinned.error||!pinned.data)throw new CadError('SNAPSHOT_REQUIRED','The requested build revision is unavailable.',404);snapshots.data=[...(snapshots.data||[]),pinned.data];}
     const findings=await db.from('cad_findings').select('*').eq('source_id',selected.data.id).order('created_at',{ascending:false});
     if(findings.error)throw new CadError('STORAGE_UNAVAILABLE','Could not load findings.',503);
     const ids=(snapshots.data||[]).map((s:any)=>s.id);

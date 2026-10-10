@@ -1,3 +1,4 @@
+import BuildMixedSourcing from './BuildMixedSourcing';
 import BuildAssemblyMembership from './BuildAssemblyMembership';
 import {Link,useSearchParams} from 'react-router-dom';
 import BuildPartModel from './BuildPartModel';
@@ -16,13 +17,14 @@ import BuildChangeImpact from './BuildChangeImpact';
 import BuildChangeDecisions from './BuildChangeDecisions';
 import {readBuildPages} from '../lib/robotBuildWorkspace';
 type Bom={id:string;name:string;snapshot_id:string|null;owner_id:string;revision:number;shared_at:string|null;created_at:string};
-type Line={id:string;bom_id:string;name:string;design_quantity:number;required_quantity:number;disposition:string;inventory_id:string|null;job_id:string|null;review_note:string;revision:number;occurrence_paths?:string[][];source_identity?:{partId?:string;kind?:string;provenance?:string;metadata?:CadMetadata}};
+type Line={sourcing_group_id?:string|null;id:string;bom_id:string;name:string;design_quantity:number;required_quantity:number;disposition:string;inventory_id:string|null;job_id:string|null;review_note:string;revision:number;occurrence_paths?:string[][];source_identity?:{partId?:string;kind?:string;provenance?:string;metadata?:CadMetadata}};
 type Stock={id:string;name:string;quantity:number;unit:string};
 export default function ProjectBom({projectId,canManage,canStock,canBuy,jobs,onChanged,compact=false,confirmDiscard=async()=>true}:{projectId:string;canManage:boolean;canStock:boolean;canBuy:boolean;jobs:{id:string;task_id?:string;part_name:string;required_quantity:number}[];onChanged:()=>Promise<void>;compact?:boolean;confirmDiscard?:()=>Promise<boolean>}){
  const {pick}=useLocalization(),{profile}=useMemberAuth();
  const [boms,setBoms]=useState<Bom[]>([]),[lines,setLines]=useState<Line[]>([]),[stock,setStock]=useState<Stock[]>([]),[message,setMessage]=useState(''),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false);
  const [search,setSearch]=useState(''),[limit,setLimit]=useState(50),[selectedLine,setSelectedLine]=useState<string|null>(null);
  const [params]=useSearchParams();const assembly=params.get('assembly');
+ useEffect(()=>{setSelectedLine(params.get('part'));},[params.get('part')]);
  const [memberships,setMemberships]=useState<{assembly_id:string;line_id:string;quantity:number}[]>([]);
  const generation=useRef(0);
  const dispositions:Record<string,[string,string]>={review:['Needs review','דרושה סקירה'],make:['Make','ייצור'],buy:['Buy','רכש'],reuse:['Reuse','שימוש חוזר'],exclude:['Excluded','לא נדרש']};
@@ -33,10 +35,10 @@ export default function ProjectBom({projectId,canManage,canStock,canBuy,jobs,onC
   const memberships=await readBuildPages<{assembly_id:string;line_id:string;quantity:number}>((a,z)=>supabase.from('robot_build_assembly_requirements').select('assembly_id,line_id,quantity,robot_build_assemblies!inner(project_id)').eq('robot_build_assemblies.project_id',projectId).order('assembly_id').order('line_id').range(a,z));
   if(token!==generation.current)return;setMemberships(memberships);setBoms(b.sort((a,z)=>z.created_at.localeCompare(a.created_at)));setLines(all);setStock(s.sort((a,z)=>a.name.localeCompare(z.name)));setMessage('');
  }catch{if(token===generation.current){setBoms([]);setLines([]);setStock([]);setMessage(pick('Parts review could not be loaded.','לא ניתן לטעון את סקירת החלקים.'));}}finally{if(token===generation.current)setLoading(false);}}
- useEffect(()=>{setBoms([]);setLines([]);setSelectedLine(null);void load();return()=>{generation.current++;};},[projectId]);
+ useEffect(()=>{setBoms([]);setLines([]);setSelectedLine(params.get('part'));void load();return()=>{generation.current++;};},[projectId]);
  return <section aria-label={pick('Project parts review','סקירת חלקי הפרויקט')}><h3>{pick('Plan the parts this build needs','תכנון החלקים הנדרשים לבנייה')}</h3><p role="status">{loading?pick('Loading parts…','טוען חלקים…'):message}</p>
- <div className="build-section-intro"><p>{pick('Select a part to review its quantity and decide how to obtain it. Search only filters the parts already listed in this build.','בחרו חלק לבדיקת כמותו ודרך השגתו. החיפוש מסנן רק חלקים שכבר מופיעים בבנייה זו.')}</p><Link to="/engineering/cad">{pick('Import an assembly from Onshape','ייבוא מכלול מ־Onshape')} →</Link></div>
- {assembly&&<p>{pick('Showing requirements assigned to this assembly. Switch to All build parts to assign existing requirements.','מוצגות דרישות שהוקצו למכלול זה. עברו לכל חלקי הבנייה להקצאת דרישות קיימות.')}</p>}
+ <div className="build-section-intro"><p>{pick('Select a part to review its quantity and decide how to obtain it. Search only filters the parts already listed in this build.','בחרו חלק לבדיקת כמותו ודרך השגתו. החיפוש מסנן רק חלקים שכבר מופיעים בבנייה זו.')}</p><Link to={`/engineering/cad?${new URLSearchParams({project:projectId,...(assembly?{assembly}:{})})}`}>{pick('Import an assembly from Onshape','ייבוא מכלול מ־Onshape')} →</Link></div>
+ {params.get('targetAssembly')&&<p role="status">{pick('Imported parts are shown across the build. Open each required part and assign its quantity to the intended assembly; importing does not duplicate assembly demand.','חלקים שיובאו מוצגים בכל הבנייה. פתחו כל חלק נדרש והקצו את כמותו למכלול הרצוי; ייבוא אינו מכפיל דרישות מכלול.')}</p>}{assembly&&<p>{pick('Showing requirements assigned to this assembly. Switch to All build parts to assign existing requirements.','מוצגות דרישות שהוקצו למכלול זה. עברו לכל חלקי הבנייה להקצאת דרישות קיימות.')}</p>}
  {canManage&&<ManualRequirement key={assembly??"all"} assembly={assembly} projectId={projectId} saved={load}/>}
  {!loading&&boms.length>0&&<details className="build-secondary"><summary>{pick('Design updates & revision comparison','עדכוני תכנון והשוואת גרסאות')}</summary><BuildSourceFreshness key={projectId} boms={boms}/>
  <BuildRevisionComparison key={projectId} boms={boms} lines={lines} onSelect={async id=>{if(await confirmDiscard()){setSearch('');setLimit(50);setSelectedLine(id);requestAnimationFrame(()=>document.getElementById(`build-part-${id}`)?.scrollIntoView({behavior:'smooth',block:'center'}));}}}/></details>}
@@ -53,7 +55,7 @@ export default function ProjectBom({projectId,canManage,canStock,canBuy,jobs,onC
  </details>)}</section>;
 }
 function LineEditor({snapshotId,projectId,line:l,candidates,stock,jobs,editable,canStock,canBuy,shared,saved}:{snapshotId:string|null;projectId:string;line:Line;candidates:Line[];stock:Stock[];jobs:{id:string;task_id?:string;part_name:string;required_quantity:number}[];editable:boolean;canStock:boolean;canBuy:boolean;shared:boolean;saved:()=>Promise<void>}){
- const {pick}=useLocalization();
+ const {pick}=useLocalization();const [context]=useSearchParams();
  const initial=()=>({disposition:l.disposition,qty:String(l.required_quantity),inventory:l.inventory_id??'',note:l.review_note,expected:String(l.revision)});
  const draft=useBuildStringDraft(`line-review:${l.id}`,initial,l.revision);const {disposition,qty,inventory,note}=draft.value;
  const linkInitial=()=>({job:'',expected:String(l.revision)});const link=useBuildStringDraft(`line-job:${l.id}`,linkInitial,l.revision);const {job}=link.value;
@@ -62,7 +64,8 @@ function LineEditor({snapshotId,projectId,line:l,candidates,stock,jobs,editable,
  const labels:Record<string,[string,string]>={review:['Needs review','דרושה סקירה'],make:['Make','ייצור'],buy:['Buy','רכש'],reuse:['Reuse','שימוש חוזר'],exclude:['Exclude','לא נדרש']};
  const item=stock.find(s=>s.id===l.inventory_id);
  return <article id={`build-part-${l.id}`} className="build-job"><div className="build-job-summary"><strong>{l.name}</strong><span>{pick(...labels[l.disposition])} · {l.required_quantity}</span></div><small>{l.source_identity?.kind==='manual'?pick('Originally requested','כמות מקורית שהתבקשה'):pick('Imported quantity','כמות שיובאה')}: {l.design_quantity}</small>
- {l.source_identity?.kind!=='manual'&&<CadPartMetadata value={l.source_identity?.metadata}/>}
+ {snapshotId&&<p><Link to={`/engineering/cad?${new URLSearchParams({snapshot:snapshotId,project:projectId,part:l.id,...(context.get('assembly')?{assembly:context.get('assembly')!}:{})})}`}>{pick('Review this exact CAD revision','סקירת גרסת CAD מדויקת זו')} →</Link></p>}{l.source_identity?.kind!=='manual'&&<CadPartMetadata value={l.source_identity?.metadata}/>}
+ {l.sourcing_group_id&&<p>{pick('One source of a combined requirement. Quantities across its sources remain conserved.','מקור אחד מתוך דרישה משולבת. סך הכמויות בין המקורות נשמר.')}</p>}{editable&&shared&&!l.sourcing_group_id&&!l.job_id&&<BuildMixedSourcing line={l} stock={stock} saved={saved}/>}
  {editable&&shared&&<BuildAssemblyMembership projectId={projectId} line={l} saved={saved}/>}
  <BuildPartModel snapshotId={snapshotId} paths={l.occurrence_paths} partId={l.source_identity?.partId}/>
  <BuildChangeImpact lineId={l.id} jobId={l.job_id} projectId={projectId}/><BuildChangeDecisions projectId={projectId} line={l} candidates={candidates} editable={editable}/>
