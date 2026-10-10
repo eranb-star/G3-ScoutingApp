@@ -6,7 +6,7 @@ import {loadUpload,onshapeObject,disposeObject,extractComponent} from './robotSt
 import {validateScene,type StudioAsset,type StudioScene} from './robotStudio';
 export type SavedStudio={id:string;name:string;owner_id:string;revision:number;document:StudioScene;updated_at:string};
 export async function studioList(){return readBuildPages<Omit<SavedStudio,'document'>>((a,z)=>supabase.from('robot_studio_scenes').select('id,name,owner_id,revision,updated_at').order('updated_at',{ascending:false}).order('id').range(a,z));}
-export async function studioOpen(id:string){const r=await supabase.from('robot_studio_scenes').select('*').eq('id',id).single();if(r.error)throw r.error;validateScene(r.data.document);return r.data as SavedStudio;}
+export async function studioOpen(id:string){const r=await supabase.from('robot_studio_scenes').select('*').eq('id',id).single();if(r.error)throw r.error;if(!r.data)throw Error('Design not found or access is unavailable');validateScene(r.data.document);return r.data as SavedStudio;}
 export async function studioSave(id:string,expected:number,document:StudioScene,request:string,client:string){validateScene(document);const r=await supabase.rpc('save_robot_studio',{p_id:id,p_expected:expected,p_document:document,p_request:request,p_client:client});if(r.error)throw r.error;return r.data as number;}
 export async function cadCall(action:string,values:Record<string,unknown>={}){const r=await supabase.functions.invoke('onshape-connector',{body:{action,...values}});if(r.error||r.data?.error)throw Error(r.data?.error||r.error?.message||'CAD request failed');return r.data;}
 export async function studioLoadAsset(asset:StudioAsset):Promise<T.Object3D>{

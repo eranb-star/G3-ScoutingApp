@@ -1,0 +1,15 @@
+{
+  "name": "roboRIO · simplified team CAD",
+  "source": "https://github.com/Mechanical-Advantage/AdvantageScopeAssets/releases/download/frc-6328-assets-v2/Robot_MantaV1.zip",
+  "node": 412,
+  "sourceName": "Simplified_Roborio",
+  "sourceSha256": "ab482da86cafb0a685ea94558d4399f2d4dc388e67f08637c0f902cf63b30d7d",
+  "sha256": "4e58d80da7dab8f6bbe215e0ba62b8130b632a7bcea5c8a6709fa97a01c19cc7",
+  "boundsMetres": [
+    0.14615159606933598,
+    0.14317980957031257,
+    0.03441699981689458
+  ],
+  "license": "/twin/2026/LICENSE.txt",
+  "coverage": "Simplified source geometry; exact roboRIO version not identified; not manufacturer-certified."
+}

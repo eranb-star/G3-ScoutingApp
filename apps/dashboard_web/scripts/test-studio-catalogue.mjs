@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';import fs from 'node:fs/promises';import path from 'node:path';import {pathToFileURL} from 'node:url';import ts from 'typescript';import * as T from 'three';
+const dir=await fs.mkdtemp(path.join(process.cwd(),'node_modules/.catalogue-test-'));const originalFetch=globalThis.fetch;let requests=0;
+try{
+ for(const name of ['robotStudio','robotStudioGeometry','robotStudioCatalogue','studioCatalogueSearch']){let source=await fs.readFile(`src/lib/${name}.ts`,'utf8');for(const match of [...source.matchAll(/import (\w+) from '(.*\.json)';/g)])source=source.replace(match[0],`const ${match[1]}=${await fs.readFile(path.resolve('src/lib',match[2]),'utf8')};`);const output=ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ES2022}}).outputText.replaceAll("'./robotStudio'","'./robotStudio.mjs'").replaceAll("'./robotStudioGeometry'","'./robotStudioGeometry.mjs'").replaceAll("'./robotStudioCatalogue'","'./robotStudioCatalogue.mjs'");await fs.writeFile(path.join(dir,name+'.mjs'),output);}
+ globalThis.fetch=async url=>{assert.equal(typeof url,'string');assert.ok(url.startsWith('/twin/')||url.startsWith('/studio/'));requests++;return new Response(await fs.readFile(path.join('public',url)));};
+ const {studioCatalogue,loadCatalogue}=await import(pathToFileURL(path.join(dir,'robotStudioCatalogue.mjs')));const {disposeObject}=await import(pathToFileURL(path.join(dir,'robotStudioGeometry.mjs')));
+ const {catalogueMatches}=await import(pathToFileURL(path.join(dir,'studioCatalogueSearch.mjs')));
+ for(const [query,id] of [['PDH','kitbot-component-73'],['swerve','darwin-component-233'],['robo rio','manta-roborio'],['NEO 550','banana-neo550']])assert.ok(catalogueMatches(studioCatalogue.find(c=>c.id===id),query),query);
+ assert.equal(new Set(studioCatalogue.map(c=>c.id)).size,studioCatalogue.length);
+ for(const entry of studioCatalogue){const object=await loadCatalogue(entry.id);const box=new T.Box3().setFromObject(object);assert.ok(!box.isEmpty(),entry.id);assert.ok(box.getSize(new T.Vector3()).toArray().every(v=>Number.isFinite(v)&&v>0&&v<10),entry.id);assert.ok(box.getCenter(new T.Vector3()).length()<1e-5,entry.id);disposeObject(object);}
+ const a=await loadCatalogue('darwin-kraken-x60'),b=await loadCatalogue('darwin-kraken-x60');a.position.x=10;assert.equal(b.position.x,0);disposeObject(a);disposeObject(b);assert.equal(requests,6,'Models fetched once per source, not once per card');
+ console.log(`Catalogue: ${studioCatalogue.length} real source entries loaded; finite bounds, centering, independent clones and six-source cache passed.`);
+}finally{globalThis.fetch=originalFetch;await fs.rm(dir,{recursive:true,force:true});}
