@@ -7,3 +7,10 @@ Robot Build imports require the leader's project management permission and autho
 Additive migration cad_team_access_20261010.sql defaults sharing off. Deploy migration, connector, frontend, then explicitly enable the intended team connection. No other private admin connection is selected automatically. Tests: actual handler admin-only management, shared connection resolver, isolated SQL opt-in/revoke/inactive/member denial, scoped BOM import/share/freshness, rerun and credentials isolation; existing CAD security, inspection and build-source tests. TypeScript passed. Production rollback-only migration preflight passed. Release and live enablement pending.
 
 Rollback: disable team sharing first; revert connector/frontend if needed. Additive column/functions may remain. No existing BOM or review data is deleted. Real leader login/device acceptance must be distinguished from synthetic checks.
+
+## Production release
+- Implementation development commit `854f2ae`; release commit `588292d`. Release CI345 passed (3m3s).
+- Production migration applied successfully; the bundled `onshape-connector` source was pasted, exact-match verified and deployed. Prior connector source retained in ignored local release artifacts. JWT callback setting unchanged.
+- Vercel `CxfJ59PCf6yKc7pHEGUZhicZVR1T`, Ready Production, 10 October 2026 15:50:32 GMT+3, domain `g3-6740.com`.
+- Authenticated production CAD page confirms connected Onshape, existing selected designs and the new owner-only Enable team-leader access control. Explicit sharing is still OFF pending the browser-required action-time confirmation; deployment alone does not grant leaders access.
+- Last focused resolver test rerun after final owner-management guard passed. Actual leader-device acceptance remains outstanding.
