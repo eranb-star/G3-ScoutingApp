@@ -1,3 +1,4 @@
+import {cadAccess} from './access.ts';
 import {pinnedGeometrySource} from './pinned-source.ts';
 import {createClient} from 'https://esm.sh/@supabase/supabase-js@2';
 import {CadError,onshapeId,parseSource,sha256,seal,unseal,boundedJson,providerReader} from './security.ts';
@@ -90,14 +91,16 @@ Deno.serve(async request=>{
   const authorization=request.headers.get('Authorization');if(!authorization)throw new CadError('AUTH_REQUIRED','Sign in to G3.',401);
   const caller=createClient(env('SUPABASE_URL'),env('SUPABASE_ANON_KEY'),{global:{headers:{Authorization:authorization}}});
   const {data:{user}}=await caller.auth.getUser();if(!user)throw new CadError('AUTH_REQUIRED','Sign in to G3.',401);
-  await activeAdmin(db,user.id);
+
  const raw=await request.text();if(raw.length>16000)throw new CadError('INPUT_TOO_LONG','CAD request is too large.',413);
  const body=JSON.parse(raw);
-  if(body.action==='status'){
-   const result=await db.from('cad_connections').select('id,updated_at,disconnected_at').eq('member_id',user.id).maybeSingle();
-   if(result.error)throw new CadError('STORAGE_UNAVAILABLE','CAD connection storage is unavailable.',503);
-   await encryptionKey(db);
-   return reply({configured:!!(env('G3_ONSHAPE_CLIENT_ID')&&env('G3_ONSHAPE_CLIENT_SECRET')),connected:!!result.data&&!result.data.disconnected_at,updatedAt:result.data?.updated_at});
+  const access=await cadAccess(db,user.id,body);
+  if(body.action==='status')return reply({configured:!!(env('G3_ONSHAPE_CLIENT_ID')&&env('G3_ONSHAPE_CLIENT_SECRET')),connected:!!access.row,canManage:access.canManage,teamShared:!!access.row?.team_shared});
+  if(body.action==='share-connection'){
+   if(!access.row||!access.canManage||typeof body.enabled!=='boolean')throw new CadError('ACCESS_DENIED','Connection owner required.',403);
+   const saved=await db.from('cad_connections').update({team_shared:body.enabled}).eq('id',access.row.id).eq('member_id',user.id);
+   if(saved.error)throw new CadError('SHARING_FAILED','Another team connection may already be shared. Ask its owner to disable sharing first.',409);
+   return reply({shared:body.enabled});
   }
   if(body.action==='connect'){
    const config=configuration();
@@ -109,7 +112,7 @@ Deno.serve(async request=>{
    target.search=new URLSearchParams({response_type:'code',client_id:config.clientId,redirect_uri:config.redirect,scope:'OAuth2Read',state}).toString();
    return reply({url:target.href});
   }
-  const row=await connection(db,user.id);
+  const row=access.row;if(!row)throw new CadError('CONNECT_REQUIRED','Ask an administrator to connect and share the team Onshape account.',409);
   if(body.action==='disconnect'){
    const result=await db.from('cad_connections').update({credential:{},disconnected_at:new Date().toISOString(),refresh_lock_until:null}).eq('id',row.id);
    if(result.error)throw new CadError('STORAGE_UNAVAILABLE','Could not disconnect. Retry.',503);

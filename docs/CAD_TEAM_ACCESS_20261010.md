@@ -1,0 +1,9 @@
+# Team CAD access correction — 10 October 2026
+
+Implementation: explicit owner-admin sharing of one Onshape connection to active team leaders. No credential exposure or student/global connection grant. Source/snapshot access is checked against authorized connection; inactive owners revoke shared access. Admin owner retains OAuth connect/disconnect/sharing management. AI retains separate use_g3_assist permission and per-request evidence consent, and saved reviews remain author-filtered.
+
+Robot Build imports require the leader's project management permission and authorized CAD connection. Existing private BOMs remain private until explicitly shared; no automatic import of the entire account into a build. Sharing imports, source freshness and pinned geometry use the same access boundary. Team leader can access team catalogue from home/workshop/phone using G3 login alone; editing in Onshape still needs provider access.
+
+Additive migration cad_team_access_20261010.sql defaults sharing off. Deploy migration, connector, frontend, then explicitly enable the intended team connection. No other private admin connection is selected automatically. Tests: actual handler admin-only management, shared connection resolver, isolated SQL opt-in/revoke/inactive/member denial, scoped BOM import/share/freshness, rerun and credentials isolation; existing CAD security, inspection and build-source tests. TypeScript passed. Production rollback-only migration preflight passed. Release and live enablement pending.
+
+Rollback: disable team sharing first; revert connector/frontend if needed. Additive column/functions may remain. No existing BOM or review data is deleted. Real leader login/device acceptance must be distinguished from synthetic checks.

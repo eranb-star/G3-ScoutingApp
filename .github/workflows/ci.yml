@@ -55,6 +55,7 @@ jobs:
           node scripts/test-robot-build-adoption.mjs
           node scripts/test-robot-build-stock-assembly.mjs
           node scripts/test-robot-build-release-rehearsal.mjs
+          node scripts/test-cad-team-access.mjs
           node scripts/test-build-freshness.mjs
           node scripts/test-build-source-observations.mjs
           node scripts/test-build-subsystems.mjs
@@ -93,6 +94,7 @@ jobs:
         run: |
           node scripts/test-onshape-security.mjs
           node scripts/test-onshape-handler.mjs
+          node scripts/test-cad-team-handler.mjs
           node scripts/test-onshape-snapshot.mjs
           node scripts/test-onshape-storage.mjs
           node scripts/test-cad-review.mjs

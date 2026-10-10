@@ -19,13 +19,13 @@ export default function BuildSourceFreshness({boms}:{boms:Bom[]}){
    if(cancelled||running||(!force&&Date.now()-lastAttempt<30000))return;
    lastAttempt=Date.now();running=true;setBusy(true);setFailed(false);
    try{
-    if((force||!hidden())&&profile?.role==='admin')for(const bom of sourceBoms.filter(b=>b.owner_id===profile.id)){
+    const links:Record<string,string>={};
+    if((force||!hidden())&&['admin','team_leader'].includes(profile?.role??''))for(const bom of sourceBoms){
      if(cancelled||(!force&&hidden()))break;
      const r=await supabase.functions.invoke('onshape-connector',{body:{action:'build-freshness',bomId:bom.id}});
-     if(r.error||r.data?.error){if(!cancelled)setFailed(true);break;}
+     if(r.error||r.data?.error){if(!cancelled)setFailed(true);continue;}
+     if(r.data?.sourceId&&bom.snapshot_id)links[bom.snapshot_id]=r.data.sourceId;
     }
-    const links:Record<string,string>={};
-    if(profile?.role==='admin'){const owned=sourceBoms.filter(b=>b.owner_id===profile.id);for(let i=0;i<owned.length;i+=100){const ids=owned.slice(i,i+100).map(b=>b.snapshot_id!);const r=await supabase.from('cad_snapshots').select('id,source_id').in('id',ids);if(!r.error)for(const snapshot of r.data??[])links[snapshot.id]=snapshot.source_id;}}
     if(!cancelled)setSourceLinks(links);
     const rows:Check[]=[];
     for(let i=0;i<sourceBoms.length;i+=100){
@@ -43,7 +43,7 @@ export default function BuildSourceFreshness({boms}:{boms:Bom[]}){
  if(!imports.length)return null;
  return <section aria-label={pick('CAD source freshness','עדכניות מקור CAD')} className="build-job">
   <div className="build-job-summary"><strong>{pick('CAD source freshness','עדכניות מקור CAD')}</strong><button type="button" disabled={busy} onClick={()=>trigger.current()}>{busy?pick('Checking…','בודק…'):pick('Check now','בדיקה כעת')}</button></div>
-  <p>{pick('Checks on opening, returning and every 5 minutes while visible. Only the connected source owner can check Onshape; other members see the last saved result. Released work never changes automatically.','בדיקה בפתיחה, בחזרה ובכל 5 דקות כשהמסך מוצג. רק בעל חיבור המקור יכול לבדוק ב-Onshape; שאר החברים רואים את התוצאה האחרונה שנשמרה. עבודה ששוחררה אינה משתנה אוטומטית.')}</p>
+  <p>{pick('Checks on opening, returning and every 5 minutes while visible. Authorized team leaders can check shared Onshape sources; other members see the last saved result. Released work never changes automatically.','בדיקה בפתיחה, בחזרה ובכל 5 דקות כשהמסך מוצג. ראשי צוות מורשים יכולים לבדוק מקורות Onshape משותפים; שאר החברים רואים את התוצאה האחרונה שנשמרה. עבודה ששוחררה אינה משתנה אוטומטית.')}</p>
   {failed&&<p role="status">{pick('Could not complete the latest check. Results below are last known, not confirmation that CAD is current.','הבדיקה האחרונה לא הושלמה. התוצאות להלן הן האחרונות הידועות ואינן אישור שה-CAD עדכני.')}</p>}
   <ul>{imports.map(b=>{const c=checks.find(c=>c.bom_id===b.id);return <li key={b.id}><strong>{b.name}</strong> — {!c?.checked_at?pick('Not checked','טרם נבדק'):c.error?pick('Latest check failed','הבדיקה האחרונה נכשלה'):c.reference_type!=='w'?pick('Fixed CAD reference; does not track workspace edits','מקור CAD קבוע; אינו עוקב אחרי עריכות סביבת העבודה'):c.current_microversion!==c.pinned_microversion?pick('New CAD revision available — review before updating work','גרסת CAD חדשה זמינה — יש לבדוק לפני עדכון עבודה'):pick('Matches the source at the last check','תואם למקור בזמן הבדיקה האחרונה')}{c?.checked_at&&<> · <time dateTime={c.checked_at}>{new Date(c.checked_at).toLocaleString(pick('en-GB','he-IL'))}</time></>}{b.snapshot_id&&sourceLinks[b.snapshot_id]&&<> · <a href={`/engineering/cad?source=${encodeURIComponent(sourceLinks[b.snapshot_id])}`}>{pick('Review this design','סקירת תכנון זה')}</a></>}</li>;})}</ul>
   <a href="/engineering/cad">{pick('Review source designs in CAD Mentor','סקירת תכנוני המקור במנטור CAD')}</a>
