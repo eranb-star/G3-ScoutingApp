@@ -1,0 +1,7 @@
+# Direct workshop attendance — 10 October 2026
+
+Attendance Center defaults to Workshop attendance for existing roster-authorized users (mentors/admins and existing correction permission). Current workshop shows open-session records grouped into currently checked in and checked out. Last workshop selects the most recently closed session by actual closure, falling back to scheduled end for historical data. Neither depends on the report period. With no open session, current view shows the last closed workshop with an explicit explanation. Multiple open sessions get a selector.
+
+Compact searchable rows include full Israel dates/times, total counts, missing checkout distinction, refresh button and successful-update timestamp. Polls every 30 seconds while visible, refreshes on focus/visibility return, avoids overlapping loads and discards results after view changes/unmount. Failed refresh warns that displayed data may be stale; failure is never shown as zero. No new data writes, database migration or permission changes. Existing reports, absences, exports and corrections remain in their tabs.
+
+Validation: TypeScript build passed; attendance reporting and current/last selection tests passed (including old sessions outside reporting periods, no meetings and scheduled/cancelled exclusion). Synthetic UI verified current/last switching and Hebrew closed-session fallback. Release deployment pending. Android bundled frontend requires a future APK update; website release alone does not update the APK.
