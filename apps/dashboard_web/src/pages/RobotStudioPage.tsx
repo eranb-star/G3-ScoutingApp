@@ -44,7 +44,9 @@ export default function RobotStudioPage(){
  const [geometryCheck,setGeometryCheck]=useState<CheckResult|null>(null),[checking,setChecking]=useState(false);
  const checkWorker=useRef<Worker|null>(null),checkRequest=useRef(0);
  const [compare,setCompare]=useState(''),[undo,setUndo]=useState<StudioScene[]>([]),[redo,setRedo]=useState<StudioScene[]>([]);
- const canvas=useRef<StudioCanvasApi>(null),compareCanvas=useRef<StudioCanvasApi>(null),client=useRef(crypto.randomUUID()),pendingSave=useRef<{body:string;request:string}|null>(null),state=useRef({scene,id,revision,saved});state.current={scene,id,revision,saved};
+ // Reuse this tab's lease on reload; a newly opened/duplicated tab gets a fresh client.
+ const [editorClient]=useState(()=>{const fresh=crypto.randomUUID();try{const key='g3-studio-editor-client';const reload=(performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming|undefined)?.type==='reload';const previous=sessionStorage.getItem(key);const value=reload&&previous?previous:fresh;sessionStorage.setItem(key,value);return value;}catch{return fresh;}});
+ const canvas=useRef<StudioCanvasApi>(null),compareCanvas=useRef<StudioCanvasApi>(null),client=useRef(editorClient),pendingSave=useRef<{body:string;request:string}|null>(null),state=useRef({scene,id,revision,saved});state.current={scene,id,revision,saved};
  const assetCache=useRef(new Map<string,T.Object3D>()),loads=useRef(0),currentId=useRef('');currentId.current=id;
  const pendingEdit=!!scene&&!!edit&&JSON.stringify(activeOption(scene).parts.find(p=>p.id===edit.id))!==JSON.stringify(edit);
  const editRef=useRef(edit);editRef.current=edit;const pendingEditRef=useRef(pendingEdit);pendingEditRef.current=pendingEdit;
