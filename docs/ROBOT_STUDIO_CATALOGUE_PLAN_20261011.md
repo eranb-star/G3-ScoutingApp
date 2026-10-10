@@ -1,6 +1,6 @@
 # Robot Studio catalogue and usability correction — 11 October 2026
 
-Status: audit and sourcing started; no new application deployment. This record supersedes broad Phase 2 completion language. The existing editor is delivered; comprehensive component coverage and the corrected first-use workflow are not. User authorised moving ahead with the catalogue audit and implementation plan.
+Status: this is the acquisition/design register and initial audit. The [subsequent correction release](ROBOT_STUDIO_CATALOGUE_RELEASE_20261011.md) supersedes its initial implementation counts/status. User authorised implementation. Comprehensive component coverage remains incomplete; distinguish the 93 ready source-derived entries from unbundled product families below.
 
 ## Evidence and current baseline
 

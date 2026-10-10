@@ -1,0 +1,59 @@
+[
+  {
+    "id": "neo",
+    "name": "NEO Brushless Motor · REV-21-1650",
+    "file": "/studio/components/neo.glb",
+    "node": 0,
+    "originalNode": 164,
+    "sourceFile": "model.glb",
+    "sourceName": "NEO_Brushless_Motor_(REV-21-1650)",
+    "sourceSha256": "dfd091551ff915a32e755dd79c239b08dc52c4b5e646d96aa28117339be22331",
+    "sha256": "704e60d01e3df937dde0d1b19b4fe53ced89798cac1545dd5747a0377157ef24",
+    "boundsMetres": [
+      0.08196152422706637,
+      0.09325000000000008,
+      0.08196152422706637
+    ],
+    "source": "https://github.com/Mechanical-Advantage/AdvantageScopeAssets/releases/download/frc-6328-assets-v2/Robot_BananaSplitV4.zip",
+    "license": "/twin/2026/LICENSE.txt",
+    "coverage": "Source team CAD; no manufacturer dimensional certification or mass claim."
+  },
+  {
+    "id": "neo550",
+    "name": "NEO 550 · REV-21-1651",
+    "file": "/studio/components/neo550.glb",
+    "node": 0,
+    "originalNode": 93,
+    "sourceFile": "model_2.glb",
+    "sourceName": "NEO_550_Motor_(REV-21-1651)",
+    "sourceSha256": "63bca39f3233310f0891673971a570b3875bf98322f47c441f3623f7fa953407",
+    "sha256": "b6f838f2b827387c958827111895ffc505701106713bfe04913ef0af83fb9a50",
+    "boundsMetres": [
+      0.042999252319337225,
+      0.056428620554764164,
+      0.043471752009537054
+    ],
+    "source": "https://github.com/Mechanical-Advantage/AdvantageScopeAssets/releases/download/frc-6328-assets-v2/Robot_BananaSplitV4.zip",
+    "license": "/twin/2026/LICENSE.txt",
+    "coverage": "Source team CAD; no manufacturer dimensional certification or mass claim."
+  },
+  {
+    "id": "sparkmax",
+    "name": "SPARK MAX · simplified team CAD",
+    "file": "/studio/components/sparkmax.glb",
+    "node": 0,
+    "originalNode": 27,
+    "sourceFile": "model_2.glb",
+    "sourceName": "Simplified_SPARK_MAX",
+    "sourceSha256": "63bca39f3233310f0891673971a570b3875bf98322f47c441f3623f7fa953407",
+    "sha256": "38fa52d67311b308f49ac7543f61f0ef526ab573b5675b3647e1528698a77b44",
+    "boundsMetres": [
+      0.026537487030029408,
+      0.03519454428090352,
+      0.06959338304609089
+    ],
+    "source": "https://github.com/Mechanical-Advantage/AdvantageScopeAssets/releases/download/frc-6328-assets-v2/Robot_BananaSplitV4.zip",
+    "license": "/twin/2026/LICENSE.txt",
+    "coverage": "Source team CAD; no manufacturer dimensional certification or mass claim."
+  }
+]

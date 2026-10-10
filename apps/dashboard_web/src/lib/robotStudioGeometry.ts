@@ -22,6 +22,14 @@ export function matrix(part:StudioPart){return new T.Matrix4().compose(new T.Vec
 export function worldMatrix(parts:StudioPart[],id:string,seen=new Set<string>()):T.Matrix4 {if(seen.has(id))throw Error('Cyclic hierarchy');seen.add(id);const part=parts.find(p=>p.id===id);if(!part)throw Error('Unknown component');return part.parent?worldMatrix(parts,part.parent,seen).multiply(matrix(part)):matrix(part);}
 export function localPose(world:T.Matrix4,parent:T.Matrix4):{position:Vec3;rotation:Vec3}{const position=new T.Vector3(),q=new T.Quaternion(),scale=new T.Vector3();parent.clone().invert().multiply(world).decompose(position,q,scale);const e=new T.Euler().setFromQuaternion(q);return {position:position.toArray() as Vec3,rotation:[e.x,e.y,e.z]};}
 export function reparent(parts:StudioPart[],id:string,parent:string|null):StudioPart[]{const world=worldMatrix(parts,id),pose=localPose(world,parent?worldMatrix(parts,parent):new T.Matrix4());return parts.map(p=>p.id===id?{...p,parent,...pose,attachment:'unresolved'}:p);}
+/** Shift a placed instance in world or its own axes, preserving its hierarchy. */
+export function translatePart(parts:StudioPart[],id:string,delta:Vec3,space:'world'|'local'){
+ const part=parts.find(p=>p.id===id);if(!part||part.locked)return;
+ const world=worldMatrix(parts,id),shift=new T.Vector3(...delta);
+ if(space==='local'){const q=new T.Quaternion();world.decompose(new T.Vector3(),q,new T.Vector3());shift.applyQuaternion(q);}
+ world.setPosition(new T.Vector3().setFromMatrixPosition(world).add(shift));
+ Object.assign(part,localPose(world,part.parent?worldMatrix(parts,part.parent):new T.Matrix4()),{attachment:'unresolved'});
+}
 export function disposeObject(object:T.Object3D){object.traverse(o=>{if(o instanceof T.Mesh||o instanceof T.Line){o.geometry.dispose();for(const m of Array.isArray(o.material)?o.material:[o.material]){for(const v of Object.values(m))if(v instanceof T.Texture)v.dispose();m.dispose();}}});}
 function cloneMaterial(m:T.Material){const copy=m.clone();for(const [key,value] of Object.entries(copy))if(value instanceof T.Texture)(copy as unknown as Record<string,unknown>)[key]=value.clone();return copy;}
 export function cloneGeometryObject(object:T.Object3D){const clone=object.clone(true);clone.traverse(o=>{if(o instanceof T.Mesh||o instanceof T.Line){o.geometry=o.geometry.clone();o.material=Array.isArray(o.material)?o.material.map(m=>cloneMaterial(m)):cloneMaterial(o.material);}});return clone;}

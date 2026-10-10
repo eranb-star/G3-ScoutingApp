@@ -1,0 +1,8 @@
+import {useState} from 'react';
+import {useLocalization} from '../lib/localization';
+import {chassisParts,type ChassisDimensions} from '../lib/studioChassis';
+import type {StudioPart} from '../lib/robotStudio';
+export default function StudioChassisBuilder({disabled,onAdd}:{disabled:boolean;onAdd:(parts:StudioPart[])=>void}){
+ const {pick}=useLocalization();const [d,setD]=useState<ChassisDimensions>({length:700,width:700,height:50.8,member:25.4,wall:3.175,pan:3});const [error,setError]=useState('');
+ return <details className="studio-chassis-builder"><summary>{pick('Create chassis & belly pan','יצירת שלדה ולוח תחתון')}</summary><p>{pick('Dimensioned concept frame · outside dimensions in mm. Add motors and drivetrain separately.','שלדה רעיונית לפי מידות · מידות חיצוניות במ״מ. מוסיפים מנועים והנעה בנפרד.')}</p><div className="studio-dimension-grid">{(['length','width','height','member','wall','pan'] as const).map((key,i)=><label key={key}>{pick(['Length','Width','Frame height','Rail width','Wall thickness','Belly pan thickness · 0 = none'][i],['אורך','רוחב','גובה שלדה','רוחב קורה','עובי דופן','עובי לוח תחתון · 0 = ללא'][i])}<input type="number" value={d[key]} min={key==='pan'?0:.1} step={.1} onChange={e=>setD({...d,[key]:Number(e.target.value)})}/></label>)}</div>{error&&<p role="alert">{error}</p>}<button disabled={disabled} onClick={()=>{try{const metres=Object.fromEntries(Object.entries(d).map(([k,v])=>[k,v/1000])) as ChassisDimensions;onAdd(chassisParts(metres));setError('');}catch(e){setError(e instanceof Error?e.message:String(e));}}}>{pick('Add chassis','הוספת שלדה')}</button></details>;
+}

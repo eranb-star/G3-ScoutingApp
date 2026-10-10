@@ -7,9 +7,15 @@ import ts from 'typescript';
 // Temporary modules next to dependencies, cleaned even when a test fails.
 const dir=await fs.mkdtemp(path.join(process.cwd(),'node_modules/.studio-test-'));
 try{
- for(const name of ['robotStudio','robotStudioGeometry','studioChecks']){let source=await fs.readFile(`src/lib/${name}.ts`,'utf8');let js=ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ES2022}}).outputText.replace("'./robotStudio'","'./robotStudio.mjs'");await fs.writeFile(path.join(dir,name+'.mjs'),js);}
+ for(const name of ['robotStudio','robotStudioGeometry','studioChecks','studioChassis']){let source=await fs.readFile(`src/lib/${name}.ts`,'utf8');let js=ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ES2022}}).outputText.replace("'./robotStudio'","'./robotStudio.mjs'");await fs.writeFile(path.join(dir,name+'.mjs'),js);}
  const domain=await import(pathToFileURL(path.join(dir,'robotStudio.mjs'))),geometry=await import(pathToFileURL(path.join(dir,'robotStudioGeometry.mjs'))),T=await import('three');
  const {newPart,newScene,validateScene,shapeVolume,copyOption,massSummary,activeOption}=domain;
+ const {chassisParts}=await import(pathToFileURL(path.join(dir,'studioChassis.mjs')));
+ const chassis=chassisParts({length:.8,width:.6,height:.0508,member:.0254,wall:.003,pan:.003});
+ const frameBounds=new T.Box3();for(const p of chassis.filter(p=>p.shape)){const g=geometry.stockGeometry(p.shape);g.computeBoundingBox();frameBounds.union(g.boundingBox.clone().applyMatrix4(geometry.worldMatrix(chassis,p.id)));g.dispose();}
+ const bounds=frameBounds.getSize(new T.Vector3());assert.ok(Math.abs(bounds.x-.8)<1e-6);assert.ok(Math.abs(bounds.y-.6)<1e-6);assert.ok(Math.abs(bounds.z-.0538)<1e-6);
+ assert.throws(()=>chassisParts({length:.04,width:.6,height:.05,member:.0254,wall:.003,pan:0}),/opening/);
+ const movedPart=chassis[1],oldWorld=new T.Vector3().setFromMatrixPosition(geometry.worldMatrix(chassis,movedPart.id));chassis[0].rotation=[0,0,Math.PI/2];const beforeShift=new T.Vector3().setFromMatrixPosition(geometry.worldMatrix(chassis,movedPart.id));geometry.translatePart(chassis,movedPart.id,[.01,0,0],'world');const afterShift=new T.Vector3().setFromMatrixPosition(geometry.worldMatrix(chassis,movedPart.id));assert.ok(afterShift.sub(beforeShift).distanceTo(new T.Vector3(.01,0,0))<1e-9);
  const scene=newScene('Fixture');const tube=newPart('tube');tube.shape.width=.04;tube.shape.inner=.02;tube.shape.length=.5;
  assert.ok(Math.abs(shapeVolume(tube.shape)-Math.PI*.00015)<1e-12);
  assert.throws(()=>shapeVolume({...tube.shape,inner:.05}),/Inside diameter/);
