@@ -1,23 +1,23 @@
 # Robot Build phase 1 — implementation contract (10 October 2026)
 
-Status: IN DEVELOPMENT. This record supersedes earlier UX proposals for phase 1 only. Production remains the prior Robot Build implementation until an explicit release record below.
+Status: DEPLOYED — Phase 1 software released on 10 October 2026. The final release record below supersedes intermediate development checkpoints. Real workshop/student acceptance remains separate.
 
 ## Scope and boundaries
 Four destinations: Build dashboard, Assemblies & parts, Workshop, Assembly & testing. Contextual CAD, existing inventory/purchasing/tasks/review workflows. Preserve existing approvals, audit history, stock conservation and role permissions. No placement editor, weight calculation, simulation synchronization, paid services, robot repository writes or APK work.
 
 ## Required journeys and acceptance
-- [ ] Explicit build identity/setup over existing projects; distinguish whole robot, mechanism and prototype; no complete CAD required.
-- [ ] First-class assembly creation and hierarchy, responsible person, quantities and optional date; existing records mapped without duplication.
-- [ ] Add/import requirements in assembly context; manual and CAD reconciliation; quantities not multiplied twice.
-- [ ] Combined stock/make/buy coverage with conserved required/allocated/in-progress/uncovered quantities; purchases reused.
-- [ ] Part → production carries exact identity/quantity/revision; saved draft before readiness; actionable release blockers.
-- [ ] Student queue → instructions → operation/progress/problem → inspection; single job context, recoverable drafts, explicit save state.
-- [ ] Partial accepted/rework/scrap/held quantities and replacement flow; no automatic material refunds or fabricated accepted stock.
-- [ ] Assembly requirements → available suitable components → assembly instructions → testing; installation optional; failure/correction/retest retains history.
-- [ ] Exact CAD context and return links; newer revision does not overwrite approved work; access denial does not imply missing design.
-- [ ] Roles and existing permission boundaries clear before forms; concurrency/offline/uncertain saves/history retained.
-- [ ] EN/HE desktop/mobile visual and behavioral verification; existing builds preserved; isolated end-to-end fixture, no fabricated production manufacturing.
-- [ ] Required CI, database preflight where applicable, production deployment/acceptance, checkpoint.
+- [x] Explicit build identity/setup over existing projects; distinguish whole robot, mechanism and prototype; no complete CAD required.
+- [x] First-class assembly creation and hierarchy, responsible person, quantities and optional date; existing records mapped without duplication.
+- [x] Add/import requirements in assembly context; manual and CAD reconciliation; quantities not multiplied twice.
+- [x] Combined stock/make/buy coverage with conserved required/allocated/in-progress/uncovered quantities; purchases reused.
+- [x] Part → production carries exact identity/quantity/revision; saved draft before readiness; actionable release blockers.
+- [x] Student queue → instructions → operation/progress/problem → inspection; single job context, recoverable drafts, explicit save state.
+- [x] Partial accepted/rework/scrap/held quantities and replacement flow; no automatic material refunds or fabricated accepted stock.
+- [x] Assembly requirements → available suitable components → assembly instructions → testing; installation optional; failure/correction/retest retains history.
+- [x] Exact CAD context and return links; newer revision does not overwrite approved work; access denial does not imply missing design.
+- [x] Roles and existing permission boundaries clear before forms; concurrency/offline/uncertain saves/history retained.
+- [x] EN/HE desktop/mobile visual and behavioral verification; existing builds preserved; isolated end-to-end fixture, no fabricated production manufacturing.
+- [x] Required CI, database preflight where applicable, production deployment/acceptance, checkpoint.
 
 ## Screen contracts
 Dashboard: student sees assigned actionable work; leader sees unassigned work, blockers/reviews and first setup action. Counts are links into filtered records, not a robot-readiness certification.
@@ -31,7 +31,7 @@ RobotBuildPage currently wraps team_projects; BuildSubsystems only groups tasks 
 ## Verification discipline
 Reuse existing server RPC protections. Test changed quantity/permission logic against isolated database fixtures. Do not repeat unrelated tests after passing without new changes. Distinguish implemented, tested, deployed and actual workshop acceptance. Student uncoached pilot remains a human usability acceptance, not something a synthetic test proves.
 
-## Progress
+## Historical implementation checkpoints (superseded by final release below)
 Initial source mapping completed. No schema or UI change has been deployed for phase 1.
 
 ### Local implementation checkpoint (not released)
@@ -57,3 +57,21 @@ Initial source mapping completed. No schema or UI change has been deployed for p
 - Production rollback-only schema preflight passed (five new RLS-enabled tables). The same three additive migrations were then committed successfully in production. Existing records were not fabricated or changed for acceptance.
 - CAD connector source prepared and verified against the editor with normalized line endings; frontend release and production acceptance are still pending at this checkpoint.
 - Explicit limitation: split sourcing is a planning action before allocation/purchasing/manufacturing history exists. Later executed quantities retain their original audit trail; there is no silent rewrite.
+
+## Final production release — 10 October 2026
+- Development commits: `2eb5491`, `bcd8b246ea6b3007908504de453a0f894aa9154b`. Release commits: `426fc82`, `5dc719c00b93a69b7b7bb7df34b555484d873e97`.
+- Required GitHub CI353 (development) and CI354 (release) passed. No checks were disabled. Local focused Phase 1 database integration, all33-migration repeat rehearsal, CAD access tests, TypeScript and Vite build passed.
+- Production Vercel deployment: `2r4UPurQxeHhZw4E2q9sy29YThaL`, Ready/Production, `g3-6740.com`, 10 October 22:55:51 GMT+3. Preview `GD4DvitLSNXQXHE9JNMa2SqaX1bA`; production URL `https://g3-scouting-app-5qpe-a2katpn8a-eranbos-projects.vercel.app`.
+- Applied three additive migrations: `robot_build_assembly_scope_20261010.sql`, `robot_build_guided_assembly_20261010.sql`, `robot_build_mixed_sourcing_20261010.sql`. Production rollback preflight and committed execution both returned five RLS-enabled new tables. Existing role boundaries retained.
+- Updated live `onshape-connector`; reloaded deployed editor source matched the bundled source after line-ending normalization. No credentials or connection-sharing settings changed.
+- Authenticated live acceptance: existing offseason project opened; four new navigation screens; two existing imported requirements preserved; three existing team tasks preserved; assembly planning/components screen loaded; no console errors during these checks.
+- Real part → exact CAD revision → return to build verified: saved snapshot `11146054-e189-4932-9547-41a7c761b307` resolved its source and selected revision `124ada7d…`, with pinned-update notice and original project/part return link. No new Gemini request.
+- English and Hebrew local layouts inspected, including the earlier mobile parts check (390px, no horizontal overflow). Final production screenshot: `docs/staging/robot-build-phase1-production-20261010.jpg`. The later viewport override attempt remained desktop; do not describe that capture as a new phone test.
+- The existing production project currently has no assembly hierarchy; its CAD parts list is a private draft. These are real team setup choices, not automatically migrated, shared or fabricated by this release. Use Add assembly, assign existing quantities, and explicitly share the list when intended.
+- Team instructions: [Robot Build team guide](ROBOT_BUILD_PHASE1_TEAM_GUIDE_20261010.md).
+
+### Remaining boundaries
+- Phase1 software is deployed. An uncoached student/workshop pilot and real manufacturing/physical acceptance are not established by synthetic tests. No production stock, physical test, installation, or approval records were invented.
+- Phase2 placement editor, drag/drop catalogue, robot mass calculation and simulator synchronization remain intentionally outside Phase1.
+- No APK rebuild. Existing native bundled frontend is unchanged until a separately requested rebuild.
+- Rollback: restore prior frontend deployment `6viUYk879KagEDBGcCV9j16iKnJA`; additive schema can remain. Restore prior connector source from release `63203c6` if needed. Do not drop new tables after user records have been created.
