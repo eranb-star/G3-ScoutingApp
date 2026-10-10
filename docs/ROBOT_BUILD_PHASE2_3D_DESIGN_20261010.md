@@ -23,7 +23,11 @@ Current viewer meshes carry positions and occurrence transforms; they are not a 
 
 ## 3. Navigation and modes
 
-Proposed user-facing name: **3D Robot Studio**. Put a visible secondary entry at the Robot Build landing page, before selecting a project, so independent concepts do not require a fake build. Inside a selected build add **3D Layout** after Assemblies & parts. Both open the same workspace with explicit context. Do not add another unrelated sidebar destination or duplicate the field simulator.
+Proposed user-facing name: **3D Robot Studio**. Current code exposes Robot Build through Work; it is not currently a direct sidebar destination. Add **Robot Build** to the main menu. Its landing page has two clearly visible destinations: **Team builds** (the existing operational workspace) and **3D Robot Studio** (concepts and demonstrations). Keep the existing compact Work shortcut to Robot Build. Do not add a separate sidebar item for the studio.
+
+Canonical entry: **Main menu → Robot Build → 3D Robot Studio**. No project selection is required. Inside a selected build, provide **3D Robot Studio** after Assemblies & parts, opening designs linked to that build with **Create linked design** available. Use the same name everywhere instead of switching between Studio and Layout. Always allow switching back to independent designs; automatic project selection must not hide the studio entry. Preserve existing Robot Build deep links and permissions.
+
+CAD Mentor remains the source-design review destination, reached contextually through **Review source CAD** on an imported component. Field & robot twin remains the field-driving/simulation destination. Neither becomes the parent of the new editor. Studio subtitle: **Compose robots, compare layouts and present ideas**; this distinguishes its purpose from field simulation.
 
 Landing choices: **New demo**, **Open saved design**, **Start from a team build**. New demo asks only for a name and a starting point: team CAD, published model, starter chassis, or empty scene. Season, owner and other metadata can be completed later; a physical robot registration is not required.
 
@@ -97,6 +101,8 @@ Starter set includes acrylic/polycarbonate/aluminium panels and carbon/aluminium
 
 The hopper journey: create bottom panel → duplicate for sides → change side profiles → position and set panel angles → group as Hopper → save as reusable assembly. Provide dimensioned hopper example templates, but users can change each panel independently. Overlap checks can highlight panels occupying the same space; the system does not silently design seams, brackets, bend allowances or fasteners.
 
+Editing a duplicated custom part defaults to **This part only**, creating a new definition version/reference for that instance. **All linked copies** requires an explicit affected-instance preview and confirmation. Saved alternatives and other scenes remain unchanged. A hopper group has no arbitrary scale handle: edit individual panels; any future whole-hopper dimension control must define and preview the generated panel changes. This prevents a side-panel edit from unexpectedly changing the bottom or another design.
+
 Complex sketches, arbitrary cutouts, Boolean solid editing, threads, sheet bending and manufacturing drawings remain Onshape work. Simple holes are a later bounded addition, not a hidden promise in the first release. No DXF/STEP manufacturing export from an approximate scene.
 
 ## 8. Placement, attachments and editing
@@ -106,6 +112,8 @@ Add by drag/drop or **Add → click/tap a placement surface**. Show a translucen
 Support move/rotate handles, world/local axes, numeric position/rotation, grid increments, face/axis alignment, duplicate, multi-select, group/ungroup, lock and hide. Ground/lock the chosen base. Reparenting preserves world pose. Hiding changes visibility only; removing from the active alternative changes demand. Duplicating an assembly duplicates its instances, not its underlying asset file.
 
 Attachments use explicit component-local references: point/frame, axis, planar contact and optional mounting pattern. User-created references are labeled 'user defined'. Aligning visual faces is distinct from verifying bolt patterns. Full automatic CAD mating is excluded. Supported persistent relationships are rigid attachment and the simple joints in section 10; cycles and conflicting relationships are rejected with an explanation.
+
+Unattached parts are allowed during exploration but appear in a **Connections to resolve** list. Users can mark **Adapter/bracket needed** with a note between two components; this is an unresolved requirement, not invented geometry or a completed connection. Imported assemblies remain rigid by default. Explicitly rearranging their children creates a layout override, retains original source poses, and labels the result as modified from the source assembly.
 
 Changing a tube diameter regenerates geometry and marks affected attachments for review. Do not leave an old bearing connection appearing verified. Catalogue variant swaps preview changed envelope, connector and mass data. Imported components cannot be mirrored into a supposedly purchasable handed variant; custom shapes can be mirrored as a new custom definition where supported.
 
@@ -147,6 +155,12 @@ Use stable instance/definition/version mapping, not names. Existing CAD occurren
 
 The proposal is atomic, replay-safe and checked against current build revisions. Initially proposals can add requirements or update uncommitted planning data. Existing reservations, purchases, released manufacturing and installed hardware are shown as protected impact and require the existing change-disposition workflow. Removals are proposed dispositions, never automatic deletion, stock return or order cancellation. Source snapshots and scene version remain attached for traceability. A concept acceptance is not manufacturing release.
 
+Generated custom parts enter the proposal with dimensions, material, generator version, scene reference and unresolved connections. They are labeled **Needs detailed CAD/review**, with an explicit option to create a linked CAD follow-up. A preview mesh is never sufficient manufacturing documentation. Source CAD updates can later replace the concept geometry through reviewed mapping while preserving requirement identity.
+
+Separate finished-part demand from raw-material purchasing: six cut tubes are six finished parts, not six full stock bars; four acrylic panels are not four purchased sheets. Preserve length/area/volume units and quantities. Raw-stock selection, cutting waste and material allocation require a reviewed material plan; automatic nesting/cut optimization is outside this release. Never directly match a generated cut part to a stock bar and deduct one bar per instance.
+
+Proposal states are **Draft → In review → Applied**, with **Changes require review** when its scene or target build has moved on. An applied proposal retains both exact versions. Later studio edits do not alter the live build; later build edits do not silently alter the scene. Show **Compare with adopted version** and require a new reviewed proposal for synchronization.
+
 CAD Mentor can review the source snapshot or selected layout evidence. An optional AI request must identify scene version, selected instances, source coverage and deterministic checks; do not claim it inspected omitted geometry. Existing private-data permissions and AI budget apply. Automatic Gemini calls on every drag are excluded.
 
 Inventory remains the source of stock; purchasing remains the source of orders; Phase1 remains the source of work and QC. Team Projects can receive one linked follow-up task by an explicit action, not a task per movement. No automatic Skills Academy pass or robot-health certification. Field simulator references remain references until a separately validated adapter exists.
@@ -154,6 +168,8 @@ Inventory remains the source of stock; purchasing remains the source of orders; 
 ## 13. Permissions and collaboration
 
 Proposed default: active members create private demos using assets they are authorized to view; invited project participants view/comment; explicit editors modify team concepts; leaders with existing project authority adopt proposals; admins manage catalogue publication and source-sharing policy. Being an editor does not grant access to another person's private CAD. New grants are reviewed during implementation, not implied by this design.
+
+Student onboarding must work without granting access to the entire Onshape account: publish specifically approved component snapshots to a defined G3 audience. Those library grants are explicit and versioned; source-account browsing remains separately authorized. Provide a permitted starter scene and a short Add → Place → Save → Present path. If no starter asset is approved, show the stock-shape starter path instead of an empty or inaccessible catalogue.
 
 Initially one active editor per shared design, with a renewable server lease and read-only presence for other users. Leaders can take over an expired lease; takeover of an active lease warns the current editor and preserves unsaved recovery. Optimistic revisions remain mandatory even with a lease. Simultaneous multi-cursor editing is later work.
 
@@ -208,6 +224,12 @@ Excluded: full CAD authoring, automatic Onshape write-back, FEA, validated dynam
 | Phase1 handoff repeated | No duplicate requirement; protected executed work cannot be rewritten |
 | Desktop, phone, Hebrew | Discoverable controls, no overflow, accessible numeric/tap alternatives |
 | Physical and learner pilot | Record observations separately from automated software results |
+| Menu and first use | Open studio without a build; same label in menu context and build; starter path works for a student |
+| Edit duplicated panel | This-part edit leaves other copies/alternatives unchanged; linked edit previews affected instances |
+| Incomplete connections | Floating parts and missing adapters remain visible unresolved work; no fabricated mounting verification |
+| Custom-shape handoff | Parameters preserved; detailed-CAD follow-up possible; no manufacturing release from preview |
+| Cut parts vs raw stock | Finished quantities do not become incorrect bar/sheet purchases or inventory deductions |
+| Post-adoption divergence | Saved versions stay stable; changed scene/build requires another reviewed proposal |
 
 ## 17. Design review findings and decisions
 
@@ -216,6 +238,8 @@ Workflow pass: added independent demo entry; explicit stock-shape construction; 
 Accuracy/reliability pass: separated rest, animation and exploded poses; fixed aggregate/child mass and demand duplication; retained unknown-mass coverage; invalidated attachments after resizing; handled unitless files, immutable revisions, single-editor conflicts and private assets inside shared scenes. These are release requirements, not optional polish.
 
 Recommended review decisions: accept the name/navigation, initial primitive set, limited kinematic motion and private G3 sharing defaults. Asset discovery must confirm one usable published chassis and representative catalogue parts; none has been selected or cleared merely by this design. Choose a representative student laptop/phone for performance acceptance. These are implementation inputs, not a request to provide passwords or create a complete robot first.
+
+Additional end-to-end review: clarified the direct Robot Build menu entry and consistent Studio name; isolated edits to duplicated shapes; surfaced missing mounting work; separated finished parts from raw stock; specified custom-concept CAD follow-up and post-adoption divergence; made student access work through explicitly approved snapshots. These extend the existing 2B editing/access and 2D handoff gates, not a new phase or a claim of full CAD authoring.
 
 ## 18. Evidence and related records
 
