@@ -1,6 +1,6 @@
 # Phase 2 — 3D Robot Studio: review design
 
-Status: approved for end-to-end implementation by the user on 10 October 2026. Implementation is deployed; see ROBOT_BUILD_PHASE2_IMPLEMENTATION_20261010.md for exact release, software acceptance and physical/device limitations. Phase 1 remains included. Publishing private CAD or expanding access still requires the applicable explicit grant.
+Status: approved for end-to-end implementation by the user on 10 October 2026. An initial editor implementation is deployed; comprehensive catalogue coverage and the configurable starter chassis are incomplete. The 11 October user-reviewed workflow and audit in [ROBOT_STUDIO_CATALOGUE_PLAN_20261011.md](ROBOT_STUDIO_CATALOGUE_PLAN_20261011.md) supersede broad completion claims and separate remaining development from delivered features. See ROBOT_BUILD_PHASE2_IMPLEMENTATION_20261010.md for historical release evidence. Phase 1 remains included. Publishing private CAD or expanding access still requires the applicable explicit grant.
 
 ## 1. Product outcome
 
