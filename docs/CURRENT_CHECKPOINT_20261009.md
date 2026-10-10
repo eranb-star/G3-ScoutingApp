@@ -3,6 +3,7 @@
 This is the entry point for current status and decisions. It reconciles existing release evidence and this conversation; it is not a new audit of every production feature. Detailed feature records below retain acceptance limits. Older proposed phases and undeployed notices are superseded only where the named release records establish delivery.
 
 ## Read order for a new session
+0. **11 October Studio correction:** read [ROBOT_STUDIO_CATALOGUE_PLAN_20261011.md](ROBOT_STUDIO_CATALOGUE_PLAN_20261011.md). User approved one unified searchable library and requested comprehensive FRC component coverage, configurable chassis/pan, clear manipulation/delete/fullscreen and quieter version history. Audit confirms only nine current catalogue entries. Earlier Phase 2 completion language does not establish these capabilities. Source register and concrete acquisition families are documented; new models and UX corrections are not yet deployed.
 1. This checkpoint and the current user request.
    For future priorities, read [NEXT_PHASES_MASTER_20261010.md](NEXT_PHASES_MASTER_20261010.md). It supersedes earlier roadmap ordering and separates delivered functionality, remaining development, conditional work and physical acceptance. Planning only; no new phase is authorized by that document.
 2. WORKING_EXPECTATIONS.md, especially proportional verification and token/time discipline.
