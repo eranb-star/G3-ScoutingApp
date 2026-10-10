@@ -20,13 +20,14 @@ let source=fs.readFileSync(root+'index.ts','utf8').replace(/import \{createClien
 source=source.replace("'./geometry.ts'",JSON.stringify(geometry)).replace("'./review.ts'",JSON.stringify(review)).replace("'./bom.ts'",JSON.stringify(bom)).replace("'./partMetadata.ts'",JSON.stringify(metadata));
 source=source.replace("'./buildFreshness.ts'",JSON.stringify(freshness));
 source=source.replace("'./pinned-source.ts'",JSON.stringify(url(fs.readFileSync(root+'pinned-source.ts','utf8'))));
+source=source.replace("'./access.ts'",JSON.stringify(url(fs.readFileSync(root+'access.ts','utf8').replace("'./security.ts'",JSON.stringify(security)))));
 await import(url(source));
 const call=(body,authorization='Bearer test')=>handler(new Request('https://project.supabase.co/functions/v1/onshape-connector',{method:'POST',headers:authorization?{Authorization:authorization}:{},body:JSON.stringify(body)}));
 assert.equal((await call({action:'status'},'')).status,401);
 assert.equal((await call({action:'bom'},'')).status,401);
 role='member';assert.equal((await call({action:'bom'})).status,403);role='admin';
 authenticated=false;assert.equal((await call({action:'status'})).status,401);authenticated=true;
-for(const value of ['student','mentor']){role=value;assert.equal((await call({action:'connect'})).status,403);}role='admin';
+for(const value of ['student','mentor','team_leader']){role=value;assert.equal((await call({action:'connect'})).status,403);}role='admin';
 active=false;assert.equal((await call({action:'connect'})).status,403);active=true;
 const response=await call({action:'connect'});assert.equal(response.status,200);assert.equal(response.headers.get('cache-control'),'no-store');
 const payload=await response.json(),target=new URL(payload.url),state=target.searchParams.get('state');
@@ -34,4 +35,5 @@ assert.equal(target.origin,'https://oauth.onshape.com');assert.equal(target.sear
 const callback=()=>handler(new Request('https://project.supabase.co/functions/v1/onshape-connector?state='+state+'&error=access_denied'));
 assert.equal((await callback()).status,400);assert.equal((await (await callback()).json()).code,'INVALID_STATE');
 assert.equal((await handler(new Request('https://project.supabase.co/functions/v1/onshape-connector?state=bad&code=bad'))).status,400);
-console.log('PASS: actual handler requires active admin, keeps secrets server-side, scopes OAuth read-only and consumes callback state once');
+role='team_leader';assert.equal((await call({action:'status'})).status,200);assert.equal((await call({action:'disconnect'})).status,403);assert.equal((await call({action:'share-connection',enabled:true})).status,403);
+console.log('PASS: admin-only connection management, leader status, secrets server-side, OAuth read-only and single-use callback');

@@ -1,0 +1,12 @@
+import fs from 'node:fs';import assert from 'node:assert/strict';import ts from 'typescript';
+const root='../../backend/supabase/functions/onshape-connector/';const url=c=>'data:text/javascript;base64,'+Buffer.from(ts.transpileModule(c,{compilerOptions:{target:99,module:99}}).outputText).toString('base64');
+const{cadAccess}=await import(url(fs.readFileSync(root+'access.ts','utf8').replace("'./security.ts'",JSON.stringify(url(fs.readFileSync(root+'security.ts','utf8'))))));
+let role='team_leader',active=true,shared=true,allowed=true;const connection={id:'c',member_id:'admin',team_shared:true};
+const db={rpc:async(name)=>({data:name==='cad_connection_access'?allowed:true}),from(table){let f={};const q={select:()=>q,eq:(k,v)=>(f[k]=v,q),is:()=>q,maybeSingle:async()=>({data:table==='team_members'?{role,active}:table==='cad_connections'?(f.member_id==='leader'?null:shared?connection:null):table==='cad_sources'?{connection_id:'c'}:table==='cad_snapshots'?{source_id:'source'}:null})};return q;}};
+assert.equal((await cadAccess(db,'leader',{action:'status'})).row.id,'c');
+for(const action of ['connect','disconnect','share-connection'])await assert.rejects(cadAccess(db,'leader',{action}),e=>e.status===403);
+for(const action of ['sources','discover','snapshot','geometry','workspace','import-bom'])assert.equal((await cadAccess(db,'leader',{action,sourceId:'source'})).row.id,'c');
+allowed=false;await assert.rejects(cadAccess(db,'leader',{action:'geometry',snapshotId:'snapshot'}),e=>e.status===403);allowed=true;
+active=false;await assert.rejects(cadAccess(db,'leader',{action:'sources'}),e=>e.status===403);active=true;
+role='member';await assert.rejects(cadAccess(db,'leader',{action:'sources'}),e=>e.status===403);role='team_leader';shared=false;assert.equal((await cadAccess(db,'leader',{action:'status'})).row,null);
+console.log('PASS connector shared resolution, denied management/member/inactive/unshared source and snapshot access');
