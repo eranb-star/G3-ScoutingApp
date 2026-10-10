@@ -117,9 +117,15 @@ Unattached parts are allowed during exploration but appear in a **Connections to
 
 Changing a tube diameter regenerates geometry and marks affected attachments for review. Do not leave an old bearing connection appearing verified. Catalogue variant swaps preview changed envelope, connector and mass data. Imported components cannot be mirrored into a supposedly purchasable handed variant; custom shapes can be mirrored as a new custom definition where supported.
 
+Deletion and replacement preview dependent children, attachments, joints, comments and presentation steps. Never silently delete attached mechanisms: offer cancel, remove the selected subtree, or preserve children in their world poses with unresolved connections. Treat the operation as one undoable transaction. Replacing a component or accepting a source update requires mapping old references to new ones; unmatched references become unresolved. Measured mass overrides and prior connection acknowledgements are not automatically valid for a different variant.
+
 ## 9. Checks, mass and estimates
 
 Checks panel groups actionable findings: missing geometry, unknown mass, missing attachments, incompatible known dimensions and possible clashes. Selecting a finding focuses both components and explains the method. Findings can be acknowledged with a reason; acknowledgement is not correction or certification.
+
+Every calculated result is tied to the scene revision, active alternative, relevant pose and check method/version. After a relevant edit, show **Needs recalculation** or **Checking**, never the previous green result as current. Discard late results from superseded calculations. Acknowledgements apply only to the reviewed geometry/context and reopen when it changes. Presentation snapshots retain their own dated results; build proposals explicitly identify stale or missing checks without confusing conceptual acceptance with manufacturing approval.
+
+Keep **design readiness** separate from **presentation readiness**. A scene can be saved and presented with unresolved engineering findings; those remain accessible. Missing required assets prevent an unqualified 'presentation ready' state. Do not gate ordinary exploration behind completion of all checks or put a universal 'robot ready' badge on the scene.
 
 Bounding boxes provide broad screening only. Mesh-level overlap/nearest-distance checks use a stated tessellation tolerance and report approximate geometry results. Intentional contacts can be marked with reasons; they remain visible in history. Thin surfaces, open meshes and incomplete models must report unsupported/uncertain results rather than 'clear'. Fasteners, cables, tool access and load deformation are not assumed modeled.
 
@@ -151,6 +157,8 @@ Initial sharing is authenticated G3 audience only. View permission must cover al
 
 **Propose to build** is a deliberate action on a saved design version. It opens: select existing project → map assemblies → match existing requirements → review added/changed/removed quantities → confirm as permitted leader. An independent demo can remain independent indefinitely.
 
+If no suitable build exists, a permitted leader can use the existing **Create build** flow and return to the saved proposal. Users without that permission can submit it for leader review. Preserve the chosen scene/version and proposal across this detour; do not force students to recreate a design or create a duplicate project.
+
 Use stable instance/definition/version mapping, not names. Existing CAD occurrences and newly placed instances are reconciled. A matched existing instance is not added again. Quantity is counted once across active physical instances; reference geometry is excluded and spare demand is explicit. Bought subassemblies can count at purchased-assembly level or exploded fabrication level, never both.
 
 The proposal is atomic, replay-safe and checked against current build revisions. Initially proposals can add requirements or update uncommitted planning data. Existing reservations, purchases, released manufacturing and installed hardware are shown as protected impact and require the existing change-disposition workflow. Removals are proposed dispositions, never automatic deletion, stock return or order cancellation. Source snapshots and scene version remain attached for traceability. A concept acceptance is not manufacturing release.
@@ -174,6 +182,8 @@ Student onboarding must work without granting access to the entire Onshape accou
 Initially one active editor per shared design, with a renewable server lease and read-only presence for other users. Leaders can take over an expired lease; takeover of an active lease warns the current editor and preserves unsaved recovery. Optimistic revisions remain mandatory even with a lease. Simultaneous multi-cursor editing is later work.
 
 Save feedback: Saving → Saved with time → Offline draft → Save failed/retry. Autosave debounced meaningful operations; a continuous drag is one undo/save operation. Recovery is keyed by account/design/base version, never replayed over a newer remote version silently. Sign-out clears private local caches. Failed or uncertain requests retain operation IDs for safe retry. No silent last-writer-wins.
+
+Offline private-asset access uses a bounded authorization window, checked on reconnection and before online sharing. Immediate revocation cannot be guaranteed on a disconnected device; do not promise it. Define the window before release; beyond it require reconnection to reopen private geometry. Retain recoverable edit metadata securely without making inaccessible geometry publicly retrievable.
 
 ## 14. Technical design and performance
 
@@ -230,6 +240,10 @@ Excluded: full CAD authoring, automatic Onshape write-back, FEA, validated dynam
 | Custom-shape handoff | Parameters preserved; detailed-CAD follow-up possible; no manufacturing release from preview |
 | Cut parts vs raw stock | Finished quantities do not become incorrect bar/sheet purchases or inventory deductions |
 | Post-adoption divergence | Saved versions stay stable; changed scene/build requires another reviewed proposal |
+| Delete/replace referenced component | Dependency preview, preserved world poses where chosen, unresolved references and complete undo |
+| Asynchronous checks after edits | Stale results cannot replace newer results or appear current; changed findings reopen |
+| Concept without target build | Authorized create-and-return or leader-review path preserves the proposal |
+| Offline authorization expiry | Reopening private geometry requires reauthorization after the bounded window |
 
 ## 17. Design review findings and decisions
 
@@ -240,6 +254,8 @@ Accuracy/reliability pass: separated rest, animation and exploded poses; fixed a
 Recommended review decisions: accept the name/navigation, initial primitive set, limited kinematic motion and private G3 sharing defaults. Asset discovery must confirm one usable published chassis and representative catalogue parts; none has been selected or cleared merely by this design. Choose a representative student laptop/phone for performance acceptance. These are implementation inputs, not a request to provide passwords or create a complete robot first.
 
 Additional end-to-end review: clarified the direct Robot Build menu entry and consistent Studio name; isolated edits to duplicated shapes; surfaced missing mounting work; separated finished parts from raw stock; specified custom-concept CAD follow-up and post-adoption divergence; made student access work through explicitly approved snapshots. These extend the existing 2B editing/access and 2D handoff gates, not a new phase or a claim of full CAD authoring.
+
+Final failure-path review: specified dependency-aware delete/replacement, revision-bound asynchronous checks, separate presentation/design readiness, a no-existing-build handoff and honest offline revocation limits. No further product module is justified by this pass. Remaining feasibility inputs are model availability/reuse, source fidelity, named-device performance and learner usability; verify these during delivery rather than claiming a gap-free implementation from a design document.
 
 ## 18. Evidence and related records
 
