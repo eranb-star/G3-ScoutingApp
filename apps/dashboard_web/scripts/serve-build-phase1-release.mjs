@@ -1,0 +1,13 @@
+import {build} from 'vite';
+import fs from 'node:fs/promises';
+import http from 'node:http';
+import path from 'node:path';
+const root=path.resolve('../..'),out=path.join(root,'docs/staging/build-phase1.local');
+await fs.mkdir(out,{recursive:true});
+await build({configFile:false,build:{target:'es2022',minify:false,outDir:out,emptyOutDir:false,lib:{entry:path.join(root,'backend/supabase/functions/onshape-connector/index.ts'),formats:['es'],fileName:()=> 'connector.ts'},rollupOptions:{external:id=>id.startsWith('https://'),output:{inlineDynamicImports:true}}}});
+const files=['robot_build_assembly_scope_20261010.sql','robot_build_guided_assembly_20261010.sql','robot_build_mixed_sourcing_20261010.sql'];
+const body=(await Promise.all(files.map(f=>fs.readFile(path.join(root,'backend/supabase',f),'utf8')))).join('\n').replace(/^\s*(begin|commit);\s*$/gm,'');
+const check="select 'Phase 1 schema ready' as result, count(*) as secured_tables from pg_tables where schemaname='public' and tablename in ('robot_build_assemblies','robot_build_assembly_requirements','robot_build_assembly_plans','robot_build_sourcing_groups','robot_build_problem_reports') and rowsecurity;";
+const sources={'/preflight':'begin;\n'+body+'\n'+check+'\nrollback;','/migration':'begin;\n'+body+'\n'+check+'\ncommit;','/connector':await fs.readFile(path.join(out,'connector.ts'),'utf8')};
+await fs.writeFile(path.join(out,'migration.sql'),sources['/migration']);
+http.createServer((req,res)=>{const text=sources[req.url];if(!text){res.writeHead(404);res.end();return;}res.setHeader('Content-Type','text/html; charset=utf-8');res.end('<h1>Robot Build Phase 1 release source</h1><textarea aria-label="Release source" style="width:95%;height:80vh">'+text.replaceAll('&','&amp;').replaceAll('<','&lt;')+'</textarea>');}).listen(4263,'127.0.0.1',()=>console.log('Release source http://127.0.0.1:4263/preflight'));

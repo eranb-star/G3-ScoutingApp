@@ -42,3 +42,18 @@ Initial source mapping completed. No schema or UI change has been deployed for p
 - NOT COMPLETE: mixed sourcing under one requirement, guided assembly/test task creation, exact CAD Mentor revision handoff, explicit build setup and remaining UX/authorization verification. Existing subsystem-task grouping is retained and not treated as the new assembly hierarchy.
 - No phase-1 schema applied to production; no frontend push/deployment. Do not deploy current frontend before its additive migration and complete workflow acceptance. No APK changes. No fabricated production records.
 - Next implementation: finish mixed sourcing and assembly/test orchestration, resolve existing-work and manual/import membership paths, then integrated fixtures + browser EN/HE acceptance and controlled release. Keep the checklist open until real evidence exists.
+
+### Active continuation — implementation resumed
+- Added assembly editing, persisted-quantity prefill/save receipt, and assembly context across build tabs.
+- Added pinned CAD workspace resolution (including older snapshots outside the latest 30) and return-to-build links. Automatic revision replacement is disabled for a pinned build review. Not yet deployed.
+- Added guided assembly/component-plan and dependent bench-test creation. Existing review functions remain authoritative; submission requires complete issued components. Isolated creation/retry/permission checks pass; full submission/retest acceptance still pending.
+- Added conserved mixed sourcing for uncommitted requirements (six plates = stock two + manufacture four); existing job/purchase/kit history cannot be rewritten. The split form now distributes existing assembly quantities between sources in the same transaction. Tests confirm both the overall six-part requirement and assigned assembly totals remain six; no manual removal/recreation is needed.
+- TypeScript passed before the latest component-layout changes. Local browser verified assembly context survives navigation. Browser review exposed remaining assembly-screen overload; component actions and secondary maintenance controls are being simplified.
+- Still IN DEVELOPMENT; no production deployment or migration application. Required CI, complete fixture journeys, EN/HE mobile and production acceptance are outstanding. Do not present this continuation as a finished phase.
+
+### Release preparation — 10 October 2026
+- Focused Phase 1 isolated database test passed, including failed inspection → reopen → return/reissue components → fresh assembly and bench approval; failed evidence retained. Mixed sourcing, exact totals, retry, stale revision and authorization guards passed.
+- All 33 relevant additive migrations applied twice together in the isolated release rehearsal. TypeScript and Vite production build passed. Existing large-bundle warning remains.
+- Production rollback-only schema preflight passed (five new RLS-enabled tables). The same three additive migrations were then committed successfully in production. Existing records were not fabricated or changed for acceptance.
+- CAD connector source prepared and verified against the editor with normalized line endings; frontend release and production acceptance are still pending at this checkpoint.
+- Explicit limitation: split sourcing is a planning action before allocation/purchasing/manufacturing history exists. Later executed quantities retain their original audit trail; there is no silent rewrite.
