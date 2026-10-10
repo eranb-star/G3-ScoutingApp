@@ -34,6 +34,7 @@ import FrcOperationsPage from "./pages/FrcOperationsPage";
 import ProjectsPage from "./pages/ProjectsPage";
 import RobotBuildFilePage from './pages/RobotBuildFilePage';
 import RobotBuildPage from "./pages/RobotBuildPage";
+const RobotStudioPage=lazy(()=>import('./pages/RobotStudioPage'));
 import UpdatesPage from "./pages/UpdatesPage";
 import FrcWorkPage from "./pages/FrcWorkPage";
 import TeamOperationsPage from "./pages/TeamOperationsPage";
@@ -873,6 +874,7 @@ function AppShell() {
         <Route path="/projects" element={<MemberGate><ProjectsPage /></MemberGate>} />
         <Route path="/robot-build/file" element={<MemberGate><RobotBuildFilePage /></MemberGate>} />
         <Route path="/robot-build" element={<MemberGate><RobotBuildPage /></MemberGate>} />
+        <Route path="/robot-build/studio" element={<MemberGate><Suspense fallback={<p role="status">Loading studio…</p>}><RobotStudioPage /></Suspense></MemberGate>} />
         <Route path="/fundraising" element={<MemberGate><FundraisingPage /></MemberGate>} />
         <Route path="/tools" element={<MemberGate><ToolsInventoryPage /></MemberGate>} />
         <Route path="/frc-operations" element={<MemberGate><FrcOperationsPage /></MemberGate>} />

@@ -10,6 +10,7 @@ import { supabase } from "../supabase";
 const links = [
   ["/home", "Home", "בית"],
   ["/work", "Work", "עבודה"],
+  ["/robot-build", "Robot Build", "בניית הרובוט"],
   ["/team-operations", "Team operations", "תפעול הקבוצה"],
   ["/growth", "Skills Academy", "אקדמיית מיומנויות"],
   ["/knowledge", "FRC knowledge", "ידע FRC"],
@@ -31,7 +32,7 @@ export default function WebPortalShell({children}:{children:ReactNode}) {
   if(!profile?.active||profile.must_change_password)return <>{children}</>;
   const knowledgeView=location.pathname==="/updates"&&new URLSearchParams(location.search).get("view")==="knowledge";
   const item=(path:string,en:string,he:string)=>{
-    const active=path.includes("?")?knowledgeView:location.pathname===path&&!(path==="/updates"&&knowledgeView);
+    const active=path.includes("?")?knowledgeView:(location.pathname===path||(path==='/robot-build'&&location.pathname.startsWith('/robot-build/')))&&!(path==="/updates"&&knowledgeView);
     return <Link to={path} className={active?"active":""} aria-current={active?"page":undefined} onClick={()=>setExpanded(false)}>{pick(en,he)}</Link>;
   };
   return <div className="web-portal">

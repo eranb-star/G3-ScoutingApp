@@ -1,6 +1,6 @@
 # Phase 2 — 3D Robot Studio: review design
 
-Status: proposed design for review, 10 October 2026. No Phase 2 application development, schema deployment, catalogue publication or permission expansion is authorized by this document. Phase 1 remains deployed and unchanged.
+Status: approved for end-to-end implementation by the user on 10 October 2026. Development is in progress; see ROBOT_BUILD_PHASE2_IMPLEMENTATION_20261010.md for verified delivery status. Phase 1 remains the production release until Phase 2 acceptance and deployment. Publishing private CAD or expanding access still requires the applicable explicit grant.
 
 ## 1. Product outcome
 

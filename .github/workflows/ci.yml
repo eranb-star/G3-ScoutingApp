@@ -56,6 +56,10 @@ jobs:
           node scripts/test-robot-build-stock-assembly.mjs
           node scripts/test-robot-build-release-rehearsal.mjs
           node scripts/test-robot-build-phase1.mjs
+          node scripts/test-robot-studio.mjs
+          node scripts/test-robot-studio-proposals.mjs
+          node scripts/test-robot-studio-cad-library.mjs
+          node scripts/test-robot-studio-comments.mjs
           node scripts/test-cad-team-access.mjs
           node scripts/test-build-freshness.mjs
           node scripts/test-build-source-observations.mjs
