@@ -13,3 +13,19 @@
 
 .studio-mobile-nav{display:none}
 @media(max-width:650px){.robot-studio{padding-bottom:78px}.studio-header{gap:8px;margin-bottom:8px}.studio-header h1{font-size:22px;margin-block:5px}.studio-header p{margin-block:4px}.studio-header-actions{gap:6px}.studio-commandbar{gap:6px;margin-block:8px}.studio-workspace{display:flex;flex-direction:column}.studio-stage{order:0;width:100%}.studio-library,.studio-inspector{display:none!important}.mobile-panel-parts .studio-library,.mobile-panel-inspect .studio-inspector{display:block!important;position:fixed;inset-inline:8px;bottom:66px;height:55dvh;max-height:55dvh;overflow:auto;z-index:80;border:1px solid #dcbcd4;border-radius:16px 16px 0 0;background:#fff;box-shadow:0 -8px 35px #30132633;padding:16px}.studio-mobile-nav{display:flex;gap:8px;position:fixed;bottom:0;inset-inline:0;padding:10px;background:#fff;border-top:1px solid #e1d5e0;z-index:90;justify-content:center}.studio-mobile-nav button{min-height:44px}.studio-canvas{height:52dvh!important;min-height:320px}.studio-present .studio-canvas{height:65dvh!important}.studio-present .studio-library{display:none!important}}
+/* Fullscreen is a presentation surface: keep the model and controls in one viewport. */
+.robot-studio.studio-present:fullscreen{height:100dvh;box-sizing:border-box;padding:12px;display:flex;flex-direction:column;overflow:hidden;gap:8px}
+.studio-present:fullscreen .studio-header{margin:0;gap:12px;flex-shrink:0;align-items:center}
+.studio-present:fullscreen .studio-header>div:first-child{min-width:0;flex:1}
+.studio-present:fullscreen .studio-header h1{font-size:20px;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;margin:0}
+.studio-present:fullscreen .studio-header small,.studio-present:fullscreen .studio-header p,.studio-present:fullscreen .studio-header a{display:none}
+.studio-present:fullscreen .studio-header-actions{margin:0;max-width:none;flex-shrink:0}
+.studio-present:fullscreen .studio-commandbar{padding:0;margin:0;flex-shrink:0}
+.studio-present:fullscreen .studio-workspace{display:flex;align-items:stretch;flex:1;min-height:0;width:100%;box-sizing:border-box}
+.studio-present:fullscreen .studio-stage{display:flex;flex-direction:column;flex:1;min-height:0;width:100%}
+.studio-present:fullscreen .studio-canvas{flex:1;min-height:0!important;height:auto!important}
+.studio-present:fullscreen .studio-tools{flex-shrink:0;padding:5px 10px}
+.studio-present:fullscreen .studio-presentation{flex-shrink:0;max-height:26dvh;overflow:auto;padding:8px 12px;gap:6px}
+.studio-present:fullscreen .studio-presentation label{margin:2px 0}
+.studio-present:fullscreen .studio-stage footer,.studio-present:fullscreen .studio-mobile-nav{display:none}
+@media(max-width:650px){.studio-present:fullscreen .studio-header-actions{display:none}.studio-present:fullscreen .studio-commandbar .studio-mass{display:none}.studio-present:fullscreen .studio-commandbar{gap:4px}.studio-present:fullscreen .studio-presentation{max-height:30dvh}}
