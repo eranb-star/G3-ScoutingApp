@@ -7,3 +7,16 @@
 @media(max-width:600px){.attendance-v2 .hub-card{padding:16px}.attendance-v2 .admin-stat-grid{grid-template-columns:1fr}.attendance-record-drawer{padding:18px;max-height:94dvh}.attendance-history dl{grid-template-columns:1fr}.attendance-table-scroll th,.attendance-table-scroll td{padding:12px 10px}.attendance-filters label{min-width:125px}.attendance-record-drawer>header{position:sticky;top:-18px;background:white;z-index:1;padding-top:8px}}
 
 .absence-event-date{display:grid;gap:5px;padding:13px 15px;border-radius:12px;background:#fbecf6;border:1px solid #e8c8df;overflow-wrap:anywhere}.absence-event-date>span{font-size:.8rem;color:#744363;font-weight:700}.absence-event-date>strong{font-size:1.05rem;color:#52143e;line-height:1.55}.absence-event-date>b{color:#a82740;font-size:.85rem}.absence-focus-note{padding:12px;background:#fff4cf;border-radius:10px}.absence-card>time{font-size:.8rem;line-height:1.5}.absence-card blockquote small{display:block;color:#715c69}
+.workshop-attendance-toolbar,.workshop-attendance>header{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.workshop-attendance-switch{display:flex;gap:8px;flex-wrap:wrap}
+.workshop-attendance-switch button{min-height:44px;padding:10px 18px;border:1px solid #e9c9df;border-radius:10px;background:white;color:#662451;font-weight:700}
+.workshop-attendance-switch button[aria-pressed=true]{background:#b0007b;color:white;border-color:#b0007b}
+.workshop-attendance>header{margin-block:20px}.workshop-attendance h2{margin:6px 0}.workshop-attendance header p{margin:0}
+.workshop-attendance-totals{display:flex;gap:24px;flex-wrap:wrap;padding-block:14px;border-block:1px solid #eeddea}
+.workshop-attendance-totals span{display:flex;align-items:baseline;gap:8px}.workshop-attendance-totals strong{font-size:1.6rem;color:#a30070}
+.workshop-person-search{display:grid;gap:6px;max-width:360px;margin-block:18px}
+.workshop-person-search input,.workshop-attendance select{padding:10px;border:1px solid #d8c7d3;border-radius:8px;min-height:44px;max-width:100%}
+.workshop-roster-group h3{font-size:1rem;margin-block:18px 8px}.workshop-roster-group h3 span{color:#a30070;margin-inline-start:8px}
+.workshop-roster-group ul{list-style:none;padding:0;margin:0}.workshop-roster-group li{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;padding:12px 0;border-top:1px solid #eee1ea}
+.workshop-roster-group li div{display:grid;gap:4px;overflow-wrap:anywhere}.workshop-roster-group small,.workshop-attendance>header small{color:#655666}
+@media(max-width:600px){.workshop-attendance-toolbar{align-items:stretch}.workshop-roster-group li{grid-template-columns:1fr}.workshop-attendance-totals{gap:12px}.workshop-attendance>header{align-items:start}.workshop-attendance-switch{flex:1}.workshop-attendance-switch button{flex:1}}
