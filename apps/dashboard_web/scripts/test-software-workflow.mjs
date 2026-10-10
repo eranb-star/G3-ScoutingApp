@@ -1,0 +1,24 @@
+import {createRequire} from 'node:module';import fs from 'node:fs/promises';import os from 'node:os';import path from 'node:path';import {pathToFileURL} from 'node:url';
+const req=createRequire(import.meta.url),{build}=createRequire(req.resolve('vite'))('esbuild');
+const contents=`import assert from 'node:assert/strict';
+import {prepareSoftwareChange,selectSoftware,softwareEvidence,sameSoftwareRevision} from '../../backend/supabase/functions/frc-assistant/software-context';
+const repo='GlueGunAndGlitter/OFFSEASON_2026',target='a'.repeat(40),base='b'.repeat(40),access={allowPrivate:true,token:'fixture-only'};let refs=[];
+const entry=(path,sha)=>({path,sha,type:'blob',mode:'100644',size:100});
+const send=async(url,opts)=>{assert.equal(opts.headers.Authorization,'Bearer fixture-only');assert.equal(opts.method,undefined);let data;
+if(url.endsWith(repo))data={full_name:repo,private:true,default_branch:'develop'};
+else if(url.includes('/commits/')){const ref=url.split('/').pop();refs.push(ref);const sha=ref===base?base:target;data={sha,commit:{tree:{sha}}};}
+else if(url.includes('/git/trees/'))data={truncated:false,tree:url.includes(base)?[entry('src/Removed.java','1'),entry('src/Intake.java','2')]:[entry('src/Added.java','3'),entry('src/Intake.java','4')]};
+else data={encoding:'base64',content:btoa(Array.from({length:1000},(_,i)=>'public void intake'+i+'() {}').join('\\n'))};return Response.json(data);};
+const change=await prepareSoftwareChange(repo,'develop',base,send,access);
+assert.deepEqual(change.changes,[{path:'src/Added.java',status:'added'},{path:'src/Intake.java',status:'modified'},{path:'src/Removed.java',status:'removed'}]);
+await assert.rejects(prepareSoftwareChange(repo,'develop',target,send,access),/different/);
+refs=[];await selectSoftware(repo,'intake',send,access);assert.deepEqual(refs,['develop']);
+refs=[];await selectSoftware(repo,'intake',send,access,base);assert.deepEqual(refs,[base]);
+const selection={repository:repo,revision:target,base,paths:change.paths,mode:'review',automatic:true};
+const evidence=await softwareEvidence(selection,send,access,'intake');assert.equal(evidence.rows.length,4);assert.ok(evidence.rows.some(r=>r.path==='src/Removed.java'&&r.revision===base));assert.ok(evidence.rows.reduce((n,r)=>n+Buffer.byteLength(r.text),0)<=22000);
+await assert.rejects(softwareEvidence({...selection,paths:['src/Missing.java']},send,access),/both revisions/);
+assert.equal(sameSoftwareRevision(selection,{...selection,paths:['src/Intake.java']}),true);
+for(const next of [{...selection,revision:'c'.repeat(40)},{...selection,repository:'GlueGunAndGlitter/Rebuilt_2026'},{...selection,base:'c'.repeat(40)},{...selection,mode:'explain'},null])assert.equal(sameSoftwareRevision(selection,next),false);
+assert.equal(sameSoftwareRevision(null,null),true);
+console.log('PASS: default branch, immutable follow-up revision, exact-tree changed files, added/deleted evidence, bounded two-revision context and conversation identity');`;
+const built=await build({stdin:{contents,resolveDir:process.cwd(),loader:'ts'},bundle:true,platform:'node',format:'esm',write:false,logLevel:'silent'});const file=path.join(os.tmpdir(),'g3-software-workflow-test.mjs');await fs.writeFile(file,built.outputFiles[0].text);await import(pathToFileURL(file));

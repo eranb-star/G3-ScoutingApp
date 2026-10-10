@@ -1,4 +1,4 @@
-import {selectSoftware,prepareSoftware,softwareEvidence,softwareCitations,validateSoftware,SoftwareError,isPrivateRobotRepository,type SoftwareAccess} from './software-context.ts';
+import {sameSoftwareRevision,selectSoftware,prepareSoftware,prepareSoftwareChange,softwareEvidence,softwareCitations,validateSoftware,SoftwareError,isPrivateRobotRepository,type SoftwareAccess} from './software-context.ts';
 import {officialSeasonEvidence} from './official-season.ts';
 import {verifiedCalculations} from './verified-calculations.ts';
 import {scoringAnswer} from './scoring-answer.ts';
@@ -116,12 +116,20 @@ Deno.serve(async (request) => {
       return {token,allowPrivate:true};
     }
     if(body.action==='select-software'){
-      try{return response(await selectSoftware(body.repository,String(body.question??'').slice(0,6000),fetch,await repositoryAccess(body.repository)));}
+      try{return response(await selectSoftware(body.repository,String(body.question??'').slice(0,6000),fetch,await repositoryAccess(body.repository),body.ref));}
       catch(error){return response({error:error instanceof SoftwareError?error.message:'Repository source selection failed. No generic answer was generated.',code:'SOFTWARE_UNAVAILABLE'},400);}
     }
     if(body.action==='prepare-software'){
       try{return response(await prepareSoftware(body.repository,body.ref,fetch,await repositoryAccess(body.repository)));}
       catch(error){return response({error:error instanceof SoftwareError?error.message:'Repository preparation failed.',code:'SOFTWARE_UNAVAILABLE'},400);}
+    }
+    if(body.action==='prepare-software-change'){
+      try{return response(await prepareSoftwareChange(body.repository,body.ref,body.baseRef,fetch,await repositoryAccess(body.repository)));}
+      catch(error){return response({error:error instanceof SoftwareError?error.message:'Change preparation failed.',code:'SOFTWARE_UNAVAILABLE'},400);}
+    }
+    if(body.action==='preview-software'){
+      try{const selection=validateSoftware(body.software);const evidence=await softwareEvidence(selection,fetch,await repositoryAccess(selection.repository),String(body.question??'').slice(0,6000));return response({selection:evidence.selection,rows:evidence.rows});}
+      catch(error){return response({error:error instanceof SoftwareError?error.message:'Code evidence could not be read. No answer was generated.',code:'SOFTWARE_UNAVAILABLE'},400);}
     }
     const message = typeof body.message === "string" ? body.message.trim().slice(0, 6000) : "";
     const language = body.language === "he" ? "he" : "en";
@@ -171,9 +179,9 @@ Deno.serve(async (request) => {
     if(requestedConversation){
       const saved=await admin.from('ai_conversations').select('software_context').eq('id',requestedConversation).eq('member_id',memberId).maybeSingle();
       if(saved.error||!saved.data)return await finishResponse({error:'Conversation context could not be verified.',code:'CONTEXT_UNAVAILABLE'},409);
-      let sameContext=false;try{sameContext=JSON.stringify(saved.data.software_context?validateSoftware(saved.data.software_context):null)===JSON.stringify(softwareSelection?validateSoftware(softwareSelection):null);}catch{}
+      let sameContext=false;try{sameContext=sameSoftwareRevision(saved.data.software_context,softwareSelection);}catch{}
       if(!sameContext)return await finishResponse({error:'This conversation uses a different code revision. Start a new conversation to change its repository context.',code:'SOFTWARE_CONTEXT_CHANGED'},409);
-      softwareSelection=saved.data.software_context;
+      // File scope can change for follow-up questions; repository and revisions cannot.
     }
     let software:Awaited<ReturnType<typeof softwareEvidence>>|null=null;
     if(softwareSelection){
