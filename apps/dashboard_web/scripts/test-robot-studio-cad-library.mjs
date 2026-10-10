@@ -1,0 +1,17 @@
+import fs from 'node:fs';import assert from 'node:assert/strict';import{randomUUID}from'node:crypto';
+process.env.STUDIO_PROPOSAL_FIXTURE='1';const {db,owner,viewer,outsider,as}=await import('./test-robot-studio-storage.mjs');
+const connection=randomUUID(),source=randomUUID(),snapshot=randomUUID();
+await db.exec(`reset role;create table cad_connections(id uuid primary key,member_id uuid,disconnected_at timestamptz);alter table cad_sources add name text;
+update team_members set active=true;
+insert into cad_connections values('${connection}','${owner}',null);
+insert into cad_sources(id,connection_id,name)values('${source}','${connection}','Private mechanism');
+insert into cad_snapshots values('${snapshot}','${source}');
+insert into storage.objects(bucket_id,name)values('cad-design-assets','${connection}/${snapshot}-v3.json');`);
+const sql=fs.readFileSync(new URL('../../../backend/supabase/robot_studio_cad_library_20261010.sql',import.meta.url),'utf8');await db.exec(sql);await db.exec(sql);
+await as(viewer);assert.equal((await db.query('select * from robot_studio_cad_library')).rows.length,0);assert.equal((await db.query("select * from storage.objects where bucket_id='cad-design-assets'")).rows.length,0);
+await assert.rejects(db.query('select publish_robot_studio_cad($1,true)',[snapshot]),/owner/);
+await as(owner);const privateScene=randomUUID();await db.query('select save_robot_studio($1,0,$2,$3,$4)',[privateScene,{schema:1,name:'Private',options:[{id:'A',parts:[]}],assets:[{id:'cad',kind:'onshape',sourceId:source,snapshotId:snapshot}],views:[]},randomUUID(),randomUUID()]);await assert.rejects(db.query('select share_robot_studio($1,$2,$3)',[privateScene,viewer,'viewer']),/Recipient/);await db.query('select publish_robot_studio_cad($1,true)',[snapshot]);await db.query('select share_robot_studio($1,$2,$3)',[privateScene,viewer,'viewer']);
+await as(viewer);assert.equal((await db.query('select * from robot_studio_cad_library')).rows.length,1);assert.equal((await db.query("select * from storage.objects where bucket_id='cad-design-assets'")).rows.length,1);
+const scene=randomUUID();const doc={schema:1,name:'Student concept',options:[{id:'A',parts:[]}],assets:[{id:'approved',kind:'onshape',sourceId:source,snapshotId:snapshot}],views:[]};await db.query('select save_robot_studio($1,0,$2,$3,$4)',[scene,doc,randomUUID(),randomUUID()]);
+await as(owner);await db.query('select publish_robot_studio_cad($1,false)',[snapshot]);await as(viewer);assert.equal((await db.query('select * from robot_studio_scenes where id=$1',[scene])).rows.length,0);assert.equal((await db.query("select * from storage.objects where bucket_id='cad-design-assets'")).rows.length,0);
+await db.close();console.log('Studio CAD library: no default publication, connection-owner-only grant, exact geometry access, student composition and revoke enforcement passed.');

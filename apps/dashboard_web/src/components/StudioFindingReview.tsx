@@ -1,0 +1,7 @@
+import {useState} from 'react';
+import {useLocalization} from '../lib/localization';
+import {findingSignature,type StudioScene} from '../lib/robotStudio';
+export default function StudioFindingReview({scene,ids,code,editable,modify}:{scene:StudioScene;ids:string[];code:string;editable:boolean;modify:(fn:(scene:StudioScene)=>void)=>void}){
+ const {pick}=useLocalization(),[reason,setReason]=useState(''),key=scene.activeOption+':'+code+':'+ids.join(':'),signature=findingSignature(scene,ids),previous=scene.acknowledgements?.find(a=>a.key===key),current=previous?.signature===signature;
+ return <details><summary>{current?pick('Acknowledged · still unresolved','נרשם הסבר · עדיין לא נפתר'):previous?pick('Changed · review again','השתנה · נדרשת בדיקה מחדש'):pick('Record review note','רישום הערת בדיקה')}</summary>{previous&&<p>{previous.reason} · {new Date(previous.at).toLocaleString()}</p>}<p>{pick('Acknowledgement does not remove the finding or approve the design. Geometry changes reopen it.','רישום הסבר אינו מסיר את הממצא או מאשר את התכנון. שינוי גאומטריה מחייב בדיקה חוזרת.')}</p><label>{pick('Reason','נימוק')}<textarea maxLength={1000} value={reason} onChange={e=>setReason(e.target.value)}/></label><button disabled={!editable||!reason.trim()} onClick={()=>{modify(s=>{s.acknowledgements=[...(s.acknowledgements??[]).filter(a=>a.key!==key),{key,signature,reason:reason.trim(),at:new Date().toISOString()}];});setReason('');}}>{pick('Record acknowledgement','שמירת ההסבר')}</button></details>;
+}

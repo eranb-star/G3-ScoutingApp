@@ -1,0 +1,31 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import {pathToFileURL} from 'node:url';
+import ts from 'typescript';
+// Temporary modules next to dependencies, cleaned even when a test fails.
+const dir=await fs.mkdtemp(path.join(process.cwd(),'node_modules/.studio-test-'));
+try{
+ for(const name of ['robotStudio','robotStudioGeometry','studioChecks']){let source=await fs.readFile(`src/lib/${name}.ts`,'utf8');let js=ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ES2022}}).outputText.replace("'./robotStudio'","'./robotStudio.mjs'");await fs.writeFile(path.join(dir,name+'.mjs'),js);}
+ const domain=await import(pathToFileURL(path.join(dir,'robotStudio.mjs'))),geometry=await import(pathToFileURL(path.join(dir,'robotStudioGeometry.mjs'))),T=await import('three');
+ const {newPart,newScene,validateScene,shapeVolume,copyOption,massSummary,activeOption}=domain;
+ const scene=newScene('Fixture');const tube=newPart('tube');tube.shape.width=.04;tube.shape.inner=.02;tube.shape.length=.5;
+ assert.ok(Math.abs(shapeVolume(tube.shape)-Math.PI*.00015)<1e-12);
+ assert.throws(()=>shapeVolume({...tube.shape,inner:.05}),/Inside diameter/);
+ const panel=newPart('panel');panel.massKg=.5;panel.massSource='Scale';panel.hidden=true;activeOption(scene).parts.push(tube,panel);validateScene(scene);
+ assert.deepEqual(massSummary(activeOption(scene).parts),{kg:.5,known:1,total:2,complete:false});
+ const copied=copyOption(activeOption(scene),'B');copied.parts[0].shape.width=.08;assert.equal(tube.shape.width,.04);assert.notEqual(copied.parts[0].id,tube.id);
+ panel.parent=tube.id;tube.parent=panel.id;assert.throws(()=>validateScene(scene),/hierarchy/);tube.parent=null;panel.parent=null;
+ tube.position=[1,2,3];tube.rotation=[0,0,Math.PI/2];panel.position=[.5,0,0];panel.parent=tube.id;
+ const before=geometry.worldMatrix(activeOption(scene).parts,panel.id);const moved=geometry.reparent(activeOption(scene).parts,panel.id,null);const after=geometry.worldMatrix(moved,panel.id);for(let i=0;i<16;i++)assert.ok(Math.abs(before.elements[i]-after.elements[i])<1e-10);
+ const rootCopy=domain.duplicateSubtree(activeOption(scene),tube.id);const duplicate=activeOption(scene).parts.find(p=>p.id===rootCopy);const childCopy=activeOption(scene).parts.find(p=>p.parent===rootCopy);assert.ok(childCopy);assert.deepEqual(childCopy.position,panel.position);assert.equal(duplicate.parent,tube.parent);childCopy.shape.width=.8;assert.notEqual(panel.shape.width,.8);assert.equal(domain.applyPartEdit(panel,{...panel,shape:{...panel.shape,width:.9}}).massKg,null);
+ const checks=await import(pathToFileURL(path.join(dir,'studioChecks.mjs')));const tri=[[0,0,0],[1,0,0],[0,1,0]];assert.equal(checks.triangleContact(tri,tri),true);assert.equal(checks.triangleContact(tri,tri.map(p=>[p[0]+2,p[1],p[2]])),false);assert.equal(checks.triangleContact(tri,tri.map(p=>[p[0],p[1],p[2]+.1])),false);const limited=checks.checkMeshes([{id:'a',positions:tri.flat(),complete:true},{id:'b',positions:tri.flat(),complete:true}],0);assert.deepEqual(limited.incomplete,['a','b']);
+ const imported=geometry.onshapeObject({units:'m',coverage:'complete',meshes:[{id:'a',name:'Plate',positions:[0,0,0,1,0,0,0,1,0],transform:[1,0,0,2,0,1,0,3,0,0,1,4,0,0,0,1]}]});const box=new T.Box3().setFromObject(imported);assert.deepEqual(box.min.toArray(),[2,3,4]);assert.deepEqual(box.max.toArray(),[3,4,4]);geometry.disposeObject(imported);
+ for(const kind of ['panel','trapezoid','tube','boxTube','rod','hex','spacer','angle']){const p=newPart(kind),g=geometry.stockGeometry(p.shape);g.computeBoundingBox();assert.ok(g.boundingBox.getSize(new T.Vector3()).length()>0);g.dispose();}
+ const group=new T.Group(),nested=new T.Group(),mesh=new T.Mesh(new T.BoxGeometry(.1,.2,.3),new T.MeshStandardMaterial());group.position.set(1,2,3);nested.rotation.z=Math.PI/2;mesh.position.x=.5;mesh.name='Nested part';nested.add(mesh);group.add(nested);const extracted=geometry.extractComponent(group,[0,0]);const originalBounds=new T.Box3().setFromObject(group),extractedBounds=new T.Box3().setFromObject(extracted);assert.ok(originalBounds.min.distanceTo(extractedBounds.min)<1e-9);assert.equal(geometry.componentNodes(group)[0].name,'Nested part');geometry.disposeObject(group);geometry.disposeObject(extracted);
+ const joints=[{id:'a',partId:'a',name:'Arm',kind:'rotate',axis:'x',min:0,max:2,origin:[0,0,0]},{id:'b',partId:'b',name:'Follower',kind:'rotate',axis:'x',min:-1,max:0,origin:[0,0,0],driverId:'a',ratio:-.5}];assert.equal(domain.jointValues(joints,.5).get('b'),-.5);assert.equal(domain.jointValues(joints,NaN).get('b'),0);assert.equal(domain.jointValues(joints,1).get('a'),2);assert.throws(()=>domain.jointValues([{...joints[0],driverId:'b',ratio:1},joints[1]],.5),/Cyclic/);
+ const stl=new TextEncoder().encode('solid part\nfacet normal 0 0 1\nouter loop\nvertex 0 0 0\nvertex 100 0 0\nvertex 0 100 0\nendloop\nendfacet\nendsolid part');const model=await geometry.loadUpload(stl.buffer,'stl',.001);assert.ok(Math.abs(new T.Box3().setFromObject(model).max.x-.1)<1e-6);geometry.disposeObject(model);
+ await assert.rejects(geometry.loadUpload(new Uint8Array(8).buffer,'glb',1),/Invalid GLB/);
+ console.log('Studio domain / geometry: dimensions, hollow volume, unknown mass, alternatives, hierarchy, reparenting, Onshape row-major transform, stock families and STL units passed.');
+}finally{await fs.rm(dir,{recursive:true,force:true});}
