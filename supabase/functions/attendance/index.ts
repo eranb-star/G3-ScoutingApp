@@ -33,10 +33,8 @@ Deno.serve(async (request) => {
     if (!member?.active || member.must_change_password) return response({ error: "Active member access required" }, 403);
 
     const body = await request.json() as { action: "open_workshop" | "check_in" | "check_out"; meetingId?: string; verification?: "location" | "wifi"; latitude?: number; longitude?: number; accuracy?: number; ssid?: string };
-    const nowIso = new Date().toISOString();
-    let expiredMeetings = admin.from("team_meetings").update({ status: "closed" }).eq("status", "open").lt("ends_at", nowIso);
-    if (body.action === "check_out" && body.meetingId) expiredMeetings = expiredMeetings.neq("id", body.meetingId);
-    await expiredMeetings;
+    const closing = await admin.rpc("close_stale_workshop_sessions");
+    if (closing.error) return response({ error: closing.error.message }, 503);
     let method: "location" | "trusted_wifi" = "location";
     let distance: number | null = null;
     let accuracy: number | null = null;

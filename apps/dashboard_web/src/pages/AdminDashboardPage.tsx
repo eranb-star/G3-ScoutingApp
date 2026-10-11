@@ -25,7 +25,7 @@ export default function AdminDashboardPage() {
 
   async function load() {
     const [{ data: meetings }, { data: memberRows }] = await Promise.all([
-      supabase.from("team_meetings").select("id,title,opened_at,starts_at,ends_at,status").eq("status", "open").order("opened_at", { ascending: false }).limit(1),
+      supabase.from("team_meetings").select("id,title,opened_at,starts_at,ends_at,attendance_closes_at,status").eq("status", "open").order("opened_at", { ascending: false }).limit(1),
       supabase.from("team_members").select("id,display_name,subteam").eq("active", true),
     ]);
     const active = (meetings?.[0] ?? null) as OpenMeeting | null;

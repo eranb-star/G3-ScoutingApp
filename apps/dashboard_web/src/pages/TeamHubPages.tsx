@@ -1,3 +1,4 @@
+import WorkshopPlanner from '../components/WorkshopPlanner';
 import PersonalAttendance from '../components/PersonalAttendance';
 import WorkshopSessionControls,{SessionAudit} from "../components/WorkshopSessionControls";
 import {browserLocationAttendance} from '../lib/browserAttendance';
@@ -15,6 +16,7 @@ type TeamMeeting = SessionAudit & {
   title: string;
   starts_at: string;
   ends_at: string;
+  attendance_closes_at: string;
   status: "scheduled" | "open" | "closed" | "cancelled";
   meeting_type: string;
 };
@@ -22,13 +24,11 @@ type TeamMeeting = SessionAudit & {
 const israelDateTime = new Intl.DateTimeFormat("en-IL", {
   timeZone: "Asia/Jerusalem", weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit",
 });
-const israelCalendarDay = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Jerusalem", year: "numeric", month: "2-digit", day: "2-digit" });
 
-function isMeetingWindowAvailable(meeting: Pick<TeamMeeting,"starts_at"|"ends_at">, now = new Date()) {
+function isMeetingWindowAvailable(meeting: Pick<TeamMeeting,"starts_at"|"ends_at"|"attendance_closes_at">, now = new Date()) {
   const starts = new Date(meeting.starts_at);
-  const ends = new Date(meeting.ends_at);
-  return israelCalendarDay.format(starts) === israelCalendarDay.format(now)
-    && now.getTime() >= starts.getTime() - 60 * 60 * 1000
+  const ends = new Date(meeting.attendance_closes_at??meeting.ends_at);
+  return now.getTime() >= starts.getTime() - 60 * 60 * 1000
     && now.getTime() <= ends.getTime();
 }
 
@@ -77,8 +77,8 @@ export function HomePage({ isAdmin }: { isAdmin: boolean }) {
   useEffect(() => {
     const now = new Date().toISOString();
     Promise.all([
-      supabase.from("team_meetings").select("id,title,starts_at,ends_at,status,meeting_type,opened_by,closed_by,opened_at,closed_at,opened_automatically,closed_automatically").eq("status", "open").lte("starts_at", now).gte("ends_at", now).order("starts_at").limit(1),
-      supabase.from("team_meetings").select("id,title,starts_at,ends_at,status,meeting_type,opened_by,closed_by,opened_at,closed_at,opened_automatically,closed_automatically").eq("status", "scheduled").gt("starts_at", now).order("starts_at").limit(1),
+      supabase.from("team_meetings").select("id,title,starts_at,ends_at,attendance_closes_at,status,meeting_type,opened_by,closed_by,opened_at,closed_at,opened_automatically,closed_automatically").eq("status", "open").lte("starts_at", now).gte("attendance_closes_at", now).order("starts_at").limit(1),
+      supabase.from("team_meetings").select("id,title,starts_at,ends_at,attendance_closes_at,status,meeting_type,opened_by,closed_by,opened_at,closed_at,opened_automatically,closed_automatically").eq("status", "scheduled").gt("starts_at", now).order("starts_at").limit(1),
       supabase.from("project_tasks").select("id", { count: "exact", head: true }).neq("status", "done").eq("archived", false),
     ]).then(([openResult, nextResult, taskResult]) => {
       setActiveMeeting((openResult.data?.[0] ?? null) as TeamMeeting | null);
@@ -154,7 +154,7 @@ export function SchedulePage() {
     setLoading(true);
     await supabase.rpc("ensure_workshop_schedule", { days_ahead: 120 });
     const { data, error } = await supabase.from("team_meetings")
-      .select("id,title,starts_at,ends_at,status,meeting_type,opened_by,closed_by,opened_at,closed_at,opened_automatically,closed_automatically")
+      .select("id,title,starts_at,ends_at,attendance_closes_at,status,meeting_type,opened_by,closed_by,opened_at,closed_at,opened_automatically,closed_automatically")
       .gte("ends_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
       .neq("status", "cancelled").order("starts_at").limit(30);
     setMessage(error?.message ?? "");
@@ -188,7 +188,7 @@ export function SchedulePage() {
     <div className="hub-page">
       <header className="hub-page-header">
         <div><div className="hub-eyebrow">{pick("Team calendar · Israel time","יומן הקבוצה · שעון ישראל")}</div><h1>{pick("Schedule","לוח זמנים")}</h1><p>{pick("Scheduled workshops open for check-in one hour before their start. Times below follow the configured schedule.","מפגשי סדנה נפתחים לכניסה שעה לפני ההתחלה. הזמנים לפי לוח הזמנים המוגדר.")}</p></div>
-        {isAdmin ? <button className="hub-button" onClick={() => setShowCreate((value) => !value)}>{pick("Add special meeting","הוספת מפגש מיוחד")}</button> : null}
+        <WorkshopPlanner onUpdated={()=>void loadMeetings()}/>{isAdmin ? <button className="hub-button" onClick={() => setShowCreate((value) => !value)}>{pick("Add special meeting","הוספת מפגש מיוחד")}</button> : null}
       </header>
       {showCreate ? <form className="hub-card schedule-create" onSubmit={createSpecial}>
         <label>{pick("Meeting name","שם המפגש")}<input required value={title} onChange={(e) => setTitle(e.target.value)} /></label>
@@ -237,14 +237,14 @@ export function CheckInPage() {
     const currentTime = new Date();
     const now = currentTime.toISOString();
     Promise.all([
-      supabase.from("team_meetings").select("id,title,starts_at,ends_at,status,meeting_type,opened_by,closed_by,opened_at,closed_at,opened_automatically,closed_automatically").in("status", ["open","scheduled"]).lte("starts_at",new Date(Date.now()+3600000).toISOString()).gte("ends_at",now).order("opened_at", { ascending: false }),
-      supabase.from("team_meetings").select("id,title,starts_at,ends_at,status,meeting_type,opened_by,closed_by,opened_at,closed_at,opened_automatically,closed_automatically").in("status", ["scheduled","open"]).gt("starts_at", now).order("starts_at").limit(1),
+      supabase.from("team_meetings").select("id,title,starts_at,ends_at,attendance_closes_at,status,meeting_type,opened_by,closed_by,opened_at,closed_at,opened_automatically,closed_automatically").in("status", ["open","scheduled"]).lte("starts_at",new Date(Date.now()+3600000).toISOString()).gte("attendance_closes_at",now).order("opened_at", { ascending: false }),
+      supabase.from("team_meetings").select("id,title,starts_at,ends_at,attendance_closes_at,status,meeting_type,opened_by,closed_by,opened_at,closed_at,opened_automatically,closed_automatically").in("status", ["scheduled","open"]).gt("starts_at", now).order("starts_at").limit(1),
       profile ? supabase.from("attendance_records").select("meeting_id,checked_in_at,checked_out_at").eq("member_id",profile.id).is("checked_out_at",null).order("checked_in_at",{ascending:false}).limit(1).maybeSingle() : Promise.resolve({data:null}),
     ]).then(async([openResult, nextResult, activeResult]) => {
       if(openResult.error||nextResult.error||('error' in activeResult&&activeResult.error)){setMessage(pick("Attendance could not load. Check your connection and reload before trying again.","לא ניתן לטעון נוכחות. בדקו חיבור ורעננו לפני ניסיון נוסף."));return;}
       const openMeetings=(openResult.data ?? []) as TeamMeeting[],activeRecord=activeResult.data as {meeting_id:string;checked_in_at:string;checked_out_at:null}|null;
       let meeting = (activeRecord?openMeetings.find(item=>item.id===activeRecord.meeting_id):null) ?? openMeetings.find(item => isMeetingWindowAvailable(item, currentTime)) ?? null;
-      if(activeRecord&&!meeting){const{data}=await supabase.from("team_meetings").select("id,title,starts_at,ends_at,status,meeting_type,opened_by,closed_by,opened_at,closed_at,opened_automatically,closed_automatically").eq("id",activeRecord.meeting_id).maybeSingle();meeting=data as TeamMeeting|null;}
+      if(activeRecord&&!meeting){const{data}=await supabase.from("team_meetings").select("id,title,starts_at,ends_at,attendance_closes_at,status,meeting_type,opened_by,closed_by,opened_at,closed_at,opened_automatically,closed_automatically").eq("id",activeRecord.meeting_id).maybeSingle();meeting=data as TeamMeeting|null;}
       setActiveMeeting(meeting);
       setNextMeeting((nextResult.data?.[0] ?? null) as TeamMeeting | null);
       if(activeRecord&&meeting?.id===activeRecord.meeting_id)setAttendance(activeRecord);else await loadAttendance(meeting);
@@ -358,7 +358,7 @@ export function MessagesPage() {
   }
   useEffect(() => {
     void loadMessages();
-    supabase.from("team_meetings").select("id,title,starts_at,ends_at,status,meeting_type,opened_by,closed_by,opened_at,closed_at,opened_automatically,closed_automatically").gte("ends_at", new Date().toISOString()).order("starts_at").limit(20).then(({data}) => setMessageMeetings((data ?? []) as TeamMeeting[]));
+    supabase.from("team_meetings").select("id,title,starts_at,ends_at,attendance_closes_at,status,meeting_type,opened_by,closed_by,opened_at,closed_at,opened_automatically,closed_automatically").gte("ends_at", new Date().toISOString()).order("starts_at").limit(20).then(({data}) => setMessageMeetings((data ?? []) as TeamMeeting[]));
   }, [profile?.id, showArchived]);
 
   async function markRead(id: string) {

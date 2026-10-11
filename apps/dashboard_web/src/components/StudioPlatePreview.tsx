@@ -1,0 +1,9 @@
+import {useEffect,useRef} from 'react';
+import * as T from 'three';
+import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js';
+import {stockGeometry} from '../lib/robotStudioGeometry';
+import type {StudioPart} from '../lib/robotStudio';
+export default function StudioPlatePreview({part}:{part:StudioPart|null}){
+ const host=useRef<HTMLDivElement>(null);
+ useEffect(()=>{if(!part?.shape||!host.current)return;const el=host.current,scene=new T.Scene(),camera=new T.PerspectiveCamera(40,1,.0001,100),renderer=new T.WebGLRenderer({antialias:true,alpha:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));el.append(renderer.domElement);const geometry=stockGeometry(part.shape),material=new T.MeshStandardMaterial({color:part.color,metalness:.25,roughness:.5,transparent:part.opacity<1,opacity:part.opacity,side:T.DoubleSide}),mesh=new T.Mesh(geometry,material);scene.add(mesh,new T.HemisphereLight(0xffffff,0x334455,2));const light=new T.DirectionalLight(0xffffff,2);light.position.set(1,-1,2);scene.add(light);const box=new T.Box3().setFromObject(mesh),center=box.getCenter(new T.Vector3()),size=Math.max(box.getSize(new T.Vector3()).length(),.05);camera.up.set(0,0,1);camera.position.copy(center).add(new T.Vector3(size,-size,size));const controls=new OrbitControls(camera,renderer.domElement);controls.target.copy(center);controls.update();const resize=new ResizeObserver(()=>{renderer.setSize(el.clientWidth,el.clientHeight);camera.aspect=el.clientWidth/el.clientHeight;camera.updateProjectionMatrix();renderer.render(scene,camera);});resize.observe(el);controls.addEventListener('change',()=>renderer.render(scene,camera));return()=>{resize.disconnect();controls.dispose();geometry.dispose();material.dispose();renderer.dispose();el.replaceChildren();};},[part]);return <div className="plate-preview" ref={host} aria-label="Live 3D plate preview"/>;
+}

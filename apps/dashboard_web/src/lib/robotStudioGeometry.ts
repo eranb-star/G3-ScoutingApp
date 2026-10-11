@@ -6,6 +6,7 @@ import {validateShape,type Shape,type StudioPart,type Vec3} from './robotStudio'
 
 export function stockGeometry(s:Shape):T.BufferGeometry {
  validateShape(s);
+ if(s.plate){const polygon=new T.Shape(s.plate.outline.map(p=>new T.Vector2(...p)));for(const loop of s.plate.holes)polygon.holes.push(new T.Path(loop.map(p=>new T.Vector2(...p))));const g=new T.ExtrudeGeometry(polygon,{depth:s.length,bevelEnabled:false});g.translate(0,0,-s.length/2);g.computeVertexNormals();return g;}
  if(s.kind==='panel')return new T.BoxGeometry(s.width,s.height,s.length);
  if(s.kind==='rod'||s.kind==='hex'){const radius=s.kind==='hex'?s.width/Math.sqrt(3):s.width/2;const g=new T.CylinderGeometry(radius,radius,s.length,s.kind==='hex'?6:48);g.rotateX(Math.PI/2);return g;}
  const shape=new T.Shape();
