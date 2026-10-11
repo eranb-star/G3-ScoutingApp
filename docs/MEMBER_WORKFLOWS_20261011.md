@@ -16,7 +16,7 @@ Scope: Home/Updates read consistency, official-training bulk assignment feedback
 - No real student training assignment or attendance correction was used as a test.
 
 ## Deployment
-`backend/supabase/member_workflow_fixes_20261011.sql` applied successfully to production after rolled-back QA. Frontend release identity and live acceptance are recorded in the authoritative checkpoint after promotion.
+`backend/supabase/member_workflow_fixes_20261011.sql` applied successfully to production after rolled-back QA. Frontend **e66f9d417fa60aea5d61a9dc8269268b31d83efa** (development **8562cf9**), Vercel **BXR7gfHsin9WogJr61t45mUadNDh**, Ready Production on g3-6740.com at **20:39:02 GMT+3**. CI371/372 passed. Live official-training preview selected 30 members/leaders with no error; no confirmation was sent. Current/Last Workshop close-out previews and project task explanation field were verified. Post-deployment SQL: zero missing receipts for dismissed/acknowledged announcement actions; anon cannot invoke bulk checkout; description RPC exists. Retained rollback checks: `backend/supabase/tests/member_workflow_fixes_20261011.sql`. Error-path fixture shows the actual server message.
 
 ## Boundaries
 - Android 2.5.0/code28 predates these frontend controls. The server-side announcement reconciliation applies to old clients, but new forms require the updated website or a subsequent APK. Do not claim the previously generated APK includes this release.
