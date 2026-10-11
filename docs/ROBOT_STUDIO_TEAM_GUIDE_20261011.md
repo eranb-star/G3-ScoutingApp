@@ -9,7 +9,7 @@ Open **Robot Build → 3D Robot Studio**. A concept does not require an existing
 4. Attach to a parent while preserving position; use user-defined mounting frames or alignment controls when useful. Record needed adapters and mounting work. A reviewed concept connection is not a verified bolt pattern or manufacturing approval.
 5. Duplicate individual parts or whole subassemblies. Edits affect that copy only. Applying dimensions to selected same-kind copies explicitly previews the affected names. To reuse a mechanism later, save its design and use **Add → Reuse a saved assembly** in another design.
 
-On a phone, the canvas stays first. **Parts & tools** opens the bottom drawer; selecting a part opens **Edit selected**. **Canvas** closes the drawer. Numeric fields provide an alternative to small 3D handles.
+On a phone, the canvas stays first. **Parts & tools** opens the bottom drawer; selecting a part opens **Edit selected**. **Canvas**, or **Close panel · return to canvas** at the top of the drawer, closes it and exposes Save. Numeric fields provide an alternative to small 3D handles.
 
 ## Compare and review
 - Create another alternative for a different mechanism or layout. Alternatives retain independent parts and share immutable source assets. Compare shows synchronized views and changed components.
