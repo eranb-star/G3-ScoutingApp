@@ -1,3 +1,5 @@
+> **Current status: 11 October 2026.** Start with [CURRENT_CHECKPOINT_20261009.md](CURRENT_CHECKPOINT_20261009.md). Signed APK2.5.0/code28 now bundles production d6d5acc; see [APK release](APK_MILESTONE_20261011.md). The catalogue gap remains OPEN. Older latest-release/APK statements below are historical and superseded by that checkpoint.
+
 # Start here — current as of 9 October 2026
 
 Read [CURRENT_CHECKPOINT_20261009.md](CURRENT_CHECKPOINT_20261009.md) for the authoritative consolidated status, capability index, remaining acceptance and latest decisions. Then read [WORKING_EXPECTATIONS.md](WORKING_EXPECTATIONS.md) for proportional testing and execution discipline.

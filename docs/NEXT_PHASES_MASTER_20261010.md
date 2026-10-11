@@ -7,6 +7,9 @@ The completed software/log integration release is NOT a remaining development ph
 
 Likewise, do not rebuild Academy/certificates/shared trials, VR, CAD connection/refresh/inspection, Robot Build/BOM/manufacturing, inventory/fundraising/purchasing, attendance or Work navigation. Their acceptance limits are retained below.
 
+## 11 October addendum — open Studio catalogue work
+The latest Studio is delivered, but comprehensive component coverage remains OPEN. See [the catalogue source register](ROBOT_STUDIO_CATALOGUE_PLAN_20261011.md) and [the current correction release](ROBOT_STUDIO_CATALOGUE_RELEASE_20261011.md). APK packaging does not close missing Limelight/CAN/sensor/swerve/product variants, assembly-content double counting or large-scene phone acceptance. Keep this as a separate development item.
+
 ## A. Remaining product development — remote-first order
 These are bounded extensions toward the vision, not claims that existing modules are absent. Efforts are provisional engineering person-days including focused QA/documentation; not elapsed deadlines, token estimates or a programme total. Physical sessions and waiting for inputs are additional. Each estimate covers the stated first useful slice, not every conceivable capability in that domain.
 
