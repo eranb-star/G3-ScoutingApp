@@ -3,6 +3,7 @@ import {supabase} from '../supabase';
 import {useLocalization} from '../lib/localization';
 import {readAllRows} from '../lib/attendanceReporting';
 import {workshopSessions,type WorkshopSession} from '../lib/workshopAttendance';
+import AdminWorkshopClose from './AdminWorkshopClose';
 type Entry={id:string;member_id:string;checked_in_at:string;checked_out_at:string|null};
 type Person={id:string;display_name:string;subteam:string|null};
 export default function WorkshopAttendance(){
@@ -47,7 +48,7 @@ export default function WorkshopAttendance(){
    {mode==='current'&&current.length>1&&<label>{pick('Open workshop','סדנה פתוחה')}<select value={meeting?.id??''} onChange={e=>setChoice(e.target.value)}>{current.map(m=><option key={m.id} value={m.id}>{m.title} · {format.format(new Date(m.starts_at))}</option>)}</select></label>}
    <header><div><span className="hub-eyebrow">{isOpen?pick('OPEN WORKSHOP','סדנה פתוחה'):pick('LAST CLOSED WORKSHOP','הסדנה האחרונה שנסגרה')}</span><h2>{meeting?.title??pick('No workshop recorded yet','טרם נרשמה סדנה')}</h2>{meeting&&<p>{format.format(new Date(meeting.starts_at))} — {format.format(new Date(meeting.ends_at))} · {pick('Israel time','שעון ישראל')}</p>}</div><small>{pick('Updated','עודכן')}: {clock.format(new Date(data.updated))}<br/>{pick('Refreshes every 30 seconds while visible','מתרענן כל 30 שניות כשהעמוד מוצג')}</small></header>
    {meeting&&<><div className="workshop-attendance-totals"><span><strong>{isOpen?inside:data.rows.length}</strong>{isOpen?pick('Currently checked in','רשומים כעת בסדנה'):pick('Attended','השתתפו')}</span><span><strong>{isOpen?data.rows.length:data.rows.length-inside}</strong>{isOpen?pick('Attended so far','השתתפו עד כה'):pick('Checked out','נרשמה יציאה')}</span>{!isOpen&&inside>0&&<span><strong>{inside}</strong>{pick('Missing checkout','ללא רישום יציאה')}</span>}</div>
-   <label className="workshop-person-search">{pick('Find a person','חיפוש אדם')}<input type="search" value={search} onChange={e=>setSearch(e.target.value)}/></label>
+   <AdminWorkshopClose meeting={meeting} onUpdated={()=>refresh.current()}/><label className="workshop-person-search">{pick('Find a person','חיפוש אדם')}<input type="search" value={search} onChange={e=>setSearch(e.target.value)}/></label>
    {isOpen?<>{list(rows.filter(r=>!r.checked_out_at),pick('Currently checked in','רשומים כעת בסדנה'))}{list(rows.filter(r=>!!r.checked_out_at),pick('Already checked out','כבר יצאו'))}<small>{pick('Based on check-in records; a missing checkout does not confirm physical presence.','לפי רישומי הכניסה; היעדר רישום יציאה אינו מאשר נוכחות פיזית.')}</small></>:list(rows,pick('Everyone who attended','כל המשתתפים'))}</>}
   </>}
  </section>;

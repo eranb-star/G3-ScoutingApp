@@ -155,7 +155,8 @@ export default function UpdatesPage() {
 
   async function markAnnouncementRead(id: string) {
     if (!profile || reads.has(id)) return;
-    await supabase.from("announcement_reads").upsert({ announcement_id: id, member_id: profile.id });
+    const {error}=await supabase.from("announcement_reads").upsert({ announcement_id: id, member_id: profile.id },{onConflict:"announcement_id,member_id",ignoreDuplicates:true});
+    if(error){setStatus(error.message);return;}
     setReads((current) => new Set(current).add(id));
     window.dispatchEvent(new Event("g3-announcements-changed"));
   }
@@ -163,7 +164,8 @@ export default function UpdatesPage() {
   async function openAction(action:TeamAction){
     if(!profile)return;
     const now=new Date().toISOString();
-    await supabase.from("team_action_states").upsert({action_id:action.id,member_id:profile.id,status:"acknowledged",acknowledged_at:now,snoozed_until:null,updated_at:now},{onConflict:"action_id,member_id"});
+    const {error}=await supabase.from("team_action_states").upsert({action_id:action.id,member_id:profile.id,status:"acknowledged",acknowledged_at:now,snoozed_until:null,updated_at:now},{onConflict:"action_id,member_id"});
+    if(error){setStatus(error.message);return;}
     setActions(current=>current.map(item=>item.id===action.id?{...item,viewed:true}:item));
     window.dispatchEvent(new Event("g3-actions-changed"));
     navigate(action.destination||"/work");

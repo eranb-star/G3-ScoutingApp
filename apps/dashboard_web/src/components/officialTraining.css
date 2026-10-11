@@ -2,3 +2,5 @@
 .official-course-picker{display:grid;gap:8px;max-width:560px;font-weight:650;margin:16px 0}.official-course-picker select{min-height:44px;padding:10px 14px;border:1px solid #d9cbdc;border-radius:11px;background:#fff;color:#302a3e;font:inherit;width:100%}
 
 .official-training>section{margin-top:28px}.official-catalog h4{font-size:1.12rem;line-height:1.4;margin:14px 0 8px}.official-catalog article>span{font-size:.85rem;color:#685c70}.official-catalog p{margin-top:0;margin-bottom:20px}
+
+.official-recipient-actions{flex-wrap:wrap!important}.official-recipient-actions button{flex:1 1 180px;min-height:44px}.official-members{max-height:280px;overflow:auto}
