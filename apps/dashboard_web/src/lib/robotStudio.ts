@@ -1,7 +1,8 @@
+import {validatePlate,plateArea,type PlateSketch} from './studioPlate';
 /** Studio domain data. Metres, radians, +Z up. No inventory mutations here. */
 export type Vec3 = [number, number, number];
 export type ShapeKind = 'panel'|'trapezoid'|'tube'|'boxTube'|'rod'|'hex'|'spacer'|'angle';
-export type Shape = {kind:ShapeKind;width:number;height:number;length:number;wall:number;inner:number;top:number;offset:number};
+export type Shape = {plate?:PlateSketch;kind:ShapeKind;width:number;height:number;length:number;wall:number;inner:number;top:number;offset:number};
 export type StudioAsset = {id:string;name:string;kind:'upload'|'onshape'|'catalogue';catalogueId?:string;path?:string;format?:'glb'|'stl';scale:number;sourceUrl:string;sourceId?:string;snapshotId?:string;attribution:string;coverage:string;nodePath?:number[]};
 export type StudioPart = {id:string;lineageId?:string;name:string;group?:boolean;nonvisual?:boolean;connectors?:{id:string;name:string;position:Vec3;rotation:Vec3}[];parent:string|null;position:Vec3;rotation:Vec3;shape:Shape|null;assetId:string|null;color:string;opacity:number;hidden:boolean;locked:boolean;reference:boolean;material:string;density:number|null;massKg:number|null;massSource:string;inventoryId:string|null;attachment:'unresolved'|'concept';note:string};
 export type StudioJoint = {id:string;name:string;partId:string;reviewRequired?:boolean;driverId?:string;ratio?:number;kind:'rotate'|'slide';axis:'x'|'y'|'z';min:number;max:number;origin:Vec3};
@@ -19,6 +20,7 @@ export function hopperTemplate():StudioPart[]{
 }
 const finite=(n:unknown):n is number=>typeof n==='number'&&Number.isFinite(n);
 export function validateShape(s:Shape){
+ if(s.plate){if(s.kind!=='panel')throw Error('Custom outlines require a plate');validatePlate(s.plate);}
  if(!['panel','trapezoid','tube','boxTube','rod','hex','spacer','angle'].includes(s.kind))throw Error('Unsupported shape');
  if(![s.width,s.height,s.length,s.wall,s.inner,s.top,s.offset].every(finite))throw Error('Dimensions must be finite');
  if([s.width,s.height,s.length].some(n=>n<=0||n>20))throw Error('Dimensions must be greater than zero and at most 20 m');
@@ -27,7 +29,7 @@ export function validateShape(s:Shape){
  if(['boxTube','angle'].includes(s.kind)&&(s.wall<=0||2*s.wall>=Math.min(s.width,s.height)))throw Error('Wall must leave a positive interior');
 }
 export function shapeVolume(s:Shape){validateShape(s);switch(s.kind){
- case 'panel':return s.width*s.height*s.length;
+ case 'panel':return (s.plate?plateArea(s.plate):s.width*s.height)*s.length;
  case 'trapezoid':return (s.width+s.top)/2*s.height*s.length;
  case 'tube':case 'spacer':return Math.PI*(s.width*s.width-s.inner*s.inner)/4*s.length;
  case 'rod':return Math.PI*s.width*s.width/4*s.length;

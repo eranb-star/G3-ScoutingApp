@@ -19,7 +19,7 @@ export default function AdminWorkshopClose({meeting,onUpdated}:{meeting:{id:stri
    const names=ids.length?await supabase.from('team_members').select('id,display_name').in('id',ids):{data:[],error:null};
    if(names.error)throw names.error;
    setRemaining((r.data??[]).map(x=>({...x,name:names.data?.find(n=>n.id===x.member_id)?.display_name??pick('Member','חבר/ה')})));
-   setTime(localInput(new Date(Math.min(Date.now(),Date.parse(meeting.ends_at)||Date.now()))));setReason('');setOpen(true);
+   setTime(localInput(new Date(meeting.status==='open'?Date.now():Math.min(Date.now(),Date.parse(meeting.ends_at)||Date.now()))));setReason('');setOpen(true);
   }catch(e){setError(e&&typeof e==='object'&&'message' in e?String(e.message):String(e));}finally{setBusy(false);}
  }
  async function close(){

@@ -18,7 +18,7 @@ export default function WorkshopAttendance(){
   async function load(){
    if(running)return;running=true;setBusy(true);
    try{
-    const sessions=await readAllRows<WorkshopSession>((a,b)=>supabase.from('team_meetings').select('id,title,starts_at,ends_at,status,closed_at').in('status',['open','closed']).order('id').range(a,b));
+    const sessions=await readAllRows<WorkshopSession>((a,b)=>supabase.from('team_meetings').select('id,title,starts_at,ends_at,attendance_closes_at,status,closed_at').in('status',['open','closed']).order('id').range(a,b));
     const {current,last}=workshopSessions(sessions),meeting=mode==='last'?last:current.find(m=>m.id===choice)??current[0]??last;
     const [rows,people]=meeting?await Promise.all([
      readAllRows<Entry>((a,b)=>supabase.from('attendance_records').select('id,member_id,checked_in_at,checked_out_at').eq('meeting_id',meeting.id).order('id').range(a,b)),
