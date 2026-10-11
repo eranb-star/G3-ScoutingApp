@@ -1,6 +1,6 @@
 # Robot Studio catalogue and editing correction — 11 October 2026
 
-Status: catalogue/editor correction deployed to production; final mobile-panel and new-design-mode refinement awaiting promotion. This is a substantial catalogue/workflow correction, **not** a claim that every FRC product or every item in the acquisition plan is complete.
+Status: catalogue/editor correction and final mobile refinement deployed to production; focused production acceptance passed. This is a substantial catalogue/workflow correction, **not** a claim that every FRC product or every item in the acquisition plan is complete.
 
 ## Delivered implementation
 
@@ -20,7 +20,7 @@ Status: catalogue/editor correction deployed to production; final mobile-panel a
 - Browser synthetic acceptance: generated frame/pan visually inspected; NEO and PDH loaded; ground placement, Delete/Undo and explicit v1/v2/v3 saving verified; fullscreen retained editing controls. Recovery of a new unsaved draft observed. Synthetic storage is not production persistence evidence.
 - Production acceptance: created configurable chassis/pan plus actual simplified roboRIO, moved it, saved version 1 and reloaded it successfully at `?design=403a9b9c-4a1c-416f-8c0f-b4471fb1d02e`. No inventory or manufacturing records were created.
 - Production release `7253556` (development `818f606`), Vercel `6Xmsnp9ncYM2C6JLXBLBnvBBozpU`, Ready 11 October 2026 02:54:46 GMT+3; g3-6740.com alias confirmed. CI365/366 passed. Earlier implementation commits: development `edc9131`, release `0981ff7`.
-- Mobile acceptance found that the open bottom drawer obscured header actions and Assist overlapped its navigation. Final refinement adds a visible close button, removes the floating Assist shortcut only inside phone Studio (main navigation remains), and resets new designs to Design mode. Focused TypeScript check and Compare → new design check passed; final release identifiers follow after promotion.
+- Mobile acceptance found that the open bottom drawer obscured header actions and Assist overlapped its navigation. Final refinement adds a visible close button, removes the floating Assist shortcut only inside phone Studio (main navigation remains), and resets new designs to Design mode. Focused TypeScript check and Compare → new design check passed; production phone close/return and hidden overlapping floating shortcut also passed. Final release `d6d5acc` (development `786d699`), Vercel `CfoCPa7BdXrZWt81ezbQV4XTpSsL`, Ready/current Production on g3-6740.com at 03:13:25 GMT+3, 11 October 2026. CI367/368 passed.
 
 ## Explicit remaining boundaries
 
@@ -29,3 +29,7 @@ The full sourcing register remains in [the catalogue plan](ROBOT_STUDIO_CATALOGU
 Automatic recognition/removal of motors already included inside a source assembly, exhaustive BOM/mass inclusion, named checkpoint metadata, deletion of unreferenced server versions, favourites/recent parts, and measured large-scene phone performance are not delivered in this correction. Existing source-component extraction and mass coverage indicators remain; users must inspect assembly contents before adding duplicate hardware. Unknown mass stays unknown. History clutter is prevented for new edits, but old review-linked versions are preserved.
 
 No database migration, Onshape modification, robot deployment, APK build, paid service or GitHub robot-repository write permission is part of this release. Rollback is the prior frontend release f7472a3; keep additive catalogue scene data and restore the newer frontend to reopen new catalogue IDs.
+
+## Final handover
+
+Production demo: https://g3-6740.com/robot-build/studio?design=403a9b9c-4a1c-416f-8c0f-b4471fb1d02e (private to its existing owner). Version 1 contains configured chassis rails/pan and simplified roboRIO. Screenshot: `docs/staging/studio-catalogue-production-20261011.png` (local evidence). No pending implementation edits remain from this release. Android IDE changes are unrelated and preserved. This final status-only checkpoint is committed locally without a push to avoid retriggering broad CI, per WORKING_EXPECTATIONS. The feature commits and prior handover are already pushed.
