@@ -1,3 +1,4 @@
+import MechanicalToolsPage from './pages/MechanicalToolsPage';
 import FundraisingPage from './pages/FundraisingPage';
 import { useG3AssistAccess } from "./lib/useG3AssistAccess";
 import LabScreenGate from './components/LabScreenGate';
@@ -858,6 +859,7 @@ function AppShell() {
         <Route path="/media" element={<MemberGate><TeamMediaPage /></MemberGate>} />
         <Route path="/feedback" element={<MemberGate><FeedbackCenterPage /></MemberGate>} />
         <Route path="/engineering" element={<MemberGate><EngineeringHubPage /></MemberGate>} />
+        <Route path="/engineering/mechanical" element={<MemberGate><MechanicalToolsPage /></MemberGate>} />
         <Route path="/engineering/cad" element={<MemberGate><CadMentorPage /></MemberGate>} />
         <Route path="/field-twin" element={<MemberGate><LabScreenGate permission="view_field_twin"><FieldTwinPage /></LabScreenGate></MemberGate>} />
         <Route path="/knowledge" element={<MemberGate><KnowledgeWorkspace /></MemberGate>} />
