@@ -88,7 +88,7 @@ export default function HomeActionInbox({mode="home",overdueTasks=[],risks=[]}:{
       const {error}=await supabase.from('team_action_states').upsert({action_id:action.id,member_id:profile.id,status,snoozed_until:snoozed_until??null,acknowledged_at:status==='acknowledged'?now:null,completed_at:status==='completed'?now:null,updated_at:now},{onConflict:'action_id,member_id'});
       if(error)throw error;
       setMessage(snoozed_until?pick('Reminder deferred until ','התזכורת נדחתה עד ')+dateLabel(snoozed_until):pick('Reminder updated. Task status is unchanged.','התזכורת עודכנה. סטטוס המשימה לא השתנה.'));
-      setDeferId(null);await load();notifyProjectChange();
+      setDeferId(null);await load();notifyProjectChange();window.dispatchEvent(new Event("g3-announcements-changed"));
     }catch{setMessage(pick('Could not save. Please try again.','לא ניתן לשמור. נסו שוב.'));}
     finally{setBusy(null);}
   }

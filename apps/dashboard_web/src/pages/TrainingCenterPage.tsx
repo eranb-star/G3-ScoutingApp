@@ -29,7 +29,7 @@ type PublicQuizQuestion=Omit<QuizQuestion,"correct_answers">;
 type Assessment = { id:string; course_id:string; module_id:string|null; title:string; instructions:string; assessment_type:"assignment"|"quiz"|"practical"|"reflection"; questions:(string|PublicQuizQuestion)[]; required:boolean; graded:boolean; max_score:number|null; passing_score:number|null; due_at:string|null; max_attempts:number; target_type:"all"|"subteams"|"members"; target_values:string[]; sort_order:number; active:boolean };
 type AssessmentSubmission = { id:string; assessment_id:string; enrollment_id:string; member_id:string; response:string; answers:Record<string,string|string[]>; resource_url:string|null; status:"draft"|"submitted"|"reviewed"|"changes_requested"; score:number|null; feedback:string|null; submitted_at:string|null; attempt_number:number };
 type ProgressEvent = { id:string; enrollment_id:string; assessment_id:string|null; submission_id:string|null; member_id:string; event_type:string; from_status:string|null; to_status:string|null; score:number|null; attempt_number:number|null; details:string|null; created_at:string };
-type Person = { id:string; display_name:string; subteam:string|null; subteams:string[] };
+type Person = { id:string; display_name:string; role?:string; subteam:string|null; subteams:string[] };
 type CourseForm = { title:string; description:string; domain:string; target_subteam:string; required:boolean };
 const blank:CourseForm={title:"",description:"",domain:"mechanical",target_subteam:"",required:true};
 const domains=["mechanical","electrical","software","cad","strategy","drive_pit","business","safety"];
@@ -100,7 +100,7 @@ export default function TrainingCenterPage(){
       supabase.from("training_modules").select("*").order("sort_order"),
       supabase.from("training_enrollments").select("*"),
       supabase.from("training_evidence").select("*"),
-      supabase.from("team_members").select("id,display_name,subteam,subteams").eq("active",true),
+      supabase.from("team_members").select("id,display_name,role,subteam,subteams").eq("active",true),
       supabase.from("training_assessments").select("*").eq("active",true).order("sort_order"),
       supabase.from("training_assessment_submissions").select("*").order("updated_at",{ascending:false}),
       supabase.from("training_assessment_answer_keys").select("assessment_id,answers"),

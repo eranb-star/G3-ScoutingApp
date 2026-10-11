@@ -363,7 +363,8 @@ export function MessagesPage() {
 
   async function markRead(id: string) {
     if (!profile || readIds.has(id)) return;
-    await supabase.from("announcement_reads").upsert({ announcement_id: id, member_id: profile.id });
+    const {error}=await supabase.from("announcement_reads").upsert({ announcement_id: id, member_id: profile.id },{onConflict:"announcement_id,member_id",ignoreDuplicates:true});
+    if(error){setMessage(error.message);return;}
     setReadIds((current) => new Set(current).add(id));
     window.dispatchEvent(new Event("g3-announcements-changed"));
   }

@@ -3,7 +3,9 @@ import { supabase } from "../supabase";
 import { useLocalization } from "../lib/localization";
 import { useNavigate } from "react-router-dom";
 
-type OpenMeeting = { id: string; title: string; opened_at: string | null; starts_at: string };
+import AdminWorkshopClose from "../components/AdminWorkshopClose";
+
+type OpenMeeting = { ends_at:string;status:string; id: string; title: string; opened_at: string | null; starts_at: string };
 type AttendanceRow = { id: string; member_id: string; checked_in_at: string; checked_out_at: string | null; check_in_method: string };
 type MemberName = { id: string; display_name: string; subteam: string | null };
 
@@ -23,7 +25,7 @@ export default function AdminDashboardPage() {
 
   async function load() {
     const [{ data: meetings }, { data: memberRows }] = await Promise.all([
-      supabase.from("team_meetings").select("id,title,opened_at,starts_at").eq("status", "open").order("opened_at", { ascending: false }).limit(1),
+      supabase.from("team_meetings").select("id,title,opened_at,starts_at,ends_at,status").eq("status", "open").order("opened_at", { ascending: false }).limit(1),
       supabase.from("team_members").select("id,display_name,subteam").eq("active", true),
     ]);
     const active = (meetings?.[0] ?? null) as OpenMeeting | null;
@@ -49,12 +51,6 @@ export default function AdminDashboardPage() {
     if (!error) await load();
   }
 
-  async function closeNow() {
-    if (!meeting || !window.confirm("Close this workshop session? Members will no longer be able to check in or out.")) return;
-    const { error } = await supabase.rpc("set_meeting_status", { meeting_id: meeting.id, next_status: "closed" });
-    setMessage(error?.message ?? "Workshop session closed.");
-    if (!error) await load();
-  }
 
   async function correctAttendance(memberId: string, action: "check_in" | "check_out") {
     if (!meeting) return;
@@ -83,7 +79,7 @@ export default function AdminDashboardPage() {
       <div className="admin-section-heading"><span>{pick("LIVE WORKSHOP OPERATIONS","תפעול סדנה בזמן אמת")}</span><h2>{pick("Workshop control","בקרת סדנה")}</h2></div>
       <section className={`hub-card admin-live-banner${meeting ? " is-open" : ""}`}>
         <div><div className="hub-status-label">{meeting ? pick("WORKSHOP OPEN","הסדנה פתוחה") : pick("WORKSHOP CLOSED","הסדנה סגורה")}</div><h2>{meeting?.title ?? pick("No attendance session is open","אין מפגש נוכחות פתוח")}</h2><p>{meeting ? pick(`${present.length} members currently checked in`,`${present.length} חברים נמצאים כעת`) : pick("Open an ad-hoc session for members working outside regular meeting hours.","פתיחת מפגש מיוחד לחברים שעובדים מחוץ לשעות הקבועות.")}</p></div>
-        {meeting ? <button className="admin-danger-button" onClick={closeNow}>{pick("Close workshop","סגירת הסדנה")}</button> : <div className="admin-open-controls"><input value={title} onChange={(e) => setTitle(e.target.value)} /><button className="hub-button" onClick={openNow}>{pick("Open workshop now","פתיחת הסדנה עכשיו")}</button></div>}
+        {meeting ? <AdminWorkshopClose meeting={meeting} onUpdated={()=>void load()}/> : <div className="admin-open-controls"><input value={title} onChange={(e) => setTitle(e.target.value)} /><button className="hub-button" onClick={openNow}>{pick("Open workshop now","פתיחת הסדנה עכשיו")}</button></div>}
       </section>
       {message ? <div className="auth-message">{message}</div> : null}
       <div className="admin-stat-grid"><article><strong>{present.length}</strong><span>{pick("Present now","נמצאים כעת")}</span></article><article><strong>{attendance.length}</strong><span>{pick("Attended session","השתתפו במפגש")}</span></article><article><strong>{attendance.filter((row) => row.checked_out_at).length}</strong><span>{pick("Checked out","דיווחו יציאה")}</span></article></div>
