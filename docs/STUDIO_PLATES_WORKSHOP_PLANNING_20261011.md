@@ -28,7 +28,11 @@
 - Publishing confirmation means in-app availability, not guaranteed push/email delivery.
 
 ## Verification and release
-Implementation in progress. Record final commits, deployment, migration/Edge release and browser evidence here before marking delivered.
+Deployed to https://g3-6740.com on 11 October 2026. Development `690bae625d66d06b4ac2d1d08987aefcc867278d`; release `90db63ff325424c6956250e893061c60ac4809f0`. CI373/374 passed. Production Vercel `4M3RwBLoTxkmVmR8rc1Fhw68rwGt` is Ready and assigned to g3-6740.com (production rebuild of promoted preview `2cBiPYmr4V3aj6jFQiGxJsbyZb45`). Migration `backend/supabase/workshop_planning_20261011.sql` applied; attendance Edge function deployed and persisted RPC source verified after reload.
+
+Live production acceptance: created private “Plate and profile demo”, saved version 1 and reloaded from cloud; reopened its custom plate with Cutout 1 preserved and 1.938 kg estimated mass. Attendance Center Schedule workshop form opens with clear scheduled-end/cutoff distinction. No real meetings or attendance were created/changed as QA. Production recurring dates 14 and 18 October show scheduled end 19:00 and cutoff 23:00 Israel time. Screenshots: `docs/staging/studio-plates-production-20261011.png`, `docs/staging/workshop-planning-production-20261011.png` (local evidence).
+
+Browser acceptance covered desktop and Hebrew desktop, not a physical phone or verified 390px viewport. CNC fabrication and actual late workshop operation remain physical acceptance. The alignment helper uses world bounds; do not use a descendant of the moved part as its reference because that reference moves with its parent.
 Focused checks already completed: TypeScript; Vite build; Studio domain/geometry and 93-entry catalogue tests; DXF roundtrip/unsupported entity rejection, cutout volume and invalid geometry. Production-schema migration + role/link/reschedule/cancel/cutoff/extension fixtures passed inside a rolled-back transaction. Synthetic browser plate creation/edit/version save and workshop publish confirmation passed. No real attendance or meetings created as QA.
 
 ## Boundaries

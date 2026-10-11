@@ -1,4 +1,4 @@
-> **Current status: 11 October 2026.** Start with [CURRENT_CHECKPOINT_20261009.md](CURRENT_CHECKPOINT_20261009.md). Signed APK2.5.0/code28 now bundles production d6d5acc; see [APK release](APK_MILESTONE_20261011.md). The catalogue gap remains OPEN. Older latest-release/APK statements below are historical and superseded by that checkpoint.
+> **Current status: 11 October 2026.** Start with [CURRENT_CHECKPOINT_20261009.md](CURRENT_CHECKPOINT_20261009.md). Website **90db63f**, production **4M3RwBLoTxkmVmR8rc1Fhw68rwGt**, includes [Studio plates and official workshop planning](STUDIO_PLATES_WORKSHOP_PLANNING_20261011.md) and prior [member workflow fixes](MEMBER_WORKFLOWS_20261011.md). Migration/attendance Edge are deployed, CI373/374 passed, live cloud save/reopen verified. Signed APK2.5.0/code28 bundles earlier d6d5acc and does not include these new forms. Catalogue expansion remains OPEN. Older latest-release statements below are historical.
 
 # Start here — current as of 9 October 2026
 
