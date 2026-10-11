@@ -1,6 +1,6 @@
 # Robot Studio catalogue and editing correction — 11 October 2026
 
-Status: implemented and locally checked; production promotion pending. This is a substantial catalogue/workflow correction, **not** a claim that every FRC product or every item in the acquisition plan is complete.
+Status: catalogue/editor correction deployed to production; final mobile-panel and new-design-mode refinement awaiting promotion. This is a substantial catalogue/workflow correction, **not** a claim that every FRC product or every item in the acquisition plan is complete.
 
 ## Delivered implementation
 
@@ -18,7 +18,9 @@ Status: implemented and locally checked; production promotion pending. This is a
 - All 93 catalogue entries loaded with nonempty finite bounds and centred origins; independent clones and six-source caching passed. Common-name search checks passed.
 - TypeScript and Vite build passed before final documentation. Required CI remains intact and now includes the catalogue test.
 - Browser synthetic acceptance: generated frame/pan visually inspected; NEO and PDH loaded; ground placement, Delete/Undo and explicit v1/v2/v3 saving verified; fullscreen retained editing controls. Recovery of a new unsaved draft observed. Synthetic storage is not production persistence evidence.
-- Production acceptance and final commit/deployment identifiers must be added after release.
+- Production acceptance: created configurable chassis/pan plus actual simplified roboRIO, moved it, saved version 1 and reloaded it successfully at `?design=403a9b9c-4a1c-416f-8c0f-b4471fb1d02e`. No inventory or manufacturing records were created.
+- Production release `7253556` (development `818f606`), Vercel `6Xmsnp9ncYM2C6JLXBLBnvBBozpU`, Ready 11 October 2026 02:54:46 GMT+3; g3-6740.com alias confirmed. CI365/366 passed. Earlier implementation commits: development `edc9131`, release `0981ff7`.
+- Mobile acceptance found that the open bottom drawer obscured header actions and Assist overlapped its navigation. Final refinement adds a visible close button, removes the floating Assist shortcut only inside phone Studio (main navigation remains), and resets new designs to Design mode. Focused TypeScript check and Compare → new design check passed; final release identifiers follow after promotion.
 
 ## Explicit remaining boundaries
 
