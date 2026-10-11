@@ -30,7 +30,7 @@ export default function OfficialTraining({pick,memberId,catalog,selected,mode,ca
  useEffect(()=>{setPages([]);setUploaded([]);setDate('');setIdentifier('');setRequestKey(crypto.randomUUID());setAssignmentPreview(null);setAssignmentSent(false);setMembers([]);setNotice('');setError('');},[selected]);
  useEffect(()=>{const urls=pages.map(p=>URL.createObjectURL(p));setPreviews(urls);return()=>urls.forEach(URL.revokeObjectURL);},[pages]);
  useEffect(()=>{if(canAssign&&canReview)void supabase.from('training_assessments').select('id,title').eq('active',true).eq('assessment_type','quiz').then(r=>{if(r.error)setError(r.error.message);else setQuizzes(r.data??[]);});},[canAssign,canReview]);
- async function run(task:()=>Promise<void>){if(busy||previewOnly)return;setBusy(true);setError('');setNotice('');try{await task();}catch(e){setError(e instanceof Error?e.message:String(e));}finally{setBusy(false);}}
+ async function run(task:()=>Promise<void>){if(busy||previewOnly)return;setBusy(true);setError('');setNotice('');try{await task();}catch(e){setError(e&&typeof e==='object'&&'message' in e?String(e.message):String(e));}finally{setBusy(false);}}
  async function view(c:Certificate){await run(async()=>{const urls=await Promise.all(c.object_paths.map(async path=>{const r=await supabase.storage.from('training-certificates').createSignedUrl(path,120);if(r.error)throw r.error;return r.data.signedUrl;}));setImages(prev=>({...prev,[c.id]:urls}));setExpanded(c.id);});}
  async function submit(){await run(async()=>{
   if(!course||!pages.length||!date)throw new Error(pick('Choose a certificate and its completion date.','בחרו תעודה ותאריך השלמה.'));

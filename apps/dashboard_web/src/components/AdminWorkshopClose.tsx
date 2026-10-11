@@ -20,7 +20,7 @@ export default function AdminWorkshopClose({meeting,onUpdated}:{meeting:{id:stri
    if(names.error)throw names.error;
    setRemaining((r.data??[]).map(x=>({...x,name:names.data?.find(n=>n.id===x.member_id)?.display_name??pick('Member','חבר/ה')})));
    setTime(localInput(new Date(Math.min(Date.now(),Date.parse(meeting.ends_at)||Date.now()))));setReason('');setOpen(true);
-  }catch(e){setError(e instanceof Error?e.message:String(e));}finally{setBusy(false);}
+  }catch(e){setError(e&&typeof e==='object'&&'message' in e?String(e.message):String(e));}finally{setBusy(false);}
  }
  async function close(){
   if(busy)return;setBusy(true);setError('');
@@ -28,10 +28,9 @@ export default function AdminWorkshopClose({meeting,onUpdated}:{meeting:{id:stri
    const r=await supabase.rpc('admin_close_workshop',{p_meeting:meeting.id,p_checkout_at:new Date(time).toISOString(),p_reason:reason.trim()});
    if(r.error)throw r.error;
    setNotice(pick(`Workshop closed. ${r.data} remaining attendees checked out; corrections recorded.`,`הסדנה נסגרה. נרשמה יציאה ל־${r.data} משתתפים שנותרו; התיקונים תועדו.`));setOpen(false);onUpdated();
-  }catch(e){setError(e instanceof Error?e.message:String(e));}finally{setBusy(false);}
+  }catch(e){setError(e&&typeof e==='object'&&'message' in e?String(e.message):String(e));}finally{setBusy(false);}
  }
  return <div className="admin-workshop-close"><button type="button" className="button-secondary" disabled={busy} onClick={()=>void prepare()}>{pick(meeting.status==='open'?'Close workshop / check out remaining':'Correct forgotten checkouts',meeting.status==='open'?'סגירת סדנה ויציאה לנוכחים שנותרו':'תיקון יציאות שנשכחו')}</button>
  {open&&<form onSubmit={e=>{e.preventDefault();void close();}}><h3>{pick('Review workshop close-out','בדיקת סגירת הסדנה')}</h3><p><strong>{remaining.length} {pick('still checked in','עדיין רשומים כנוכחים')}</strong></p>{remaining.length>0&&<ul>{remaining.map(r=><li key={r.id}>{r.name} · {pick('In','כניסה')} {new Date(r.checked_in_at).toLocaleString()}</li>)}</ul>}<p>{pick('Confirm when these attendees actually left. Existing checkouts will not change. Everyone still checked in when you confirm will be included.','אשרו מתי המשתתפים יצאו בפועל. יציאות קיימות לא ישתנו. כל מי שעדיין רשום כנוכח בעת האישור ייכלל.')}</p><label>{pick('Actual departure date and time (your device timezone)','תאריך ושעת היציאה בפועל (אזור הזמן של המכשיר)')}<input type="datetime-local" required value={time} max={localInput(new Date())} onChange={e=>setTime(e.target.value)}/></label><label>{pick('Reason for the correction','סיבת התיקון')}<textarea required minLength={4} maxLength={1000} rows={2} value={reason} onChange={e=>setReason(e.target.value)} placeholder={pick('For example: Workshop ended; students forgot to check out.','לדוגמה: הסדנה הסתיימה והתלמידים שכחו לדווח יציאה.')}/></label><div><button disabled={busy||reason.trim().length<4} className="hub-button">{busy?pick('Saving…','שומר…'):pick('Confirm checkout & close workshop','אישור יציאות וסגירת הסדנה')}</button><button type="button" disabled={busy} onClick={()=>setOpen(false)}>{pick('Cancel','ביטול')}</button></div></form>}
  {error&&<p role="alert">{error}</p>}{notice&&<p role="status">{notice}</p>}</div>;
 }
-
