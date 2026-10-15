@@ -5,7 +5,7 @@ import {useLocalization} from '../lib/localization';
 export default function PurchaseQuantityApproval({request,onClose,onSaved}:{request:{revision:number;id:string;item_name:string;quantity:number;status?:string;approved_quantity?:number|null;approved_total_limit?:number|null;approved_currency?:string|null};onClose:()=>void;onSaved:()=>Promise<void>}){
  const {pick}=useLocalization(),dialog=useRef<HTMLDialogElement>(null);
  const [quantity,setQuantity]=useState(String(request.approved_quantity??request.quantity)),[remainder,setRemainder]=useState('deferred'),[note,setNote]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState('');
- const amendment=request.status==='approved';
+ const amendment=['approved','ordered','received'].includes(request.status??'');
  const [limit,setLimit]=useState(request.approved_total_limit==null?'':String(request.approved_total_limit)),[currency,setCurrency]=useState(request.approved_currency??'ILS');
  const amount=Number(quantity),reduced=!amendment&&amount<request.quantity;
  useEffect(()=>{dialog.current?.showModal();},[]);

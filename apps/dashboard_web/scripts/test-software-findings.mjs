@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';import fs from 'node:fs/promises';
+const {PGlite}=await import(process.argv[2]||'@electric-sql/pglite');const db=new PGlite();const id=n=>`00000000-0000-0000-0000-${String(n).padStart(12,'0')}`;
+try{
+await db.exec(`create role authenticated;create role anon;create schema auth;create function auth.uid() returns uuid language sql as $$select current_setting('test.uid')::uuid$$;create function has_permission(text,uuid) returns boolean language sql as $$select current_setting('test.allowed',true)='yes'$$;create table team_members(id uuid primary key,active boolean);create table ai_messages(id uuid primary key,member_id uuid,role text,software_evidence jsonb);insert into team_members values('${id(1)}',true),('${id(2)}',true);insert into ai_messages values('${id(3)}','${id(1)}','assistant','{"selection":{"repository":"GlueGunAndGlitter/OFFSEASON_2026"},"rows":[{"id":"C1","lines":80,"ranges":[[1,40],[60,80]]}]}');grant select on ai_messages,team_members to authenticated;alter table ai_messages enable row level security;create policy own on ai_messages for select to authenticated using(member_id=auth.uid() and has_permission('use_private_robot_code',null));`);
+await db.exec(await fs.readFile(new URL('../../../backend/supabase/software_findings_20261015.sql',import.meta.url),'utf8'));
+await db.exec(`set role authenticated;set test.uid='${id(1)}';set test.allowed='yes'`);
+const save=(rev=0,status='open',first=20,last=25,commit='',req=5)=>db.query(`select save_software_finding('${id(4)}','${id(3)}',${rev},'Drive binding','high','C1',${first},${last},'${status}','Reviewed source and test result','${commit}','${id(req)}')`);
+await save();await save();assert.equal((await db.query('select * from software_review_findings')).rows.length,1);assert.equal((await db.query('select * from software_finding_events')).rows.length,1);
+await assert.rejects(save(1,'verified',20,25,'',6),/exact changed/);await assert.rejects(save(1,'open',39,61,'',6),/actually included/);await save(1,'addressed',20,25,'a'.repeat(40),6);await assert.rejects(save(1,'dismissed',20,25,'',7),/Finding changed/);await save(2,'verified',20,25,'a'.repeat(40),7);
+assert.equal((await db.query('select status from software_review_findings')).rows[0].status,'verified');
+await db.exec(`set test.uid='${id(2)}'`);assert.equal((await db.query('select * from software_review_findings')).rows.length,0);await assert.rejects(save(3),/Saved code review/);
+await db.exec(`set test.uid='${id(1)}';set test.allowed='no'`);assert.equal((await db.query('select * from software_review_findings')).rows.length,0);await assert.rejects(save(3),/Private code permission/);
+console.log('PASS finding lifecycle, citation ranges, exact tested revision, retries, stale writes, ownership and revoked private access');
+}finally{await db.close();}

@@ -58,6 +58,18 @@ await db.exec(`set role authenticated;select receive_confirmed_order('${id(4)}',
 assert.equal((await db.query('select quantity from frc_parts_inventory')).rows[0].quantity,'15');
 assert.equal((await db.query('select status from frc_purchase_requests')).rows[0].status,'received');
 assert.equal((await db.query('select count(*)::int n from frc_stock_movements')).rows[0].n,2);
+await db.exec(await fs.readFile(new URL('../../../backend/supabase/purchase_split_orders_20261015.sql',import.meta.url),'utf8'));
+await db.exec(`insert into frc_purchase_requests(id,revision,status,supplier,quantity,approved_quantity,approved_total_limit,approved_currency) values('${id(20)}',1,'approved','Split',5,5,325,'ILS');set role authenticated`);
+const first=`select confirm_purchase_order('${id(20)}',1,3,60,0,0,'ILS','Supplier A','A1','2026-10-01',null,'First supplier allocation','${id(21)}')`;
+await db.exec(first);await db.exec(first);
+await assert.rejects(db.exec(`select confirm_purchase_order('${id(20)}',1,3,60,0,0,'ILS','Supplier B','B1','2026-10-01',null,'Second supplier allocation','${id(22)}')`),/quantity/);
+await db.exec(`select confirm_purchase_order('${id(20)}',1,2,60,0,0,'ILS','Supplier B','B1','2026-10-01',null,'Second supplier allocation','${id(22)}')`);
+await db.exec(`select receive_confirmed_order('${id(21)}',1,3,0,null,0,null,'2026-10-02','First shipment complete','${id(23)}');reset role`);
+assert.equal((await db.query(`select status from frc_purchase_requests where id='${id(20)}'`)).rows[0].status,'ordered');
+await db.exec(`set role authenticated;select cancel_confirmed_order_scope('${id(22)}',1,2,120,'2026-10-03','Second supplier cancelled','${id(24)}');reset role`);
+assert.equal((await db.query(`select status from frc_purchase_requests where id='${id(20)}'`)).rows[0].status,'received');
+assert.equal((await db.query(`select actual_quantity from frc_purchase_requests where id='${id(20)}'`)).rows[0].actual_quantity,'3.00');
+console.log('PASS split supplier orders: shared approval caps, idempotency, aggregate delivery and cancellation completion');
 console.log('PASS actual-order confirmation: reduced quantity, actual price/charges, spending ceiling/currency, retry identity, unchanged original estimate and no invented expense');
 console.log('PASS partial deliveries: stock conversion, retry protection, two receipts, order completion, legacy expense-write guard and no financial mutation');
 }finally{await db.close();}
