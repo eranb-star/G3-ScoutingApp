@@ -2,7 +2,7 @@
 
 User authorization: complete all seven agreed fixes. Scope remains WORKFLOW_RELIABILITY_DESIGN_20261015.md. No additional phase approval is needed. This file supersedes earlier contradictory implementation summaries.
 
-**Release state: 15 additive database migrations are installed in production.** Deployment transaction confirmed existing expense balances unchanged. Edge Functions and frontend release are in progress; website still d8cdb47 and APK2.5.0/code28. No financial records were matched or marked duplicate; no test push was sent.
+**Release state: production website cd2075a is live at https://g3-6740.com (Vercel 9hsxwFeUBJyb7VdQDfw3Azfk8tHm), CI382 passed.** The original 15 migrations and four Edge Functions are installed. Findings schema is now also installed. Additional code-review corrections and finance completion are in progress locally; do not call the whole approved scope complete. APK2.6.0/code29 has been built and signed but needs rebuilding with the final frontend. No real financial matches, attendance edits, or test push were retained.
 
 ## Delivery checklist
 
@@ -41,3 +41,14 @@ The user explicitly challenged excessive token use. Keep one checklist, batch re
 - Actual attendance correction executed successfully against an existing record and audit constraint, then rolled back. No retained attendance change.
 - Push endpoint now retains valid device tokens on general provider errors; only explicit FCM UNREGISTERED disables them. Focused classification checks passed. Aggregate provider-acceptance logging excludes tokens and message content.
 - Legacy generic AI-to-task RPC now rejects private software context and directs callers to the existing reviewed-summary flow. Final security verification remains open.
+
+## Live acceptance, current continuation
+- Attendance correction UI verified and cancelled; earlier correction/audit transaction rolled back.
+- Finance actual-order matching preview verified and cancelled; legacy expenses and repayments preserved.
+- Home shows one actionable feedback reminder instead of the duplicate.
+- CAD exact provider dates verified: mastersketch 14 October 20:53:03; import/check remain separate.
+- Code review: full RobotContainer supplied; initial answers were withheld for citations spanning omitted lines. Explicit allowed-range / single-line instructions produced an actual OFFSEASON_2026 answer with validated citations, saved and reopened after reload. The answer identifies missing drivetrain wiring in RobotContainer and labels uncompiled proposals; it does not establish whole-repository or hardware correctness. Findings lifecycle schema installed after rollback rehearsal; frontend pending.
+- Split supplier-order schema now installed after focused tests and rollback rehearsal: aggregate approval caps, per-supplier deliveries and cancellation completion. Frontend pending.
+- Retry-safe expense entry with invoice duplicate detection/explicit legitimate split now tested; additive migration rehearsed and installed. Existing expense rows unchanged.
+- Added CI checks for split orders, expense idempotency and finding ownership/citation/status history.
+- Broader supplier-bill/prepayment/refund lifecycle remains incomplete; it is not silently closed by these improvements.

@@ -7,7 +7,7 @@ export type PurchaseCommitment = {
 };
 export type ConfirmedOrder = {
  id:string; purchase_id:string; quantity:number; total:number; currency:string;
- cancelled_amount:number; cancelled_quantity?:number; revision:number;
+ supplier?:string|null; cancelled_amount:number; cancelled_quantity?:number; revision:number;
 };
 export type ExpenseAllocation = {order_id:string; expense_id:string; amount:number};
 export type AllocationExpense = {id:string; amount:number; currency:string; duplicate_of?:string|null};

@@ -96,6 +96,13 @@ jobs:
       # Exercise the current permission-controlled catalogue, not obsolete token/URL strings.
       - name: Private repository access boundaries
         run: node scripts/test-private-repositories.mjs
+      - name: Workflow finance and finding integrity
+        env:
+          PGLITE_MODULE: ${{ runner.temp }}/g3-sql/node_modules/@electric-sql/pglite/dist/index.js
+        run: |
+          node scripts/test-purchase-order-confirmation.mjs "$PGLITE_MODULE"
+          node scripts/test-finance-expense-entry.mjs "$PGLITE_MODULE"
+          node scripts/test-software-findings.mjs "$PGLITE_MODULE"
       - name: Private CAD authorization, revisions and review evidence
         env:
           PGLITE_MODULE: ${{ runner.temp }}/g3-sql/node_modules/@electric-sql/pglite/dist/index.js

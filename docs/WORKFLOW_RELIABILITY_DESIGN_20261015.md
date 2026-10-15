@@ -1,6 +1,6 @@
 # Workflow reliability — final pre-development design, 15 October 2026
 
-Status: user approved implementation on 15 October ("OK move ahead"). Work in progress; no fixes deployed yet. Covers the seven issues reported on 15 October and the subsequent finance reconciliation decisions. Existing production release remains d8cdb47. This is not a claim of zero undiscovered defects. Historical financial matching/deduplication remains an explicit user-reviewed operation, not automatically authorized data cleanup.
+Status: user approved implementation on 15 October ("OK move ahead"). Work in progress; core fixes deployed, remaining lifecycle work ongoing. Covers the seven issues reported on 15 October and the subsequent finance reconciliation decisions. Current release identities and incomplete work are recorded in WORKFLOW_RELIABILITY_PROGRESS_20261015.md. This is not a claim of zero undiscovered defects. Historical financial matching/deduplication remains an explicit user-reviewed operation, not automatically authorized data cleanup.
 
 ## 1. Scope, evidence and constraints
 
