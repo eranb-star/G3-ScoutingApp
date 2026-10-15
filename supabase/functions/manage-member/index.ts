@@ -10,7 +10,7 @@ type RequestBody = {
   userId?: string;
   email?: string;
   displayName?: string;
-  role?: "member" | "team_leader" | "mentor" | "admin";
+  role?: "member" | "team_leader" | "mentor" | "limited_mentor" | "admin";
   subteam?: string | null;
   subteams?: string[];
   leaderSubteams?: string[];
@@ -40,6 +40,7 @@ Deno.serve(async (request) => {
     if (!callerProfile?.active || callerProfile.role !== "admin") return json({ error: "Administrator access required" }, 403);
 
     const body = await request.json() as RequestBody;
+    if(body.role&&!['member','team_leader','mentor','limited_mentor','admin'].includes(body.role))return json({error:'Unsupported member role'},400);
     if (body.action === "create") {
       if (!body.email || !body.displayName || !body.temporaryPassword) return json({ error: "Email, name and temporary password are required" }, 400);
       if (body.temporaryPassword.length < 10) return json({ error: "Temporary password must contain at least 10 characters" }, 400);

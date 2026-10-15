@@ -1,5 +1,9 @@
 > **Current status: 11 October 2026.** Start with [CURRENT_CHECKPOINT_20261009.md](CURRENT_CHECKPOINT_20261009.md). Website **90db63f**, production **4M3RwBLoTxkmVmR8rc1Fhw68rwGt**, includes [Studio plates and official workshop planning](STUDIO_PLATES_WORKSHOP_PLANNING_20261011.md) and prior [member workflow fixes](MEMBER_WORKFLOWS_20261011.md). Migration/attendance Edge are deployed, CI373/374 passed, live cloud save/reopen verified. Signed APK2.5.0/code28 bundles earlier d6d5acc and does not include these new forms. Catalogue expansion remains OPEN. Older latest-release statements below are historical.
 
+> **Latest website: Mechanical Tools phase 1, 11 October 2026.** Release **d8cdb47**, production **4GW7VZdLx5UC6hvTYiub8vUi3hy8**, CI375/376 passed. Read [Mechanical Tools release](MECHANICAL_TOOLS_20261011.md) and the current checkpoint. Migration, live private cloud save/reopen and version history are verified. Other calculators, inventory matching and Studio placement remain later phases. Earlier status lines are historical. No new APK.
+
+> **15 October approved implementation:** Read [Workflow reliability design](WORKFLOW_RELIABILITY_DESIGN_20261015.md) and [progress/evidence](WORKFLOW_RELIABILITY_PROGRESS_20261015.md). User approved all seven issues; work is local and incomplete, not deployed. Continue implementation without asking for the same approval. Current production remains the Mechanical Tools release above.
+
 # Start here — current as of 9 October 2026
 
 Read [CURRENT_CHECKPOINT_20261009.md](CURRENT_CHECKPOINT_20261009.md) for the authoritative consolidated status, capability index, remaining acceptance and latest decisions. Then read [WORKING_EXPECTATIONS.md](WORKING_EXPECTATIONS.md) for proportional testing and execution discipline.

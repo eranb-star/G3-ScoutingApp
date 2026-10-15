@@ -1,13 +1,14 @@
 import { getQaTestSession } from "./qaTestSession";
 import { QaTestBanner } from "../components/QaTestAccounts";
-import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "../supabase";
-import { Capacitor, registerPlugin } from "@capacitor/core";
+import { Capacitor } from "@capacitor/core";
+import {registerDevicePush} from "./pushRegistration";
 
-const G3Push = registerPlugin<{ getToken(): Promise<{ token: string }> }>("G3Push");
 
-export type TeamRole = "member" | "team_leader" | "mentor" | "admin";
+
+export type TeamRole = "member" | "team_leader" | "mentor" | "limited_mentor" | "admin";
 
 export type MemberProfile = {
   id: string;
@@ -104,7 +105,7 @@ export function MemberAuthProvider({ children }: { children: React.ReactNode }) 
           // Remove private build drafts from shared workshop devices on explicit logout.
           try {
             for (const key of Object.keys(sessionStorage)) {
-              if (key.startsWith("g3-build-scope-draft:") || key.startsWith("g3-build-preparation-draft:")) sessionStorage.removeItem(key);
+              if (key.startsWith("g3-build-scope-draft:") || key.startsWith("g3-build-preparation-draft:") || key.startsWith("g3-software-review-draft:")) sessionStorage.removeItem(key);
             }
           } catch { /* Storage may be disabled by the browser. */ }
           await loadProfile(null, true);
@@ -120,8 +121,18 @@ export function MemberAuthProvider({ children }: { children: React.ReactNode }) 
 
   useEffect(() => {
     if (getQaTestSession() || !profile?.active || profile.must_change_password || Capacitor.getPlatform() !== "android") return;
-    G3Push.getToken().then(({ token }) => supabase.from("push_tokens").upsert({ token, member_id: profile.id, platform: "android", active: true, updated_at: new Date().toISOString() })).catch(() => undefined);
+    const id=profile.id;const register=()=>{if(document.visibilityState==="visible")void registerDevicePush(id);};
+    register();document.addEventListener("visibilitychange",register);
+    return()=>document.removeEventListener("visibilitychange",register);
   }, [profile?.id, profile?.active, profile?.must_change_password]);
+
+  useEffect(() => {
+    if (!profile?.active) return;
+    const channel=supabase.channel('g3-own-membership:'+profile.id).on('postgres_changes',{event:'UPDATE',schema:'public',table:'team_members',filter:'id=eq.'+profile.id},()=>void refreshProfile()).subscribe();
+    const refresh=()=>{if(document.visibilityState==='visible')void refreshProfile();};
+    document.addEventListener('visibilitychange',refresh);
+    return()=>{void supabase.removeChannel(channel);document.removeEventListener('visibilitychange',refresh);};
+  },[profile?.id,profile?.active]);
 
   useEffect(() => {
     if (!profile?.active) return;
@@ -137,7 +148,9 @@ export function MemberAuthProvider({ children }: { children: React.ReactNode }) 
     () => ({ loading, session, profile, profileError, refreshProfile }),
     [loading, session, profile, profileError]
   );
-  return <MemberAuthContext.Provider value={value}><QaTestBanner />{children}</MemberAuthContext.Provider>;
+  // Drop mounted private results when identity, role or team scope changes.
+  const scopeKey=JSON.stringify([profile?.id,profile?.role,profile?.active,profile?.subteam,profile?.subteams,profile?.leader_subteams]);
+  return <MemberAuthContext.Provider value={value}><QaTestBanner /><Fragment key={scopeKey}>{children}</Fragment></MemberAuthContext.Provider>;
 }
 
 export function useMemberAuth() {

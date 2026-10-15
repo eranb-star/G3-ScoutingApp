@@ -22,6 +22,7 @@ import "./index.css";
 import "./teamHub.css";
 import "./mediaFeedback.css";
 import { supabase } from "./supabase";
+import { signOut as signOutAccount } from "./lib/auth";
 import { MemberAuthProvider, useMemberAuth } from "./lib/memberAuth";
 import { ChangePasswordPage, LoginPage } from "./pages/AuthPages";
 import MembersAdminPage from "./pages/MembersAdminPage";
@@ -293,7 +294,7 @@ function AdminModal({ open, onClose }: { open: boolean; onClose: () => void }) {
 
     try {
       // "local" works even when offline / flaky network
-      const { error } = await supabase.auth.signOut({ scope: "local" });
+      const { error } = await signOutAccount();
       if (error) {
         setMsg("Logout failed: " + error.message);
         return;
@@ -560,6 +561,7 @@ function TopNav() {
   const { bootstrapped, email, isAdmin, refresh } = useAdmin();
   const online = useOnlineStatus();
   const [adminOpen, setAdminOpen] = useState(false);
+  const [logoutError,setLogoutError]=useState('');
 
   // Israel time ticker
   const [now, setNow] = useState<Date>(() => new Date());
@@ -626,7 +628,9 @@ function TopNav() {
 
   const navLogout = async () => {
     try {
-      await supabase.auth.signOut({ scope: "local" });
+      setLogoutError('');
+      const result=await signOutAccount();
+      if(result.error){setLogoutError(result.error.message);return;}
     } finally {
       await refresh(); // force immediate UI update
       setAdminOpen(false);
@@ -742,6 +746,7 @@ function TopNav() {
           )}
         </div>
 
+        {logoutError&&<p role="alert">{logoutError}</p>}
         <AdminModal open={adminOpen} onClose={() => setAdminOpen(false)} />
       </div>
     </div>

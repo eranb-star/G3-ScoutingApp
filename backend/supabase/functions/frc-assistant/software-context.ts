@@ -13,12 +13,12 @@ export class SoftwareError extends Error{}
 const owners=new Set(['gluegunandglitter','gluegunglitter']);
 const sha=/^[a-f0-9]{40}$/;
 const cache=new Map<string,{at:number;bytes:number;value:any}>();
-const codePath=(path:string)=>path.length<240&&!path.split('/').some(p=>p.startsWith('.')||['node_modules','build','dist','vendor'].includes(p))&&/\.(java|kt|cpp|cc|h|hpp|py|ts|gradle|md)$/i.test(path)&&!/(secret|credential|password|token)/i.test(path);
+const codePath=(path:string)=>path.length<240&&!path.split('/').some(p=>p.startsWith('.')||['node_modules','build','dist','vendor'].includes(p))&&(/\.(java|kt|cpp|cc|h|hpp|py|ts|gradle|md)$/i.test(path)||/^vendordeps\/[^/]+\.json$/i.test(path))&&!/(secret|credential|password|token)/i.test(path);
 export function validateSoftware(value:any):SoftwareSelection{
  if(!value||typeof value.repository!=='string'||!/^[-\w]+\/[-\w.]+$/.test(value.repository)||!owners.has(value.repository.split('/')[0].toLowerCase()))throw new SoftwareError('Choose a repository from the G3 Engineering Hub.');
  if(typeof value.revision!=='string'||!sha.test(value.revision)||value.base&&(!sha.test(value.base)||value.base===value.revision))throw new SoftwareError('Select exact, distinct commit revisions.');
  if(!['explain','diagnose','review'].includes(value.mode)||value.mode==='review'&&!value.base)throw new SoftwareError('Review requires a base commit and a target commit.');
- if(!Array.isArray(value.paths)||value.paths.length<1||value.paths.length>6||value.paths.some((p:any)=>typeof p!=='string'||!codePath(p)||p.includes('..'))||new Set(value.paths).size!==value.paths.length)throw new SoftwareError('Choose one to six supported source files.');
+ if(!Array.isArray(value.paths)||value.paths.length<1||value.paths.length>12||value.paths.some((p:any)=>typeof p!=='string'||!codePath(p)||p.includes('..'))||new Set(value.paths).size!==value.paths.length)throw new SoftwareError('Choose one to twelve supported source files within the evidence budget.');
  return {repository:value.repository,revision:value.revision,base:value.base||undefined,paths:value.paths,mode:value.mode,...(value.automatic===true?{automatic:true}:{})};
 }
 export function githubReader(send:typeof fetch=fetch,access:SoftwareAccess={}){
@@ -29,7 +29,7 @@ export function githubReader(send:typeof fetch=fetch,access:SoftwareAccess={}){
   const immutable=!access.token&&send===fetch&&/\/(?:git\/(?:trees|blobs)|commits)\/[a-f0-9]{40}(?:\?recursive=1)?$/.test(path);
   const cached=immutable?cache.get(path):null;
   if(cached&&Date.now()-cached.at<600000)return cached.value;
-  if(++requests>18)throw new SoftwareError('Repository request limit reached. Narrow the selected files.');
+  if(++requests>32)throw new SoftwareError('Repository request limit reached. Narrow the selected files.');
   const repo=path.split('/').slice(0,2).join('/');
   if(access.token&&(!access.allowPrivate||!isPrivateRobotRepository(repo)))throw new SoftwareError('Private repository access is not authorized.');
   const response=await send('https://api.github.com/repos/'+path,{headers:{Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','User-Agent':'G3-Software-Mentor',...(access.token?{Authorization:`Bearer ${access.token}`}:{})},redirect:'error',signal:AbortSignal.timeout(10000)});
@@ -92,13 +92,31 @@ export async function selectSoftware(repository:string,question:string,send:type
  if(name==='build.gradle')score+=35;
  for(const term of new Set([...terms,...hints]))if(name.includes(term))score+=50;
  if(/subsystems?\//i.test(e.path))score+=80;
- if(/(?:^|\/)(?:lib|util|generated|constants)(?:\/|$)/i.test(e.path))score-=60;
- if(/constants/i.test(name))score-=30;
+ if(/(?:^|\/)(?:generated)(?:\/|$)/i.test(e.path))score-=60;
  if(/license|readme|example/i.test(name))score-=30;
  return {...e,score};}).filter(e=>e.score>0).sort((a,b)=>b.score-a.score||a.path.localeCompare(b.path));
- const paths=ranked.slice(0,6).map(e=>e.path);
+ const primary=ranked.slice(0,4),paths=primary.map(e=>e.path);
  if(!paths.length)throw new SoftwareError('No supported source files could be selected. Choose files explicitly; no generic answer was generated.');
- return {repository,revision:result.revision,paths,mode:'explain' as const,automatic:true};
+ // Read bounded primary implementations to find actual repository references,
+ // instead of excluding constants/configuration based on filename alone.
+ const dependencies=new Map<string,number>();
+ for(const entry of primary){
+  const blob=await read(`${repository}/git/blobs/${entry.sha}`);
+  if(blob.encoding!=='base64'||typeof blob.content!=='string')throw new SoftwareError('Unsupported source encoding.');
+  const text=new TextDecoder('utf-8',{fatal:true}).decode(Uint8Array.from(atob(blob.content.replace(/\s/g,'')),c=>c.charCodeAt(0)));
+  const symbols=new Set(text.match(/\b[A-Z][A-Za-z0-9_]{2,}\b/g)??[]);
+  const imports=[...text.matchAll(/\bimport\s+(?:static\s+)?([\w.]+)/g)].map(m=>m[1].replaceAll('.','/'));
+  for(const candidate of result.entries){
+   if(paths.includes(candidate.path))continue;
+   const stem=candidate.path.split('/').pop()!.replace(/\.[^.]+$/,'');
+   const imported=imports.some(i=>i.includes('/'+stem)&&candidate.path.replace(/\.[^.]+$/,'').endsWith(i.slice(0,i.indexOf('/'+stem)+stem.length+1)));
+   if(imported||symbols.has(stem))dependencies.set(candidate.path,(dependencies.get(candidate.path)??0)+(imported?10:2));
+  }
+ }
+ const dependentPaths=[...dependencies].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).map(([path])=>path);
+ const configuration=result.entries.filter(e=>e.path==='build.gradle'||e.path.startsWith('vendordeps/')).map(e=>e.path).sort();
+ const candidates=[...new Set([...paths,...dependentPaths.slice(0,6),...configuration,...ranked.map(e=>e.path)])];
+ return {repository,revision:result.revision,paths:candidates.slice(0,12),mode:'explain' as const,automatic:true,coverage:{strategy:'Primary implementation plus referenced repository types and build/vendor configuration; bounded one-hop retrieval',candidateCount:candidates.length,omittedCandidates:candidates.slice(12),supportedFileCount:result.entries.length}};
 }
 /** Preserve original line numbers and validate citations against shown ranges. */
 export function sourceExcerpt(lines:string[],question:string,budget:number){
@@ -107,10 +125,10 @@ export function sourceExcerpt(lines:string[],question:string,budget:number){
  const terms=[...new Set((question.toLowerCase().match(/[a-z][a-z0-9_]{3,}/g)??[]).filter(t=>!['this','that','with','from','have','does','repository','rebuilt_2026'].includes(t)))];
  if(/sysid|characteriz|אפיון/i.test(question))terms.push('sysid','voltage','volts','position','velocity','setcontrol','talon','feedforward','motor');
  const ranked=lines.map((line,i)=>({i,score:terms.reduce((n,t)=>n+(line.toLowerCase().includes(t)?(t==='sysid'?20:3):0),0)+(/\b(public|private|protected)\b.*\(/.test(line)?1:0)})).filter(v=>v.score>0).sort((a,b)=>b.score-a.score||a.i-b.i);
- const selected=new Set<number>();let used=0;
- const add=(i:number)=>{if(i<0||i>=lines.length||selected.has(i))return;const n=encoder.encode(numbered[i]+'\n').length;if(used+n<=budget-600){selected.add(i);used+=n;}};
- for(const {i} of ranked){const start=Math.max(0,i-3),end=Math.min(lines.length-1,i+9);const cost=numbered.slice(start,end+1).reduce((n,l,j)=>n+(selected.has(start+j)?0:encoder.encode(l+'\n').length),0);if(used+cost<=budget-600)for(let j=start;j<=end;j++)add(j);}
- for(let i=0;i<lines.length&&used<budget-600;i++)add(i);
+ const selected=new Set<number>();let used=0;const contentBudget=budget-Math.min(200,Math.floor(budget*.15));
+ const add=(i:number)=>{if(i<0||i>=lines.length||selected.has(i))return;const n=encoder.encode(numbered[i]+'\n').length;if(used+n<=contentBudget){selected.add(i);used+=n;}};
+ for(const {i} of ranked){const start=Math.max(0,i-3),end=Math.min(lines.length-1,i+9);const cost=numbered.slice(start,end+1).reduce((n,l,j)=>n+(selected.has(start+j)?0:encoder.encode(l+'\n').length),0);if(used+cost<=contentBudget)for(let j=start;j<=end;j++)add(j);}
+ for(let i=0;i<lines.length&&used<contentBudget;i++)add(i);
  const indexes=[...selected].sort((a,b)=>a-b),ranges:[number,number][]=[];for(const i of indexes){const last=ranges.at(-1);if(last&&last[1]===i)last[1]=i+1;else ranges.push([i+1,i+1]);}
  return {text:ranges.map(([a,b])=>numbered.slice(a-1,b).join('\n')).join('\n… omitted lines …\n'),ranges};
 }
@@ -130,6 +148,7 @@ export async function softwareEvidence(input:unknown,send:typeof fetch=fetch,acc
    const lines=text.split('\n');
    const excerpt=selection.automatic?sourceExcerpt(lines,question,Math.floor(21000/(selection.paths.length*revisions.length))):null;
    const numbered=excerpt?.text??lines.map((line,i)=>`${i+1}: ${line}`).join('\n');
+   if(!numbered.trim())throw new SoftwareError('A selected file cannot fit meaningful source lines in this review. Select fewer files or a narrower question.');
    size+=new TextEncoder().encode(excerpt?numbered:text).length;if(size>22000)throw new SoftwareError('Selected code exceeds the context budget. Choose fewer or smaller files.');
    rows.push({id:`C${rows.length+1}`,path,revision,url:`https://github.com/${selection.repository}/blob/${revision}/${path.split('/').map(encodeURIComponent).join('/')}`,text:numbered,lines:lines.length,...(excerpt?{ranges:excerpt.ranges}:{})});
   }

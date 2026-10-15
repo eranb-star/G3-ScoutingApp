@@ -139,9 +139,9 @@ Deno.serve(async request=>{
     return reply({saved:true});
    }
    if(body.action==='workspace'){
-    const snapshots=await db.from('cad_snapshots').select('id,microversion,coverage,created_at').eq('source_id',selected.data.id).order('created_at',{ascending:false}).limit(30);
+    const snapshots=await db.from('cad_snapshots').select('id,microversion,coverage,created_at,source_revision_at,source_date_scope').eq('source_id',selected.data.id).order('created_at',{ascending:false}).limit(30);
     if(snapshots.error)throw new CadError('STORAGE_UNAVAILABLE','Could not load design history.',503);
-    if(body.snapshotId&&!snapshots.data?.some((s:any)=>s.id===body.snapshotId)){const pinned=await db.from('cad_snapshots').select('id,microversion,coverage,created_at').eq('source_id',selected.data.id).eq('id',body.snapshotId).maybeSingle();if(pinned.error||!pinned.data)throw new CadError('SNAPSHOT_REQUIRED','The requested build revision is unavailable.',404);snapshots.data=[...(snapshots.data||[]),pinned.data];}
+    if(body.snapshotId&&!snapshots.data?.some((s:any)=>s.id===body.snapshotId)){const pinned=await db.from('cad_snapshots').select('id,microversion,coverage,created_at,source_revision_at,source_date_scope').eq('source_id',selected.data.id).eq('id',body.snapshotId).maybeSingle();if(pinned.error||!pinned.data)throw new CadError('SNAPSHOT_REQUIRED','The requested build revision is unavailable.',404);snapshots.data=[...(snapshots.data||[]),pinned.data];}
     const findings=await db.from('cad_findings').select('*').eq('source_id',selected.data.id).order('created_at',{ascending:false});
     if(findings.error)throw new CadError('STORAGE_UNAVAILABLE','Could not load findings.',503);
     const ids=(snapshots.data||[]).map((s:any)=>s.id);
@@ -201,6 +201,7 @@ Deno.serve(async request=>{
    const snapshot=await captureSnapshot(source.data,read);
    const inserted=await db.from('cad_snapshots').upsert({source_id:source.data.id,...snapshot},{onConflict:'source_id,microversion',ignoreDuplicates:true});
    if(inserted.error)throw new CadError('STORAGE_UNAVAILABLE','Could not save the design evidence.',503);
+   if(snapshot.source_revision_at){const dated=await db.from('cad_snapshots').update({source_revision_at:snapshot.source_revision_at,source_date_scope:snapshot.source_date_scope}).eq('source_id',source.data.id).eq('microversion',snapshot.microversion).is('source_revision_at',null);if(dated.error)throw new CadError('SAVE_FAILED','Source revision date could not be saved.',500);}
    const saved=await db.from('cad_snapshots').select('*').eq('source_id',source.data.id).eq('microversion',snapshot.microversion).single();
    if(saved.error)throw new CadError('STORAGE_UNAVAILABLE','Could not read the saved design evidence.',503);
    return reply({snapshot:{id:saved.data.id,created_at:saved.data.created_at,microversion:saved.data.microversion,...inspectEvidence(saved.data)}});
