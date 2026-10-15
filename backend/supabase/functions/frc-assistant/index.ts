@@ -298,14 +298,15 @@ Deno.serve(async (request) => {
 
     if(verifiedScoring&&!verifiedScoring.direct){answer=verifiedScoring.text+"\n\n### "+(language==='he'?'ניתוח והמלצות של העוזר':'Assistant analysis and recommendations')+"\n\n"+answer;citations=[...verifiedScoring.citations,...citations];}
     const storedAnswer = answer.slice(0, 19500);
+    const softwareManifest=software?{version:1,promptVersion:'software-review-20261015',requestId:body.requestId??null,model:usedModel,retrievedAt:new Date().toISOString(),selection:software.selection,rows:software.rows,checksRun:false,scope:'selected_source_only',partial:software.rows.some(r=>r.ranges&&r.ranges.reduce((n,[a,b])=>n+b-a+1,0)<r.lines)}:null;
     const { error: saveError,data:savedMessages } = await admin.from("ai_messages").insert([
-      { conversation_id: conversationId, member_id: memberId, role: "user", content: prompt, citations: [], attachment_name: attachmentName, attachment_kind: imagePart ? attachmentKind : null, context_issue_id:contextIssueId, input_tokens: Number(usage.total_input_tokens ?? 0), output_tokens: 0, model: usedModel },
-      { conversation_id: conversationId, member_id: memberId, role: "assistant", content: storedAnswer, citations, attachment_name: null, attachment_kind: null, context_issue_id:contextIssueId, input_tokens: 0, output_tokens: Number(usage.total_output_tokens ?? 0), model: usedModel },
+      { conversation_id: conversationId, member_id: memberId, role: "user", content: prompt, citations: [], attachment_name: attachmentName, attachment_kind: imagePart ? attachmentKind : null, context_issue_id:contextIssueId, input_tokens: Number(usage.total_input_tokens ?? 0), output_tokens: 0, model: usedModel,software_evidence:null },
+      { conversation_id: conversationId, member_id: memberId, role: "assistant", content: storedAnswer, citations, attachment_name: null, attachment_kind: null, context_issue_id:contextIssueId, input_tokens: 0, output_tokens: Number(usage.total_output_tokens ?? 0), model: usedModel,software_evidence:softwareManifest },
     ]).select("id,role");
     if (saveError) console.error("G3 Assist history save failed", { code: saveError.code, message: saveError.message });
     else await admin.from("ai_conversations").update({ updated_at: new Date().toISOString() }).eq("id", conversationId);
 
-    return await finishResponse({ conversationId, answerMessageId:savedMessages?.find((m:any)=>m.role==='assistant')?.id??null, softwareContext:software?.selection??null, originalQuestion: message, answer, citations, grounded:Boolean(citations.length), usage: { inputTokens: Number(usage.total_input_tokens ?? 0), outputTokens: Number(usage.total_output_tokens ?? 0), remainingToday: Math.max(0, DAILY_LIMIT - (count ?? 0) - 1) } });
+    return await finishResponse({ conversationId, answerMessageId:savedMessages?.find((m:any)=>m.role==='assistant')?.id??null, softwareContext:software?.selection??null, softwareEvidence:softwareManifest, historySaved:!saveError, originalQuestion: message, answer, citations, grounded:Boolean(citations.length), usage: { inputTokens: Number(usage.total_input_tokens ?? 0), outputTokens: Number(usage.total_output_tokens ?? 0), remainingToday: Math.max(0, DAILY_LIMIT - (count ?? 0) - 1) } });
   } catch (error) {
     console.error("frc-assistant", error);
     return await finishResponse({ error: "G3 Assist could not complete the request. Please try again." }, 500);

@@ -63,7 +63,7 @@ export default function ProjectsPage() {
 
   async function load() {
     void loadDependencies();
-    void supabase.from("team_members").select("id,display_name").eq("active",true).order("display_name").then(({data})=>setPeople(data??[]));
+    void supabase.rpc('scoped_assignee_directory').then(({data,error})=>{if(!error)setPeople(data??[]);});
     const reviewResult=await supabase.rpc("project_review_context",{p_all:true});setReviewsError(!!reviewResult.error);if(!reviewResult.error)setReviews(reviewResult.data??[]);
     const [projectResult, taskResult] = await Promise.all([
       supabase.from("team_projects").select("id,name,status,due_at,subteam,owner_id").order("created_at", { ascending:false }),

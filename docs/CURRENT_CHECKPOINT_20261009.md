@@ -2,9 +2,9 @@
 
 This is the entry point for current status and decisions. It reconciles existing release evidence and this conversation; it is not a new audit of every production feature. Detailed feature records below retain acceptance limits. Older proposed phases and undeployed notices are superseded only where the named release records establish delivery.
 
-## Pre-development design review — 15 October
+## Workflow reliability implementation — 15 October
 
-[Workflow reliability design](WORKFLOW_RELIABILITY_DESIGN_20261015.md) is the proposed baseline for all seven reported issues. User requested final design/documentation before proceeding. **Documentation only; implementation awaits user direction.** Preserve current owed balances and records; historical reconciliation requires explicit reviewed changes. Production below remains unchanged. Live push cause, deployed financial schema and source timestamp availability remain investigation items, not verified fixes.
+[Workflow reliability design](WORKFLOW_RELIABILITY_DESIGN_20261015.md) is approved by the user's “OK move ahead.” **Implementation is in progress locally; none of these fixes is deployed.** Preserve current owed balances and records; historical reconciliation requires explicit reviewed changes. See [implementation evidence and remaining work](WORKFLOW_RELIABILITY_PROGRESS_20261015.md). The user identified absence-request alerts as a concrete missing notification. Live action RLS and the client lookup establish a failure path; actual device receipt remains unverified. Production below remains unchanged.
 
 ## Latest Mechanical Tools release — 11 October
 Website **d8cdb47** (development **a3f48b8**), production **4GW7VZdLx5UC6hvTYiub8vUi3hy8**, Ready on g3-6740.com. [Mechanical Tools phase 1](MECHANICAL_TOOLS_20261011.md): purpose-based Engineering Hub landing, belt/chain sizing, dimensioned diagram, units, nearby options, personal/team-readable saved versions, optional assembly link and browser print/PDF. CI375/376 passed; additive migration applied; privacy/conflict rollback tests and live private cloud save/reopen/version history passed. Inventory matching, automatic Studio shaft placement and other calculators remain future phases. No new APK. Physical fit/student acceptance remains open.

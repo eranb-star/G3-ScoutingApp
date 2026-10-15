@@ -2,7 +2,7 @@
 
 > **Latest website: Mechanical Tools phase 1, 11 October 2026.** Release **d8cdb47**, production **4GW7VZdLx5UC6hvTYiub8vUi3hy8**, CI375/376 passed. Read [Mechanical Tools release](MECHANICAL_TOOLS_20261011.md) and the current checkpoint. Migration, live private cloud save/reopen and version history are verified. Other calculators, inventory matching and Studio placement remain later phases. Earlier status lines are historical. No new APK.
 
-> **15 October design review:** Read [Workflow reliability design](WORKFLOW_RELIABILITY_DESIGN_20261015.md) for the seven reported issues and reconciliation safeguards. Documentation only; implementation awaits user direction. Current production remains the Mechanical Tools release above.
+> **15 October approved implementation:** Read [Workflow reliability design](WORKFLOW_RELIABILITY_DESIGN_20261015.md) and [progress/evidence](WORKFLOW_RELIABILITY_PROGRESS_20261015.md). User approved all seven issues; work is local and incomplete, not deployed. Continue implementation without asking for the same approval. Current production remains the Mechanical Tools release above.
 
 # Start here — current as of 9 October 2026
 

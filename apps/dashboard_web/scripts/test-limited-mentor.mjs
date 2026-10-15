@@ -1,0 +1,32 @@
+import assert from 'node:assert/strict';import fs from 'node:fs/promises';
+const {PGlite}=await import(process.argv[2]||'@electric-sql/pglite');const db=new PGlite();
+const id=n=>`00000000-0000-0000-0000-${String(n).padStart(12,'0')}`;
+try{
+ await db.exec(`create role authenticated;create role anon;create schema auth;create function auth.uid() returns uuid language sql as $$select nullif(current_setting('test.uid',true),'')::uuid$$;
+ create table team_members(id uuid primary key,display_name text,email text,role text constraint team_members_role_check check(role in('admin','mentor','member','team_leader')),active boolean,subteam text,subteams text[]);
+ create table app_permissions(permission_key text primary key);create table role_permissions(role text constraint role_permissions_role_check check(role in('admin','mentor','member','team_leader')),permission_key text,allowed boolean,primary key(role,permission_key));
+ insert into app_permissions values('manage_team_projects'),('assign_team_work'),('manage_training'),('validate_training'),('view_team_reports'),('manage_members'),('use_private_robot_code'),('view_field_twin');
+ insert into team_members values('${id(1)}','Admin','private-admin@example.test','admin',true,'Mechanical','{Mechanical}'),('${id(2)}','Limited','private-limited@example.test','member',true,'Mechanical','{Mechanical}'),('${id(3)}','Student','private-student@example.test','member',true,'Software','{Software}'),('${id(4)}','Peer','private-peer@example.test','member',true,'Mechanical','{Mechanical}');
+ create function current_team_role() returns text language sql stable security definer as $$select role from team_members where id=auth.uid() and active$$;
+ create function current_member_has_team(t text) returns boolean language sql stable security definer as $$select exists(select 1 from team_members where id=auth.uid() and active and (role in('admin','mentor') or t=any(subteams)))$$;
+ create function current_member_leads_team(t text) returns boolean language sql stable security definer as $$select current_team_role() in('admin','mentor')$$;
+ create table member_skill_progress(member_id uuid,grade text);insert into member_skill_progress values('${id(3)}','private grade');
+ create table team_projects(id uuid primary key,subteam text);insert into team_projects values('${id(10)}','Mechanical'),('${id(11)}','Software');
+ create table project_tasks(id uuid primary key,project_id uuid);insert into project_tasks values('${id(20)}','${id(10)}'),('${id(21)}','${id(11)}');
+ alter table team_members enable row level security;alter table member_skill_progress enable row level security;alter table team_projects enable row level security;alter table project_tasks enable row level security;
+ create policy broad on team_members for select to authenticated using(true);create policy broad on member_skill_progress for all to authenticated using(true);create policy broad on team_projects for all to authenticated using(true);create policy broad on project_tasks for all to authenticated using(true);
+ grant usage on schema public,auth to authenticated;grant select on all tables in schema public to authenticated;grant update on member_skill_progress to authenticated;`);
+ await db.exec(await fs.readFile(new URL('../../../backend/supabase/limited_mentor_20261015.sql',import.meta.url),'utf8'));
+ await db.exec(`update team_members set role='limited_mentor' where id='${id(2)}';set role authenticated;set test.uid='${id(2)}'`);
+ assert.equal((await db.query('select id,email from team_members')).rows.length,1,'full member profiles restricted to self');
+ assert.deepEqual((await db.query('select * from scoped_assignee_directory()')).rows.map(x=>x.id),[id(1),id(2),id(4)]);
+ assert.equal((await db.query('select * from member_skill_progress')).rows.length,0,'no student grades');
+ assert.equal((await db.query('select * from team_projects')).rows.length,1);assert.equal((await db.query('select * from project_tasks')).rows.length,1);
+ const can=async(p,t=null)=>(await db.query('select has_permission($1,$2) as allowed',[p,t])).rows[0].allowed;
+ assert.equal(await can('manage_team_projects','Mechanical'),true);assert.equal(await can('manage_team_projects','Software'),false);assert.equal(await can('manage_team_projects'),false);
+ for(const p of ['validate_training','manage_training','view_team_reports','manage_members','use_private_robot_code'])assert.equal(await can(p),false);
+ await db.exec(`reset role;update role_permissions set allowed=true where role='limited_mentor';set role authenticated;`);
+ assert.equal(await can('validate_training'),false,'sensitive capabilities remain prohibited even with accidental matrix grant');
+ await db.exec(`reset role;update team_members set active=false where id='${id(2)}';set role authenticated;`);assert.equal(await can('manage_team_projects','Mechanical'),false);
+ console.log('PASS Limited Mentor: assigned project/task scope, minimal directory, private student profiles/grades and sensitive capabilities denied, deactivation');
+}finally{await db.close();}

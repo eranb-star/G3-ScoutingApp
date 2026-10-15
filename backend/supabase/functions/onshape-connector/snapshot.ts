@@ -1,4 +1,5 @@
 import {CadError,onshapeId,cadValue} from './security.ts';
+import {sourceRevisionDate} from './sourceDate.ts';
 export async function captureSnapshot(source:any,read:(path:string)=>Promise<any>){
  const did=onshapeId(source.document_id),eid=onshapeId(source.element_id),ref=onshapeId(source.reference_id);
  if(!['w','v','m'].includes(source.reference_type))throw new CadError('INVALID_SOURCE','Invalid source reference.');
@@ -15,7 +16,10 @@ export async function captureSnapshot(source:any,read:(path:string)=>Promise<any
   catch(error){if(error instanceof CadError&&['RECONNECT_REQUIRED','RATE_LIMITED'].includes(error.code))throw error;coverage.push({kind,status:'unavailable',code:error instanceof CadError?error.code:'SOURCE_UNAVAILABLE'});}
  }
  if(!Object.keys(evidence).length)throw new CadError('SOURCE_UNAVAILABLE','No design evidence could be retrieved. No review was performed.',502);
- return {microversion,evidence,coverage};
+ let source_revision_at:string|null=null;
+ try{source_revision_at=sourceRevisionDate(await read(`/documents/d/${did}/m/${microversion}/documenthistory`),microversion);}
+ catch(error){if(error instanceof CadError&&['RECONNECT_REQUIRED','RATE_LIMITED'].includes(error.code))throw error;}
+ return {microversion,evidence,coverage,source_revision_at,source_date_scope:source_revision_at?'document_revision':null};
 }
 export function inspectEvidence(snapshot:any){
  const features=cadValue(snapshot.evidence?.features);

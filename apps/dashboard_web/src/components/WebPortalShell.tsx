@@ -5,7 +5,7 @@ import { useMemberAuth } from "../lib/memberAuth";
 import { useAdminStatus } from "../lib/useAdminStatus";
 import "./webPortal.css";
 import { memberTeams, useAccessControl } from "../lib/accessControl";
-import { supabase } from "../supabase";
+import { signOut as signOutAccount } from "../lib/auth";
 
 const links = [
   ["/home", "Home", "בית"],
@@ -28,7 +28,8 @@ export default function WebPortalShell({children}:{children:ReactNode}) {
   const isAdmin=useAdminStatus();
   const location=useLocation();
   const [expanded,setExpanded]=useState(false);
-  const signOut=async()=>{await supabase.auth.signOut({scope:"local"});};
+  const [signOutError,setSignOutError]=useState('');
+  const signOut=async()=>{setSignOutError('');const result=await signOutAccount();if(result.error)setSignOutError(result.error.message);};
   if(!profile?.active||profile.must_change_password)return <>{children}</>;
   const knowledgeView=location.pathname==="/updates"&&new URLSearchParams(location.search).get("view")==="knowledge";
   const item=(path:string,en:string,he:string)=>{
@@ -48,6 +49,7 @@ export default function WebPortalShell({children}:{children:ReactNode}) {
       </nav>
       <NavLink className="web-profile" to="/profile"><span>{profile.display_name}</span><small>{memberTeams(profile).join(" · ")||pick("Team member","חבר/ת קבוצה")}</small></NavLink>
       <button className="web-signout" type="button" onClick={()=>void signOut()}>{pick("Sign out","יציאה")}</button>
+      {signOutError&&<p role="alert">{signOutError}</p>}
     </aside>
     <div className="web-workspace">
       <header className="web-topbar"><Link className="web-team-signature" to="/home" aria-label={pick("Glue Gun and Glitter home","דף הבית של Glue Gun and Glitter")}><img src="/g3-assistant.png" alt=""/><span><strong>Glue Gun &amp; Glitter</strong><small>FRC 6740 · ONE TEAM</small></span></Link><nav aria-label={pick("Quick tools","כלים מהירים")}><NavLink to="/schedule" aria-label={pick("Open calendar","פתיחת יומן")}><b aria-hidden="true">▦</b><span>{pick("Calendar","יומן")}</span></NavLink><NavLink to="/updates?view=inbox" aria-label={pick("Open notifications","פתיחת התראות")}><b aria-hidden="true">●</b><span>{pick("Notifications","התראות")}</span></NavLink><NavLink to="/settings" aria-label={pick("Open settings","פתיחת הגדרות")}><b aria-hidden="true">⚙</b><span>{pick("Settings","הגדרות")}</span></NavLink></nav></header>

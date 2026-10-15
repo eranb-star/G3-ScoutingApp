@@ -20,3 +20,5 @@
 .workshop-roster-group ul{list-style:none;padding:0;margin:0}.workshop-roster-group li{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;padding:12px 0;border-top:1px solid #eee1ea}
 .workshop-roster-group li div{display:grid;gap:4px;overflow-wrap:anywhere}.workshop-roster-group small,.workshop-attendance>header small{color:#655666}
 @media(max-width:600px){.workshop-attendance-toolbar{align-items:stretch}.workshop-roster-group li{grid-template-columns:1fr}.workshop-attendance-totals{gap:12px}.workshop-attendance>header{align-items:start}.workshop-attendance-switch{flex:1}.workshop-attendance-switch button{flex:1}}
+
+.attendance-time-form{display:grid;gap:12px}.attendance-time-form label{display:grid;gap:6px}.attendance-time-form input,.attendance-time-form textarea{padding:12px;border:1px solid #d8c5d3;border-radius:8px}.workshop-roster-group li{flex-wrap:wrap;gap:12px}
