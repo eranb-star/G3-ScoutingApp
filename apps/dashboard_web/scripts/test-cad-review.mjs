@@ -2,7 +2,7 @@ import fs from 'node:fs';import assert from 'node:assert/strict';import ts from 
 const root='../../backend/supabase/functions/onshape-connector/';
 const url=code=>'data:text/javascript;base64,'+Buffer.from(ts.transpileModule(code,{compilerOptions:{target:99,module:99}}).outputText).toString('base64');
 const security=url(fs.readFileSync(root+'security.ts','utf8'));
-const snapshot=url(fs.readFileSync(root+'snapshot.ts','utf8').replace("'./security.ts'",JSON.stringify(security)));
+const snapshot=url(fs.readFileSync(root+'snapshot.ts','utf8').replace("'./security.ts'",JSON.stringify(security)).replace("'./sourceDate.ts'",JSON.stringify(url(fs.readFileSync(root+'sourceDate.ts','utf8')))));
 const budget=url(fs.readFileSync(root+'../frc-assistant/budgeted-gemini.ts','utf8'));
 const {meshPositions,sketchLines,assemblyPlacements,geometryFor}=await import(url(fs.readFileSync(root+'geometry.ts','utf8').replace("'./security.ts'",JSON.stringify(security))));
 const {designEvidence,validateReviewCitations,reviewDesign}=await import(url(fs.readFileSync(root+'review.ts','utf8').replace("'./security.ts'",JSON.stringify(security)).replace("'./snapshot.ts'",JSON.stringify(snapshot)).replace("'../frc-assistant/budgeted-gemini.ts'",JSON.stringify(budget))));

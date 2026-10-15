@@ -2,7 +2,7 @@ import fs from 'node:fs';import assert from 'node:assert/strict';import ts from 
 const root='../../backend/supabase/functions/onshape-connector/';
 const url=code=>'data:text/javascript;base64,'+Buffer.from(ts.transpileModule(code,{compilerOptions:{target:99,module:99}}).outputText).toString('base64');
 const security=url(fs.readFileSync(root+'security.ts','utf8'));
-const snapshot=url(fs.readFileSync(root+'snapshot.ts','utf8').replace("'./security.ts'",JSON.stringify(security)));
+const snapshot=url(fs.readFileSync(root+'snapshot.ts','utf8').replace("'./security.ts'",JSON.stringify(security)).replace("'./sourceDate.ts'",JSON.stringify(url(fs.readFileSync(root+'sourceDate.ts','utf8')))));
 const geometry=url(fs.readFileSync(root+'geometry.ts','utf8').replace("'./security.ts'",JSON.stringify(security)));
 const metadata=url(fs.readFileSync(root+'partMetadata.ts','utf8'));
 const bom=url(fs.readFileSync(root+'bom.ts','utf8'));
