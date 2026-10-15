@@ -12,11 +12,11 @@ export type ConfirmedOrder = {
 export type ExpenseAllocation = {order_id:string; expense_id:string; amount:number};
 export type AllocationExpense = {id:string; amount:number; currency:string; duplicate_of?:string|null};
 
-export function orderCommitment(order:ConfirmedOrder,allocations:ExpenseAllocation[],expenses:AllocationExpense[]){
+export function orderCommitment(order:ConfirmedOrder,allocations:ExpenseAllocation[],expenses:AllocationExpense[],billCoverage:{order_id:string;amount:number}[]=[]){
  const total=cents(order.total),cancelled=cents(order.cancelled_amount);
  if(!Number.isSafeInteger(total)||!Number.isSafeInteger(cancelled)||total<0||cancelled<0||cancelled>total)throw Error('Invalid order amounts');
  const related=allocations.filter(a=>a.order_id===order.id);
- let covered=0;
+ let covered=billCoverage.filter(a=>a.order_id===order.id).reduce((n,a)=>n+cents(a.amount),0);
  for(const allocation of related){
   const expense=expenses.find(e=>e.id===allocation.expense_id),amount=cents(allocation.amount);
   if(!expense||expense.duplicate_of||expense.currency!==order.currency||!Number.isSafeInteger(amount)||amount<=0)throw Error('Invalid expense allocation');

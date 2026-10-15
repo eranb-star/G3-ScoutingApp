@@ -103,6 +103,9 @@ jobs:
           node scripts/test-purchase-order-confirmation.mjs "$PGLITE_MODULE"
           node scripts/test-finance-expense-entry.mjs "$PGLITE_MODULE"
           node scripts/test-software-findings.mjs "$PGLITE_MODULE"
+          node scripts/test-supplier-bills.mjs "$PGLITE_MODULE"
+          node scripts/test-finance-refunds.mjs "$PGLITE_MODULE"
+          node scripts/test-purchase-returns.mjs "$PGLITE_MODULE"
       - name: Private CAD authorization, revisions and review evidence
         env:
           PGLITE_MODULE: ${{ runner.temp }}/g3-sql/node_modules/@electric-sql/pglite/dist/index.js

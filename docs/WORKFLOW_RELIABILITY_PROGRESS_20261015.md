@@ -52,3 +52,18 @@ The user explicitly challenged excessive token use. Keep one checklist, batch re
 - Retry-safe expense entry with invoice duplicate detection/explicit legitimate split now tested; additive migration rehearsed and installed. Existing expense rows unchanged.
 - Added CI checks for split orders, expense idempotency and finding ownership/citation/status history.
 - Broader supplier-bill/prepayment/refund lifecycle remains incomplete; it is not silently closed by these improvements.
+
+## Current release candidate and in-progress supplier ledger
+- Development f0c8555 / release 0bd0e37 pushed. CI383/384 passed. Not yet promoted; production remains cd2075a.
+- 18 migrations installed: original 15 plus findings, split supplier orders, retry-safe invoice-aware expense entry.
+- Local supplier-bill extension is NOT deployed: finance_supplier_bills_20261015.sql, SupplierBills.tsx, supplierBills.ts, test-supplier-bills.mjs. Supports unpaid invoices, deposits, partial/mixed payments via atomic existing expense creation, invoice allocation across orders, private attachments. Focused backend tests pass; UI/integration/projection verification underway.
+- Finance multi-order correction/cancellation now selects the specific order locally (previous candidate used first order). Include this correction in next release before promotion.
+- This candidate is superseded by the finance completion batch below.
+
+## Finance completion batch — 15 October
+- Four additional migrations installed after production BEGIN/ROLLBACK rehearsal: supplier bills, actual refunds/member credit recovery, supplier stock returns, and refunded-document guards. Total installed migrations: 22. No existing monetary, repayment, attendance or stock records were changed by installation.
+- Supplier invoices/advances support partial and mixed-payer payments, links to existing expenses and multiple confirmed orders, private attachments and retry-safe writes. Invoice cost offsets its linked expense payments; advances are excluded until invoiced. Refunds offset cost only for the expensed share of a payment.
+- Actual refunds preserve original expenses/repayments, update cash or named-member net balance according to destination, and expose excess refund credit returned by a member. A refund does not reopen an order. Incorrect refund entries can be reversed with a reason. Returned member-credit receipts are immutable; correcting a mistaken recovery receipt requires an audited administrative repair (no UI reversal currently).
+- Returns use original receipt conversion, reject excess/unavailable stock, preserve receipt history and do not infer a refund or replacement order. Existing inventory reservation guards still apply.
+- Focused tests passed: invoice/advance settlement, linked-payment double-count guards, refunded-invoice mutation guards, refund-after-reimbursement/credit recovery, partial/full returns, idempotency and access denials. TypeScript passed before the final small projection helper; final compile/CI pending. English desktop and Hebrew 390px invoice forms inspected.
+- Frontend completion batch and final signed APK are not yet released. Production is still cd2075a until the next release entry explicitly supersedes it. Actual Android notification receipt remains unverified without an attached device/test authorization.
