@@ -11,8 +11,8 @@ const updates=read("apps/dashboard_web/src/pages/UpdatesPage.tsx");
 const checks=[
   ["administration center exposes finance and governance",admin.includes('"/admin/finance"')&&admin.includes('"/admin/permissions"')&&admin.includes('"/admin/security"')],
   ["phone More does not duplicate administration",!more.includes('navigate("/admin/finance")')&&!more.includes('navigate("/admin/members")')],
-  ["absence submission invokes responsibility push",attendance.includes("notifyActionsBySourceId(data.id)")],
-  ["absence decision invokes member push",attendance.includes("notifyActionsBySourceId(requestId)")],
+  ["absence submission invokes responsibility push",attendance.includes("notifyAbsenceRequest(data.id)")],
+  ["absence decision invokes member push",attendance.includes("notifyAbsenceRequest(requestId)")],
   ["viewed responsibilities remain visible in inbox",updates.includes('status==="completed"')&&!updates.includes('status==="acknowledged"||state.status==="completed"')],
   ["token refresh retains the validated profile",auth.includes("profileRef.current")&&!auth.includes("setProfile(null);\n    setProfileError")],
   ["stale profile requests cannot overwrite current account",auth.includes("requestId !== requestRef.current")],
