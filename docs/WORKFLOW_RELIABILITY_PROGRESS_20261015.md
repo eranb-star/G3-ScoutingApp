@@ -2,19 +2,29 @@
 
 User authorization: complete all seven agreed fixes. Scope remains WORKFLOW_RELIABILITY_DESIGN_20261015.md. No additional phase approval is needed. This file supersedes earlier contradictory implementation summaries.
 
-**Release state: production website cd2075a is live at https://g3-6740.com (Vercel 9hsxwFeUBJyb7VdQDfw3Azfk8tHm), CI382 passed.** The original 15 migrations and four Edge Functions are installed. Findings schema is now also installed. Additional code-review corrections and finance completion are in progress locally; do not call the whole approved scope complete. APK2.6.0/code29 has been built and signed but needs rebuilding with the final frontend. No real financial matches, attendance edits, or test push were retained.
+**Current production: release 7f3e457 (development bbcf198), Vercel GRGcBkGyRZaxmW2dNjbhrsGqz9Ju, Ready on 15 October 2026 at 15:05 Israel time, https://g3-6740.com. CI385/386 passed.** All 22 workflow migrations and the four required Edge Functions are installed. Signed APK2.6.0/code29 rebuilt from this frontend; see APK_MILESTONE_20261015.md. Historical sections below describe intermediate states, superseded by this summary.
 
-## Delivery checklist
+## Delivered fixes and acceptance
+| Area | Delivered / verified | Explicit boundary |
+|---|---|---|
+| Attendance | Individual actual checkout and historical correction with reason, Israel timezone, audit and conflict checks; production correction transaction rolled back; UI inspected | No real attendance edits retained |
+| Purchasing / finance | Approval ceilings, actual quantity/price, split orders, selected-order correction, linked existing expenses, duplicate reconciliation, partial deliveries/cancellation, supplier invoices/deposits/partial and mixed payments, private attachments, refund/credit ledger and stock returns | 10 historical purchases still require explicit review; no automatic matching or debt changes. Incorrect member-credit recovery receipts need audited administrative repair; no UI reversal for that rare case |
+| Responsibilities | One canonical feedback action; distinct reports retained; snooze/dismiss state preserved | Live duplicate no longer shown |
+| Absence notifications | Restricted action lookup, Android registration diagnostics/retry, ownership/logout handling, provider-error classification and delivery outcome logging | Signed APK ready; actual phone receipt unverified. No attached device and test-push permission unanswered |
+| Code review | Actual pinned repository excerpts, explicit evidence coverage, validated citations, saved/reopened answers, private cloud drafts/recovery, findings and verification tracking | OFFSEASON_2026 actual answer saved/reopened; no compiled patch or hardware claim; paid calls not repeated after success |
+| CAD dates | Provider microversion date separate from import/check date | Actual mastersketch/rake metadata verified |
+| Limited Mentor | Scoped project/task access, minimal directory, restrictive sensitive-data boundaries, explicit permission ceiling | Focused database scope/denial tests and production rollback role check passed; no user accounts reassigned. This is not an exhaustive security certification |
 
-| Issue | Implemented locally | Evidence already obtained | Remaining release work |
-|---|---|---|---|
-| Admin attendance correction | Individual actual departure, historical correction, Israel timezone, reason/audit, conflict detection | Focused database tests: role denial, overlap, future/reopen rejection, other attendees unchanged; DST helper tests passed | Current/historical UI acceptance; deployed-function rollback execution passed |
-| Finance | Approval ceiling; actual order; expense links; partial deliveries; cancellation; reversible duplicate corrections; repaid duplicate reallocation | Focused tests passed for 8 requested/5 approved/320 actual, unchanged debt on linking, partial receipts, retry/stale guards, cancellations, original payments preserved during duplicate reassignment, overpayment rejection | Full approved lifecycle remains incomplete: split/consolidated orders, unpaid bills/settlements, returns/refunds and payment cases; purchasing list actual-value clarity; live migration/business rehearsal |
-| Duplicate responsibilities | Canonical feedback action, explicit merge reference, retained personal state | Tests passed author/reviewer, same-title distinct reports, snooze, role changes, close/reopen, rerun | Affected Home/Work counts and production acceptance |
-| Absence push | Restricted action-ID lookup; registration errors/retry; device ownership transfer; logout cleanup | Reproduced student RLS lookup defect; lookup/registration authorization tests passed | Endpoint outcome diagnostics; updated APK; actual device receipt. Permission for one test push remains unanswered, not a blocker to other work |
-| Code review | Embedded flow; dependency retrieval; cloud drafts; immutable evidence; permission-aware history; recovery preserves answer/evidence | Software mentor focused checks passed including private access, citations, cloud concurrency, evidence/recovery access revocation | Findings lifecycle and remaining approved coverage; final actual-answer/browser/recovery acceptance |
-| CAD dates | Exact microversion provider date, import/check dates separate, unknown retained | Helper tests passed; provider API path/model reviewed | Actual provider metadata response and unchanged/revised source acceptance |
-| Limited Mentor | Additive role; explicit capability ceiling; scoped projects/tasks; minimal assignee directory; role-change remount | Focused scope/denial tests passed; rollback schema rehearsal passed | Full RPC/storage/export/AI denial audit and UI acceptance; no accounts assigned |
+## Final release evidence
+- Production Finance verified: expenses ₪4,416.70, reimbursed ₪1,298.00, owed ₪3,118.70, funds ₪2.00. Original balances preserved. Confirmed-order commitment ₪0 does not mean no liabilities: 10 legacy purchases visibly require reconciliation.
+- Live supplier invoice form and saved code-review/findings entry inspected; no synthetic financial records created in production.
+- Focused PGlite suites cover supplier invoice/advance settlement, combined-order allocations, duplicate retry, refund-after-reimbursement, member-credit recovery, immutable audit links, partial/full stock returns and authorization failures. Production schema rehearsal rolled back before additive installation.
+- TypeScript, CI385/386, production build, Android assembleRelease/lintRelease and signature verification passed. All126 final web assets match the signed APK byte-for-byte. EN desktop/HE phone form layout inspected.
+- APK SHA256 ce53dc1c0229be34a813270fb4b8586c633717896a14207422d524a373ed8e86. Existing signing certificate retained. Physical installation/push acceptance remains separate.
+- Proof screenshots: docs/staging/workflow-final-production-20261015.local.png and workflow-final-finance-20261015.local.png (local, not public).
+- No paid recovery project, no robot Actions/write access, no unapproved private sharing, no real ledger cleanup, no extra AI acceptance calls after the successful saved review.
+
+## Historical execution notes — superseded by the current release above
 
 ## Current execution sequence
 
