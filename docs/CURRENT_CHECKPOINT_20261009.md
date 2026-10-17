@@ -2,6 +2,10 @@
 
 This is the entry point for current status and decisions. It reconciles existing release evidence and this conversation; it is not a new audit of every production feature. Detailed feature records below retain acceptance limits. Older proposed phases and undeployed notices are superseded only where the named release records establish delivery.
 
+## Android 2.6.1 — 17 October
+
+Signed APK **2.6.1/code30, 18.31 MB**, including the latest UI and operational fixes. Current field/KitBot and small components bundled; optional models load online with checksum verification and bounded cache. See [APK build and acceptance record](APK_MILESTONE_20261017.md). Signature, Gradle lint/build, all 115 packaged assets and 13 remote model hashes/CORS verified. Phone installation/push/performance remain unverified (no attached device). Optional persistent keep-offline library and catalogue expansion remain open. Website production remains 4396134.
+
 ## UI follow-up — 17 October, 23:00 Israel time
 
 Production **4396134**, Vercel **EpysRcHT1oczuw2eW76zyXSDrHu2**, CI389/390 passed. Updates duplicate Knowledge shortcut removed; compact attendance correction rows and solid pink Work/attendance actions verified live. See [release evidence](FOCUSED_OPERATIONS_20261017.md). No database or APK changes.

@@ -1,3 +1,4 @@
+import {modelAssetUrl} from '../lib/androidAssets';
 import {ALLIANCE_COLORS,setAllianceBumpers} from '../lib/robotAllianceAppearance';
 import {HUB_X} from '../lib/shooter';
 import {loadPublishedRobot,posePublishedRobot,robotLabel,type PublishedRobot} from '../lib/publishedRobot';
@@ -30,7 +31,7 @@ const assets={field:{url:'/twin/2026/field-optimized.glb',bytes:19627748,hash:'0
 export async function clearTwinCache(){if('caches' in window)await Promise.all([caches.delete(CACHE),caches.delete('g3-twin-2026-v2'),caches.delete('g3-twin-2026-v3')]);}
 export async function assetBuffer(which:keyof typeof assets,signal:AbortSignal,season:FieldSeason){
  const a=which==='field'?season:assets.robot;let cached:Cache|undefined;try{await Promise.all([caches.delete('g3-twin-2026-v2'),caches.delete('g3-twin-2026-v3')]);cached=await caches.open(CACHE);}catch{/* Private browsing may disable cache. */}
- let response=await cached?.match(a.url);if(!response){response=await fetch(a.url,{signal});if(!response.ok)throw Error('Asset download failed');}
+ let response=await cached?.match(a.url);if(!response){response=await fetch(modelAssetUrl(a.url),{signal});if(!response.ok)throw Error('Asset download failed');}
  const data=await response.arrayBuffer();if(data.byteLength!==a.bytes)throw Error('Model size mismatch');
  const hash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',data))).map(x=>x.toString(16).padStart(2,'0')).join('');
  if(hash!==a.hash){await cached?.delete(a.url);throw Error('Model integrity check failed');}

@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:android": "tsc -b && vite build --mode android && node scripts/prepare-android-assets.mjs && node scripts/test-android-assets.mjs",
     "verify:phase-1-2": "node scripts/verify-phase-1-2.mjs",
     "verify:live-schema": "node scripts/verify-live-schema.mjs",
     "verify:skills-assessments": "node scripts/verify-skills-assessment-engine.mjs",

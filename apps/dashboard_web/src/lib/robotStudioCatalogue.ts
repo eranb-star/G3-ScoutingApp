@@ -1,3 +1,5 @@
+import {modelAssetUrl} from './androidAssets';
+import {TWIN_CACHE,storeModel} from './twinCache';
 import * as T from 'three';
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
 import bananaComponents from '../../public/studio/components/banana-components.json';
@@ -114,8 +116,10 @@ export async function loadCatalogue(key:string){
   const compact=bananaComponents.find(x=>x.id===provider);
   const path=compact?compact.file:provider==='manta'?'/studio/components/roborio-manta.glb':provider==='kitbot'?'/twin/2026/robot-model.glb':'/twin/robots/6328-2026/model.glb';
   const expected=compact?compact.sha256:provider==='manta'?roborioSource.sha256:provider==='kitbot'?'e6761e663e5b062d23b85f60d5a2ec913d7ea125a15a9c16eab23f7c84f2b67b':provenance.files['model.glb'].sha256;
-  const response=await fetch(path);if(!response.ok)throw Error('Catalogue model unavailable');const buffer=await response.arrayBuffer();
-  const digest=[...new Uint8Array(await crypto.subtle.digest('SHA-256',buffer))].map(n=>n.toString(16).padStart(2,'0')).join('');if(digest!==expected)throw Error('Catalogue model checksum mismatch');
+  let cache:Cache|undefined;try{cache=await caches.open(TWIN_CACHE);}catch{/* Cache availability must not block online use. */}
+  const response=await cache?.match(path)??await fetch(modelAssetUrl(path));if(!response.ok)throw Error('Catalogue model unavailable');const buffer=await response.arrayBuffer();
+  const digest=[...new Uint8Array(await crypto.subtle.digest('SHA-256',buffer))].map(n=>n.toString(16).padStart(2,'0')).join('');if(digest!==expected){await cache?.delete(path);throw Error('Catalogue model checksum mismatch');}
+  if(cache)try{await storeModel(cache,path,buffer);}catch{/* Full storage does not prevent opening a model. */}
   const gltf=await new GLTFLoader().parseAsync(buffer,'');const model=gltf.scene;if(compact)return new Map([[0,model]]);if(provider==='manta')return new Map([[412,model]]);const cfg=provider==='kitbot'?kitbotConfig:config;
   for(const rotation of cfg.rotations)model.rotateOnWorldAxis(new T.Vector3(rotation.axis==='x'?1:0,rotation.axis==='y'?1:0,rotation.axis==='z'?1:0),rotation.degrees*Math.PI/180);model.position.fromArray(cfg.position);model.updateMatrixWorld(true);
   const nodes=new Map<number,T.Object3D>();model.traverse(o=>{const n=gltf.parser.associations.get(o)?.nodes;if(n!==undefined)nodes.set(n,o);});return nodes;

@@ -27,8 +27,8 @@ android {
         applicationId "com.g3.scouting"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 29
-        versionName "2.6.0"
+        versionCode 30
+        versionName "2.6.1"
         buildConfigField 'boolean', 'CRASHLYTICS_TEST_BUILD', 'false'
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
