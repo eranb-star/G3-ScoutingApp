@@ -4,7 +4,7 @@
 
 Five requested corrections only: configurable Limited Mentor operational grants, student attendance/missing rosters, supplier-order allocation clarity, absence decision attribution and compact expandable absence rows.
 
-User clarification: all operational permissions configurable; account/password management, role-permission administration and security audit remain administrator-only. No existing role grants are changed or automatically enabled. Assigned project/work/reliability scope remains enforced. Training/profile restrictions respond to explicitly granted training/report permissions; revocation restores the restriction. Attendance correction is an operational permission and retains concurrency checks, reason, actual-time validation and immutable audit.
+User clarification: all operational permissions configurable; account/password management, role-permission administration and security audit remain administrator-only. The existing emergency engineering approval override also remains protected: it bypasses normal review gates and retains its independent/admin authorization requirements. This boundary was explained during live verification; do not silently remove that guard or report it as an editable operational toggle. No existing role grants are changed or automatically enabled. Assigned project/work/reliability scope remains enforced. Training/profile restrictions respond to explicitly granted training/report permissions; revocation restores the restriction. Attendance correction is an operational permission and retains concurrency checks, reason, actual-time validation and immutable audit.
 
 ## Delivered behavior
 
@@ -18,11 +18,15 @@ User clarification: all operational permissions configurable; account/password m
 
 - Focused PGlite `test-operational-permissions.mjs`: default denial, explicit grant/revocation, security denial even with an incorrect grant, assigned project scope, QA/mentor roster exclusion, reviewer-name privacy and inactive-account denial passed.
 - `test-student-roster.mjs`, `test-attendance-reporting.mjs`, `test-supplier-bills.mjs` passed.
-- TypeScript passed; final release build/CI status recorded below when available.
+- TypeScript passed. Required CI387 (development) and CI388 (release) passed, including production build and configured repository acceptance gates.
 - Production schema rehearsal for both new migrations passed in a rolled-back transaction. No production records modified during rehearsal.
 - Synthetic browser checks: missing students visible, compact decisions with actor/time, expandable reason/response, invoice split/partial/deselect calculations. No real decisions, notifications, grants or financial writes used for testing.
 - Required migrations: `operational_permission_controls_20261017.sql`, `attendance_student_roster_20261017.sql`.
-- Release status: implementation and focused checks complete; production installation/deployment verification pending.
+- Both migrations installed in production; the five enabled Limited Mentor grants were unchanged. Authenticated live directory returned 28 student identities, zero registered QA identities. The first install submission was rejected by the SQL editor (syntax error; nothing applied); exact clipboard submission was rehearsed with rollback and then installed successfully.
+- Production **f6369d45d7b17f82477cd13c25c19f37ca57c3a4**, development **57f139242baba7fa3197d750e3cb0097e6e755f4**. Vercel **G27umg8VNgDLakbe2M9r57Wbjc6v**, Ready/current Production on **g3-6740.com**, 17 October 2026 **22:17:25 Israel time**. Candidate FPjATPZ9FVxygMqy2fySvpi8w9Bf was rebuilt using production settings.
+- Live acceptance: last workshop shows 15 attended and 13 missing, with approved absences identified. Absence table shows real decisions by Eran and Tal with original decision timestamps. Limited Mentor operational toggles are enabled for configuration; the three security-admin controls and emergency engineering override remain protected. No grants toggled during verification.
+- Live invoice dialog shows product names/checkboxes and available coverage. Current orders have zero available coverage and cannot be allocated twice; use the separate existing-expense payment links. Opened and cancelled the dialog without saving. Synthetic partial/allocation/deselection behavior passed. Browser download-event capture timed out during CSV inspection; no downloaded-file inspection is claimed. Roster calculation tests and integrated meeting view passed.
+- UI evidence: `docs/staging/focused-absence-production-20261017.png`, `docs/staging/focused-invoice-production-20261017.png` (local, not committed). Hebrew phone preview checked at 390×844; table scroll is contained and browser viewport restored.
 
 ## Boundaries
 
