@@ -2,6 +2,10 @@
 
 This is the entry point for current status and decisions. It reconciles existing release evidence and this conversation; it is not a new audit of every production feature. Detailed feature records below retain acceptance limits. Older proposed phases and undeployed notices are superseded only where the named release records establish delivery.
 
+## Focused operational corrections — 17 October
+
+See [focused implementation and verification](FOCUSED_OPERATIONS_20261017.md): configurable Limited Mentor operational permissions (security administration remains admin-only), student-only attendance/missing rosters and CSV, compact absence decisions with reviewer/time, and checkbox-based supplier-order allocations. Existing grants, attendance and financial records are preserved. Production release verification is pending in the linked record. Historical missing rosters cannot reconstruct past membership changes; current active membership and join date are explicitly labelled. No APK rebuild in this focused release.
+
 ## Workflow reliability implementation — 15 October
 
 [Workflow reliability design](WORKFLOW_RELIABILITY_DESIGN_20261015.md) is approved by the user's “OK move ahead.” **Core fixes are live: website cd2075a, CI382 passed; backend/schema deployed. Further finance lifecycle and review follow-up work remains in progress.** Preserve current owed balances and records; historical reconciliation requires explicit reviewed changes. See [implementation evidence and remaining work](WORKFLOW_RELIABILITY_PROGRESS_20261015.md). The user identified absence-request alerts as a concrete missing notification. Live action RLS and the client lookup establish a failure path; actual device receipt remains unverified. The release below is historical and superseded by the workflow release; consult the linked execution record for exact current status.

@@ -1,0 +1,38 @@
+import assert from 'node:assert/strict';import fs from 'node:fs/promises';
+const {PGlite}=await import(process.argv[2]||'@electric-sql/pglite');const db=new PGlite();
+const id=n=>`00000000-0000-0000-0000-${String(n).padStart(12,'0')}`;
+try{
+await db.exec(`create role authenticated;create role anon;create schema auth;create function auth.uid() returns uuid language sql as $$select nullif(current_setting('test.uid',true),'')::uuid$$;
+create table team_members(id uuid primary key,display_name text,role text constraint team_members_role_check check(role in('admin','mentor','member','team_leader')),active boolean,subteam text,subteams text[],created_at timestamptz default '2026-01-01');
+create table app_permissions(permission_key text primary key,protected boolean default false);create table role_permissions(role text constraint role_permissions_role_check check(role in('admin','mentor','member','team_leader')),permission_key text,allowed boolean,primary key(role,permission_key));
+insert into app_permissions(permission_key) values('manage_team_projects'),('assign_team_work'),('manage_training'),('validate_training'),('view_team_reports'),('correct_attendance'),('manage_members'),('manage_permissions'),('view_security_audit');
+insert into team_members(id,display_name,role,active,subteam,subteams) values('${id(1)}','Admin','admin',true,'Mechanical','{Mechanical}'),('${id(2)}','Limited','member',true,'Mechanical','{Mechanical}'),('${id(3)}','Student','member',true,'Software','{Software}'),('${id(4)}','QA','team_leader',true,'Mechanical','{Mechanical}');
+create function current_team_role() returns text language sql stable security definer as $$select role from team_members where id=auth.uid() and active$$;
+create function is_admin() returns boolean language sql stable security definer as $$select current_team_role()='admin'$$;
+create function current_member_has_team(t text) returns boolean language sql stable security definer as $$select exists(select 1 from team_members where id=auth.uid() and active and t=any(subteams))$$;
+create function current_member_leads_team(t text) returns boolean language sql stable security definer as $$select false$$;
+create table member_skill_progress(member_id uuid,grade text);insert into member_skill_progress values('${id(3)}','private grade');
+create table team_projects(id uuid primary key,subteam text);create table project_tasks(id uuid primary key,project_id uuid);
+create table attendance_records(id uuid primary key,member_id uuid,checked_in_at timestamptz,checked_out_at timestamptz,check_in_method text,check_out_method text,corrected_by uuid,correction_reason text,updated_at timestamptz);
+create table attendance_audit_log(attendance_id uuid,actor_id uuid,action text,reason text,previous_values jsonb,new_values jsonb);
+create table qa_test_accounts(member_id uuid);insert into qa_test_accounts values('${id(4)}');create table absence_requests(id uuid,member_id uuid,reviewed_by uuid);insert into absence_requests values('${id(10)}','${id(3)}','${id(1)}');
+alter table team_members enable row level security;alter table member_skill_progress enable row level security;alter table attendance_records enable row level security;
+create policy broad on team_members for select to authenticated using(true);create policy broad on member_skill_progress for all to authenticated using(true);
+grant usage on schema public,auth to authenticated;grant select on all tables in schema public to authenticated;`);
+for(const file of ['limited_mentor_20261015.sql','operational_permission_controls_20261017.sql','attendance_student_roster_20261017.sql'])await db.exec(await fs.readFile(new URL('../../../backend/supabase/'+file,import.meta.url),'utf8'));
+await db.exec(`update team_members set role='limited_mentor' where id='${id(2)}';set role authenticated;set test.uid='${id(2)}'`);
+const can=async(p,t=null)=>(await db.query('select has_permission($1,$2) as allowed',[p,t])).rows[0].allowed;
+assert.equal(await can('validate_training'),false);assert.equal((await db.query('select * from member_skill_progress')).rows.length,0);assert.equal((await db.query('select * from attendance_student_directory()')).rows.length,0);
+assert.equal(await can('manage_team_projects','Mechanical'),true);assert.equal(await can('manage_team_projects','Software'),false);
+await db.exec(`reset role;update role_permissions set allowed=true where role='limited_mentor';set role authenticated;`);
+for(const p of ['manage_training','validate_training','view_team_reports','correct_attendance'])assert.equal(await can(p),true,p);
+for(const p of ['manage_members','manage_permissions','view_security_audit'])assert.equal(await can(p),false,p);
+assert.equal((await db.query('select * from member_skill_progress')).rows.length,1);
+assert.deepEqual((await db.query('select id from attendance_student_directory()')).rows.map(r=>r.id),[id(3)],'QA and mentor roles excluded');
+await db.exec(`reset role;update role_permissions set allowed=false where role='limited_mentor';set role authenticated;`);
+assert.equal(await can('validate_training'),false);assert.equal((await db.query('select * from member_skill_progress')).rows.length,0);
+await db.exec(`set test.uid='${id(3)}'`);assert.deepEqual((await db.query('select * from absence_decision_reviewers()')).rows,[{request_id:id(10),reviewer_name:'Admin'}]);
+await db.exec(`set test.uid='${id(4)}'`);assert.equal((await db.query('select * from absence_decision_reviewers()')).rows.length,0);
+await db.exec(`reset role;update team_members set active=false where id='${id(2)}';update role_permissions set allowed=true where role='limited_mentor';set role authenticated;set test.uid='${id(2)}'`);assert.equal(await can('validate_training'),false);
+console.log('PASS operational grants/revocation, admin-only security, assigned project scope, student/QA roster isolation, decision reviewer privacy, inactive denial');
+}finally{await db.close();}
