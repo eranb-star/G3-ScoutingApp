@@ -213,7 +213,7 @@ export default function UpdatesPage() {
   }
 
   const tabs: Array<[View,string,string,number?]> = [
-    ["inbox", "Inbox", "דואר נכנס", unreadTotal], ["announcements", "Announcements", "הודעות"], ["channels", "Channels", "ערוצים", unseenChannelCount], ["knowledge", "FRC Knowledge", "ידע FRC"],
+    ["inbox", "Inbox", "דואר נכנס", unreadTotal], ["announcements", "Announcements", "הודעות"], ["channels", "Channels", "ערוצים", unseenChannelCount],
   ];
 
   if(String(view)==="channels")return <ChannelWorkspace />;

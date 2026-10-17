@@ -29,3 +29,7 @@ User clarification: all operational permissions configurable; account/password m
 No catalogue, CAD, robot software, notification delivery or APK rebuild is included. APK 2.6.0 has older bundled frontend; new frontend controls require the website until subsequent packaging. Existing server authorization applies to both clients. No paid project created.
 
 Rollback: revert the frontend commit if needed; both new directory functions are additive. Permission-function/policy rollback must restore the previous `limited_mentor_20261015.sql` definitions and admin-only attendance-correction guard, without rerunning its role-constraint/seed section. Preserve audit and all existing records/grants.
+
+## Follow-up UI consistency
+Removed the duplicate FRC Knowledge tab from Updates (legacy knowledge links still redirect). Workshop attendance puts the correction action beside name and times on desktop; phones retain a compact name/action row with times beneath. Attendance secondary actions and all five Work destination actions are solid pink; selected workshop tabs retain their distinct filled state. Verified desktop alignment, 390px Hebrew attendance and Work widths, and TypeScript compilation. No data, permission, migration or APK changes. Production release pending.
+
