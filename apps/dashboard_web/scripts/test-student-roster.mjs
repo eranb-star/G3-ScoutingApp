@@ -1,0 +1,12 @@
+import fs from 'node:fs';import assert from 'node:assert/strict';import {createRequire} from 'node:module';import vm from 'node:vm';
+const req=createRequire(import.meta.url),{transform}=createRequire(req.resolve('vite'))('esbuild'),mod={exports:{}};
+const built=await transform(fs.readFileSync(new URL('../src/lib/studentRoster.ts',import.meta.url),'utf8'),{loader:'ts',format:'cjs'});
+vm.runInNewContext(built.code,{module:mod,exports:mod.exports,Date,Set,require:()=>({normalizedTeamMatch:(a,b)=>!!a&&!!b&&a.toLowerCase()===b.toLowerCase()})});
+const {expectedStudents,missingStudents}=mod.exports;
+const students=[{id:'a',subteam:'CAD',active:true,created_at:'2026-01-01Z'},{id:'b',subteam:'Software',subteams:['CAD'],active:true},{id:'inactive',subteam:'CAD',active:false},{id:'later',subteam:'CAD',created_at:'2026-10-18T00:00:00Z',active:true}];
+assert.equal(expectedStudents(students,'2026-10-17T13:00:00Z').length,2);
+assert.equal(expectedStudents(students,'2026-10-17T13:00:00Z',{target_type:'subteam',target_value:'CAD'}).length,2);
+assert.equal(expectedStudents(students,'2026-10-17T13:00:00Z',{target_type:'member',target_value:'a'}).length,1);
+assert.equal(expectedStudents(students,'2026-10-17T13:00:00Z',{target_type:'unknown',target_value:null}).length,0);
+assert.equal(missingStudents(expectedStudents(students,'2026-10-17T13:00:00Z'),[{member_id:'a'},{member_id:'a'}])[0].id,'b');
+console.log('PASS active student roster, later-joiner exclusion, team/member targeting, unknown target fails closed, duplicate attendance does not affect missing list');

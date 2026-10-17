@@ -1,3 +1,4 @@
+import {useAccessControl} from '../lib/accessControl';
 import {useState} from 'react';
 import {supabase} from '../supabase';
 import {useLocalization} from '../lib/localization';
@@ -6,10 +7,10 @@ import AccessibleDialog from './AccessibleDialog';
 import {israelLocalTime,israelTimeToUtc} from '../lib/attendanceTime';
 
 export default function AttendanceTimeCorrection({record,name,onSaved}:{record:{id:string;checked_in_at:string;checked_out_at:string|null};name:string;onSaved:()=>void}){
- const {profile}=useMemberAuth(),{pick}=useLocalization();
+ const access=useAccessControl(),{profile}=useMemberAuth(),{pick}=useLocalization();
  const [open,setOpen]=useState(false),[start,setStart]=useState(''),[end,setEnd]=useState(''),[reason,setReason]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState('');
  const local=israelLocalTime;
- if(profile?.role!=='admin')return null;
+ if(profile?.role!=='admin'&&!access.can('correct_attendance'))return null;
  async function save(){if(busy)return;setBusy(true);setError('');try{
   const checkedIn= start===local(record.checked_in_at)?record.checked_in_at:israelTimeToUtc(start);
   const checkedOut= record.checked_out_at&&end===local(record.checked_out_at)?record.checked_out_at:israelTimeToUtc(end);

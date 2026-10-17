@@ -1,3 +1,4 @@
+import {expectedStudents,missingStudents,type Student,type RosterEvent} from '../lib/studentRoster';
 import AttendanceTimeCorrection from './AttendanceTimeCorrection';
 import {useEffect,useRef,useState} from 'react';
 import {supabase} from '../supabase';
@@ -6,11 +7,11 @@ import {readAllRows} from '../lib/attendanceReporting';
 import {workshopSessions,type WorkshopSession} from '../lib/workshopAttendance';
 import AdminWorkshopClose from './AdminWorkshopClose';
 type Entry={id:string;member_id:string;checked_in_at:string;checked_out_at:string|null};
-type Person={id:string;display_name:string;subteam:string|null};
+type Person=Student;
 export default function WorkshopAttendance(){
  const {pick,language}=useLocalization();
  const [mode,setMode]=useState<'current'|'last'>('current'),[choice,setChoice]=useState('');
- const [data,setData]=useState<{sessions:WorkshopSession[];meeting:WorkshopSession|null;rows:Entry[];people:Person[];updated:string}|null>(null);
+ const [data,setData]=useState<{sessions:WorkshopSession[];meeting:WorkshopSession|null;rows:Entry[];people:Person[];expected:Person[];approved:string[];updated:string}|null>(null);
  const [busy,setBusy]=useState(false),[error,setError]=useState(false),[search,setSearch]=useState('');
  const refresh=useRef<()=>void>(()=>{});
  useEffect(()=>{
@@ -19,13 +20,16 @@ export default function WorkshopAttendance(){
   async function load(){
    if(running)return;running=true;setBusy(true);
    try{
-    const sessions=await readAllRows<WorkshopSession>((a,b)=>supabase.from('team_meetings').select('id,title,starts_at,ends_at,attendance_closes_at,status,closed_at').in('status',['open','closed']).order('id').range(a,b));
+    const sessions=await readAllRows<WorkshopSession>((a,b)=>supabase.from('team_meetings').select('id,title,starts_at,ends_at,attendance_closes_at,status,closed_at,calendar_event_id').in('status',['open','closed']).order('id').range(a,b));
     const {current,last}=workshopSessions(sessions),meeting=mode==='last'?last:current.find(m=>m.id===choice)??current[0]??last;
     const [rows,people]=meeting?await Promise.all([
      readAllRows<Entry>((a,b)=>supabase.from('attendance_records').select('id,member_id,checked_in_at,checked_out_at').eq('meeting_id',meeting.id).order('id').range(a,b)),
-     readAllRows<Person>((a,b)=>supabase.from('team_members').select('id,display_name,subteam').order('id').range(a,b))
+     supabase.rpc('attendance_student_directory').then(({data,error})=>{if(error)throw error;return (data??[]) as Person[];})
     ]):[[],[]];
-    if(active){setData({sessions,meeting,rows,people,updated:new Date().toISOString()});setError(false);}
+    let event:RosterEvent|undefined,approved:string[]=[];
+    if(meeting?.calendar_event_id){const [e,a]=await Promise.all([supabase.from('team_calendar_events').select('target_type,target_value').eq('id',meeting.calendar_event_id).single(),supabase.from('absence_requests').select('member_id').eq('calendar_event_id',meeting.calendar_event_id).eq('status','approved')]);if(e.error||a.error)throw e.error||a.error;event=e.data;approved=(a.data??[]).map(r=>r.member_id);}
+    const ids=new Set(people.map(p=>p.id));
+    if(active){setData({sessions,meeting,rows:rows.filter(r=>ids.has(r.member_id)),people,expected:meeting?expectedStudents(people,meeting.starts_at,event):[],approved,updated:new Date().toISOString()});setError(false);}
    }catch{if(active)setError(true);}finally{running=false;if(active)setBusy(false);}
   }
   refresh.current=()=>void load();void load();
@@ -39,6 +43,7 @@ export default function WorkshopAttendance(){
  const current=data?workshopSessions(data.sessions).current:[],meeting=data?.meeting,isOpen=meeting?.status==='open';
  const people=new Map(data?.people.map(p=>[p.id,p])??[]);
  const rows=(data?.rows??[]).filter(r=>(people.get(r.member_id)?.display_name??'').toLowerCase().includes(search.toLowerCase())).sort((a,b)=>(people.get(a.member_id)?.display_name??'').localeCompare(people.get(b.member_id)?.display_name??''));
+ const absent=data?missingStudents(data.expected,data.rows):[];
  const inside=(data?.rows??[]).filter(r=>!r.checked_out_at).length;
  function list(items:Entry[],title:string){return <section className="workshop-roster-group"><h3>{title} <span>{items.length}</span></h3>{items.length?<ul>{items.map(r=><li key={r.id}><div><strong>{people.get(r.member_id)?.display_name??pick('Unknown member','חבר/ה לא מזוהה')}</strong><small>{people.get(r.member_id)?.subteam}</small></div><div><span>{pick('In','כניסה')}: {format.format(new Date(r.checked_in_at))}</span><small>{r.checked_out_at?`${pick('Out','יציאה')}: ${format.format(new Date(r.checked_out_at))}`:isOpen?pick('Currently checked in','רשומה כניסה ללא יציאה'):pick('Missing checkout','יציאה לא נרשמה')}</small></div><AttendanceTimeCorrection record={r} name={people.get(r.member_id)?.display_name??""} onSaved={()=>refresh.current()}/></li>)}</ul>:<p>{search?pick('No matching people.','אין אנשים התואמים לחיפוש.'):pick('No attendance records in this group.','אין רישומי נוכחות בקבוצה זו.')}</p>}</section>;}
  return <section className="hub-card workshop-attendance" aria-label={pick('Workshop attendance','נוכחות בסדנה')}>
@@ -49,6 +54,7 @@ export default function WorkshopAttendance(){
    {mode==='current'&&current.length>1&&<label>{pick('Open workshop','סדנה פתוחה')}<select value={meeting?.id??''} onChange={e=>setChoice(e.target.value)}>{current.map(m=><option key={m.id} value={m.id}>{m.title} · {format.format(new Date(m.starts_at))}</option>)}</select></label>}
    <header><div><span className="hub-eyebrow">{isOpen?pick('OPEN WORKSHOP','סדנה פתוחה'):pick('LAST CLOSED WORKSHOP','הסדנה האחרונה שנסגרה')}</span><h2>{meeting?.title??pick('No workshop recorded yet','טרם נרשמה סדנה')}</h2>{meeting&&<p>{format.format(new Date(meeting.starts_at))} — {format.format(new Date(meeting.ends_at))} · {pick('Israel time','שעון ישראל')}</p>}</div><small>{pick('Updated','עודכן')}: {clock.format(new Date(data.updated))}<br/>{pick('Refreshes every 30 seconds while visible','מתרענן כל 30 שניות כשהעמוד מוצג')}</small></header>
    {meeting&&<><div className="workshop-attendance-totals"><span><strong>{isOpen?inside:data.rows.length}</strong>{isOpen?pick('Currently checked in','רשומים כעת בסדנה'):pick('Attended','השתתפו')}</span><span><strong>{isOpen?data.rows.length:data.rows.length-inside}</strong>{isOpen?pick('Attended so far','השתתפו עד כה'):pick('Checked out','נרשמה יציאה')}</span>{!isOpen&&inside>0&&<span><strong>{inside}</strong>{pick('Missing checkout','ללא רישום יציאה')}</span>}</div>
+   <section className="workshop-roster-group"><h3>{isOpen?pick('Not arrived yet','טרם הגיעו'):pick('Did not attend','לא נכחו')} <span>{absent.length}</span></h3><small>{pick('Students only; mentors and QA accounts excluded. Past missing lists use current active membership, excluding later joiners.','תלמידים בלבד; ללא מנטורים וחשבונות בדיקה. רשימות חסרים בעבר מבוססות על חברים פעילים כיום, ללא מצטרפים מאוחרים.')}</small><ul>{absent.filter(p=>p.display_name.toLowerCase().includes(search.toLowerCase())).map(p=><li key={p.id}><div><strong>{p.display_name}</strong><small>{p.subteam}</small></div><span>{data.approved.includes(p.id)?pick('Approved absence','היעדרות מאושרת'):pick('No check-in recorded','לא נרשמה כניסה')}</span></li>)}</ul></section>
    <AdminWorkshopClose meeting={meeting} onUpdated={()=>refresh.current()}/><label className="workshop-person-search">{pick('Find a person','חיפוש אדם')}<input type="search" value={search} onChange={e=>setSearch(e.target.value)}/></label>
    {isOpen?<>{list(rows.filter(r=>!r.checked_out_at),pick('Currently checked in','רשומים כעת בסדנה'))}{list(rows.filter(r=>!!r.checked_out_at),pick('Already checked out','כבר יצאו'))}<small>{pick('Based on check-in records; a missing checkout does not confirm physical presence.','לפי רישומי הכניסה; היעדר רישום יציאה אינו מאשר נוכחות פיזית.')}</small></>:list(rows,pick('Everyone who attended','כל המשתתפים'))}</>}
   </>}
