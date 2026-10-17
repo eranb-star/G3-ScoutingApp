@@ -1,3 +1,5 @@
+> **Status reconciliation — 18 October 2026:** Latest website is 4396134; latest signed APK is 2.6.1/code30 (18.31 MB). Read [current remaining-work plan](REMAINING_WORK_MASTER_20261018.md), [mobile publishing guide](MOBILE_DISTRIBUTION_GUIDE_20261018.md), and [current checkpoint](CURRENT_CHECKPOINT_20261009.md). Earlier release-specific APK/next-phase statements below are historical; do not treat completed features as missing.
+
 # Authoritative remaining order — after 2 October releases
 This section supersedes all numbered recommendations below; those are retained as scope/estimate history. Delivered: six practical modules and shared manual/CSV trials; Academy/Knowledge UX reconciliation; shared simulator missions and deterministic route sensitivity; Limestone simulator and alliance bumpers. Latest corrective increment: HOPPER_ABSENCE_RELEASE_20261002.md. Their release records, not older proposal wording, determine status.
 

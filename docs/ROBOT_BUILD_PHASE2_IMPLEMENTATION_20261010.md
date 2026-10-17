@@ -1,5 +1,7 @@
 # Phase 2 — 3D Robot Studio implementation and release
 
+> Release-history note (18 October): current website/APK and remaining work are in [the checkpoint](CURRENT_CHECKPOINT_20261009.md) and [current plan](REMAINING_WORK_MASTER_20261018.md). APK2.6.1 includes this release. Older pending/build/no-APK entries below describe intermediate or release-time state; final evidence takes precedence.
+
 User authorized end-to-end implementation. The approved scope is ROBOT_BUILD_PHASE2_3D_DESIGN_20261010.md. This record separates deployed software, production acceptance and physical/device evidence.
 
 ## Latest checkpoint — 11 October 2026

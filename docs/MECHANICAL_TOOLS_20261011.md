@@ -1,5 +1,7 @@
 # Mechanical Tools phase 1 — 11 October 2026
 
+> Release-history note (18 October): current website/APK and remaining work are in [the checkpoint](CURRENT_CHECKPOINT_20261009.md) and [current plan](REMAINING_WORK_MASTER_20261018.md). APK2.6.1 includes this release. Older pending/build/no-APK entries below describe intermediate or release-time state; final evidence takes precedence.
+
 ## Authorized scope
 User approved the first release after reviewing the wider mechanical-tool roadmap. This release covers Engineering Hub entry, belt/chain calculations, diagrams, units, validation, saved versions, optional assembly links and print/PDF. Inventory matching, purchasing actions, shaft placement, additional calculators and catalogue acquisition are later phases, not delivered here. No AMB code, assets or datasets copied.
 

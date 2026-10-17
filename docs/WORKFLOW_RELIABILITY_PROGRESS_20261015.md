@@ -1,5 +1,7 @@
 # Workflow reliability — execution status, 15 October 2026
 
+> Release-history note (18 October): current website/APK and remaining work are in [the checkpoint](CURRENT_CHECKPOINT_20261009.md) and [current plan](REMAINING_WORK_MASTER_20261018.md). APK2.6.1 includes this release. Older pending/build/no-APK entries below describe intermediate or release-time state; final evidence takes precedence.
+
 User authorization: complete all seven agreed fixes. Scope remains WORKFLOW_RELIABILITY_DESIGN_20261015.md. No additional phase approval is needed. This file supersedes earlier contradictory implementation summaries.
 
 **Current production: release 7f3e457 (development bbcf198), Vercel GRGcBkGyRZaxmW2dNjbhrsGqz9Ju, Ready on 15 October 2026 at 15:05 Israel time, https://g3-6740.com. CI385/386 passed.** All 22 workflow migrations and the four required Edge Functions are installed. Signed APK2.6.0/code29 rebuilt from this frontend; see APK_MILESTONE_20261015.md. Historical sections below describe intermediate states, superseded by this summary.

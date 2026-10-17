@@ -1,5 +1,7 @@
 # Robot Build phase 1 — implementation contract (10 October 2026)
 
+> Release-history note (18 October): current website/APK and remaining work are in [the checkpoint](CURRENT_CHECKPOINT_20261009.md) and [current plan](REMAINING_WORK_MASTER_20261018.md). APK2.6.1 includes this release. Older pending/build/no-APK entries below describe intermediate or release-time state; final evidence takes precedence.
+
 Status: DEPLOYED — Phase 1 software released on 10 October 2026. The final release record below supersedes intermediate development checkpoints. Real workshop/student acceptance remains separate.
 
 ## Scope and boundaries

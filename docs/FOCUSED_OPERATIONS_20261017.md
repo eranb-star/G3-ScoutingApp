@@ -1,5 +1,7 @@
 # Focused operational updates — 17 October 2026
 
+> Release-history note (18 October): current website/APK and remaining work are in [the checkpoint](CURRENT_CHECKPOINT_20261009.md) and [current plan](REMAINING_WORK_MASTER_20261018.md). APK2.6.1 includes this release. Older pending/build/no-APK entries below describe intermediate or release-time state; final evidence takes precedence.
+
 ## Scope and decision
 
 Five requested corrections only: configurable Limited Mentor operational grants, student attendance/missing rosters, supplier-order allocation clarity, absence decision attribution and compact expandable absence rows.

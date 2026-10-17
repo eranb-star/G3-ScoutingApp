@@ -1,4 +1,4 @@
-> **Current status: 11 October 2026.** Start with [CURRENT_CHECKPOINT_20261009.md](CURRENT_CHECKPOINT_20261009.md). Signed APK2.5.0/code28 now bundles production d6d5acc; see [APK release](APK_MILESTONE_20261011.md). The catalogue gap remains OPEN. Older latest-release/APK statements below are historical and superseded by that checkpoint.
+> **Status reconciliation — 18 October 2026:** Latest website is 4396134; latest signed APK is 2.6.1/code30 (18.31 MB). Read [current remaining-work plan](REMAINING_WORK_MASTER_20261018.md), [mobile publishing guide](MOBILE_DISTRIBUTION_GUIDE_20261018.md), and [current checkpoint](CURRENT_CHECKPOINT_20261009.md). Earlier release-specific APK/next-phase statements below are historical; do not treat completed features as missing.
 
 # Start here — current as of 9 October 2026
 
