@@ -2,6 +2,10 @@
 
 This is the entry point for current status and decisions. It reconciles existing release evidence and this conversation; it is not a new audit of every production feature. Detailed feature records below retain acceptance limits. Older proposed phases and undeployed notices are superseded only where the named release records establish delivery.
 
+## UI follow-up — 17 October, 23:00 Israel time
+
+Production **4396134**, Vercel **EpysRcHT1oczuw2eW76zyXSDrHu2**, CI389/390 passed. Updates duplicate Knowledge shortcut removed; compact attendance correction rows and solid pink Work/attendance actions verified live. See [release evidence](FOCUSED_OPERATIONS_20261017.md). No database or APK changes.
+
 ## Focused operational corrections — 17 October
 
 See [focused implementation and verification](FOCUSED_OPERATIONS_20261017.md): **production f6369d4 / development 57f1392, Vercel G27umg8VNgDLakbe2M9r57Wbjc6v, Ready on g3-6740.com at 22:17:25 Israel time; CI387/388 passed; both migrations installed.** Configurable Limited Mentor operational permissions (security administration and emergency engineering approval overrides remain protected), student-only attendance/missing rosters and CSV, compact absence decisions with reviewer/time, and checkbox-based supplier-order allocations. Live last workshop: 15 attended/13 missing, approved absence labels; real Eran/Tal decision timestamps verified; current invoice orders have zero remaining coverage and are disabled against double allocation. Existing grants, attendance and financial records are preserved. Historical missing rosters cannot reconstruct past membership changes; current active membership and join date are explicitly labelled. No APK rebuild in this focused release.
