@@ -2,6 +2,10 @@
 
 This is the entry point for current status and decisions. It reconciles existing release evidence and this conversation; it is not a new audit of every production feature. Detailed feature records below retain acceptance limits. Older proposed phases and undeployed notices are superseded only where the named release records establish delivery.
 
+## Hanadiv festival — 18 October
+
+**Live production f5e061c**, Vercel **269iCFmYVBZUi2Bsp83eLEs5DuMK**, release CI392 passed; source CI393 passed after the APK catalogue test-fixture dependency correction. Additive migration installed. See [festival implementation/release](HANADIV_FESTIVAL_20261018.md). Existing preparation project now has35 verified school activities across two sales points, scheduler grants for Software Libi/Tuval and all team leaders, availability, audited shift publishing/cancellation, personal calendar/absence links, attendance after23:00 and preparation checklist. Live source import and grants persisted; publish/calendar cancellation transaction rehearsal passed with rollback. No student shifts published. Staffing is an operational decision still to enter. Web release only; APK2.6.1 predates this workspace. Phone push receipt is not claimed.
+
 ## Documentation reconciliation and next work — 18 October
 
 Use [REMAINING_WORK_MASTER_20261018.md](REMAINING_WORK_MASTER_20261018.md) for the current prioritized backlog, workshop/remote split, estimates and acceptance gates. Use [MOBILE_DISTRIBUTION_GUIDE_20261018.md](MOBILE_DISTRIBUTION_GUIDE_20261018.md) for account creation, Play AAB/signing/testing and iPhone/TestFlight/App Store steps. User has neither developer account; Mac availability is unknown. No store submission, AAB generation or iOS implementation has occurred. Latest APK source 5b70ccc was local-only at this reconciliation; document/source backup and remote synchronization remain explicit. This is a records/code reconciliation, not a new live audit of all services.

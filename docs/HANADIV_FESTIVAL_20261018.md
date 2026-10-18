@@ -13,17 +13,17 @@ Authorized by the user's “יאללה”. Extend Projects; do not create anothe
 
 ## Implementation and acceptance checklist
 - [x] Live schema inspected; rollback rehearsal passed; additive migration installed successfully.
-- [ ] Project workspace, source schedule, date/point filters and provenance.
-- [ ] Scheduler grants, student roster, availability and participation totals.
-- [ ] Draft shifts, staffing, roles, setup gate, overlap prevention and publish.
-- [ ] Personal action/calendar links, acknowledgment, absence and change requests.
-- [ ] Recorded festival attendance/corrections and audit; no 23:00 closure.
-- [ ] Preparation checklist and contextual links to existing project/finance modules.
-- [ ] Source-change review without silent changes to published staffing.
-- [ ] Focused SQL authorization/concurrency/lifecycle tests; TypeScript/build; bilingual phone/desktop acceptance.
-- [ ] Release, production verification and durable handover; physical participation remains real-world acceptance.
+- [x] Project workspace, source schedule, date/point filters and provenance.
+- [x] Scheduler grants, student roster, availability and participation totals.
+- [x] Draft shifts, staffing, roles, setup gate, overlap prevention and publish.
+- [x] Personal action/calendar links, acknowledgment, absence and change requests.
+- [x] Recorded festival attendance/corrections and audit; no 23:00 closure.
+- [x] Preparation checklist and contextual links to existing project/finance modules.
+- [x] Source-change review without silent changes to published staffing.
+- [x] Focused SQL authorization/concurrency/lifecycle tests; TypeScript/build; bilingual phone/desktop acceptance.
+- [x] Release, production verification and durable handover; physical participation remains real-world acceptance.
 
-Status: implementation and focused SQL/TypeScript checks passed; migration installed. Frontend release and live setup pending.
+Status: deployed and configured on 18 October 2026. Production f5e061c; development 972e6f6; Vercel 269iCFmYVBZUi2Bsp83eLEs5DuMK, Ready on g3-6740.com. Release CI392 passed.
 
 ## Verification and operational details
 - PGlite: admin/leader/delegated scheduler grants and revocation, QA exclusion, direct-table denial, other-student draft privacy, overlap and stale-write rejection, setup gate, publish/calendar creation, acknowledgment/change request/response, cancellation, archive/calendar consistency guards, actual checkout at 23:30 and inactive denial passed.
@@ -36,3 +36,14 @@ Status: implementation and focused SQL/TypeScript checks passed; migration insta
 - No new Android package in this web release. Current bundled APK needs a later frontend rebuild to include this new screen.
 - Rollback: revert frontend release only; retain additive workspace/audit/calendar records. Do not drop tables containing assignments.
 
+## Live acceptance and handover
+- Reused existing project **הכנות לפסטיבל הנדיב**, ID 9430557b-664a-45ea-b926-b6eb0e7d9cdb; no duplicate project created. Open Work → Team Projects → Hanadiv festival, choose the existing project, or use /projects/festival?project=9430557b-664a-45ea-b926-b6eb0e7d9cdb.
+- Imported live API programme: **35 events** (7 Thursday / 9 Friday / 19 Saturday; 27 elementary / 8 main). Import persisted at 18 October 19:23:42 Israel time. Source review/fetch works from production origin.
+- Verified names against primary subteam: **ליבי / Software** was granted, not **ליבי רווה / Mechanical**. **תובל שבתאי / team_leader** also explicitly listed; all active team leaders/admins already qualify. Grants persisted after reload. No global role or security permission changed.
+- Live production transaction rehearsed draft → publish → canonical team_calendar_events action/deep link → cancel, then rolled back. Assertions passed; no test assignments or notifications persisted.
+- Actual production 390px phone viewport measured innerWidth390/documentWidth375, no horizontal overflow; programme rows and tabs inspected. Hebrew student/English manager fixture checked. Real phone push receipt/physical festival operation remain unverified.
+- Entry opens an explicit project selector if no exact default title match; select the existing preparation project. Direct assignment links already identify the project and shift.
+- No actual shifts published. Scheduling leads still choose staffing quantities, shift lengths, people, roles, target hours and closing times. Setup deadlines are calculated from programme per day/point and enforced when publishing.
+- Existing workshop attendance, purchases, money owed and robot modules were not changed.
+- Evidence screenshot: docs/staging/hanadiv-production-20261018.jpg (local).
+- Source CI391 failed in the existing catalogue fixture after previously local APK changes were pushed: missing Android asset/cache module imports. Focused catalogue test repaired and passed (93 real catalogue entries); test-only fix43c4ebe pushed. This does not affect isolated production festival CI392. Source CI393 passed after that test-fixture repair.
