@@ -37,13 +37,23 @@ Status: deployed and configured on 18 October 2026. Production f5e061c; developm
 - Rollback: revert frontend release only; retain additive workspace/audit/calendar records. Do not drop tables containing assignments.
 
 ## Live acceptance and handover
-- Reused existing project **הכנות לפסטיבל הנדיב**, ID 9430557b-664a-45ea-b926-b6eb0e7d9cdb; no duplicate project created. Open Work → Team Projects → Hanadiv festival, choose the existing project, or use /projects/festival?project=9430557b-664a-45ea-b926-b6eb0e7d9cdb.
+- Reused existing project **הכנות לפסטיבל הנדיב**, ID 9430557b-664a-45ea-b926-b6eb0e7d9cdb; no duplicate project created. Open Work → Team Projects → existing festival preparation project → Manage festival & shifts, or use /projects/festival?project=9430557b-664a-45ea-b926-b6eb0e7d9cdb.
 - Imported live API programme: **35 events** (7 Thursday / 9 Friday / 19 Saturday; 27 elementary / 8 main). Import persisted at 18 October 19:23:42 Israel time. Source review/fetch works from production origin.
 - Verified names against primary subteam: **ליבי / Software** was granted, not **ליבי רווה / Mechanical**. **תובל שבתאי / team_leader** also explicitly listed; all active team leaders/admins already qualify. Grants persisted after reload. No global role or security permission changed.
 - Live production transaction rehearsed draft → publish → canonical team_calendar_events action/deep link → cancel, then rolled back. Assertions passed; no test assignments or notifications persisted.
 - Actual production 390px phone viewport measured innerWidth390/documentWidth375, no horizontal overflow; programme rows and tabs inspected. Hebrew student/English manager fixture checked. Real phone push receipt/physical festival operation remain unverified.
-- Entry opens an explicit project selector if no exact default title match; select the existing preparation project. Direct assignment links already identify the project and shift.
+- Entry defaults to the existing preparation project by its stable ID. Direct assignment links already identify the project and shift.
 - No actual shifts published. Scheduling leads still choose staffing quantities, shift lengths, people, roles, target hours and closing times. Setup deadlines are calculated from programme per day/point and enforced when publishing.
 - Existing workshop attendance, purchases, money owed and robot modules were not changed.
 - Evidence screenshot: docs/staging/hanadiv-production-20261018.jpg (local).
 - Source CI391 failed in the existing catalogue fixture after previously local APK changes were pushed: missing Android asset/cache module imports. Focused catalogue test repaired and passed (93 real catalogue entries); test-only fix43c4ebe pushed. This does not affect isolated production festival CI392. Source CI393 passed after that test-fixture repair.
+
+## Focused navigation clarity follow-up — 18 October
+- Source 5cbcf90 / release ec4c73a. One solid pink Manage festival & shifts action inside the existing preparation project card; standalone duplicate festival banner removed.
+- Only this festival project omits engineering records, Studio follow-ups and Robot Build/manufacturing controls. Other projects retain them.
+- Preparation tasks and their completion are explicitly labelled separately from shift staffing/confirmation. Festival workspace links back to the exact preparation project.
+- Shared URL remains https://g3-6740.com/projects/festival?project=9430557b-664a-45ea-b926-b6eb0e7d9cdb.
+- Manager instruction: create shift, assign people, publish. Student instruction: confirm shift or request change. Saved-draft success explicitly says it is not published; publish success explicitly confirms publication.
+- No database, permission, scheduling data or APK change. TypeScript passed; isolated Hebrew fixture confirmed draft-save message with actual local SQL RPC. Production acceptance recorded after deployment below.
+- Required CI394 (release) and CI395 (development) passed. No redundant broad local regression run for this UI-only change.
+- Deployed ec4c73a to production **Ft4joYpSmfaJ7nHi9SpSyDexnSPq**, Ready on g3-6740.com. Live round-trip festival → exact project → same shared festival URL passed. One entry present; other CAD projects retain engineering/Robot Build controls. Actual phone viewport390/content375 without horizontal overflow; card visually inspected. Screenshot: docs/staging/hanadiv-navigation-production-20261018.jpg (local). No production assignments created/changed for this verification.

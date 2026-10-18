@@ -4,6 +4,8 @@ This is the entry point for current status and decisions. It reconciles existing
 
 ## Hanadiv festival — 18 October
 
+**Navigation follow-up live: ec4c73a**, Vercel **Ft4joYpSmfaJ7nHi9SpSyDexnSPq**, CI394/395 passed. One pink festival entry inside the existing preparation project; duplicate top banner and festival-only engineering/robot controls removed. Preparation tasks separated from staffing, explicit draft/publish messages and exact-project back link added. Existing Libi URL unchanged. TypeScript, Hebrew local draft-save and live production round-trip navigation verified; 390px phone width375 content, no horizontal overflow. No DB/permission/APK changes. Details/evidence in the festival record below; f5e061c is the original feature release.
+
 **Live production f5e061c**, Vercel **269iCFmYVBZUi2Bsp83eLEs5DuMK**, release CI392 passed; source CI393 passed after the APK catalogue test-fixture dependency correction. Additive migration installed. See [festival implementation/release](HANADIV_FESTIVAL_20261018.md). Existing preparation project now has35 verified school activities across two sales points, scheduler grants for Software Libi/Tuval and all team leaders, availability, audited shift publishing/cancellation, personal calendar/absence links, attendance after23:00 and preparation checklist. Live source import and grants persisted; publish/calendar cancellation transaction rehearsal passed with rollback. No student shifts published. Staffing is an operational decision still to enter. Web release only; APK2.6.1 predates this workspace. Phone push receipt is not claimed.
 
 ## Documentation reconciliation and next work — 18 October
