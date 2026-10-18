@@ -1173,3 +1173,5 @@ details.review-evidence-editor[open]>summary{margin-bottom:14px}
 @media(max-width:680px){.responsibility-inbox article{grid-template-columns:minmax(0,1fr)!important;gap:6px;padding:10px}.responsibility-inbox article>.responsibility-actions{max-width:none}.responsibility-inbox .responsibility-action-buttons{flex-wrap:wrap;gap:6px}.responsibility-inbox .responsibility-action-buttons button{flex:0 1 auto;font-size:.76rem;padding:6px 9px}.responsibility-inbox .responsibility-action-buttons .responsibility-primary{flex-basis:auto}.work-operations-link{flex-direction:column;gap:3px}}
 .responsibility-inbox{container-type:inline-size}
 @container(max-width:650px){.responsibility-inbox article{grid-template-columns:minmax(0,1fr)!important}.responsibility-inbox article>.responsibility-actions{max-width:none}}
+
+.festival-project-entry{padding:16px 0 22px;border-bottom:1px solid #ead9e5;margin-bottom:18px}.festival-project-entry .hub-button{display:flex;justify-content:center;align-items:center;background:#d0008f;color:#fff;text-decoration:none;min-height:48px;text-align:center}.festival-project-entry p{margin:0 0 14px;color:#66566b}

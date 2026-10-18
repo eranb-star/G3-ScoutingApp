@@ -1,3 +1,5 @@
+// Existing preparation project; keep previously shared festival deep links stable.
+export const HANADIV_PROJECT_ID='9430557b-664a-45ea-b926-b6eb0e7d9cdb';
 export type FestivalEvent={id:string;title:string;date:string;starts:string;duration:number;venue:string;point:string;url:string;street:string;houseNumber:number};
 export type ShiftPerson={member:string;role:string;calendar?:string;ack?:boolean;request?:string;response?:string;in?:string;out?:string;absence?:string};
 export type FestivalShift={id:string;title:string;point:string;kind:string;start:string;end:string;required:number;leader:string;people:ShiftPerson[];status:string;notes:string};
