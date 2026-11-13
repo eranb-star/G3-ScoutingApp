@@ -1,6 +1,6 @@
 # Android automatic checkout — approved design and delivery record
 
-Status (13 November 2026): backend migration and attendance-auto Edge Function deployed; live policy verified as observe, zero pilots/grants. User approved disabling legacy JWT verification for this new function only; function-level JWT enrollment and device signatures remain required. Signed APK 2.7.0/code31 built and verified locally. Website release/CI remain in progress. Hebrew consent/enable/observation/admin UI and English pending state checked in the actual React component with synthetic data, including 390px phone layout. Physical workshop acceptance remains a release gate for automatic enforcement.
+Status (13 November 2026): backend migration and attendance-auto Edge Function deployed; live policy verified as observe, zero pilots/grants. User approved disabling legacy JWT verification for this new function only; function-level JWT enrollment and device signatures remain required. Signed APK 2.7.0/code31 built and verified locally. Release CI400 and source CI401 passed. Website production 0adbbf8 is Ready on g3-6740.com: deployment gDw56s7sU58rpkFcGPG6cjY8ciep, 13 November 2026 19:38:57 Israel time. User completed Vercel identity verification. Hebrew consent/enable/observation/admin UI and English pending state checked in the actual React component with synthetic data, including 390px phone layout. Physical workshop acceptance remains a release gate for automatic enforcement.
 
 ## Contract
 - Manual checkout retains its existing location/Wi-Fi verification. Never add an automatic flag to that endpoint.
@@ -26,6 +26,7 @@ Service-only SQL mutation/RLS; ownership/key/session expiry/replay checks; insid
 - [x] Focused automated tests
 - [x] Backend deployment and live schema verification
 - [x] Signed APK, signature/checksum/package verification
+- [x] Website production promotion (gDw56s7sU58rpkFcGPG6cjY8ciep, g3-6740.com)
 - [ ] Real workshop pilot (cannot be replaced by simulator results)
 
 Planning estimate: 8–13 engineering days including pilot; not a token estimate. Initial conservative parameters: 50m boundary margin, maximum 50m reported accuracy, minimum 300s outside verification, 900s completion window, max12h enrollment. Parameters must be confirmed in workshop; default observe prevents attendance changes during calibration.
@@ -36,8 +37,11 @@ Planning estimate: 8–13 engineering days including pilot; not a token estimate
 - Existing manual browser attendance, reporting and historical admin-correction focused tests passed during implementation. The manual attendance Edge source is unchanged.
 - TypeScript/Vite Android build and packaged-asset test passed. Capacitor copy followed by Gradle assembleRelease/lintRelease passed. No broad unrelated local regression rerun.
 - Production schema inspected before migration. Live SQL confirms observe / zero pilots / zero grants / authenticated RPC execution=false / grants RLS=true. Live endpoint returns 400 for unsigned body, 401 for unauthenticated enrollment, 403 for unknown grant.
-- APK: releases/G3-Team-Hub-2.7.0.apk, 18,510,242 bytes; SHA256 7ae29c3987484cbe14c326aa9630ef7a8bbf10816c281671f17c3f53be601195. Package com.g3.scouting, versionCode31, minAPI24/target36. Signing certificate SHA256 45675cd568ffd23d78afd54eae2e7a71d5988819809e95c650d5c27102eba580 matches 2.6.1. Mapping and checksum kept beside APK.
+- APK: releases/G3-Team-Hub-2.7.0.apk, 18,510,274 bytes; SHA256 5339e6308b8cf8fb477526a65a86974fc460ca574d524b747d523d7d70dbb760. Package com.g3.scouting, versionCode31, minAPI24/target36. Signing certificate SHA256 45675cd568ffd23d78afd54eae2e7a71d5988819809e95c650d5c27102eba580 matches 2.6.1. Mapping and checksum kept beside APK.
 - ADB device inventory is empty. No installed-phone/background/geofence/battery test is claimed.
+- Final source afa6b41 / release 0adbbf8. Preview 9s8VJ3eddpwMWgoo3j2RwquYDzrs was promoted through a production rebuild; production gDw56s7sU58rpkFcGPG6cjY8ciep is Ready and aliased to g3-6740.com. CI400/401 passed. Earlier CI396/397 failed because the festival fixture expected October 29 to remain upcoming; only that test fixture was corrected, retaining the archive-protection assertion. CI398/399 also passed before final consent-copy changes.
+- Final APK contains 117 assets verified byte-for-byte against Capacitor output. Consent resets when attendance changes, and a grant for a different attendance/member is stopped. Privacy copy no longer claims location is always button-only.
+- Live g3-6740.com/check-in verified after production rebuild: new consent/privacy text, existing check-in controls and historical attendance receipt remain present; admin pilot settings load the real backend policy as Observe — no closing. No attendance or pilot policy was changed during this verification.
 
 ## Failure and privacy boundaries
 - Server status is checked before each worker requests a fresh location. A remotely closed/corrected session cannot trigger new evidence collection or checkout through that worker. Android's registered geofence can remain until its expiration or next event; instantaneous remote removal is not promised.
