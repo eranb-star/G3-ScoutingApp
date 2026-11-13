@@ -29,6 +29,7 @@
 .absence-row-actions button{border:1px solid #ddcddc;border-radius:8px;background:#fff;color:#5d1451;font-weight:650;cursor:pointer}.absence-row-actions .absence-approve{background:#d60087;border-color:#d60087;color:#fff}.absence-row-actions .absence-reject{color:#a22642}.absence-row-actions button:focus-visible{outline:3px solid #ad007d;outline-offset:2px}
 .workshop-roster-group li:has(.workshop-person-action){grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;align-items:center}
 .workshop-roster-group .workshop-person-action{justify-items:end}
+.missing-attendance-form{gap:10px}.missing-attendance-form h2,.missing-attendance-form p{margin:0}.missing-attendance-form label{margin:0;gap:4px}.missing-attendance-form .attendance-still-inside{display:flex;align-items:center;gap:10px}.missing-attendance-form .attendance-still-inside input{width:auto;margin:0}.missing-attendance-form footer{display:flex;gap:10px;justify-content:flex-start;flex-wrap:wrap}
 .attendance-v2 .button-secondary,.workshop-attendance .button-secondary,.attendance-record-drawer .button-secondary{background:#c00080!important;color:#fff!important;border:1px solid #c00080;min-height:44px;padding:10px 16px;border-radius:10px;font-weight:700;cursor:pointer}
 .attendance-v2 .button-secondary:hover,.workshop-attendance .button-secondary:hover,.attendance-record-drawer .button-secondary:hover{background:#a0006b!important;border-color:#a0006b}
 .workshop-person-action>.button-secondary{width:auto;white-space:nowrap}

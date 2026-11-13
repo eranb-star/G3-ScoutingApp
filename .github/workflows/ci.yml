@@ -96,6 +96,7 @@ jobs:
           node scripts/test-auto-checkout.mjs
           node scripts/test-auto-checkout-http.mjs
           node scripts/test-attendance-reporting.mjs
+          node scripts/test-missing-attendance.mjs
           node scripts/verify-mobile-notification-stability.mjs
       # Exercise the current permission-controlled catalogue, not obsolete token/URL strings.
       - name: Private repository access boundaries
