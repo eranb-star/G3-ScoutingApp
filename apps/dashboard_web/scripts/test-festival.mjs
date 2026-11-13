@@ -38,7 +38,11 @@ create function sync_team_action(text,uuid,text,text,text,text,text,timestamptz,
  await as(3);await mutate('resolve_request',{id:id(20),member:id(2),note:'Please keep this assignment until a replacement is published'});
  assert.match(ctx.data.shifts[0].people[0].response,/replacement/);
  await db.exec('reset role');
+ // The historical festival is now past. Exercise the upcoming-shift guard with
+ // a future fixture explicitly, without changing the real festival dates/rules.
+ await db.exec("update festival_workspaces set data=jsonb_set(data,'{shifts,0,end}',to_jsonb((now()+interval '7 days')::text))");
  await assert.rejects(db.query("update team_projects set status='archived' where id=$1",[id(10)]),/Cancel upcoming/);
+ await db.query("update festival_workspaces set data=jsonb_set(data,'{shifts,0,end}',$1::jsonb)",[JSON.stringify(setup.end)]);
  await assert.rejects(db.query('update team_calendar_events set cancelled=true'),/festival workspace/);
  await db.exec('set role authenticated');await as(2);
  await mutate('availability',{start:'2026-10-30T12:00:00+02:00',end:'2026-10-30T17:00:00+02:00'});
