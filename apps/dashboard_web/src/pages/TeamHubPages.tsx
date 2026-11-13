@@ -307,7 +307,7 @@ export function CheckInPage() {
   return (
     <div className="hub-page">
       <header className="hub-page-header">
-        <div><div className="hub-eyebrow">{pick("Attendance","נוכחות")}</div><h1>{pick("My attendance","הנוכחות שלי")}</h1><p>{pick("Your location is checked only when you press the button.","המיקום נבדק רק כאשר לוחצים על הכפתור.")}</p></div>
+        <div><div className="hub-eyebrow">{pick("Attendance","נוכחות")}</div><h1>{pick("My attendance","הנוכחות שלי")}</h1><p>{pick("Manual check-in and checkout verify your location. Optional Android departure detection requires your consent.","צ׳ק־אין וצ׳ק־אאוט ידניים מאמתים את המיקום. זיהוי יציאה אופציונלי ב־Android דורש את הסכמתך.")}</p></div>
       </header>
       <section className="hub-card hub-checkin-card">
         <div className="hub-location-ring" aria-hidden="true"><span /></div>
