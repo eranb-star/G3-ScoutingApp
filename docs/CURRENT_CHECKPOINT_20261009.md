@@ -4,7 +4,7 @@ This is the entry point for current status and decisions. It reconciles existing
 
 ## Missing attendance entry — 13 November 2026
 
-See [missing check-in/check-out delivery](ATTENDANCE_MISSING_ENTRY_20261113.md). Add attendance next to missing students in current/last/selected meetings; actual arrival/departure, still-inside option for open sessions, correction reason and audit. Existing correction permissions and manual location rules retained. Focused SQL tests and TypeScript/build passed; migration applied in production. Website release/promotion pending. No new APK; 2.7.0 predates the new administrator controls. Check-in reminder/entrance QR is a recommendation only, not implemented.
+See [missing check-in/check-out delivery](ATTENDANCE_MISSING_ENTRY_20261113.md). Add attendance next to missing students in current/last/selected meetings; actual arrival/departure, still-inside option for open sessions, correction reason and audit. Existing correction permissions and manual location rules retained. Focused SQL tests and TypeScript/build passed; migration applied in production. Source **89daa4e**, release **8736ad0**, CI402/403 passed. Preview **5NeHoBkSN2uFwnnGKYXSVsPyRh8E** Ready. Production promotion is waiting for the user to complete Vercel authenticator verification in the internal browser (tab10); it is NOT live yet. No new APK; 2.7.0 predates the new administrator controls. Check-in reminder/entrance QR is a recommendation only, not implemented.
 
 ## Android automatic checkout — 13 November 2026
 
