@@ -15,12 +15,13 @@ export function attendanceHours(row:AttendanceRow){
 }
 export function attendanceKind(row:AttendanceRow){
   if(!row.checked_out_at)return 'open';
+  if(row.check_out_method==='geofence')return 'geofence';
   if(row.check_out_method==='automatic')return 'automatic';
   if(row.check_in_method==='admin'||row.corrected_by)return 'corrected';
   return 'recorded';
 }
 export function attendanceTotals(rows:AttendanceRow[]){
-  return {sessions:new Set(rows.map(r=>r.meeting_id)).size,hours:rows.reduce((n,r)=>n+attendanceHours(r),0),open:rows.filter(r=>!r.checked_out_at).length,automatic:rows.filter(r=>r.check_out_method==='automatic').length};
+  return {sessions:new Set(rows.map(r=>r.meeting_id)).size,hours:rows.reduce((n,r)=>n+attendanceHours(r),0),open:rows.filter(r=>!r.checked_out_at).length,automatic:rows.filter(r=>['automatic','geofence'].includes(r.check_out_method??'')).length};
 }
 export async function readAllRows<T>(page:(from:number,to:number)=>PromiseLike<{data:unknown[]|null;error:{message:string}|null}>):Promise<T[]>{
   const rows:T[]=[];

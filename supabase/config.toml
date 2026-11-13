@@ -1,0 +1,5 @@
+project_id = "G3-ScoutingApp"
+
+# This isolated endpoint validates JWT enrollment and signed background requests itself.
+[functions.attendance-auto]
+verify_jwt = false

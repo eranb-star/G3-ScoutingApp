@@ -10,6 +10,7 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(WifiInfoPlugin.class);
         registerPlugin(G3PushPlugin.class);
+        registerPlugin(AutoCheckoutPlugin.class);
         super.onCreate(savedInstanceState);
         openNotificationDestination(getIntent());
         if (BuildConfig.CRASHLYTICS_TEST_BUILD) {

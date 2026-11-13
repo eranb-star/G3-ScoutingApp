@@ -1,3 +1,4 @@
+import AutoCheckoutPanel,{AutoCheckoutAdmin} from '../components/AutoCheckoutPanel';
 import WorkshopPlanner from '../components/WorkshopPlanner';
 import PersonalAttendance from '../components/PersonalAttendance';
 import WorkshopSessionControls,{SessionAudit} from "../components/WorkshopSessionControls";
@@ -217,7 +218,7 @@ export function CheckInPage() {
   const { pick } = useLocalization();
   const { profile } = useMemberAuth();
   const [activeMeeting, setActiveMeeting] = useState<TeamMeeting | null>(null);
-  const [attendance, setAttendance] = useState<{ meeting_id?:string; checked_in_at: string; checked_out_at: string | null } | null>(null);
+  const [attendance, setAttendance] = useState<{ id?:string; meeting_id?:string; checked_in_at: string; checked_out_at: string | null } | null>(null);
   const [working, setWorking] = useState(false);
   const [message, setMessage] = useState("");
   const [locationConfigured, setLocationConfigured] = useState<boolean | null>(null);
@@ -227,7 +228,7 @@ export function CheckInPage() {
   useEffect(()=>{const refresh=()=>{if(!requestLock.current)setSessionRevision(n=>n+1);};const visible=()=>{if(document.visibilityState==='visible')refresh();};window.addEventListener('focus',refresh);window.addEventListener('g3-attendance-refresh',refresh);document.addEventListener('visibilitychange',visible);return()=>{window.removeEventListener('focus',refresh);window.removeEventListener('g3-attendance-refresh',refresh);document.removeEventListener('visibilitychange',visible);};},[]);
   async function loadAttendance(meeting: TeamMeeting | null) {
     if (!meeting || !profile) { setAttendance(null); return; }
-    const { data, error } = await supabase.from("attendance_records").select("checked_in_at,checked_out_at").eq("meeting_id", meeting.id).eq("member_id", profile.id).maybeSingle();
+    const { data, error } = await supabase.from("attendance_records").select("id,checked_in_at,checked_out_at").eq("meeting_id", meeting.id).eq("member_id", profile.id).maybeSingle();
     if(error)throw error;
     setAttendance(data as typeof attendance);
   }
@@ -239,10 +240,10 @@ export function CheckInPage() {
     Promise.all([
       supabase.from("team_meetings").select("id,title,starts_at,ends_at,attendance_closes_at,status,meeting_type,opened_by,closed_by,opened_at,closed_at,opened_automatically,closed_automatically").in("status", ["open","scheduled"]).lte("starts_at",new Date(Date.now()+3600000).toISOString()).gte("attendance_closes_at",now).order("opened_at", { ascending: false }),
       supabase.from("team_meetings").select("id,title,starts_at,ends_at,attendance_closes_at,status,meeting_type,opened_by,closed_by,opened_at,closed_at,opened_automatically,closed_automatically").in("status", ["scheduled","open"]).gt("starts_at", now).order("starts_at").limit(1),
-      profile ? supabase.from("attendance_records").select("meeting_id,checked_in_at,checked_out_at").eq("member_id",profile.id).is("checked_out_at",null).order("checked_in_at",{ascending:false}).limit(1).maybeSingle() : Promise.resolve({data:null}),
+      profile ? supabase.from("attendance_records").select("id,meeting_id,checked_in_at,checked_out_at").eq("member_id",profile.id).is("checked_out_at",null).order("checked_in_at",{ascending:false}).limit(1).maybeSingle() : Promise.resolve({data:null}),
     ]).then(async([openResult, nextResult, activeResult]) => {
       if(openResult.error||nextResult.error||('error' in activeResult&&activeResult.error)){setMessage(pick("Attendance could not load. Check your connection and reload before trying again.","לא ניתן לטעון נוכחות. בדקו חיבור ורעננו לפני ניסיון נוסף."));return;}
-      const openMeetings=(openResult.data ?? []) as TeamMeeting[],activeRecord=activeResult.data as {meeting_id:string;checked_in_at:string;checked_out_at:null}|null;
+      const openMeetings=(openResult.data ?? []) as TeamMeeting[],activeRecord=activeResult.data as {id:string;meeting_id:string;checked_in_at:string;checked_out_at:null}|null;
       let meeting = (activeRecord?openMeetings.find(item=>item.id===activeRecord.meeting_id):null) ?? openMeetings.find(item => isMeetingWindowAvailable(item, currentTime)) ?? null;
       if(activeRecord&&!meeting){const{data}=await supabase.from("team_meetings").select("id,title,starts_at,ends_at,attendance_closes_at,status,meeting_type,opened_by,closed_by,opened_at,closed_at,opened_automatically,closed_automatically").eq("id",activeRecord.meeting_id).maybeSingle();meeting=data as TeamMeeting|null;}
       setActiveMeeting(meeting);
@@ -323,7 +324,7 @@ export function CheckInPage() {
           {profile?.role === "admin" && locationConfigured === false ? <div className="auth-message auth-error">{pick("Administrator setup required: workshop coordinates are not configured yet.","נדרשת הגדרת מנהל: מיקום הסדנה טרם הוגדר.")}</div> : null}
         </div>
       </section>
-      <div className="hub-privacy-note"><strong>{pick("Privacy by design","פרטיות כברירת מחדל")}</strong><span>{pick("No background tracking. No location history. Admin corrections require a reason and are audited.","אין מעקב ברקע ואין היסטוריית מיקום. תיקוני מנהל דורשים סיבה ונרשמים ביומן ביקורת.")}</span></div>
+      <AutoCheckoutPanel attendanceId={attendance?.id} open={!!attendance&&!attendance.checked_out_at} ready={attendanceReady}/><AutoCheckoutAdmin/><div className="hub-privacy-note"><strong>{pick("Privacy by design","פרטיות כברירת מחדל")}</strong><span>{pick("Optional Android departure detection requires explicit background-location permission. No route history is stored. Admin corrections are audited.","זיהוי יציאה אופציונלי ב-Android דורש אישור מפורש למיקום ברקע. לא נשמר מסלול תנועה. תיקוני מנהל מתועדים.")}</span></div>
     </div>
   );
 }

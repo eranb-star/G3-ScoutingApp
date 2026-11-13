@@ -2,6 +2,10 @@
 
 This is the entry point for current status and decisions. It reconciles existing release evidence and this conversation; it is not a new audit of every production feature. Detailed feature records below retain acceptance limits. Older proposed phases and undeployed notices are superseded only where the named release records establish delivery.
 
+## Android automatic checkout — 13 November 2026
+
+See [automatic checkout design and delivery evidence](AUTO_CHECKOUT_20261108.md). Additive migration and separate signed attendance-auto service are deployed in **observation mode, zero enforcement pilots**. User approved legacy JWT gateway disable for this new service only. Existing manual attendance endpoint/radius rules are unchanged. Focused SQL/HTTP and attendance regression checks passed; signed APK **2.7.0/code31, 18.51 MB** built with matching release signature. Website release/CI and visual acceptance are in progress. No phone is connected: physical exit/return/background acceptance remains required before enforcement. Do not describe observation as automatic attendance closing, or claim physical validation.
+
 ## Focused operational corrections — 17 October
 
 See [focused implementation and verification](FOCUSED_OPERATIONS_20261017.md): configurable Limited Mentor operational permissions (security administration remains admin-only), student-only attendance/missing rosters and CSV, compact absence decisions with reviewer/time, and checkbox-based supplier-order allocations. Existing grants, attendance and financial records are preserved. Production release verification is pending in the linked record. Historical missing rosters cannot reconstruct past membership changes; current active membership and join date are explicitly labelled. No APK rebuild in this focused release.
