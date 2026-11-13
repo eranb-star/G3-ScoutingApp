@@ -2,6 +2,10 @@
 
 This is the entry point for current status and decisions. It reconciles existing release evidence and this conversation; it is not a new audit of every production feature. Detailed feature records below retain acceptance limits. Older proposed phases and undeployed notices are superseded only where the named release records establish delivery.
 
+## Missing attendance entry — 13 November 2026
+
+See [missing check-in/check-out delivery](ATTENDANCE_MISSING_ENTRY_20261113.md). Add attendance next to missing students in current/last/selected meetings; actual arrival/departure, still-inside option for open sessions, correction reason and audit. Existing correction permissions and manual location rules retained. Focused SQL tests and TypeScript/build passed; migration applied in production. Website release/promotion pending. No new APK; 2.7.0 predates the new administrator controls. Check-in reminder/entrance QR is a recommendation only, not implemented.
+
 ## Android automatic checkout — 13 November 2026
 
 See [automatic checkout design and delivery evidence](AUTO_CHECKOUT_20261108.md). Additive migration and separate signed attendance-auto service are deployed in **observation mode, zero enforcement pilots**. User approved legacy JWT gateway disable for this new service only. Existing manual attendance endpoint/radius rules are unchanged. Focused SQL/HTTP and attendance regression checks, HE/EN browser fixture, Android build/lint/signature/assets passed; signed APK **2.7.0/code31, 18.51 MB** is ready locally. Source afa6b41 / release 0adbbf8, CI400/401 passed. **Production 0adbbf8 is live**, deployment gDw56s7sU58rpkFcGPG6cjY8ciep Ready on g3-6740.com at 19:38:57 Israel time, 13 November. User completed Vercel verification. No phone is connected: physical exit/return/background acceptance remains required before enforcement. Do not describe observation as automatic attendance closing, or claim physical validation.
