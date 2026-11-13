@@ -2,6 +2,10 @@
 
 This is the entry point for current status and decisions. It reconciles existing release evidence and this conversation; it is not a new audit of every production feature. Detailed feature records below retain acceptance limits. Older proposed phases and undeployed notices are superseded only where the named release records establish delivery.
 
+## Android automatic checkout — 13 November 2026
+
+See [automatic checkout design and delivery evidence](AUTO_CHECKOUT_20261108.md). Additive migration and separate signed attendance-auto service are deployed in **observation mode, zero enforcement pilots**. User approved legacy JWT gateway disable for this new service only. Existing manual attendance endpoint/radius rules are unchanged. Focused SQL/HTTP and attendance regression checks passed; signed APK **2.7.0/code31, 18.51 MB** built with matching release signature. Website release/CI and visual acceptance are in progress. No phone is connected: physical exit/return/background acceptance remains required before enforcement. Do not describe observation as automatic attendance closing, or claim physical validation.
+
 ## Hanadiv festival — 18 October
 
 **Navigation follow-up live: ec4c73a**, Vercel **Ft4joYpSmfaJ7nHi9SpSyDexnSPq**, CI394/395 passed. One pink festival entry inside the existing preparation project; duplicate top banner and festival-only engineering/robot controls removed. Preparation tasks separated from staffing, explicit draft/publish messages and exact-project back link added. Existing Libi URL unchanged. TypeScript, Hebrew local draft-save and live production round-trip navigation verified; 390px phone width375 content, no horizontal overflow. No DB/permission/APK changes. Details/evidence in the festival record below; f5e061c is the original feature release.

@@ -1,3 +1,4 @@
+import {stopAutoCheckout,reconcileAutoCheckout} from './autoCheckout';
 import { getQaTestSession } from "./qaTestSession";
 import { QaTestBanner } from "../components/QaTestAccounts";
 import { Fragment, createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
@@ -42,6 +43,7 @@ export function MemberAuthProvider({ children }: { children: React.ReactNode }) 
   const requestRef = useRef(0);
 
   const loadProfile = async (activeSession: Session | null, clearExisting = false) => {
+    void reconcileAutoCheckout(activeSession?.user.id??null).catch(()=>{});
     const requestId = ++requestRef.current;
     setSession(activeSession);
     setProfileError("");
@@ -102,6 +104,7 @@ export function MemberAuthProvider({ children }: { children: React.ReactNode }) 
       window.setTimeout(async () => {
         if (!alive) return;
         if (event === "SIGNED_OUT") {
+          void stopAutoCheckout().catch(()=>{});
           // Remove private build drafts from shared workshop devices on explicit logout.
           try {
             for (const key of Object.keys(sessionStorage)) {
@@ -110,7 +113,7 @@ export function MemberAuthProvider({ children }: { children: React.ReactNode }) 
           } catch { /* Storage may be disabled by the browser. */ }
           await loadProfile(null, true);
         }
-        else await loadProfile(nextSession, event === "SIGNED_IN" && profileRef.current?.id !== nextSession?.user.id);
+        else { if(event === "SIGNED_IN" && profileRef.current?.id !== nextSession?.user.id) void stopAutoCheckout().catch(()=>{}); await loadProfile(nextSession, event === "SIGNED_IN" && profileRef.current?.id !== nextSession?.user.id); }
       }, 0);
     });
     return () => {
