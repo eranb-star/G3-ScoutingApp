@@ -4,7 +4,7 @@ This is the entry point for current status and decisions. It reconciles existing
 
 ## Simplified assembly manufacturing workflow — 14 November 2026
 
-[Design and delivery record](ROBOT_BUILD_SIMPLE_WORKFLOW_20261114.md): implementation and focused local checks completed; production migration/web release and signed APK2.8.0/code32 are in progress. New grouped save/assign flow reuses existing manufacturing and review records. Preserve the previous production/APK status below until release evidence is recorded.
+[Design and delivery record](ROBOT_BUILD_SIMPLE_WORKFLOW_20261114.md): **implemented and deployed**. Grouped save/assign, students/contributors, exact drawing link, guarded start, atomic quantity + inspection submission, partial/rework and independent reviewer context reuse existing manufacturing records. Source **cb74fa2**, release **d582706**, CI **426/427 passed**. Production **55DgPLEaFqXt5Mv7kpX3H5RWgGh1**, Ready **21:56:38 Israel**, g3-6740.com. Additive migration deployed; historical rows unchanged by full-row digest assertion. Production assignment/retry rehearsal rolled back all QA data. Live Hebrew form/Onshape handoff and local EN/mobile UI verified. Signed **APK2.8.0/code32,18.52MB** includes this flow, Hebrew scouting and all prior source updates; signature, Android lint and115 packaged assets verified. Physical phone installation and student/workshop acceptance remain to perform. Existing assembly/installation and task reassignment controls retained; no new bulk package reassignment/cancellation interface.
 
 ## Focused Studio and scouting UI — 14 November 2026
 

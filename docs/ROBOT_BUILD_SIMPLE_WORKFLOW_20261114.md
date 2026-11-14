@@ -1,6 +1,6 @@
 # Robot Build: assembly to accepted work
 
-Status: implementation in progress; not deployed. User authorized implementation, focused verification, production release and a new signed Android APK containing Hebrew scouting and current changes. This record does not claim completion or physical acceptance.
+Status: implemented, deployed and production-smoke verified. Signed APK2.8.0/code32 built and verified. Physical phone installation and student/workshop acceptance remain untested.
 
 ## User experience contract
 
@@ -25,7 +25,15 @@ Focused checks: new package creation and retry, conflicting retry, mixed part qu
 
 ## Release evidence
 
-Pending. Record migration, source/release hashes, checks, production deployment and APK artifact here before marking complete.
+Source **cb74fa2**, release **d582706**, CI **426/427 passed**. Production **55DgPLEaFqXt5Mv7kpX3H5RWgGh1**, Ready **21:56:38 Israel, 14 November 2026**, g3-6740.com; user completed Vercel verification. Preview2BjjhSLMi39yKK4FspqXqWdMZccs preceded production.
+
+Migration robot_build_work_packages_20261114.sql applied with an atomic before/after full-row digest assertion. Existing27 project tasks,10 projects,1 BOM and2 BOMlines unchanged; existing preparations/jobs/lots/review gates/submissions were empty and remained empty. Review build_attempt is the additive metadata excluded from the historical digest. RLS enabled for every new table. A production transaction rehearsed assignment using QA profiles plus exact retry, validated preparation creation, then rolled back all test data. No real student assignments or manufacturing records created.
+
+Live Hebrew Robot Build entry, single package section, assignment form and existing BOM listing verified; Onshape navigation retains the selected project and loads source list. Local mobile/English coverage below. Production screenshot: docs/staging/build-workflow-production-20261114.png.
+
+APK **releases/G3-Team-Hub-2.8.0.apk**, **18,524,154bytes (18.52MB)**, package com.g3.scouting, versionCode32, minAPI24/targetAPI36. SHA256 **2b5cf2012a914be9346a59274489f0d24725606a462b834415a1fd845bb584ef**. Same signing certificate45675cd568ffd23d78afd54eae2e7a71d5988819809e95c650d5c27102eba580. Java21 assembleRelease/lintRelease passed; 115 packaged frontend files match generated assets byte-for-byte; Hebrew scouting and grouped-work UI present. Existing bundled current field/KitBot and optional asset policy retained. Native automatic-checkout observation policy unchanged. Install over the existing APK without uninstalling. No physical Android device acceptance or notification receipt is claimed.
+
+Rollback: redeploy prior production a59e46f if required. Keep additive tables/history; do not reverse the migration destructively after real assignments. Prior clients remain supported. Source status documentation is committed locally after release to avoid redundant CI/deployment.
 
 ## Implementation and focused acceptance (local)
 
@@ -34,4 +42,4 @@ Pending. Record migration, source/release hashes, checks, production deployment 
 - Existing task management remains the place for later assignment changes; this release does not add bulk package reassignment/cancellation. Existing assembly/installation and stock receiving remain separate from manufacturing approval.
 - Local SQL tests passed: draft/assignment, retry/conflict, quantities, reviewer independence, owner/contributor/outsider behavior, release correction, premature-start denial, physical QC, partial/reworked lots, migration rerun, historical participant guard and legacy uniqueness. Existing complete manufacturing/stock/installation and lot suite passed.
 - Hebrew fixture: draft saved without assigning; same draft assigned to owner + contributor; bought Kraken excluded; quantities 2 and 6 preserved; saved feedback and next drawing-approval link verified. Mobile390: package content335px, no package overflow. English entry verified. Fixture contains no real student data.
-- TypeScript and Android frontend build/assets checks passed. Native signed build and production deployment in progress. No real-phone or workshop acceptance claim.
+- TypeScript and Android frontend build/assets checks passed. Native signed build and production deployment completed as recorded above. No real-phone or workshop acceptance claim.
