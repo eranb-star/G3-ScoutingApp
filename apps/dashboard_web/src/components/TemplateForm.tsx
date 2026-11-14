@@ -1,4 +1,6 @@
 import React from "react";
+import { useLocalization } from "../lib/localization";
+import { scoutingLabel, scoutingNodeLabel } from "../lib/scoutingLabels";
 
 type AnyObj = any;
 
@@ -87,6 +89,7 @@ function CounterRow({
   step?: number;
   quickButtons?: number[];
 }) {
+  const { pick } = useLocalization();
   const dec = () => onChange(clamp(value - step, min, max));
   const inc = () => onChange(clamp(value + step, min, max));
   const onDelta = (delta: number) => onChange(clamp(value + delta, min, max));
@@ -139,7 +142,7 @@ function CounterRow({
         </button>
 
         <div style={{ opacity: 0.65, fontWeight: 800 }}>
-          min {typeof min === "number" ? min : 0} · max {typeof max === "number" ? max : "∞"}
+          {pick("min", "מינימום")} {typeof min === "number" ? min : 0} · {pick("max", "מקסימום")} {typeof max === "number" ? max : "∞"}
         </div>
       </div>
 
@@ -165,6 +168,7 @@ function PicklistCounter({
   onChange: (v: Record<string, number>) => void;
   isNarrow: boolean;
 }) {
+  const { language } = useLocalization();
   const optionValues = (options ?? []).map((o: AnyObj) => String(o?.value ?? o));
   const [selected, setSelected] = React.useState<string>(optionValues[0] ?? "");
 
@@ -201,7 +205,7 @@ function PicklistCounter({
           <select value={selected} onChange={(e) => setSelected(e.target.value)} style={controlStyle}>
             {(options ?? []).map((o: AnyObj, idx: number) => {
               const v = String(o?.value ?? o);
-              const t = String(o?.label ?? o?.value ?? o);
+              const t = scoutingNodeLabel(o, language);
               return (
                 <option key={`${v}_${idx}`} value={v}>
                   {t}
@@ -263,6 +267,7 @@ export default function TemplateForm({
   values: Record<string, any>;
   setValue: (id: string, value: any) => void;
 }) {
+  const { language, pick, direction } = useLocalization();
   const phases = template?.phases ?? [];
   const isNarrow = useIsNarrow(600);
 
@@ -327,7 +332,7 @@ export default function TemplateForm({
 
     if (shouldHideItem(item)) return null;
 
-    const label = item?.label ?? itemId;
+    const label = scoutingNodeLabel(item, language);
     const type = item?.type ?? "counter";
 
     if (type === "counter") {
@@ -370,10 +375,10 @@ export default function TemplateForm({
           <div style={{ fontWeight: 900, marginBottom: 6 }}>{label}</div>
           <div style={{ width: "100%", maxWidth: isNarrow ? "100%" : 420 }}>
             <select value={v} onChange={(e) => setValue(itemId, e.target.value)} style={controlStyle}>
-              <option value="">Select…</option>
+              <option value="">{pick("Select…", "בחירה…")}</option>
               {opts.map((o: AnyObj, idx: number) => {
                 const ov = String(o?.value ?? o);
-                const ot = String(o?.label ?? o?.value ?? o);
+                const ot = scoutingNodeLabel(o, language);
                 return (
                   <option key={`${ov}_${idx}`} value={ov}>
                     {ot}
@@ -407,14 +412,14 @@ export default function TemplateForm({
       <div key={itemId} style={{ margin: "12px 0" }}>
         <div style={{ fontWeight: 900, marginBottom: 6 }}>{label}</div>
         <div style={{ width: "100%", maxWidth: isNarrow ? "100%" : 520 }}>
-          <input value={v} onChange={(e) => setValue(itemId, e.target.value)} placeholder={item?.placeholder ?? ""} style={controlStyle} />
+          <input value={v} onChange={(e) => setValue(itemId, e.target.value)} placeholder={scoutingLabel(item?.placeholder_he && language === "he" ? item.placeholder_he : item?.placeholder ?? "", language)} style={controlStyle} />
         </div>
       </div>
     );
   };
 
   return (
-    <div>
+    <div dir={direction}>
       {phases.map((phase: AnyObj) => {
         // ✅ filter blocks that have at least 1 visible item
         const blocks = (phase.blocks ?? []).filter((block: AnyObj) => {
@@ -427,7 +432,7 @@ export default function TemplateForm({
 
         return (
           <div key={phase.id} style={{ marginTop: 18, paddingTop: 10, borderTop: "1px solid #eee" }}>
-            <h2 style={{ margin: "6px 0" }}>{phase.label ?? phase.id}</h2>
+            <h2 style={{ margin: "6px 0" }}>{scoutingNodeLabel(phase, language)}</h2>
 
             {blocks.map((block: AnyObj) => {
               const visibleItems = (block.items ?? []).filter((it: AnyObj) => !shouldHideItem(it) && !!it?.id);
@@ -444,7 +449,7 @@ export default function TemplateForm({
                     background: "#fff",
                   }}
                 >
-                  <div style={{ fontWeight: 950, marginBottom: 10 }}>{block.label ?? block.id}</div>
+                  <div style={{ fontWeight: 950, marginBottom: 10 }}>{scoutingNodeLabel(block, language)}</div>
                   {visibleItems.map((item: AnyObj) => renderItem(item))}
                 </div>
               );

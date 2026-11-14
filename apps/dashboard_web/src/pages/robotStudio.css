@@ -58,3 +58,6 @@
 
 .studio-panel-close{display:none}
 @media(max-width:650px){.robot-studio .studio-panel-close{display:block;width:100%;position:sticky;top:0;z-index:4;background:#fff5fc;margin-bottom:8px}.studio-library nav{position:static}body:has(.robot-studio) .assistant-fab{display:none}}
+
+/* Keep connected CAD import outside the scrolling component catalogue. */
+.studio-onshape-import{padding:16px 20px;border:1px solid #e9b9dc;border-inline-start:5px solid var(--studio-accent);border-radius:12px;background:#fff7fc;margin-bottom:12px}.studio-onshape-import h2{font-size:18px;margin:0}.studio-onshape-import p{margin:5px 0 12px;color:var(--studio-muted);font-size:14px}.studio-onshape-controls,.studio-onshape-controls form{display:flex;align-items:end;gap:12px;flex-wrap:wrap}.studio-onshape-controls form{flex:1;min-width:0}.studio-onshape-controls label{flex:1;min-width:220px;margin:0}.studio-onshape-controls select{width:100%}@media(max-width:650px){.studio-onshape-import{padding:12px}.studio-onshape-controls,.studio-onshape-controls form{align-items:stretch;flex-direction:column;width:100%}.studio-onshape-controls label{min-width:0}}
