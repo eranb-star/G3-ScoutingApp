@@ -3,7 +3,7 @@ import BuildDraftNotice from './BuildDraftNotice';
 import type {NumericRule} from './ReviewRequirements';
 import {PhysicalMeasurementEditor,emptyMeasurement,type PhysicalMeasurement} from './PhysicalMeasurement';
 import {useProjectConfigurations,type RobotConfiguration} from './ProjectConfigurations';
-import {useState} from 'react';
+import {useEffect,useState} from 'react';
 import {useLocalization} from '../lib/localization';
 import type {EvidenceItem} from './ReviewEvidence';
 export type Requirement={numeric_rule?:NumericRule|null;id:string;requirement:string;acceptance:string;method:string};
@@ -19,6 +19,7 @@ function Finding({r,submission,configurations,canReview,canWaive,busy,onSave}:{r
  const {pick}=useLocalization();const saved=submission.requirement_results?.[r.id];
  const initial=()=>({result:canReview?'passed':'waived',evidence:saved?String(saved.evidence):'',note:saved?.note??'',configuration:'',expiry:'',measurement:saved?.measurement?{...saved.measurement,value:String(saved.measurement.value),samples:String(saved.measurement.samples)}:{...emptyMeasurement(),unit:r.numeric_rule?.unit??''}});
  const draft=useBuildFormDraft(`finding:${submission.id}:${r.id}`,initial,(v):v is ReturnType<typeof initial>=>!!v&&typeof v==='object'&&['result','evidence','note','configuration','expiry'].every(k=>typeof (v as Record<string,unknown>)[k]==='string')&&!!(v as ReturnType<typeof initial>).measurement&&Object.keys(emptyMeasurement()).every(k=>typeof ((v as ReturnType<typeof initial>).measurement as unknown as Record<string,unknown>)[k]==='string'));
+ useEffect(()=>{const identified=configurations.find(c=>c.identity_snapshot?.submission_id===submission.id&&c.configuration_kind==='as_built');if(identified&&!draft.dirty)draft.initialize({...initial(),configuration:identified.id,measurement:{...initial().measurement,asset:identified.identity_snapshot?.asset?.serial??'',calibration:identified.identity_snapshot?.calibration_reference??''}});},[configurations]);
  const {result,evidence,note,configuration,expiry,measurement}=draft.value;const [editing,setEditing]=useState(false);
  const setResult=(result:string)=>draft.change({result}),setEvidence=(evidence:string)=>draft.change({evidence}),setNote=(note:string)=>draft.change({note}),setConfiguration=(configuration:string)=>draft.change({configuration}),setExpiry=(expiry:string)=>draft.change({expiry});
  const setMeasurement=(value:PhysicalMeasurement|((m:PhysicalMeasurement)=>PhysicalMeasurement))=>draft.change({measurement:typeof value==='function'?value(draft.value.measurement):value});

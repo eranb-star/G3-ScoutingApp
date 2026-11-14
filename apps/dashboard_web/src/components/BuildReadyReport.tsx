@@ -1,0 +1,23 @@
+import {useEffect,useState} from 'react';
+import {supabase} from '../supabase';
+import {useLocalization} from '../lib/localization';
+import {useBuildStringDraft} from '../lib/buildFormDraft';
+import BuildDraftNotice from './BuildDraftNotice';
+type Job={id:string;task_id:string;revision:number;completed_quantity:number;required_quantity:number};
+export default function BuildReadyReport({job,saved}:{job:Job;saved:()=>Promise<void>}){
+ const {pick}=useLocalization();const [grouped,setGrouped]=useState(false),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[open,setOpen]=useState(false),[current,setCurrent]=useState<string|null>(null),[pending,setPending]=useState(false);
+ const [returned,setReturned]=useState<{id:string;task_id:string;quantity:number;submission:string}[]>([]);
+ const initial=()=>({quantity:String(job.completed_quantity||job.required_quantity),expected:String(job.revision),note:'',request:crypto.randomUUID(),lot:''});const draft=useBuildStringDraft(`ready-report:${job.id}`,initial,job.revision);
+ useEffect(()=>{let active=true;void(async()=>{const packageResult=await supabase.from('robot_build_preparations').select('id,robot_build_work_package_items!inner(package_id)').eq('work_task_id',job.task_id).maybeSingle();if(packageResult.error||!packageResult.data)return;
+  const [g,l]=await Promise.all([supabase.rpc('project_review_context',{p_task:job.task_id}),supabase.from('robot_build_lots').select('id,task_id,quantity,status').eq('job_id',job.id)]);if(g.error||l.error)return;
+  const submission=g.data?.[0]?.submission;const rows=[];
+  for(const lot of l.data??[]){if(!['inspection','rework'].includes(lot.status))continue;const r=await supabase.rpc('project_review_context',{p_task:lot.task_id});const s=r.data?.[0]?.submission;if(!r.error&&s?.status==='changes_requested')rows.push({...lot,submission:s.id});}
+  if(active){setGrouped(true);setCurrent(submission?.id??null);setPending(!!submission&&submission.status!=='changes_requested');setReturned(rows);}
+ })().catch(()=>{});return()=>{active=false;};},[job.id,job.revision]);
+ if(!grouped)return null;
+ return <section className="build-ready-report"><button type="button" disabled={busy||pending} onClick={()=>setOpen(!open)}>{pick('Ready for inspection','מוכן לבדיקה')}</button>{pending&&<p>{pick('Already submitted. Wait for the reviewer before changing these quantities.','העבודה כבר הוגשה. המתינו לבודק לפני שינוי הכמויות.')}</p>}
+ {open&&!pending&&<form data-build-form={draft.id} onSubmit={async e=>{e.preventDefault();if(busy)return;if(!navigator.onLine){setMessage(pick('Offline — nothing was sent. Your draft is kept.','אין חיבור — דבר לא נשלח. הטיוטה נשמרת.'));return;}setBusy(true);try{const lot=returned.find(l=>l.id===draft.value.lot);const r=await supabase.rpc('submit_robot_build_package_work',{p_job:job.id,p_expected:Number(draft.value.expected),p_completed:Number(draft.value.quantity),p_note:draft.value.note,p_request:draft.value.request,p_expected_submission:lot?.submission??current,p_lot:lot?.id??null});if(r.error)throw Error(r.error.message);draft.saved(initial());setOpen(false);await saved();setMessage(pick('Sent for inspection. These pieces are not approved until the reviewer accepts them.','נשלח לבדיקה. החלקים יאושרו רק לאחר בדיקת הבודק.'));}catch(e){setMessage(e instanceof Error?e.message:pick('Submission was not confirmed. Draft kept.','ההגשה לא אושרה. הטיוטה נשמרה.'));}finally{setBusy(false);}}}><fieldset disabled={busy}><BuildDraftNotice {...draft}/>
+ {!!returned.length&&<label>{pick('What are you submitting?','מה מגישים לבדיקה?')}<select value={draft.value.lot} onChange={e=>draft.change({lot:e.target.value,request:crypto.randomUUID()})}><option value="">{pick('Additional ready pieces','חלקים מוכנים נוספים')}</option>{returned.map(l=><option key={l.id} value={l.id}>{pick('Corrected pieces','חלקים שתוקנו')} · {l.quantity}</option>)}</select></label>}
+ <label>{pick('How many are ready in total?','כמה מוכנים בסך הכול?')}<input type="number" required min={1} max={job.required_quantity} step={1} value={draft.value.quantity} onChange={e=>draft.change({quantity:e.target.value,request:crypto.randomUUID()})}/></label><p>{pick('Include pieces already reported. This is a total, not an addition. You may send part of the required quantity.','כללו גם חלקים שכבר דווחו. זהו סך הכול, לא תוספת. אפשר לשלוח לבדיקה רק חלק מהכמות הנדרשת.')}</p>
+ <label>{pick('What did you finish / correct?','מה סיימתם / תיקנתם?')}<textarea required minLength={3} maxLength={2000} value={draft.value.note} onChange={e=>draft.change({note:e.target.value,request:crypto.randomUUID()})}/></label><button>{pick('Send for inspection','שליחה לבדיקה')}</button></fieldset></form>}<p role="status">{message}</p></section>;
+}

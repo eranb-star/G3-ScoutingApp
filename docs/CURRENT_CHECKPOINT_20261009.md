@@ -2,6 +2,10 @@
 
 This is the entry point for current status and decisions. It reconciles existing release evidence and this conversation; it is not a new audit of every production feature. Detailed feature records below retain acceptance limits. Older proposed phases and undeployed notices are superseded only where the named release records establish delivery.
 
+## Simplified assembly manufacturing workflow — 14 November 2026
+
+[Design and delivery record](ROBOT_BUILD_SIMPLE_WORKFLOW_20261114.md): implementation and focused local checks completed; production migration/web release and signed APK2.8.0/code32 are in progress. New grouped save/assign flow reuses existing manufacturing and review records. Preserve the previous production/APK status below until release evidence is recorded.
+
 ## Focused Studio and scouting UI — 14 November 2026
 
 [Focused implementation and verification](FOCUSED_STUDIO_SCOUTING_20261114.md): **deployed and verified**. Onshape import is above the Studio catalogue; Match Scouting and live 2026 field labels follow Hebrew/English. Source **aeaa6a8**, production **a59e46f**, deployment **7pcsHhCLMGkJDNCgwaDbU4DFYCee**, Ready **20:28:26 Israel, 14 November**, on g3-6740.com after user verification. TypeScript, focused localization tests and CI **424/425 passed**. Live source browsing/assembly selection, mobile import visibility and real Hebrew scouting template verified. No saved scene/BOM/report changes, database migration or APK rebuild. Final status documentation committed locally to avoid redundant CI.
