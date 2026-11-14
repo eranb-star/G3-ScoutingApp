@@ -28,8 +28,11 @@ export async function loadCadGeometry(call:Call,identity:{sourceId?:string;snaps
   }catch(error){failure=error;return;}
  }}
  await Promise.all([worker(),worker()]);if(failure)throw failure;
+ let renderedCoordinates=0;
  const meshes=plan.meshes.map((mesh:any)=>{
   if(!Number.isInteger(mesh.partIndex)||!positions[mesh.partIndex]||!Array.isArray(mesh.transform)||mesh.transform.length!==16||!mesh.transform.every(Number.isFinite))throw Error('Invalid assembly placement');
+  renderedCoordinates+=positions[mesh.partIndex].length;
+  if(renderedCoordinates>9_000_000)throw Error('This assembly exceeds 3 million displayed vertices. Import a subsystem; existing parts are unchanged.');
   return {id:mesh.id,name:mesh.name,positions:positions[mesh.partIndex],transform:mesh.transform};
  });
  const finalized=await call('geometry',{...identity,snapshotId:plan.snapshotId,chunked:true,finalize:true});

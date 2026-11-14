@@ -40,13 +40,15 @@ export async function finalizeAssemblyGeometry(snapshot:any,bucket:any,prefix:st
  const asset=`${prefix}/${snapshot.id}-v3.json`;
  const existing=await bucket.createSignedUrl(asset,120);
  if(!existing.error)return {url:existing.data.signedUrl,snapshotId:snapshot.id};
- const plan=assemblyGeometryPlan(snapshot),positions:number[][]=new Array(plan.parts.length);let next=0,bytes=0;
+ const plan=assemblyGeometryPlan(snapshot),positions:number[][]=new Array(plan.parts.length),sizes:number[]=new Array(plan.parts.length);let next=0,bytes=0;
  async function worker(){while(next<positions.length){const index=next++,file=await bucket.download(`${prefix}/${snapshot.id}-parts-v1/${index}.json`);
   if(file.error)throw new CadError('INCOMPLETE_GEOMETRY','Some CAD parts are not ready. Retry to resume saved progress.',409);
   bytes+=file.data.size;if(bytes>30_000_000)throw new CadError('GEOMETRY_LIMIT','This assembly exceeds the interactive import budget. Import a subsystem; existing parts are unchanged.',413);
-  positions[index]=JSON.parse(await file.data.text()).positions;
+  sizes[index]=file.data.size;positions[index]=JSON.parse(await file.data.text()).positions;
  }}
  await Promise.all(Array.from({length:4},worker));
+ // Check repeated-instance expansion before stringify can allocate a huge string.
+ if(plan.meshes.reduce((sum,m)=>sum+sizes[m.partIndex]+512,0)>30_000_000)throw new CadError('GEOMETRY_LIMIT','This assembly exceeds the interactive import budget. Import a subsystem; existing parts are unchanged.',413);
  const meshes=plan.meshes.map(({partIndex,...mesh})=>({...mesh,positions:positions[partIndex]}));
  const content=JSON.stringify({units:'m',meshes,lines:[],coverage:'assembly-geometry'});
  if(new TextEncoder().encode(content).length>30_000_000)throw new CadError('GEOMETRY_LIMIT','This assembly exceeds the interactive import budget. Import a subsystem; existing parts are unchanged.',413);
