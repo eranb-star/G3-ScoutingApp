@@ -17,14 +17,14 @@ export async function readCadAsset(urlValue:string){
  if(url.origin!=='https://hnqwhuuxlqfyawqymaaz.supabase.co'||!url.pathname.startsWith('/storage/v1/object/sign/cad-design-assets/'))throw Error('Invalid CAD asset destination');
  const response=await fetch(url,{cache:'no-store'});
  if(!response.ok)throw Error('CAD geometry download failed. Retry to continue saved progress.');
- return expandCadGeometry(await response.json());
+ return response.json();
 }
 /** Each request imports one distinct part. Repeated occurrences share its data.
  * Server caches successful chunks against the exact snapshot for safe retries. */
 export async function loadCadGeometry(call:Call,identity:{sourceId?:string;snapshotId?:string},progress?:(done:number,total:number)=>void):Promise<CadGeometry>{
  const plan=await call('geometry',{...identity,chunked:true});
  if(identity.snapshotId&&plan.snapshotId!==identity.snapshotId)throw Error('CAD revision changed unexpectedly. Retry.');
- if(plan.format!=='assembly-parts-v1')return readCadAsset(plan.url);
+ if(plan.format!=='assembly-parts-v1')return expandCadGeometry(await readCadAsset(plan.url));
  if(!Number.isInteger(plan.partCount)||plan.partCount<1||plan.partCount>500||!Array.isArray(plan.meshes)||plan.meshes.length>1000)throw Error('Unsupported assembly plan');
  const positions:number[][]=new Array(plan.partCount);let next=0,done=0,coordinates=0,failure:unknown;
  progress?.(0,plan.partCount);
