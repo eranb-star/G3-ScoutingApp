@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "../supabase";
+import { useLocalization } from "../lib/localization";
 import TemplateForm from "../components/TemplateForm";
 import { useMemberAuth } from "../lib/memberAuth";
 import {
@@ -102,6 +103,7 @@ function offlineLikelyFromErrorMessage(msg: string) {
 }
 
 export default function ScoutingPage() {
+  const { pick, direction } = useLocalization();
   const isNarrow = useIsNarrow(600);
   const { profile } = useMemberAuth();
   const [params] = useSearchParams();
@@ -257,7 +259,7 @@ export default function ScoutingPage() {
         setOfflineQueuedCount(n);
 
         if (sent > 0) {
-          setOfflineInfo(`Synced ${sent} offline entries ✅`);
+          setOfflineInfo(pick(`Synced ${sent} offline entries ✅`, `סונכרנו ${sent} דיווחים מהמכשיר ✅`));
         }
       } catch {
         // ignore
@@ -311,7 +313,7 @@ export default function ScoutingPage() {
   // ✅ If sync emptied the queue, clear stale "Saved offline..." message
   useEffect(() => {
     if (offlineQueuedCount === 0) {
-      setSaveMsg((prev) => (/saved offline/i.test(prev ?? "") ? "" : prev));
+      setSaveMsg((prev) => (/saved offline|נשמר במכשיר/i.test(prev ?? "") ? "" : prev));
     }
   }, [offlineQueuedCount]);
 
@@ -379,10 +381,10 @@ export default function ScoutingPage() {
             const cached = await getCachedTemplate(cleanEventId);
             if (cached?.schema) {
               setTemplate(cached.schema);
-              setOfflineInfo("Offline: loaded cached template ✅");
+              setOfflineInfo(pick("Offline: loaded cached template ✅", "ללא חיבור: נטען הטופס השמור במכשיר ✅"));
               return;
             }
-            setTemplateError("Offline: no cached template for this event. Go online once to cache it.");
+            setTemplateError(pick("Offline: no cached template for this event. Go online once to cache it.", "אין חיבור ואין טופס שמור לאירוע. התחברו לאינטרנט פעם אחת לטעינתו."));
             return;
           }
           setTemplateError(msg);
@@ -393,10 +395,10 @@ export default function ScoutingPage() {
           const cached = await getCachedTemplate(cleanEventId);
           if (cached?.schema) {
             setTemplate(cached.schema);
-            setOfflineInfo("Loaded cached template ✅");
+            setOfflineInfo(pick("Loaded cached template ✅", "נטען הטופס השמור במכשיר ✅"));
             return;
           }
-          setTemplateError("No template found for this event.");
+          setTemplateError(pick("No template found for this event.", "לא נמצא טופס לאירוע הזה."));
           return;
         }
 
@@ -459,10 +461,10 @@ export default function ScoutingPage() {
             const cached = await getCachedMatches(cleanEventId);
             if (cached?.matches?.length) {
               setMatches(cached.matches as MatchRow[]);
-              setOfflineInfo((prev) => (prev ? prev : "Offline: loaded cached matches ✅"));
+              setOfflineInfo((prev) => (prev ? prev : pick("Offline: loaded cached matches ✅", "ללא חיבור: נטענו המשחקים השמורים במכשיר ✅")));
               return;
             }
-            setMatchesError("Offline: no cached matches for this event. Go online once to cache them.");
+            setMatchesError(pick("Offline: no cached matches for this event. Go online once to cache them.", "אין חיבור ואין משחקים שמורים לאירוע. התחברו לאינטרנט לטעינתם."));
             return;
           }
 
@@ -555,17 +557,17 @@ export default function ScoutingPage() {
             const cached = await getCachedMatchTeams(matchId);
             if (cached?.teams?.length) {
               setMatchTeams(cached.teams);
-              setOfflineInfo((prev) => (prev ? prev : "Offline: loaded cached match teams ✅"));
+              setOfflineInfo((prev) => (prev ? prev : pick("Offline: loaded cached match teams ✅", "ללא חיבור: נטענו הקבוצות השמורות למשחק ✅")));
               return;
             }
 
-            setMatchTeamsError("Offline: no cached teams for this match. You can still type team number manually.");
+            setMatchTeamsError(pick("Offline: no cached teams for this match. You can still type team number manually.", "אין חיבור ואין קבוצות שמורות למשחק. אפשר להזין מספר קבוצה ידנית."));
             setMatchTeams([]);
             return;
           }
 
           setMatchTeamsError(
-            `Could not load match teams (v_match_teams). You can still type team number manually. Error: ${msg}`
+            pick(`Could not load match teams. You can still type team number manually. Error: ${msg}`, `לא ניתן לטעון את הקבוצות למשחק. אפשר להזין מספר קבוצה ידנית. שגיאה: ${msg}`)
           );
           setMatchTeams([]);
           return;
@@ -606,29 +608,29 @@ export default function ScoutingPage() {
       const cleanEventId = (eventId ?? "").trim();
 
       if (!cleanEventId) {
-        setSaveMsg("בחר Event קודם.");
+        setSaveMsg(pick("Choose an event first.", "בחרו אירוע קודם."));
         return;
       }
 
       if (!scoutLocked || !scoutName.trim()) {
-        setSaveMsg("בחר את השם שלך (נעול לפי המכשיר) לפני שמירה.");
+        setSaveMsg(pick("Choose and lock your name before saving.", "בחרו ונעלו את השם שלכם לפני השמירה."));
         return;
       }
 
       if (!matchId) {
-        setSaveMsg("בחר Match קודם.");
+        setSaveMsg(pick("Choose a match first.", "בחרו משחק קודם."));
         return;
       }
 
       const teamNumber = Number(values.team_number ?? 0);
       if (!teamNumber || teamNumber <= 0) {
-        setSaveMsg("בחר Team Number תקין (מספר חיובי).");
+        setSaveMsg(pick("Choose a valid positive team number.", "בחרו מספר קבוצה תקין (מספר חיובי)."));
         return;
       }
 
       // Critical validation:
       if (hasMatchTeams && !matchTeams.includes(teamNumber)) {
-        setSaveMsg("הקבוצה שנבחרה לא נמצאת במשחק הזה. בחר קבוצה מתוך הרשימה.");
+        setSaveMsg(pick("This team is not in the match. Choose a team from the list.", "הקבוצה שנבחרה לא נמצאת במשחק הזה. בחרו קבוצה מתוך הרשימה."));
         return;
       }
 
@@ -672,19 +674,19 @@ export default function ScoutingPage() {
             await enqueueScoutEntry(row);
             const n = await getQueuedScoutEntryCount();
             setOfflineQueuedCount(n);
-            setSaveMsg(`Saved offline ✅ (queued: ${n})`);
+            setSaveMsg(pick(`Saved offline ✅ (queued: ${n})`, `נשמר במכשיר ✅ (${n} ממתינים לסנכרון)`));
           } catch (e) {
             console.error("OFFLINE QUEUE ERROR:", e);
-            setSaveMsg("Offline save failed (queue error).");
+            setSaveMsg(pick("Offline save failed (queue error).", "השמירה במכשיר נכשלה. נסו שוב."));
           }
           return;
         }
 
-        setSaveMsg("Save failed: " + msg);
+        setSaveMsg(pick("Save failed: ", "השמירה נכשלה: ") + msg);
         return;
       }
 
-      setSaveMsg(`Saved ✅ (${selectedMatchLabel || "match"})`);
+      setSaveMsg(pick(`Saved ✅ (${selectedMatchLabel || "match"})`, `נשמר ✅ (${selectedMatchLabel || "משחק"})`));
       if (currentAssignment && currentAssignment.status !== "completed") {
         await supabase.from("competition_assignments").update({ status: "completed" }).eq("id", currentAssignment.id);
         setAssignments((rows) => rows.map((item) => item.id === currentAssignment.id ? { ...item, status: "completed" } : item));
@@ -711,10 +713,10 @@ export default function ScoutingPage() {
   // UI
   // =====================
   return (
-    <main className="scouting-command-page" style={{ padding: isNarrow ? 10 : 16, maxWidth: 1020 }}>
+    <main dir={direction} className="scouting-command-page" style={{ padding: isNarrow ? 10 : 16, maxWidth: 1020 }}>
       <header className="scouting-command-hero">
-        <div><span>G3 6740 · MATCH OPERATIONS</span><h1>Scout the match</h1><p>One assignment, one team, one clear report.</p></div>
-        <div className="scouting-sync-state"><b>{navigator.onLine ? "LIVE" : "OFFLINE"}</b><small>{offlineQueuedCount ? `${offlineQueuedCount} waiting to sync` : "All reports synchronized"}</small></div>
+        <div><span>{pick("G3 6740 · MATCH OPERATIONS", "G3 6740 · סקאוטינג משחק")}</span><h1>{pick("Scout the match", "סקאוטינג משחק")}</h1><p>{pick("One assignment, one team, one clear report.", "שיבוץ אחד, קבוצה אחת, דיווח ברור.")}</p></div>
+        <div className="scouting-sync-state"><b>{navigator.onLine ? pick("LIVE", "מחובר") : pick("OFFLINE", "ללא חיבור")}</b><small>{offlineQueuedCount ? pick(`${offlineQueuedCount} waiting to sync`, `${offlineQueuedCount} דיווחים ממתינים לסנכרון`) : pick("All reports synchronized", "כל הדיווחים סונכרנו")}</small></div>
       </header>
 
       {/* Soft offline info banner */}
@@ -736,7 +738,7 @@ export default function ScoutingPage() {
 
       {/* EVENT PICKER */}
       <div style={{ marginBottom: 14 }}>
-        <div style={{ fontWeight: 900, marginBottom: 6 }}>Select Event</div>
+        <div style={{ fontWeight: 900, marginBottom: 6 }}>{pick("Select Event", "בחירת אירוע")}</div>
         <div style={{ width: "100%", maxWidth: 520 }}>
           <select
             value={eventId}
@@ -747,24 +749,24 @@ export default function ScoutingPage() {
             }}
             style={controlStyle}
           >
-            <option value="">Select Event</option>
+            <option value="">{pick("Select Event", "בחירת אירוע")}</option>
             {events.map((event) => <option value={event.id} key={event.id}>{event.name}</option>)}
           </select>
         </div>
       </div>
 
-      {!eventId && <div style={{ opacity: 0.8 }}>בחר Event כדי לטעון טופס ומאצ׳ים.</div>}
+      {!eventId && <div style={{ opacity: 0.8 }}>{pick("Choose an event to load its form and matches.","בחרו אירוע כדי לטעון את הטופס והמשחקים.")}</div>}
 
       {/* SCOUT PICKER (picklist only — no manual “previous scout name” UI) */}
       {eventId && !profile && (
         <div style={{ marginBottom: 14, maxWidth: 520 }}>
-          <div style={{ fontWeight: 900, marginBottom: 6 }}>בחר/י את השם שלך (ננעל לפי המכשיר)</div>
+          <div style={{ fontWeight: 900, marginBottom: 6 }}>{pick("Choose your name (locked to this device)","בחרו את השם שלכם (ננעל למכשיר)")}</div>
 
-          {scoutsLoading ? <div style={{ opacity: 0.8 }}>Loading scouters…</div> : null}
+          {scoutsLoading ? <div style={{ opacity: 0.8 }}>{pick("Loading scouters…", "טוען סקאוטרים…")}</div> : null}
 
           {scoutsError ? (
             <div style={{ marginTop: 6, padding: 10, borderRadius: 12, background: "#fff5f5", border: "1px solid #ffb3b3" }}>
-              <b>Scouters error:</b> {scoutsError}
+              <b>{pick("Scouters error:", "שגיאה בטעינת הסקאוטרים:")}</b> {scoutsError}
             </div>
           ) : (
             <select
@@ -773,7 +775,7 @@ export default function ScoutingPage() {
               onChange={(e) => setScoutName(e.target.value)}
               style={controlStyle}
             >
-              <option value="">{scoutLocked ? "Locked ✅" : "Select your name…"}</option>
+              <option value="">{scoutLocked ? pick("Locked ✅", "נעול ✅") : pick("Select your name…", "בחירת השם שלך…")}</option>
               {scouts.map((s) => (
                 <option key={s.id} value={s.name}>
                   {s.name}
@@ -804,7 +806,7 @@ export default function ScoutingPage() {
                   cursor: "pointer",
                 }}
               >
-                Lock name
+                {pick("Lock name", "נעילת השם")}
               </button>
 
               <button
@@ -825,7 +827,7 @@ export default function ScoutingPage() {
                   opacity: 0.85,
                 }}
               >
-                Reset
+                {pick("Reset", "איפוס")}
               </button>
             </div>
           ) : null}
@@ -833,23 +835,23 @@ export default function ScoutingPage() {
       )}
 
       {eventId && assignments.length > 0 ? (
-        <section className="scouting-assignment-rail" aria-label="My scouting assignments">
-          <div><span>MY SCOUTING RUN</span><strong>{assignments.filter((item) => item.status === "completed").length}/{assignments.length} reports complete</strong></div>
+        <section className="scouting-assignment-rail" aria-label={pick("My scouting assignments", "שיבוצי הסקאוטינג שלי")}>
+          <div><span>{pick("MY SCOUTING RUN", "שיבוצי הסקאוטינג שלי")}</span><strong>{assignments.filter((item) => item.status === "completed").length}/{assignments.length} {pick("reports complete", "דיווחים הושלמו")}</strong></div>
           <div className="scouting-assignment-chips">
             {assignments.map((assignment) => {
               const match = matches.find((item) => item.id === assignment.match_id);
               const team = teamForAssignment(assignment.role, match);
-              return <button type="button" className={`${assignment.match_id === matchId ? "is-current" : ""} ${assignment.status === "completed" ? "is-done" : ""}`} onClick={() => assignment.match_id && setMatchId(assignment.match_id)} key={assignment.id}><b>{match ? niceMatchLabel(match) : "EVENT"}</b><span>{team ? `Team ${team}` : "Awaiting draw"}</span><small>{assignment.status}</small></button>;
+              return <button type="button" className={`${assignment.match_id === matchId ? "is-current" : ""} ${assignment.status === "completed" ? "is-done" : ""}`} onClick={() => assignment.match_id && setMatchId(assignment.match_id)} key={assignment.id}><b>{match ? niceMatchLabel(match) : pick("EVENT", "אירוע")}</b><span>{team ? pick(`Team ${team}`, `קבוצה ${team}`) : pick("Awaiting draw", "ממתין לשיבוץ קבוצות")}</span><small>{pick(assignment.status, ({completed:"הושלם",assigned:"משובץ",in_progress:"בביצוע",pending:"ממתין",cancelled:"בוטל"} as Record<string,string>)[assignment.status] ?? assignment.status)}</small></button>;
             })}
           </div>
         </section>
       ) : null}
 
       {/* TEMPLATE STATUS */}
-      {eventId && templateLoading && <div style={{ opacity: 0.8 }}>Loading template…</div>}
+      {eventId && templateLoading && <div style={{ opacity: 0.8 }}>{pick("Loading template…", "טוען טופס…")}</div>}
       {eventId && templateError && (
         <div style={{ marginTop: 10, padding: 12, borderRadius: 12, border: "1px solid #ffb3b3", background: "#fff5f5" }}>
-          <b>Template error:</b> {templateError}
+          <b>{pick("Template error:", "שגיאה בטעינת הטופס:")}</b> {templateError}
         </div>
       )}
 
@@ -865,20 +867,20 @@ export default function ScoutingPage() {
             background: "#fff",
           }}
         >
-          <div style={{ fontWeight: 950, marginBottom: 8 }}>Match</div>
+          <div style={{ fontWeight: 950, marginBottom: 8 }}>{pick("Match", "משחק")}</div>
 
-          {matchesLoading && <div style={{ opacity: 0.8 }}>Loading matches…</div>}
+          {matchesLoading && <div style={{ opacity: 0.8 }}>{pick("Loading matches…", "טוען משחקים…")}</div>}
 
           {matchesError && (
             <div style={{ padding: 10, borderRadius: 12, border: "1px solid #ffb3b3", background: "#fff5f5", marginBottom: 10 }}>
-              <b>Matches error:</b> {matchesError}
+              <b>{pick("Matches error:", "שגיאה בטעינת המשחקים:")}</b> {matchesError}
             </div>
           )}
 
           {!matchesLoading && !matchesError && (
             <div style={{ width: "100%", maxWidth: 520 }}>
               <select value={matchId} onChange={(e) => setMatchId(e.target.value)} style={controlStyle}>
-                <option value="">Select Match</option>
+                <option value="">{pick("Select Match", "בחירת משחק")}</option>
                 {matches.map((m) => (
                   <option key={m.id} value={m.id}>
                     {niceMatchLabel(m)}
@@ -891,7 +893,7 @@ export default function ScoutingPage() {
           {/* Match teams status */}
           {matchId && (
             <div style={{ marginTop: 10 }}>
-              {matchTeamsLoading ? <div style={{ opacity: 0.8 }}>Loading teams for this match…</div> : null}
+              {matchTeamsLoading ? <div style={{ opacity: 0.8 }}>{pick("Loading teams for this match…", "טוען קבוצות למשחק…")}</div> : null}
 
               {!matchTeamsLoading && matchTeamsError ? (
                 <div style={{ marginTop: 6, padding: 10, borderRadius: 12, background: "#fff4cc", fontWeight: 800 }}>
@@ -901,7 +903,7 @@ export default function ScoutingPage() {
 
               {!matchTeamsLoading && !matchTeamsError && matchTeams.length >= 6 ? (
                 <div style={{ marginTop: 6 }}>
-                  <div style={{ opacity: 0.85, fontWeight: 900, marginBottom: 6 }}>Teams in this match</div>
+                  <div style={{ opacity: 0.85, fontWeight: 900, marginBottom: 6 }}>{pick("Teams in this match", "הקבוצות במשחק")}</div>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                     {matchTeams.map((t) => (
                       <span
@@ -944,7 +946,7 @@ export default function ScoutingPage() {
           >
             {/* Team picker */}
             <div style={{ width: "100%", maxWidth: isNarrow ? "100%" : 280 }}>
-              <div style={{ fontWeight: 900, marginBottom: 6 }}>Team Number</div>
+              <div style={{ fontWeight: 900, marginBottom: 6 }}>{pick("Team Number", "מספר קבוצה")}</div>
 
               {matchTeams.length >= 6 ? (
                 <select
@@ -956,7 +958,7 @@ export default function ScoutingPage() {
                   }}
                   disabled={!matchId}
                 >
-                  <option value="">{matchId ? "Select team from this match…" : "Select match first"}</option>
+                  <option value="">{matchId ? pick("Select team from this match…", "בחירת קבוצה מהמשחק…") : pick("Select match first", "בחרו קודם משחק")}</option>
                   {matchTeams.map((t) => (
                     <option key={`team-${t}`} value={t}>
                       {t}
@@ -972,7 +974,7 @@ export default function ScoutingPage() {
                     ...controlStyle,
                     maxWidth: isNarrow ? "100%" : 180,
                   }}
-                  placeholder={matchId ? "Type team number…" : "Select match first"}
+                  placeholder={matchId ? pick("Type team number…", "הזינו מספר קבוצה…") : pick("Select match first", "בחרו קודם משחק")}
                   disabled={!matchId}
                 />
               )}
@@ -980,7 +982,7 @@ export default function ScoutingPage() {
 
             {/* Notes */}
             <div style={{ width: "100%", maxWidth: isNarrow ? "100%" : 520 }}>
-              <div style={{ fontWeight: 900, marginBottom: 6 }}>Notes (optional)</div>
+              <div style={{ fontWeight: 900, marginBottom: 6 }}>{pick("Notes (optional)", "הערות (רשות)")}</div>
               <input
                 value={values.notes ?? ""}
                 onChange={(e) => setValue("notes", e.target.value)}
@@ -988,7 +990,7 @@ export default function ScoutingPage() {
                   ...controlStyle,
                   maxWidth: "100%",
                 }}
-                placeholder="Anything important after the match…"
+                placeholder={pick("Anything important after the match…", "דברים שחשוב לציין לאחר המשחק…")}
               />
             </div>
 
@@ -1007,7 +1009,7 @@ export default function ScoutingPage() {
                   width: isNarrow ? "100%" : "auto",
                 }}
               >
-                {saving ? "Saving..." : "Save"}
+                {saving ? pick("Saving...", "שומר…") : pick("Save", "שמירת הדיווח")}
               </button>
             </div>
 
@@ -1019,7 +1021,7 @@ export default function ScoutingPage() {
 
             {offlineQueuedCount > 0 && (
               <div style={{ alignSelf: isNarrow ? "stretch" : "flex-end", fontWeight: 900, opacity: 0.7 }}>
-                Offline queued: {offlineQueuedCount}
+                {pick("Waiting to sync:", "ממתינים לסנכרון:")} {offlineQueuedCount}
               </div>
             )}
           </div>

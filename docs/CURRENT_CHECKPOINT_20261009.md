@@ -2,7 +2,11 @@
 
 This is the entry point for current status and decisions. It reconciles existing release evidence and this conversation; it is not a new audit of every production feature. Detailed feature records below retain acceptance limits. Older proposed phases and undeployed notices are superseded only where the named release records establish delivery.
 
-## Meeting date safeguards — 14 November 2026
+## Focused Studio and scouting UI — 14 November 2026
+
+[Focused implementation and verification](FOCUSED_STUDIO_SCOUTING_20261114.md): Onshape import moved above the Studio catalogue; Match Scouting and live 2026 field labels follow Hebrew/English. Display-only changes preserve import and report data. Implementation prepared; production promotion pending (previous production remains 6836472).
+
+## Large Onshape assembly import — 14 November 2026
 
 **Large Onshape assembly import delivered:** [evidence and limits](CAD_LARGE_ASSEMBLY_20261114.md). Production web **6836472**, deployment **Cd2KEniNz5hPbWAvYpyWwVRLgUcb**, Ready **17:14:37 Israel,14November**. Backend **5bd7b6a** / release **cfa82b6** deployed; guarded private bucket32MB→40MB adjustment applied. Real chassis Assembly1 imported and visibly rendered;33 distinct parts cached, final asset32,610,469bytes. Second fresh-draft import successfully loaded the finalized asset at identical724.9×654.9×702.9mm bounds. Focused checks, TypeScript and CI418–421 passed. Existing4 scenes and2 BOMlines retain identical full-row hashes; no scene/BOM rewrite. Reopen the website in a fresh tab to avoid old cached code. APK unchanged; new APK remains a separate release. Verification drafts were not cloud-saved.
 
