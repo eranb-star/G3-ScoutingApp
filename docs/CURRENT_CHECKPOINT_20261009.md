@@ -4,7 +4,7 @@ This is the entry point for current status and decisions. It reconciles existing
 
 ## Meeting date safeguards — 14 November 2026
 
-See [focused date safeguard delivery](WORKSHOP_DATE_SAFEGUARDS_20261114.md). Explicit date selection, full Israel-time summary, title/date warning, before/after edit confirmation, draft/new reset and persisted save feedback. Calendar conversions use Israel timezone. Additive audited date guards applied to production; full-row hashes confirmed existing meetings, attendance and absence requests unchanged. Focused tests and TypeScript passed; web deployment pending required CI/promotion. Original incident cause remains unproven.
+See [focused date safeguard delivery](WORKSHOP_DATE_SAFEGUARDS_20261114.md). Explicit date selection, full Israel-time summary, title/date warning, before/after edit confirmation, draft/new reset and persisted save feedback. Calendar conversions use Israel timezone. Additive audited date guards applied to production; full-row hashes confirmed existing meetings, attendance and absence requests unchanged. Focused tests and TypeScript passed; source **3e39e41**, release **5d3aabb**, CI **404/405 passed**. Preview **JBEzaLw8zL1MBj7QD8MWnz2kN5zy** Ready; production promotion awaits user Vercel authenticator verification in IAB tab8. Web production remains previous release until final Ready/alias verification. Original incident cause remains unproven.
 
 ## Saturday workshop date repair — 14 November 2026
 
