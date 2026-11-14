@@ -6,7 +6,7 @@ export function meshPositions(data:any){
  const result:number[]=[];
  const bodies=Array.isArray(data)?data:data?.bodies||[data];
  for(const body of bodies)for(const face of body?.faces||[])for(const facet of face.facets||[]){
-  const vertices=facet.vertices??facet.indices?.map((index:number)=>body.facetPoints?.[index]);
+  const vertices=Array.isArray(facet.indices)&&facet.indices.length?facet.indices.map((index:number)=>Number.isInteger(index)&&index>=0?body.facetPoints?.[index]:undefined):facet.vertices;
   if(!Array.isArray(vertices)||vertices.length!==3)throw new CadError('GEOMETRY_FORMAT','Unsupported surface tessellation.',422);
   for(const vertex of vertices){const p=point(vertex);if(p.length!==3||!p.every(Number.isFinite))throw new CadError('GEOMETRY_FORMAT','Invalid surface coordinates.',422);result.push(...p);}
   if(result.length>1_800_000)throw new CadError('GEOMETRY_LIMIT','This design exceeds the interactive geometry limit. Select a smaller subsystem.',413);

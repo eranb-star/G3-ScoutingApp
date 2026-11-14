@@ -50,8 +50,10 @@ export async function boundedJson(response: Response, limit = 4_000_000) {
   try {
     while (true) { const {done,value} = await reader.read(); if (done) break; length += value.length; if (length > limit) { await reader.cancel(); throw new CadError('SOURCE_TOO_LARGE', 'This response exceeds the CAD review limit.', 413); } chunks.push(value); }
   } finally { reader.releaseLock(); }
-  const bytes = new Uint8Array(length); let offset = 0; for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.length; }
-  try { return JSON.parse(new TextDecoder().decode(bytes)); } catch { throw new CadError('SOURCE_UNAVAILABLE', 'Unexpected Onshape response.', 502); }
+  let bytes:Uint8Array|null = new Uint8Array(length); let offset = 0; for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.length; }
+  chunks.length=0;
+  const text=new TextDecoder().decode(bytes);bytes=null;
+  try { return JSON.parse(text); } catch { throw new CadError('SOURCE_UNAVAILABLE', 'Unexpected Onshape response.', 502); }
 }
 export function providerReader(token: string, fetcher: typeof fetch = fetch) {
   return async (path: string) => {
