@@ -17,8 +17,16 @@ Match scouting and TemplateForm use LocalizationProvider. Template labels are tr
 - `node scripts/test-scouting-localization.mjs`: passed Hebrew/English server rendering, RTL/LTR, selected raw enum values, counters, hidden fields, custom-label override, unknown fallback and unchanged schema/report.
 - Local browser: Studio import appears above catalogue; scouting language switched with a selected team/station, counter and checkbox retained. Synthetic save succeeded; no production report submitted.
 - Production template inspected read-only; production event selection used only to view its template.
-- TypeScript and release pipeline: final status recorded below after completion.
+- TypeScript passed. Final source `aeaa6a8` and release `a59e46f`; required CI runs **424/425 passed** (initial 422/423 also passed).
+- A mobile-only issue found during the visual check was corrected: Create design no longer automatically overlays the new import section with the parts drawer. Parts & tools remains available in the bottom navigation. Production at 390px confirmed drawer closed and import width 354.7px inside the viewport.
 
 ## Release status
 
-Implementation prepared; production promotion pending. Previous production remains 6836472 until verified promotion. No claim of a new APK or physical-device acceptance.
+**Deployed and verified:** production **a59e46f**, deployment **7pcsHhCLMGkJDNCgwaDbU4DFYCee**, Ready **20:28:26 Israel, 14 November**, on https://g3-6740.com after user authenticator verification. Preview was **4Qkpe1StFJPGkjaYR1LxXS41Mo3g**.
+
+Fresh production tabs verified:
+- Studio: import section visible above canvas/catalogue; Browse loaded 17 connected sources; selecting `chassis offseason · Assembly 1` enabled Import current revision. A new unsaved verification draft was used; no saved scene/BOM or source snapshot was changed. No unnecessary large geometry import was repeated for this UI-only relocation.
+- Scouting: the real District Event 1 template renders Hebrew headings, questions, choices and placeholders from pre-match through post-match, including FUEL/HUB/TOWER. District Event 4 labels were inspected before implementation. No real report was submitted.
+- Screenshots: `docs/staging/studio-import-top-production-20261114.png` and `docs/staging/scouting-hebrew-production-20261114.png` (local evidence, not committed).
+
+No APK rebuild or physical-device acceptance is claimed. Rollback for this frontend-only change is previous production **6836472**; backend large-assembly fixes and stored data are unaffected. Final delivery documentation is committed locally without triggering another CI/deployment cycle.

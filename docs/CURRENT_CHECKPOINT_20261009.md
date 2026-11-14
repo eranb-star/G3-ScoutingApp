@@ -4,7 +4,7 @@ This is the entry point for current status and decisions. It reconciles existing
 
 ## Focused Studio and scouting UI — 14 November 2026
 
-[Focused implementation and verification](FOCUSED_STUDIO_SCOUTING_20261114.md): Onshape import moved above the Studio catalogue; Match Scouting and live 2026 field labels follow Hebrew/English. Display-only changes preserve import and report data. Implementation prepared; production promotion pending (previous production remains 6836472).
+[Focused implementation and verification](FOCUSED_STUDIO_SCOUTING_20261114.md): **deployed and verified**. Onshape import is above the Studio catalogue; Match Scouting and live 2026 field labels follow Hebrew/English. Source **aeaa6a8**, production **a59e46f**, deployment **7pcsHhCLMGkJDNCgwaDbU4DFYCee**, Ready **20:28:26 Israel, 14 November**, on g3-6740.com after user verification. TypeScript, focused localization tests and CI **424/425 passed**. Live source browsing/assembly selection, mobile import visibility and real Hebrew scouting template verified. No saved scene/BOM/report changes, database migration or APK rebuild. Final status documentation committed locally to avoid redundant CI.
 
 ## Large Onshape assembly import — 14 November 2026
 
