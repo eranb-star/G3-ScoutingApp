@@ -713,7 +713,7 @@ export default function ScoutingPage() {
   // UI
   // =====================
   return (
-    <main dir={direction} className="scouting-command-page" style={{ padding: isNarrow ? 10 : 16, maxWidth: 1020 }}>
+    <main dir={direction} className="scouting-command-page" style={{ padding: isNarrow ? 10 : 16, maxWidth: 1020, boxSizing: "border-box", minWidth: 0 }}>
       <header className="scouting-command-hero">
         <div><span>{pick("G3 6740 · MATCH OPERATIONS", "G3 6740 · סקאוטינג משחק")}</span><h1>{pick("Scout the match", "סקאוטינג משחק")}</h1><p>{pick("One assignment, one team, one clear report.", "שיבוץ אחד, קבוצה אחת, דיווח ברור.")}</p></div>
         <div className="scouting-sync-state"><b>{navigator.onLine ? pick("LIVE", "מחובר") : pick("OFFLINE", "ללא חיבור")}</b><small>{offlineQueuedCount ? pick(`${offlineQueuedCount} waiting to sync`, `${offlineQueuedCount} דיווחים ממתינים לסנכרון`) : pick("All reports synchronized", "כל הדיווחים סונכרנו")}</small></div>
