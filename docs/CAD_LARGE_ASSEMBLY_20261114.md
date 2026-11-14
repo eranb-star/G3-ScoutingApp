@@ -1,5 +1,17 @@
 # Large assembly import — 14 November 2026
 
+## Delivered and verified — 14 November 2026
+
+- Production website **6836472** is live: deployment **Cd2KEniNz5hPbWAvYpyWwVRLgUcb**, Ready **17:14:37 Israel** after user verification. Fresh production entry loads **index-CdJJn7Wy.js**. Existing old tabs retained older JavaScript even after reload; reopen the website in a fresh tab before testing.
+- Backend **5bd7b6a** / release **cfa82b6** is deployed. Focused security, handler, team access, CAD geometry, large-assembly and Studio tests passed; TypeScript passed; final CI **418/419** (web) and **420/421** (backend) passed.
+- Live **chassis offseason · Assembly 1** import completed. **33 distinct part-cache files**, 32,577,881 bytes; final compact asset **32,610,469 bytes**, created **17:21:42 Israel** for snapshot f1d24115-9936-4416-9f73-af8ea0ca0ea4. Full assembly visibly rendered at **724.9 × 654.9 × 702.9 mm**. A second fresh draft imported the same finalized asset successfully and displayed the same model/envelope. This verifies cache reload, not cloud saving a new Studio scene.
+- Live acceptance found one final independent mismatch: private storage bucket was capped at32MB. Applied [cad_large_assembly_storage_20261114.sql](../backend/supabase/cad_large_assembly_storage_20261114.sql), a guarded32MB→40MB update matching finalizer budget. SQL assertions passed; bucket remains private and JSON-only; no access policies changed. Final asset was then saved successfully.
+- Preservation after successful first import: scenes4/hash92b9bb1871e8a74fa7d0024aa9803b68 and BOMlines2/hash26dcaab4259ed20b6b17e9ae49aed63f exactly match the original full-row baseline. No existing scene, BOM, inventory or task modified. Verification drafts were not cloud-saved.
+- Evidence screenshot: docs/staging/cad-large-assembly-production-20261114.png (local, private CAD; not committed).
+- Scope: **web import fixed and verified**. Installed APK remains unchanged and requires a later rebuild for this path. Limits remain500 distinct parts/1,000 occurrences,3million unique vertices/10million displayed vertices,40MB final asset. This does not claim unlimited assemblies or native Onshape editing.
+
+## Investigation history (superseded delivery states)
+
 ## Incident evidence
 User supplied “This response exceeds the CAD review limit.” Production onshape-connector logs show POST413 at 15:09:19, 15:14:40 and 15:14:56; latest request a7e0d720-1d85-4dcf-a392-066788c1fa39 took 15321 ms. No 504 in the inspected hour. Existing provider reader imposes 4,000,000 bytes on all endpoints, including surface geometry. Snapshot f1d24115-9936-4416-9f73-af8ea0ca0ea4 (chassis offseason Assembly 1) already contains 34 parts and 102 occurrences in 98,335 bytes, so its assembly structure itself is below that limit. Exact failed part still requires production reproduction; do not invent its identity.
 
@@ -30,7 +42,7 @@ Further live evidence: indexed part32 passed the memory failure; its facetPoints
 
 Read-only preservation check after these attempts: scenes4/hash92b9bb1871e8a74fa7d0024aa9803b68 and BOMlines2/hash26dcaab4259ed20b6b17e9ae49aed63f, both exactly unchanged.
 
-## Current handoff (supersedes intermediate release states above)
+## Previous handoff (resolved by delivery above)
 - Frontend sourcece276e4 / release6836472; focused large-assembly and Studio geometry tests plus TypeScript passed; CI418/419 passed. Preview76PFLhQwWHw4WsmryMAXsJ4rkKD2 Ready. Final promotion awaits user OTP in browser tab15 (Verify Your Identity). Tab12 holds an older, superseded05e09e3 verification: do not promote that older release as completion. Automatic approval review disallowed canceling that old verification; a separate current-release tab preserves it without cancellation.
 - Backend latest source5bd7b6a / releasecfa82b6 deployed through Supabase editor. Indexed tessellation, response/body vertex tables, resumable part cache, bounded40MB compact finalization. Read-onlySQL confirms33 cached part files,32,577,881bytes for the chassis snapshot. Finalized asset/render/reload remain unverified because the current production web41f6beb still enforces its old displayed-vertex guard.
 - Do not rerun all imports against that old website. After OTP: verify production6836472 (or identical frontend successor), open a fresh production Studio draft, import chassis offseason Assembly1 using existing cache, verify visible geometry, finalized cache and a reload. Compare saved-scene/BOM preservation hashes. No saved test scene is required.
