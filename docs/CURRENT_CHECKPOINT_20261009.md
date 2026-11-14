@@ -2,6 +2,10 @@
 
 This is the entry point for current status and decisions. It reconciles existing release evidence and this conversation; it is not a new audit of every production feature. Detailed feature records below retain acceptance limits. Older proposed phases and undeployed notices are superseded only where the named release records establish delivery.
 
+## Meeting date safeguards — 14 November 2026
+
+See [focused date safeguard delivery](WORKSHOP_DATE_SAFEGUARDS_20261114.md). Explicit date selection, full Israel-time summary, title/date warning, before/after edit confirmation, draft/new reset and persisted save feedback. Calendar conversions use Israel timezone. Additive audited date guards applied to production; full-row hashes confirmed existing meetings, attendance and absence requests unchanged. Focused tests and TypeScript passed; web deployment pending required CI/promotion. Original incident cause remains unproven.
+
 ## Saturday workshop date repair — 14 November 2026
 
 User confirmed “המשך עבודה - שבת 14/11” belongs on Nov14 14:00–18:00 Israel. Calendar event `9bc2574b-51f4-46c2-a3f2-323b2fb61cda` incorrectly held Nov10 14:00–19:00; its linked closed meeting `bcc3fc49-0e42-4979-b57b-c53fba40d9cb` already had one real location attendance record. One approved absence existed. Atomic data repair preserved the old meeting/times and attendance, detached its calendar link with explanatory note, corrected the SAME calendar event, and linked a new scheduled Nov14 workshop (cutoff18:00). Before/after full JSON equality assertions protected attendance and absence rows; approved request identity/status unchanged. Audit action `authorized_workshop_date_repair` contains previous event/meeting and replacement meeting ID. No deletion, application deployment or permission change. Read-only authenticated student RLS test returned the corrected event; live absence selector shows Sat14 November14:00–18:00. Screenshot local: `docs/staging/saturday-absence-fixed-20261114.png`. Original wrong-date cause cannot be attributed from available audit evidence.
