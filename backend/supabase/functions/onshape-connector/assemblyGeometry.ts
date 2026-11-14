@@ -43,7 +43,7 @@ export async function finalizeAssemblyGeometry(snapshot:any,bucket:any,prefix:st
  const plan=assemblyGeometryPlan(snapshot),positions:number[][]=new Array(plan.parts.length),sizes:number[]=new Array(plan.parts.length);let next=0,bytes=0;
  async function worker(){while(next<positions.length){const index=next++,file=await bucket.download(`${prefix}/${snapshot.id}-parts-v1/${index}.json`);
   if(file.error)throw new CadError('INCOMPLETE_GEOMETRY','Some CAD parts are not ready. Retry to resume saved progress.',409);
-  bytes+=file.data.size;if(bytes>30_000_000)throw new CadError('GEOMETRY_LIMIT','This assembly exceeds the interactive import budget. Import a subsystem; existing parts are unchanged.',413);
+  bytes+=file.data.size;if(bytes>40_000_000)throw new CadError('GEOMETRY_LIMIT','This assembly exceeds the interactive import budget. Import a subsystem; existing parts are unchanged.',413);
   sizes[index]=file.data.size;positions[index]=JSON.parse(await file.data.text()).positions;
  }}
  await Promise.all(Array.from({length:4},worker));
@@ -53,7 +53,7 @@ export async function finalizeAssemblyGeometry(snapshot:any,bucket:any,prefix:st
  const model=expandedSize<=25_000_000?{units:'m',meshes:plan.meshes.map(({partIndex,...mesh})=>({...mesh,positions:positions[partIndex]})),lines:[],coverage:'assembly-geometry'}:
   {format:'shared-meshes-v1',units:'m',meshes:plan.meshes,meshPositions:positions,lines:[],coverage:'assembly-geometry'};
  const content=JSON.stringify(model);
- if(new TextEncoder().encode(content).length>30_000_000)throw new CadError('GEOMETRY_LIMIT','This assembly exceeds the interactive import budget. Import a subsystem; existing parts are unchanged.',413);
+ if(new TextEncoder().encode(content).length>40_000_000)throw new CadError('GEOMETRY_LIMIT','This assembly exceeds the interactive import budget. Import a subsystem; existing parts are unchanged.',413);
  const saved=await bucket.upload(asset,content,{contentType:'application/json',upsert:false});
  if(saved.error&&!/already exists|duplicate/i.test(saved.error.message||''))throw new CadError('STORAGE_UNAVAILABLE','Could not finalize CAD import. Retry to resume saved progress.',503);
  const signed=await bucket.createSignedUrl(asset,120);
