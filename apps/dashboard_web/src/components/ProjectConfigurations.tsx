@@ -4,7 +4,7 @@ import {useEffect,useState} from 'react';
 import {supabase} from '../supabase';
 import {useLocalization} from '../lib/localization';
 import {notifyProjectChange,useProjectRefresh} from '../lib/projectRefresh';
-export type RobotConfiguration={id:string;name:string;revision:string;configuration_kind:string;details:string;identity_snapshot?:{asset?:{serial?:string}}};
+export type RobotConfiguration={id:string;name:string;revision:string;configuration_kind:string;details:string;identity_snapshot?:{submission_id?:string;calibration_reference?:string;asset?:{serial?:string}}};
 export function useProjectConfigurations(projectId:string){const[items,setItems]=useState<RobotConfiguration[]>([]);async function load(){const r=await supabase.from('project_robot_configurations').select('id,name,revision,configuration_kind,details,identity_snapshot').eq('project_id',projectId).order('created_at',{ascending:false});if(!r.error)setItems(r.data??[]);}useEffect(()=>{void load();},[projectId]);useProjectRefresh(load);return items;}
 export default function ProjectConfigurations({projectId}:{projectId:string}){
  const {pick}=useLocalization();const [message,setMessage]=useState(''),[busy,setBusy]=useState(false);

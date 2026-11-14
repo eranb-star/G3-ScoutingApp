@@ -1,3 +1,4 @@
+import {enrichBuildActions} from '../lib/buildActionGroups';
 import {notifyProjectChange,useProjectRefresh} from "../lib/projectRefresh";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -7,7 +8,7 @@ import { supabase } from "../supabase";
 import {customReminderTime,reminderAfterDays,visibleResponsibilities} from "../lib/responsibilityVisibility";
 import {mergeReadinessPriorities,mergeOverdueTasks,overdueLabel,type OverdueTask,type ReadinessSignal} from "../lib/readiness";
 
-type Action = { id:string; title:string; details:string|null; action_type:string; due_at:string|null; priority:string; created_at:string; destination?:string|null; source_table?:string|null; source_id?:string|null };
+type Action = { relatedIds?:string[]; groupedTaskIds?:string[]; id:string; title:string; details:string|null; action_type:string; due_at:string|null; priority:string; created_at:string; destination?:string|null; source_table?:string|null; source_id?:string|null };
 type State = { action_id:string; status:string; snoozed_until:string|null };
 type CompetitionAssignment = { id:string; role:string; match_id:string|null };
 type Match = { id:string; match_type:string|null; match_number:number|null; red_teams:number[]|null; blue_teams:number[]|null };
@@ -57,7 +58,7 @@ export default function HomeActionInbox({mode="home",overdueTasks=[],risks=[]}:{
       const fallback=await supabase.from("team_actions").select("id,title,details,action_type,due_at,priority,created_at,source_table,source_id").order("due_at",{ascending:true,nullsFirst:false}).limit(100);
       actionData=(fallback.data??[]) as Action[];
     }
-    actionData=await enrichCompetitionActions(actionData);
+    actionData=await enrichBuildActions(await enrichCompetitionActions(actionData));
     const stateResult=await supabase.from("team_action_states").select("action_id,status,snoozed_until").eq("member_id",profile.id);
     setActions(actionData);setStates((stateResult.data??[]) as State[]);setLoading(false);
   }
@@ -74,7 +75,7 @@ export default function HomeActionInbox({mode="home",overdueTasks=[],risks=[]}:{
   const available=useMemo(()=>{
     const ordinary=visibleResponsibilities(actions,states,mode,clock);
     if(mode!=='home')return ordinary;
-    return mergeReadinessPriorities(actions,mergeOverdueTasks(actions,ordinary,overdueTasks,profile?.id),risks,profile?.id);
+    return mergeReadinessPriorities(actions,mergeOverdueTasks(actions,ordinary,overdueTasks.filter(task=>!actions.some(action=>action.groupedTaskIds?.includes(task.id))),profile?.id),risks,profile?.id);
   },[actions,states,mode,risks,overdueTasks,profile?.id,clock]);
 
   const deferred=actions.filter(action=>states.some(state=>state.action_id===action.id&&state.status==='snoozed'&&Date.parse(state.snoozed_until??'')>clock)&&!available.some(item=>item.id===action.id));
@@ -85,7 +86,7 @@ export default function HomeActionInbox({mode="home",overdueTasks=[],risks=[]}:{
     setBusy(action.id);setMessage('');
     try{
       const now=new Date().toISOString();
-      const {error}=await supabase.from('team_action_states').upsert({action_id:action.id,member_id:profile.id,status,snoozed_until:snoozed_until??null,acknowledged_at:status==='acknowledged'?now:null,completed_at:status==='completed'?now:null,updated_at:now},{onConflict:'action_id,member_id'});
+      const {error}=await supabase.from('team_action_states').upsert((action.relatedIds??[action.id]).map(id=>({action_id:id,member_id:profile.id,status,snoozed_until:snoozed_until??null,acknowledged_at:status==='acknowledged'?now:null,completed_at:status==='completed'?now:null,updated_at:now})),{onConflict:'action_id,member_id'});
       if(error)throw error;
       setMessage(snoozed_until?pick('Reminder deferred until ','התזכורת נדחתה עד ')+dateLabel(snoozed_until):pick('Reminder updated. Task status is unchanged.','התזכורת עודכנה. סטטוס המשימה לא השתנה.'));
       setDeferId(null);await load();notifyProjectChange();window.dispatchEvent(new Event("g3-announcements-changed"));
