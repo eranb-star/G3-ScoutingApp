@@ -47,10 +47,12 @@ export async function finalizeAssemblyGeometry(snapshot:any,bucket:any,prefix:st
   sizes[index]=file.data.size;positions[index]=JSON.parse(await file.data.text()).positions;
  }}
  await Promise.all(Array.from({length:4},worker));
- // Check repeated-instance expansion before stringify can allocate a huge string.
- if(plan.meshes.reduce((sum,m)=>sum+sizes[m.partIndex]+512,0)>30_000_000)throw new CadError('GEOMETRY_LIMIT','This assembly exceeds the interactive import budget. Import a subsystem; existing parts are unchanged.',413);
- const meshes=plan.meshes.map(({partIndex,...mesh})=>({...mesh,positions:positions[partIndex]}));
- const content=JSON.stringify({units:'m',meshes,lines:[],coverage:'assembly-geometry'});
+ // Repeated occurrences reference a shared mesh. Keep legacy representation
+ // for smaller assets; existing immutable assets are never rewritten.
+ const expandedSize=plan.meshes.reduce((sum,m)=>sum+sizes[m.partIndex]+512,0);
+ const model=expandedSize<=25_000_000?{units:'m',meshes:plan.meshes.map(({partIndex,...mesh})=>({...mesh,positions:positions[partIndex]})),lines:[],coverage:'assembly-geometry'}:
+  {format:'shared-meshes-v1',units:'m',meshes:plan.meshes,meshPositions:positions,lines:[],coverage:'assembly-geometry'};
+ const content=JSON.stringify(model);
  if(new TextEncoder().encode(content).length>30_000_000)throw new CadError('GEOMETRY_LIMIT','This assembly exceeds the interactive import budget. Import a subsystem; existing parts are unchanged.',413);
  const saved=await bucket.upload(asset,content,{contentType:'application/json',upsert:false});
  if(saved.error&&!/already exists|duplicate/i.test(saved.error.message||''))throw new CadError('STORAGE_UNAVAILABLE','Could not finalize CAD import. Retry to resume saved progress.',503);

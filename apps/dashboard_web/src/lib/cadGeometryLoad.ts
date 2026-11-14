@@ -1,11 +1,23 @@
 import type {CadGeometry} from '../components/CadDesignViewer';
 type Call=(action:string,values:Record<string,unknown>)=>Promise<any>;
+export function expandCadGeometry(model:any):CadGeometry{
+ if(model?.format!=='shared-meshes-v1')return model;
+ if(model.units!=='m'||!Array.isArray(model.meshPositions)||model.meshPositions.length>500||!Array.isArray(model.meshes)||model.meshes.length>1000)throw Error('Invalid shared CAD geometry');
+ let total=0;
+ for(const positions of model.meshPositions){if(!Array.isArray(positions)||positions.length%9||positions.length>1_800_000||!positions.every(Number.isFinite))throw Error('Invalid CAD mesh');}
+ const meshes=model.meshes.map((mesh:any)=>{
+  const positions=model.meshPositions[mesh.partIndex];if(!Number.isInteger(mesh.partIndex)||!positions||!Array.isArray(mesh.transform)||mesh.transform.length!==16||!mesh.transform.every(Number.isFinite))throw Error('Invalid CAD placement');
+  total+=positions.length;if(total>9_000_000)throw Error('This assembly exceeds 3 million displayed vertices. Import a subsystem.');
+  return {id:mesh.id,name:mesh.name,positions,transform:mesh.transform};
+ });
+ return {units:'m',meshes,lines:[],coverage:'assembly-geometry'};
+}
 export async function readCadAsset(urlValue:string){
  const url=new URL(urlValue);
  if(url.origin!=='https://hnqwhuuxlqfyawqymaaz.supabase.co'||!url.pathname.startsWith('/storage/v1/object/sign/cad-design-assets/'))throw Error('Invalid CAD asset destination');
  const response=await fetch(url,{cache:'no-store'});
  if(!response.ok)throw Error('CAD geometry download failed. Retry to continue saved progress.');
- return response.json();
+ return expandCadGeometry(await response.json());
 }
 /** Each request imports one distinct part. Repeated occurrences share its data.
  * Server caches successful chunks against the exact snapshot for safe retries. */
