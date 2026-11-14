@@ -19,9 +19,9 @@ export default function CadDesignViewer({geometry,initialSelection}:{geometry:Ca
   renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));element.appendChild(renderer.domElement);
   const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.minDistance=.0001;
   const group=new THREE.Group();scene.add(group,new THREE.HemisphereLight(0xffffff,0x718599,2.4));const light=new THREE.DirectionalLight(0xffffff,3);light.position.set(3,-4,5);scene.add(light);
-  const objects=new Map<string,THREE.Mesh|THREE.Line>();
+  const objects=new Map<string,THREE.Mesh|THREE.Line>(),sharedMeshes=new Map<number[],THREE.BufferGeometry>();
   for(const [index,item] of geometry.meshes.entries()){
-   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(item.positions,3));g.computeVertexNormals();
+   let g=sharedMeshes.get(item.positions);if(!g){g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(item.positions,3));g.computeVertexNormals();sharedMeshes.set(item.positions,g);}
    const material=new THREE.MeshStandardMaterial({color:new THREE.Color().setHSL(.53+(index%5)*.025,.3,.62),roughness:.48,metalness:.25,side:THREE.DoubleSide});
    const mesh=new THREE.Mesh(g,material);mesh.userData.id=item.id;if(item.transform)mesh.applyMatrix4(new THREE.Matrix4().fromArray(item.transform).transpose());group.add(mesh);objects.set(item.id,mesh);
   }

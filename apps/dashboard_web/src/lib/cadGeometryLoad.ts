@@ -3,11 +3,11 @@ type Call=(action:string,values:Record<string,unknown>)=>Promise<any>;
 export function expandCadGeometry(model:any):CadGeometry{
  if(model?.format!=='shared-meshes-v1')return model;
  if(model.units!=='m'||!Array.isArray(model.meshPositions)||model.meshPositions.length>500||!Array.isArray(model.meshes)||model.meshes.length>1000)throw Error('Invalid shared CAD geometry');
- let total=0;
- for(const positions of model.meshPositions){if(!Array.isArray(positions)||positions.length%9||positions.length>1_800_000||!positions.every(Number.isFinite))throw Error('Invalid CAD mesh');}
+ let total=0,unique=0;
+ for(const positions of model.meshPositions){unique+=positions?.length||0;if(unique>9_000_000)throw Error('Assembly exceeds the unique geometry budget');if(!Array.isArray(positions)||positions.length%9||positions.length>1_800_000||!positions.every(Number.isFinite))throw Error('Invalid CAD mesh');}
  const meshes=model.meshes.map((mesh:any)=>{
   const positions=model.meshPositions[mesh.partIndex];if(!Number.isInteger(mesh.partIndex)||!positions||!Array.isArray(mesh.transform)||mesh.transform.length!==16||!mesh.transform.every(Number.isFinite))throw Error('Invalid CAD placement');
-  total+=positions.length;if(total>9_000_000)throw Error('This assembly exceeds 3 million displayed vertices. Import a subsystem.');
+  total+=positions.length;if(total>30_000_000)throw Error('This assembly exceeds 10 million displayed vertices. Import a subsystem.');
   return {id:mesh.id,name:mesh.name,positions,transform:mesh.transform};
  });
  return {units:'m',meshes,lines:[],coverage:'assembly-geometry'};
@@ -44,7 +44,7 @@ export async function loadCadGeometry(call:Call,identity:{sourceId?:string;snaps
  const meshes=plan.meshes.map((mesh:any)=>{
   if(!Number.isInteger(mesh.partIndex)||!positions[mesh.partIndex]||!Array.isArray(mesh.transform)||mesh.transform.length!==16||!mesh.transform.every(Number.isFinite))throw Error('Invalid assembly placement');
   renderedCoordinates+=positions[mesh.partIndex].length;
-  if(renderedCoordinates>9_000_000)throw Error('This assembly exceeds 3 million displayed vertices. Import a subsystem; existing parts are unchanged.');
+  if(renderedCoordinates>30_000_000)throw Error('This assembly exceeds 10 million displayed vertices. Import a subsystem; existing parts are unchanged.');
   return {id:mesh.id,name:mesh.name,positions:positions[mesh.partIndex],transform:mesh.transform};
  });
  const finalized=await call('geometry',{...identity,snapshotId:plan.snapshotId,chunked:true,finalize:true});
