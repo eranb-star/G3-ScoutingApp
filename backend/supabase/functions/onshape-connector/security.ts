@@ -57,7 +57,18 @@ export function providerReader(token: string, fetcher: typeof fetch = fetch) {
   return async (path: string) => {
     // No arbitrary hosts, browser URLs, redirects, or mutations through this reader.
     if (!/^\/(documents|partstudios|assemblies|parts)(\/|\?)/.test(path) || /[\\\r\n#]/.test(path) || path.includes('..')) throw new CadError('INVALID_ENDPOINT', 'Unsupported CAD request.');
-    return boundedJson(await fetcher(`https://cad.onshape.com/api${path}`, {method:'GET', headers:{Authorization:`Bearer ${token}`, Accept:'application/json'}, redirect:'error', signal:AbortSignal.timeout(20000)}));
+    // CAD geometry is not an AI review payload. Bound each individual surface
+    // response separately; keep the smaller budget for ordinary API responses.
+    const limit=/\/tessellatedfaces\?/.test(path)?32_000_000:/^\/assemblies\/d\//.test(path)?16_000_000:4_000_000;
+    try {
+      return await boundedJson(await fetcher(`https://cad.onshape.com/api${path}`, {method:'GET', headers:{Authorization:`Bearer ${token}`, Accept:'application/json'}, redirect:'error', signal:AbortSignal.timeout(20000)}),limit);
+    } catch(error) {
+      if(error instanceof CadError&&error.code==='SOURCE_TOO_LARGE'){
+        console.warn(JSON.stringify({event:'cad_response_limit',endpoint:path.split('?')[0].replace(/[a-f0-9]{24}/gi,':id'),limit}));
+        throw new CadError('SOURCE_TOO_LARGE',`Onshape returned more than ${limit/1_000_000} MB for one CAD response. No existing imported parts were changed.`,413);
+      }
+      throw error;
+    }
   };
 }
 // Onshape's unversioned FeatureScript endpoints use typed {type,typeName,message}

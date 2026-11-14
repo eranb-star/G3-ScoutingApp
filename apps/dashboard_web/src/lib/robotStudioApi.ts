@@ -1,3 +1,4 @@
+import {loadCadGeometry} from './cadGeometryLoad';
 import {readBuildPages} from './robotBuildWorkspace';
 import * as T from 'three';
 import {loadCatalogue} from './robotStudioCatalogue';
@@ -9,17 +10,17 @@ export async function studioList(){return readBuildPages<Omit<SavedStudio,'docum
 export async function studioOpen(id:string){const r=await supabase.from('robot_studio_scenes').select('*').eq('id',id).single();if(r.error)throw r.error;if(!r.data)throw Error('Design not found or access is unavailable');validateScene(r.data.document);return r.data as SavedStudio;}
 export async function studioSave(id:string,expected:number,document:StudioScene,request:string,client:string){validateScene(document);const r=await supabase.rpc('save_robot_studio',{p_id:id,p_expected:expected,p_document:document,p_request:request,p_client:client});if(r.error)throw r.error;return r.data as number;}
 export async function cadCall(action:string,values:Record<string,unknown>={}){const r=await supabase.functions.invoke('onshape-connector',{body:{action,...values}});if(r.error||r.data?.error)throw Error(r.data?.error||r.error?.message||'CAD request failed');return r.data;}
-export async function studioLoadAsset(asset:StudioAsset):Promise<T.Object3D>{
- const root=await loadFullAsset(asset);if(!asset.nodePath?.length)return root;
+export async function studioLoadAsset(asset:StudioAsset,progress?:(done:number,total:number)=>void):Promise<T.Object3D>{
+ const root=await loadFullAsset(asset,progress);if(!asset.nodePath?.length)return root;
  try{return extractComponent(root,asset.nodePath);}finally{disposeObject(root);}
 }
-async function loadFullAsset(asset:StudioAsset):Promise<T.Object3D>{
+async function loadFullAsset(asset:StudioAsset,progress?:(done:number,total:number)=>void):Promise<T.Object3D>{
  if(asset.kind==='onshape'){
   const approved=await supabase.from('robot_studio_cad_library').select('asset_path').eq('snapshot_id',asset.snapshotId!).is('revoked_at',null).maybeSingle();
   if(approved.data){const file=await supabase.storage.from('cad-design-assets').download(approved.data.asset_path);if(file.error)throw file.error;return onshapeObject(JSON.parse(await file.data.text()));}
  }
  if(asset.kind==='catalogue')return loadCatalogue(asset.catalogueId!);
- if(asset.kind==='onshape'){const r=await cadCall('geometry',{sourceId:asset.sourceId,snapshotId:asset.snapshotId});const url=new URL(r.url);if(url.origin!=='https://hnqwhuuxlqfyawqymaaz.supabase.co'||!url.pathname.startsWith('/storage/v1/object/sign/cad-design-assets/'))throw Error('Invalid CAD asset destination');const response=await fetch(url,{cache:'no-store'});if(!response.ok)throw Error('CAD geometry unavailable');return onshapeObject(await response.json());}
+ if(asset.kind==='onshape')return onshapeObject(await loadCadGeometry(cadCall,{sourceId:asset.sourceId,snapshotId:asset.snapshotId},progress));
  const result=await supabase.storage.from('robot-studio-assets').download(asset.path!);if(result.error)throw result.error;return loadUpload(await result.data.arrayBuffer(),asset.format!,asset.scale);
 }
 export async function studioUpload(file:File,owner:string,scale:number,attribution:string,sourceUrl:string):Promise<{asset:StudioAsset;object:T.Object3D}>{
