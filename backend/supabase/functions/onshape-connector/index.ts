@@ -95,6 +95,7 @@ Deno.serve(async request=>{
 
  const raw=await request.text();if(raw.length>16000)throw new CadError('INPUT_TOO_LONG','CAD request is too large.',413);
  const body=JSON.parse(raw);
+  if(body.action==='geometry'||body.action==='snapshot')console.info(JSON.stringify({event:'cad_import_request',action:body.action,snapshotId:body.snapshotId,chunked:body.chunked===true,partIndex:body.partIndex,finalize:body.finalize===true}));
   const access=await cadAccess(db,user.id,body);
   if(body.action==='status')return reply({configured:!!(env('G3_ONSHAPE_CLIENT_ID')&&env('G3_ONSHAPE_CLIENT_SECRET')),connected:!!access.row,canManage:access.canManage,teamShared:!!access.row?.team_shared});
   if(body.action==='share-connection'){
@@ -241,5 +242,5 @@ Deno.serve(async request=>{
    return reply({source:saved.data});
   }
   throw new CadError('INVALID_ACTION','Unsupported CAD action.');
- }catch(error){return error instanceof CadError?reply({error:error.message,code:error.code},error.status):reply({error:'CAD connection could not complete. Retry or reconnect.',code:'CAD_UNAVAILABLE'},503);}
+ }catch(error){console.warn(JSON.stringify({event:'cad_import_error',code:error instanceof CadError?error.code:'CAD_UNAVAILABLE',name:error instanceof Error?error.name:'Unknown'}));return error instanceof CadError?reply({error:error.message,code:error.code},error.status):reply({error:'CAD connection could not complete. Retry or reconnect.',code:'CAD_UNAVAILABLE'},503);}
 });

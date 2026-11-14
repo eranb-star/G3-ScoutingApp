@@ -25,7 +25,14 @@ await reader('/parts/d/'+id+'/tessellatedfaces?outputIndexTable=false');
 await assert.rejects(()=>reader('/documents?offset=0'),e=>e.code==='SOURCE_TOO_LARGE');
 // Frontend: each distinct part once, pinned identity, repeated placements share
 // data; failure never returns a partial model and stops scheduling new work.
-const {loadCadGeometry}=await import(url(fs.readFileSync('src/lib/cadGeometryLoad.ts','utf8')));
+const {loadCadGeometry,expandCadGeometry}=await import(url(fs.readFileSync('src/lib/cadGeometryLoad.ts','utf8')));
+const repeated=Array.from({length:20},(_,i)=>({...instances[0],id:'r'+i}));
+const compact={id:'compact',evidence:{assembly:{rootAssembly:{instances:repeated,occurrences:repeated.map(p=>({path:[p.id],transform}))}}}};
+files.set('owner/compact-parts-v1/0.json',JSON.stringify({positions:Array(90_000).fill(0.12345678912345678)}));
+await finalizeAssemblyGeometry(compact,bucket,'owner');const compactFile=JSON.parse(files.get('owner/compact-v3.json'));
+assert.equal(compactFile.format,'shared-meshes-v1');assert.ok(files.get('owner/compact-v3.json').length<2_000_000);
+const expanded=expandCadGeometry(compactFile);assert.equal(expanded.meshes.length,20);assert.equal(expanded.meshes[0].positions,expanded.meshes[19].positions);
+assert.throws(()=>expandCadGeometry({...compactFile,meshes:[{...compactFile.meshes[0],partIndex:99}]}));
 const originalFetch=globalThis.fetch;globalThis.fetch=async()=>Response.json({positions:[0,0,0,1,0,0,0,1,0]});
 const requested=[];const call=async(_action,body)=>{assert.equal(body.snapshotId,'snapshot');if(body.finalize)return {snapshotId:'snapshot'};if(body.partIndex===undefined)return {format:'assembly-parts-v1',snapshotId:'snapshot',partCount:70,meshes:plan.meshes};requested.push(body.partIndex);return {snapshotId:'snapshot',partIndex:body.partIndex,url:'https://hnqwhuuxlqfyawqymaaz.supabase.co/storage/v1/object/sign/cad-design-assets/test'};};
 try{const result=await loadCadGeometry(call,{snapshotId:'snapshot'});assert.equal(requested.length,70);assert.equal(result.meshes[0].positions,result.meshes.at(-1).positions);await assert.rejects(()=>loadCadGeometry(async(a,b)=>b.partIndex===1?{snapshotId:'wrong'}:call(a,b),{snapshotId:'snapshot'}));}finally{globalThis.fetch=originalFetch;}
