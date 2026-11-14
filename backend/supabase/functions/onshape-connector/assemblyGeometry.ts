@@ -23,7 +23,7 @@ export async function assemblyGeometryPart(snapshot:any,index:unknown,bucket:any
  if(cached.error){
   if(String(cached.error.statusCode||cached.error.status)!=='404'&&!/not found/i.test(cached.error.message||''))throw new CadError('STORAGE_UNAVAILABLE','Could not check saved CAD progress. Retry.',503);
   const part=plan.parts[Number(index)];
-  const data=await read(`/parts/d/${onshapeId(part.documentId)}/m/${onshapeId(part.documentMicroversion)}/e/${onshapeId(part.elementId)}/partid/${encodeURIComponent(part.partId)}/tessellatedfaces?configuration=${encodeURIComponent(part.fullConfiguration||part.configuration||'')}&outputIndexTable=false&outputFacetNormals=false`);
+  const data=await read(`/parts/d/${onshapeId(part.documentId)}/m/${onshapeId(part.documentMicroversion)}/e/${onshapeId(part.elementId)}/partid/${encodeURIComponent(part.partId)}/tessellatedfaces?configuration=${encodeURIComponent(part.fullConfiguration||part.configuration||'')}&outputIndexTable=true&outputFacetNormals=false`);
   const positions=meshPositions(data);
   if(!positions.length)throw new CadError('GEOMETRY_UNAVAILABLE','Onshape returned no surfaces for this assembly part. No partial assembly was imported.',422);
   const saved=await bucket.upload(path,JSON.stringify({positions}),{contentType:'application/json',upsert:false});
