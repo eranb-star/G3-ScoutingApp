@@ -21,6 +21,7 @@ source=source.replace("'./geometry.ts'",JSON.stringify(geometry)).replace("'./re
 source=source.replace("'./buildFreshness.ts'",JSON.stringify(freshness));
 source=source.replace("'./pinned-source.ts'",JSON.stringify(url(fs.readFileSync(root+'pinned-source.ts','utf8'))));
 source=source.replace("'./access.ts'",JSON.stringify(url(fs.readFileSync(root+'access.ts','utf8').replace("'./security.ts'",JSON.stringify(security)))));
+source=source.replace("'./assemblyGeometry.ts'",JSON.stringify(url(fs.readFileSync(root+'assemblyGeometry.ts','utf8').replace("'./security.ts'",JSON.stringify(security)).replace("'./geometry.ts'",JSON.stringify(geometry)))));
 await import(url(source));
 const call=(body,authorization='Bearer test')=>handler(new Request('https://project.supabase.co/functions/v1/onshape-connector',{method:'POST',headers:authorization?{Authorization:authorization}:{},body:JSON.stringify(body)}));
 assert.equal((await call({action:'status'},'')).status,401);

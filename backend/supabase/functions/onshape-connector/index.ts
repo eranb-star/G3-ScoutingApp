@@ -7,6 +7,7 @@ import {structuralBom} from './bom.ts';
 import {enrichBomMetadata} from './partMetadata.ts';
 import {checkBuildSource} from './buildFreshness.ts';
 import {geometryFor} from './geometry.ts';
+import {assemblyGeometryPlan,assemblyGeometryPart,finalizeAssemblyGeometry} from './assemblyGeometry.ts';
 import {reviewDesign,designEvidence} from './review.ts';
 
 const headers={'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'authorization, x-client-info, apikey, content-type','Cache-Control':'no-store','Referrer-Policy':'no-referrer'};
@@ -182,6 +183,15 @@ Deno.serve(async request=>{
      if(inserted.error)throw new CadError('STORAGE_UNAVAILABLE','Could not save finding.',503);
     }
     return reply({saved:true});
+   }
+   if(body.chunked===true&&selected.data.element_type==='ASSEMBLY'&&snapshot.data.evidence.assembly?.rootAssembly?.instances?.length){
+    const bucket=db.storage.from('cad-design-assets');
+    if(body.finalize===true)return reply(await finalizeAssemblyGeometry(snapshot.data,bucket,row.id));
+    if(body.partIndex!==undefined)return reply(await assemblyGeometryPart(snapshot.data,body.partIndex,bucket,row.id,read));
+    const ready=await bucket.createSignedUrl(`${row.id}/${snapshot.data.id}-v3.json`,120);
+    if(!ready.error)return reply({url:ready.data.signedUrl,snapshotId:snapshot.data.id,microversion:snapshot.data.microversion});
+    const plan=assemblyGeometryPlan(snapshot.data);
+    return reply({format:'assembly-parts-v1',snapshotId:snapshot.data.id,microversion:snapshot.data.microversion,meshes:plan.meshes,partCount:plan.parts.length});
    }
     const asset=`${row.id}/${snapshot.data.id}-v3.json`;
    const bucket=db.storage.from('cad-design-assets');
