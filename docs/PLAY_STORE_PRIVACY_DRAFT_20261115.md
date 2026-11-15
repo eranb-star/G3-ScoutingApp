@@ -1,8 +1,8 @@
 # G3 6740 Team Hub — privacy-policy draft
 
-**Unpublished draft for owner review, not ready for submission.** Missing: responsible entity and support contact, actual retention schedule, verified deletion-request workflow, complete processor/SDK classification and target audience. Do not upload this draft as a completed privacy policy.
+**Unpublished draft for owner review, not ready for submission.** Owner/contact and current student ages confirmed on 15 November 2026. Still missing: actual retention schedule, verified deletion-request workflow, complete processor/SDK classification and final audience declarations. Do not upload this draft as a completed privacy policy.
 
-G3 6740 Team Hub supports authorized students, team leaders and mentors in managing robotics-team activities. The responsible party and contact details will be identified here before publication.
+G3 6740 Team Hub supports authorized students, team leaders and mentors in managing robotics-team activities. Eran Bongart is the person responsible for the data, as confirmed by the owner. Contact for support and privacy enquiries: **eran.bongart@gmail.com**.
 
 The service processes account and member information, team roles, attendance and meetings, tasks and learning records, and content users provide through the features available to their roles. Some authorized features also handle purchases, reimbursements, engineering files and uploaded media. Absence explanations and other free text may contain sensitive information; users should provide only information needed for the team activity.
 
@@ -14,4 +14,4 @@ Access to team records is controlled through authenticated accounts and role per
 
 Accounts are provisioned by authorized administrators in the inspected flow. Account deactivation is not data deletion. The published policy and request page must explain how users or their authorized representatives request access, correction or deletion, what records must be retained and why, and the applicable response/retention periods. These decisions require owner confirmation; no retention duration is invented here.
 
-This app serves a robotics team that includes students. Actual intended age groups, guardian/school arrangements and contact details must be confirmed before audience declarations or publication. A personal developer account does not by itself establish who is responsible for the school's or team's data.
+This app serves authorized robotics-team students and adult team staff. The owner confirms that all current students are older than15. Some users are still minors; this statement is not an adults-only restriction or an implemented age-verification mechanism. Final store audience declarations and any applicable guardian/school arrangements must reflect actual intended use.

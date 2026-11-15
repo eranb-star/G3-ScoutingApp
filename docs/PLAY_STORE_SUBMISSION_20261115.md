@@ -24,7 +24,9 @@ Latest distributed APK remains 2.8.2/code34. Candidate 2.8.3/code35 has been bui
 - Before inviting the full team, update one real installed 2.8.2 phone from the Play test track. Check retained login, preferences, drafts, push registration and automatic-checkout consent. No uninstall/clear-storage workaround. If signature compatibility fails, stop rollout.
 - Local AAB signature is not proof of the eventual Play-generated APK signature. Device upgrade remains pending until Console enrollment and distribution.
 
-## Store listing copy (prepared; owner support details pending)
+## Store listing copy (prepared; owner details confirmed)
+
+Owner confirmed on 15 November 2026: **Eran Bongart** is responsible for the data; public support/privacy contact **eran.bongart@gmail.com**; all current students are **older than 15**. Adult team leaders/mentors/admins also use the app. This does not make the app adults-only or establish an enforced minimum-age gate. Complete Console audience categories truthfully for the intended users; content rating is a separate questionnaire.
 
 **Title (both languages):** G3 6740 Team Hub
 
@@ -63,7 +65,7 @@ Attendance uses location to check proximity to the workshop. Optional automatic 
 - Existing icon: `apps/dashboard_web/android/app/src/main/ic_launcher-playstore.png`; validate 512x512 and format before upload.
 - Prepared and visually inspected `releases/play-store/feature-1024x500.png` in team colors, plus `releases/play-store/icon-512.png` copied from the existing store icon. These are local handoff artifacts, not yet uploaded.
 - Capture at least two real app screenshots using synthetic users/data: Home/Work, Attendance, Robot Build or Scouting. Do not use production student names, attendance, finances, private CAD or misleading generated UI. No final screenshot set exists yet.
-- Support email, public privacy-policy URL and target-age groups await owner confirmation. These are submission blockers, not placeholders to submit.
+- Public support/privacy email confirmed: **eran.bongart@gmail.com**. Responsible person: **Eran Bongart**. Current students are older than15; adults also use the app. Public privacy-policy URL and completed audience/content-rating declarations remain pending.
 
 ## Privacy/Data safety preparation — not a completed declaration
 
@@ -79,7 +81,7 @@ Observed code: administrator-created accounts (`manage-member`); Supabase authen
 | Finance/reimbursements | Authorized finance features | Review user financial information category and permissions |
 | AI/CAD/code requests | User-invoked assistance and engineering integrations | Verify exact third-party transfers and provider settings; service-provider exemptions require evidence |
 
-Needed before publication: confirmed data controller/contact, public policy accessible without login, concrete retention/deletion handling, truthful collection/sharing and security answers, target audience/content rating, and any applicable UGC moderation declarations. Do not assert no data collected, no sharing, automatic deletion, or absolute privacy. Privacy text draft is in `PLAY_STORE_PRIVACY_DRAFT_20261115.md`; not approved or published.
+Data controller/contact and current student ages are confirmed above. Needed before publication: public policy accessible without login, concrete retention/deletion handling, truthful collection/sharing and security answers, target audience/content rating, and any applicable UGC moderation declarations. Do not assert no data collected, no sharing, automatic deletion, or absolute privacy. Privacy text draft is in `PLAY_STORE_PRIVACY_DRAFT_20261115.md`; not approved or published.
 
 ## Background-location and foreground-service declaration
 
@@ -110,7 +112,7 @@ Students may be testers through an eligible Google/Google Workspace account sign
 | Personal-account decision | Confirmed by owner |
 | Account verification/payment | Owner action pending |
 | Listing text | Prepared above |
-| Privacy/support/age/controller inputs | Asked; pending |
+| Privacy/support/age/controller inputs | Owner confirmed: Eran Bongart; eran.bongart@gmail.com; all students older than15. No age gate or Console declaration implemented by this confirmation. |
 | Settings background-location wording | Corrected in local candidate |
 | Candidate bundle/APK verification | Built, signed, bundle validated; detailed local evidence below |
 | Existing signing key | Preserve; no export performed |
