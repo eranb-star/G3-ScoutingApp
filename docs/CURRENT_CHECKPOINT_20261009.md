@@ -4,7 +4,7 @@ This is the entry point for current status and decisions. It reconciles existing
 
 ## Remembered automatic-checkout consent — 15 November 2026
 
-User approved one-time consent and automatic enrollment after every successful native check-in. Implemented account/device-scoped native preference, success-response enrollment hook, explicit disable/retry, and clear saved-check-in failure messages. No server/manual attendance changes or data migration; enforce_all remains active. Focused enrollment/SQL/HTTP/manual checks and Hebrew/English consent UI passed. Android2.8.2/code34 build and production release are being finalized; physical phone validation is not claimed. This supersedes earlier per-attendance consent instructions. See [design and delivery](AUTO_CHECKOUT_20261108.md#remembered-consent--15-november-2026).
+User approved one-time consent and automatic enrollment after every successful native check-in. Implemented account/device-scoped native preference, success-response enrollment hook, explicit disable/retry, and clear saved-check-in failure messages. No server/manual attendance changes or data migration; enforce_all remains active. Focused enrollment/SQL/HTTP/manual checks and Hebrew/English consent UI passed. Signed Android2.8.2/code34 (18.53MB) verified, 117 packaged assets match. Final source90d0119/release28b9270, CI434/435 passed. ProductionHnatDq7zVhep6YKGEd3LpNFfDPQ4 Ready on g3-6740.com; live guidance and all-active mode verified. Physical phone validation remains unperformed. This supersedes earlier per-attendance consent instructions. See [design and delivery](AUTO_CHECKOUT_20261108.md#remembered-consent--15-november-2026).
 
 ## Automatic checkout repair — 15 November 2026
 
