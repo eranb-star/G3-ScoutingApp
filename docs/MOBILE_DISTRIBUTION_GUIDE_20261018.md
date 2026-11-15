@@ -2,6 +2,8 @@
 
 Planning/runbook only. No accounts created, fees paid, credentials exported, store declarations submitted or releases uploaded. Official sources checked during this review; console labels and requirements must be checked again at actual submission.
 
+**15 November update:** Owner chose a personal Google Play account. Follow [current submission preparation](PLAY_STORE_SUBMISSION_20261115.md) for Android; old artifact/version numbers below are historical. Account/payment, store submission and real-device acceptance are not yet complete. Apple ownership/platform work remains unchanged.
+
 ## Current starting point
 
 - User has neither Google Play Console nor Apple Developer membership. Access to Mac/Xcode is not yet established.
