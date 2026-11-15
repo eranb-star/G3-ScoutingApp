@@ -57,3 +57,9 @@ Planning estimate: 8–13 engineering days including pilot; not a token estimate
 4. Test internet loss, battery saver, reboot, app update, logout/account change and admin checkout during a pending exit. Confirm no stale closing, duplicate audit, or overwritten corrections.
 5. Compare server-detected time with actual departure and agree the boundary margin. Only then explicitly select pilot students and switch to enforce; re-enroll inside after changing mode.
 6. Verify one enforcement exit, report label/time, and admin correction. Rollback is policy mode off; preserve audit/history and manual attendance.
+
+## Live incident investigation — 15 November 2026
+
+Read-only production investigation after two users reported no automatic checkout. Policy remains observe, pilot count0. For one affected attendance there is no device grant or pending enrollment; for the other, enrollment and first outside detection succeeded but no confirmation reached the service within its5–15 minute window. Function logs show two successful HTTP200 background calls at first detection and no subsequent request/error in the inspected hour. Server pending state does not prove that the device worker is still running. Android scheduling/network/permission/restart cause remains unproven without device state; requested displayed auto-checkout status and phone model. No attendance, policy or pilot setting changed.
+
+Code inspection also shows pilot selection currently lists member/team_leader only, excluding admin; administrator participation needs a focused UI correction before an admin pilot can be selected through that screen. Native worker exceptions currently stop monitoring as unavailable without preserving a diagnostic reason. These are identified follow-ups, not fixes delivered by this investigation. Do not switch existing observation grants into enforcement or retroactively close from home; enforcement is frozen at inside enrollment.
