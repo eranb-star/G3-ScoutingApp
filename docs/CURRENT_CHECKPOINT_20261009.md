@@ -2,9 +2,9 @@
 
 This is the entry point for current status and decisions. It reconciles existing release evidence and this conversation; it is not a new audit of every production feature. Detailed feature records below retain acceptance limits. Older proposed phases and undeployed notices are superseded only where the named release records establish delivery.
 
-## Automatic checkout incident — 15 November 2026
+## Automatic checkout repair — 15 November 2026
 
-Read-only investigation confirmed observe mode/zero pilots still active: no automatic closing is enabled. Two reported cases differ: one has no enrollment; another has successful exit detection but no follow-up confirmation before deadline, corroborated by service logs. Device-side cause awaits phone state/model; no production attendance or policy changes. Admin selection and missing native failure diagnostics are follow-ups. See [incident evidence](AUTO_CHECKOUT_20261108.md#live-incident-investigation--15-november-2026).
+User authorized actual automatic checkout for the two affected participants, including the admin. Foreground exit confirmation, bounded retries, visible failure reasons and admin pilot selection implemented; focused server/manual-attendance checks passed. Production policy now enforce for the two authorized participants; all existing attendance/grants unchanged by full-row hash assertion. Signed APK2.8.1/code33 (18.52MB), native build/lint and six native tests passed; 117 packaged assets verified. Web deployment pending. Existing observation grants will not be retroactively enforced; new APK and fresh inside enrollment required. Physical validation remains outstanding. See [repair and boundaries](AUTO_CHECKOUT_20261108.md#missing-confirmation-repair-and-authorized-activation--15-november-2026).
 
 ## Simplified assembly manufacturing workflow — 14 November 2026
 

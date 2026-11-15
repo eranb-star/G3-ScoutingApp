@@ -1,5 +1,5 @@
 import {Capacitor,registerPlugin} from '@capacitor/core';
-export type AutoState={state:string;mode:string;permission:boolean;attendanceId:string;memberId:string;result:string};
+export type AutoState={state:string;mode:string;permission:boolean;attendanceId:string;memberId:string;result:string;failureReason?:string;failureAt?:number};
 export const AutoCheckout=registerPlugin<{
  status():Promise<AutoState>;locationPermission():Promise<AutoState>;settings():Promise<void>;
  arm(args:{token:string;memberId:string;attendanceId:string}):Promise<AutoState>;stop():Promise<void>;

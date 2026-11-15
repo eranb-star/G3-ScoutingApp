@@ -37,25 +37,34 @@ final class AutoCheckout {
   HttpURLConnection conn=(HttpURLConnection)new URL(ENDPOINT).openConnection();conn.setRequestMethod("POST");conn.setInstanceFollowRedirects(false);conn.setConnectTimeout(15000);conn.setReadTimeout(15000);conn.setDoOutput(true);conn.setRequestProperty("Content-Type","application/json");if(token!=null)conn.setRequestProperty("Authorization","Bearer "+token);
   try{conn.getOutputStream().write(bytes);int code=conn.getResponseCode();java.io.InputStream input=code<300?conn.getInputStream():conn.getErrorStream();java.io.ByteArrayOutputStream buffer=new java.io.ByteArrayOutputStream();byte[] chunk=new byte[2048];int count;while((count=input.read(chunk))!=-1){buffer.write(chunk,0,count);if(buffer.size()>12000)throw new Exception("Response too large");}String response=new String(buffer.toByteArray(),java.nio.charset.StandardCharsets.UTF_8);JSONObject result=new JSONObject(response);if(code>=300)throw new Exception(result.optString("error","Automatic checkout unavailable"));return result;}finally{conn.disconnect();}
  }
+ static class LocationUnavailable extends Exception { LocationUnavailable(String message){super(message);} }
  static JSONObject location(Context c)throws Exception{
   if(!permission(c))throw new Exception("Background location permission required");
   com.google.android.gms.tasks.CancellationTokenSource cancel=new com.google.android.gms.tasks.CancellationTokenSource();
   try{Location l=Tasks.await(LocationServices.getFusedLocationProviderClient(c).getCurrentLocation(new CurrentLocationRequest.Builder().setPriority(Priority.PRIORITY_HIGH_ACCURACY).setMaxUpdateAgeMillis(0).setDurationMillis(20000).build(),cancel.getToken()),25,TimeUnit.SECONDS);
-   if(l==null)throw new Exception("Location unavailable");long age=(android.os.SystemClock.elapsedRealtimeNanos()-l.getElapsedRealtimeNanos())/1000000;
-   if(age<0||age>60000||!l.hasAccuracy()||l.getAccuracy()>50||l.isFromMockProvider())throw new Exception("Fresh precise location required");
+   if(l==null)throw new LocationUnavailable("Location unavailable");long age=(android.os.SystemClock.elapsedRealtimeNanos()-l.getElapsedRealtimeNanos())/1000000;
+   if(age<0||age>60000||!l.hasAccuracy()||l.getAccuracy()>50||l.isFromMockProvider())throw new LocationUnavailable("Fresh precise location required");
    return new JSONObject().put("latitude",l.getLatitude()).put("longitude",l.getLongitude()).put("accuracy",l.getAccuracy()).put("ageMs",age).put("mock",l.isFromMockProvider());
-  }catch(SecurityException e){throw new Exception("Location permission was revoked",e);}finally{cancel.cancel();}
+  }catch(java.util.concurrent.TimeoutException|java.util.concurrent.ExecutionException e){throw new LocationUnavailable("Location unavailable");}catch(SecurityException e){throw new Exception("Location permission was revoked",e);}finally{cancel.cancel();}
  }
  static PendingIntent pending(Context c){return PendingIntent.getBroadcast(c,841,new Intent(c,AutoCheckoutReceiver.class).setAction("com.g3.scouting.AUTO_GEOFENCE"),PendingIntent.FLAG_UPDATE_CURRENT|(Build.VERSION.SDK_INT>=31?PendingIntent.FLAG_MUTABLE:0));}
  static void remove(Context c){LocationServices.getGeofencingClient(c).removeGeofences(pending(c));WorkManager.getInstance(c).cancelUniqueWork(WORK);}
- static synchronized void stop(Context c,String state){remove(c);prefs(c).edit().putString("state",state).putString("generation",java.util.UUID.randomUUID().toString()).remove("challenge").apply();}
+ static synchronized void stop(Context c,String state){remove(c);c.stopService(new Intent(c,AutoCheckoutService.class));prefs(c).edit().putString("state",state).putString("generation",java.util.UUID.randomUUID().toString()).remove("challenge").apply();}
  static synchronized boolean active(Context c){
   var p=prefs(c);String state=p.getString("state","off");
   if(!state.equals("armed")&&!state.equals("pending"))return false;
   if(p.getLong("boot",-1)!=android.provider.Settings.Global.getInt(c.getContentResolver(),"boot_count",-2)||android.os.SystemClock.elapsedRealtime()>=p.getLong("expiresElapsed",0)){stop(c,"interrupted");return false;}
-  if(!permission(c)){stop(c,"unavailable");return false;}
+  if(!permission(c)){fail(c,"permission_revoked");return false;}
+  if(state.equals("pending")&&p.getLong("pendingDeadline",Long.MAX_VALUE)<android.os.SystemClock.elapsedRealtime()){fail(c,"confirmation_timeout");return false;}
   return true;
  }
+ static synchronized void fail(Context c,String reason){
+  String code=java.util.Arrays.asList("confirmation_timeout","network_unavailable","location_unavailable","permission_revoked","background_start_blocked","geofence_unavailable").contains(reason==null?"":reason)?reason:"verification_rejected";
+  prefs(c).edit().putString("failureReason",code).putLong("failureAt",System.currentTimeMillis()).commit();stop(c,"unavailable");AutoCheckoutWorker.notifyResult(c,"unavailable");
+ }
+ static double distance(Context c,JSONObject location)throws Exception{var p=prefs(c);float[] result=new float[1];Location.distanceBetween(Double.parseDouble(p.getString("latitude","NaN")),Double.parseDouble(p.getString("longitude","NaN")),location.getDouble("latitude"),location.getDouble("longitude"),result);return result[0];}
+ static boolean inside(Context c,JSONObject location)throws Exception{return distance(c,location)+location.getDouble("accuracy")<=prefs(c).getFloat("exitRadius",0)-50;}
+ static boolean outside(Context c,JSONObject location)throws Exception{return distance(c,location)-location.getDouble("accuracy")>prefs(c).getFloat("exitRadius",0);}
  static synchronized void revoke(Context c){String grant=prefs(c).getString("grantId","");stop(c,"off");if(!grant.isEmpty())try{send(c,"revoke",new JSONObject());}catch(Exception ignored){}prefs(c).edit().remove("grantId").remove("memberId").remove("attendanceId").apply();}
  static synchronized JSONObject send(Context c,String action,JSONObject data)throws Exception{
   long sequence=prefs(c).getLong("sequence",0)+1;prefs(c).edit().putLong("sequence",sequence).commit();
@@ -66,6 +75,7 @@ final class AutoCheckout {
  static synchronized JSONObject arm(Context c,String member,String attendance,String token)throws Exception{
   revoke(c);JSONObject key=publicKey();JSONObject prepared=request(new JSONObject().put("action","prepare").put("publicKey",key),token);
   JSONObject data=location(c).put("action","arm").put("attendanceId",attendance).put("publicKey",key).put("nonce",prepared.getString("nonce"));JSONObject result=request(data,token);
+  prefs(c).edit().remove("failureReason").remove("failureAt").remove("pendingDeadline").putString("latitude",String.valueOf(result.getDouble("latitude"))).putString("longitude",String.valueOf(result.getDouble("longitude"))).putFloat("exitRadius",(float)result.getDouble("radius")).commit();
   String grant=result.getString("grantId"),generation=java.util.UUID.randomUUID().toString();
   prefs(c).edit().putString("grantId",grant).putString("memberId",member).putString("attendanceId",attendance).putLong("sequence",0).putString("generation",generation).putString("mode",result.getString("mode")).putString("state","armed").putString("expiresAt",result.getString("expiresAt")).putLong("boot",android.provider.Settings.Global.getInt(c.getContentResolver(),"boot_count",-1)).commit();
   try{long expiry=result.getLong("expiresInMs");
