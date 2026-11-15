@@ -2,6 +2,10 @@
 
 This is the entry point for current status and decisions. It reconciles existing release evidence and this conversation; it is not a new audit of every production feature. Detailed feature records below retain acceptance limits. Older proposed phases and undeployed notices are superseded only where the named release records establish delivery.
 
+## Automatic checkout incident — 15 November 2026
+
+Read-only investigation confirmed observe mode/zero pilots still active: no automatic closing is enabled. Two reported cases differ: one has no enrollment; another has successful exit detection but no follow-up confirmation before deadline, corroborated by service logs. Device-side cause awaits phone state/model; no production attendance or policy changes. Admin selection and missing native failure diagnostics are follow-ups. See [incident evidence](AUTO_CHECKOUT_20261108.md#live-incident-investigation--15-november-2026).
+
 ## Simplified assembly manufacturing workflow — 14 November 2026
 
 [Design and delivery record](ROBOT_BUILD_SIMPLE_WORKFLOW_20261114.md): **implemented and deployed**. Grouped save/assign, students/contributors, exact drawing link, guarded start, atomic quantity + inspection submission, partial/rework and independent reviewer context reuse existing manufacturing records. Source **cb74fa2**, release **d582706**, CI **426/427 passed**. Production **55DgPLEaFqXt5Mv7kpX3H5RWgGh1**, Ready **21:56:38 Israel**, g3-6740.com. Additive migration deployed; historical rows unchanged by full-row digest assertion. Production assignment/retry rehearsal rolled back all QA data. Live Hebrew form/Onshape handoff and local EN/mobile UI verified. Signed **APK2.8.0/code32,18.52MB** includes this flow, Hebrew scouting and all prior source updates; signature, Android lint and115 packaged assets verified. Physical phone installation and student/workshop acceptance remain to perform. Existing assembly/installation and task reassignment controls retained; no new bulk package reassignment/cancellation interface.
