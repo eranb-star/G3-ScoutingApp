@@ -42,5 +42,21 @@ try{
  await db.exec("update attendance_auto_grants set expires_at=now()-interval '1 minute' where state='armed'");await assert.rejects(call('status',g.grantId,{sequence:1}),/no longer active/);
  g=await arm();await db.exec("update workshop_locations set updated_at=now()+interval '1 second'");await assert.rejects(call('status',g.grantId,{sequence:1}),/location changed/);
  g=await arm();await db.exec("update attendance_auto_policy set mode='off'");await assert.rejects(call('begin',g.grantId,{...outside,sequence:1}),/disabled/);await call('revoke',g.grantId,{sequence:1});
+ await db.exec("update attendance_auto_policy set mode='observe'");g=await arm();
+ await db.exec(await fs.readFile(new URL('../../../backend/supabase/attendance_auto_all_members_20261115.sql',import.meta.url),'utf8'));
+ await db.exec("update attendance_auto_policy set mode='enforce_all',pilot_members='{}'");
+ pending=await call('begin',g.grantId,{...outside,sequence:1});await age(g.grantId);
+ assert.equal((await call('confirm',g.grantId,{...outside,sequence:2,challenge:pending.challenge})).state,'observed','old observation remains observation after all-member activation');
+ g=await arm();assert.equal(g.mode,'enforce','unlisted active member receives enforce with no pilot list');
+ pending=await call('begin',g.grantId,{...outside,sequence:1});await age(g.grantId);
+ assert.equal((await call('confirm',g.grantId,{...outside,sequence:2,challenge:pending.challenge})).state,'closed');
+ await db.exec("update attendance_records set checked_out_at=null,updated_at=now();update team_members set active=false");
+ await assert.rejects(arm(),/Active member required/);
+ await db.exec("update team_members set active=true");
+ await call('prepare',null,{publicKey:armData.publicKey}).then(p=>armData.nonce=p.nonce);
+ await assert.rejects(call('arm',null,{...armData,...outside}),/inside/);
+ g=await arm();await db.exec("update attendance_auto_policy set mode='off'");
+ await assert.rejects(call('begin',g.grantId,{...outside,sequence:1}),/disabled/);
+ console.log('PASS all-member scope: unlisted active enrollment/closing, frozen observation, inactive/outside denial, kill switch');
  console.log('PASS auto checkout: inside enrollment, evidence quality, ownership, RLS, replay, grace, cancel, observation, enforcement, admin conflict, late delivery, kill switch and revoke');
 }catch(e){console.error(e.message);process.exitCode=1;}finally{await db.close();}
