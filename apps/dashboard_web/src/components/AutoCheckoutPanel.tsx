@@ -9,6 +9,7 @@ export default function AutoCheckoutPanel({attendanceId,open,ready}:{attendanceI
  const {profile,session}=useMemberAuth(),{pick}=useLocalization();
  const [status,setStatus]=useState<AutoState|null>(null),[enabled,setEnabled]=useState(false),[loaded,setLoaded]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState(''),[consent,setConsent]=useState(false);
  const native=supportsAutoCheckout();
+ useEffect(()=>{setError('');setConsent(false);},[attendanceId]);
  async function read(){if(!native||!profile)return;const [current,pref]=await Promise.all([AutoCheckout.status(),AutoCheckout.preference({memberId:profile.id})]);setStatus(current);setEnabled(pref.enabled);setLoaded(true);}
  useEffect(()=>{setConsent(false);setError('');setLoaded(false);if(!native||!profile)return;const refresh=()=>{if(document.visibilityState==='visible')void read().catch(()=>setError(pick('Install the latest APK to use remembered consent.','יש להתקין את ה־APK העדכני כדי לשמור הסכמה חד־פעמית.')));};refresh();document.addEventListener('visibilitychange',refresh);window.addEventListener('g3-auto-checkout-changed',refresh);const timer=window.setInterval(refresh,15000);return()=>{clearInterval(timer);document.removeEventListener('visibilitychange',refresh);window.removeEventListener('g3-auto-checkout-changed',refresh);};},[native,profile?.id]);
  useEffect(()=>{if(!native||!ready)return;let cancelled=false;void AutoCheckout.status().then(async current=>{
