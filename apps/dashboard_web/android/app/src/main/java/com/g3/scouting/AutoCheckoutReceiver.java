@@ -8,14 +8,14 @@ public class AutoCheckoutReceiver extends BroadcastReceiver {
  private void handle(Context context,Intent intent){
   if(Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())||Intent.ACTION_MY_PACKAGE_REPLACED.equals(intent.getAction())){AutoCheckout.stop(context,"interrupted");return;}
   GeofencingEvent event=GeofencingEvent.fromIntent(intent);
-  if(event==null||event.hasError()){AutoCheckout.stop(context,"unavailable");return;}
+  if(event==null||event.hasError()){AutoCheckout.fail(context,"geofence_unavailable");return;}
   synchronized(AutoCheckout.class){
    var p=AutoCheckout.prefs(context);String state=p.getString("state","off"),grant=p.getString("grantId","");
    if(!(state.equals("armed")||state.equals("pending"))||event.getTriggeringGeofences()==null||event.getTriggeringGeofences().stream().noneMatch(g->g.getRequestId().equals(grant)))return;
    if(event.getGeofenceTransition()==Geofence.GEOFENCE_TRANSITION_EXIT&&!state.equals("armed"))return;
    String generation=java.util.UUID.randomUUID().toString();p.edit().putString("generation",generation).apply();
-   if(event.getGeofenceTransition()==Geofence.GEOFENCE_TRANSITION_ENTER){p.edit().putString("state","pending").apply();AutoCheckout.queue(context,"cancel",0,generation);}
-   else if(event.getGeofenceTransition()==Geofence.GEOFENCE_TRANSITION_EXIT&&state.equals("armed")){p.edit().putString("state","pending").apply();AutoCheckout.queue(context,"begin",0,generation);}
+   if(event.getGeofenceTransition()==Geofence.GEOFENCE_TRANSITION_ENTER){p.edit().putString("state","pending").apply();context.stopService(new Intent(context,AutoCheckoutService.class));AutoCheckout.queue(context,"cancel",0,generation);}
+   else if(event.getGeofenceTransition()==Geofence.GEOFENCE_TRANSITION_EXIT&&state.equals("armed")){p.edit().putString("state","pending").apply();p.edit().putLong("pendingDeadline",android.os.SystemClock.elapsedRealtime()+16*60*1000L).commit();AutoCheckoutService.start(context,generation);}
   }
  }
 }
