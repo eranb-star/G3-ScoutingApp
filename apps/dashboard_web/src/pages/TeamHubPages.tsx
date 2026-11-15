@@ -1,3 +1,5 @@
+import {AutoCheckout,supportsAutoCheckout,autoCheckoutGeneration} from '../lib/autoCheckout';
+import {enrollAfterCheckIn} from '../lib/autoCheckoutEnrollment';
 import AutoCheckoutPanel,{AutoCheckoutAdmin} from '../components/AutoCheckoutPanel';
 import WorkshopPlanner from '../components/WorkshopPlanner';
 import PersonalAttendance from '../components/PersonalAttendance';
@@ -216,7 +218,7 @@ export function CheckInPage() {
   const requestLock=useRef(false);
   const [attendanceReady,setAttendanceReady]=useState(false);
   const { pick } = useLocalization();
-  const { profile } = useMemberAuth();
+  const { profile,session } = useMemberAuth();
   const [activeMeeting, setActiveMeeting] = useState<TeamMeeting | null>(null);
   const [attendance, setAttendance] = useState<{ id?:string; meeting_id?:string; checked_in_at: string; checked_out_at: string | null } | null>(null);
   const [working, setWorking] = useState(false);
@@ -257,6 +259,7 @@ export function CheckInPage() {
   async function verifyAndRecord(action: "open_workshop" | "check_in" | "check_out", preferred: "location" | "wifi") {
     if (!attendanceReady||requestLock.current||(action !== "open_workshop" && !activeMeeting)) return;
     requestLock.current=true;
+    const autoGeneration=autoCheckoutGeneration();
     setWorking(true);
     const refreshSavedAttendance = async (meeting: TeamMeeting | null) => {
       try { await loadAttendance(meeting); }
@@ -278,7 +281,13 @@ export function CheckInPage() {
         setActiveMeeting(opened);
         setMessage(data.alreadyOpen ? pick("A workshop session is already open.","מפגש סדנה כבר פתוח.") : pick("Workshop opened. You can now check in.","הסדנה נפתחה. כעת ניתן לדווח כניסה."));
         await refreshSavedAttendance(opened);
-      } else { setMessage(action === "check_in" ? pick("Your check-in was saved.","הכניסה שלך נשמרה.") : pick("Your check-out was saved.","היציאה שלך נשמרה.")); await refreshSavedAttendance(activeMeeting); window.dispatchEvent(new Event("g3-attendance-changed")); }
+      } else { setMessage(action === "check_in" ? pick("Your check-in was saved.","הכניסה שלך נשמרה.") : pick("Your check-out was saved.","היציאה שלך נשמרה.")); await refreshSavedAttendance(activeMeeting); window.dispatchEvent(new Event("g3-attendance-changed"));
+        const enrolled=await enrollAfterCheckIn({native:supportsAutoCheckout(),action,saved:true,attendanceId:data?.attendance?.id,memberId:profile?.id,token:session?.access_token,isCurrent:()=>autoGeneration===autoCheckoutGeneration()},AutoCheckout);
+        if(enrolled==='active')setMessage(pick('Check-in saved · Automatic checkout is active.','הכניסה נרשמה · צ׳ק־אאוט אוטומטי פעיל.'));
+        else if(enrolled==='observe')setMessage(pick('Check-in saved · Automatic checkout is in observation mode and will not close attendance.','הכניסה נרשמה · הזיהוי במצב תצפית ולא יסגור נוכחות.'));
+        else if(enrolled==='permission')setMessage(pick('Check-in saved. Automatic checkout is NOT active: allow precise location all the time, then retry inside the workshop.','הכניסה נרשמה. צ׳ק־אאוט אוטומטי אינו פעיל: אשרו מיקום מדויק וכל הזמן, ואז נסו הפעלה מתוך הסדנה.'));
+        else if(enrolled==='failed')setMessage(pick('Check-in saved. Automatic checkout could not start. Retry inside the workshop; do not check in again.','הכניסה נרשמה. הצ׳ק־אאוט האוטומטי לא הופעל. נסו הפעלה מתוך הסדנה; אין צורך לדווח כניסה שוב.'));
+        window.dispatchEvent(new Event('g3-auto-checkout-changed')); }
       return {ok:true,reason:""};
     };
     if(!nativeApp){
@@ -324,7 +333,7 @@ export function CheckInPage() {
           {profile?.role === "admin" && locationConfigured === false ? <div className="auth-message auth-error">{pick("Administrator setup required: workshop coordinates are not configured yet.","נדרשת הגדרת מנהל: מיקום הסדנה טרם הוגדר.")}</div> : null}
         </div>
       </section>
-      <AutoCheckoutPanel attendanceId={attendance?.id} open={!!attendance&&!attendance.checked_out_at} ready={attendanceReady}/><AutoCheckoutAdmin/><div className="hub-privacy-note"><strong>{pick("Privacy by design","פרטיות כברירת מחדל")}</strong><span>{pick("Optional Android departure detection requires explicit background-location permission. No route history is stored. Admin corrections are audited.","זיהוי יציאה אופציונלי ב-Android דורש אישור מפורש למיקום ברקע. לא נשמר מסלול תנועה. תיקוני מנהל מתועדים.")}</span></div>
+      <AutoCheckoutPanel attendanceId={attendance?.id} open={!!attendance&&!attendance.checked_out_at} ready={attendanceReady&&!working}/><AutoCheckoutAdmin/><div className="hub-privacy-note"><strong>{pick("Privacy by design","פרטיות כברירת מחדל")}</strong><span>{pick("Optional Android departure detection requires explicit background-location permission. No route history is stored. Admin corrections are audited.","זיהוי יציאה אופציונלי ב-Android דורש אישור מפורש למיקום ברקע. לא נשמר מסלול תנועה. תיקוני מנהל מתועדים.")}</span></div>
     </div>
   );
 }
