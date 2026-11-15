@@ -96,6 +96,7 @@ jobs:
           node scripts/test-browser-attendance.mjs
           node scripts/test-auto-checkout.mjs
           node scripts/test-auto-checkout-http.mjs
+          node scripts/test-auto-checkout-enrollment.mjs
           node scripts/test-attendance-reporting.mjs
           node scripts/test-missing-attendance.mjs
           node scripts/verify-mobile-notification-stability.mjs
