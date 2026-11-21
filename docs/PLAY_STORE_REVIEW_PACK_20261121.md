@@ -1,3 +1,5 @@
+> Update 21 November: retention/manual-email policy approved. Public pages implemented locally with login/Settings links; publication pending. Network-isolated demo covers attendance UI, Projects/tasks and mechanical calculations only. Full Google review coverage is still incomplete; native permission/departure testing is not simulated proof. See PRIVACY_OPERATIONS_20261121.md and current checkpoint. Earlier pending-approval statements below are superseded.
+
 # Play submission pack and remaining gates — 21 November 2026
 
 This record supplements [the candidate/runbook](PLAY_STORE_SUBMISSION_20261115.md). It is **preparation**, not proof of Google acceptance. Account screenshots supplied by the owner show identity review pending, contact-phone verification dependent on identity approval, and Create app disabled. No additional ID submission is required unless Google requests it.

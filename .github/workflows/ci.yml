@@ -22,6 +22,8 @@ jobs:
         run: npm install
       - name: Build
         run: npm run build
+      - name: Verify public privacy and isolated review boundaries
+        run: node scripts/test-store-preparation.mjs
       - name: Install isolated SQL test engine
         run: npm install --prefix "$RUNNER_TEMP/g3-sql" --no-save @electric-sql/pglite@0.5.8
       - name: Local-only engineering and lifecycle acceptance
