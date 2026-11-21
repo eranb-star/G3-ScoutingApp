@@ -110,7 +110,7 @@ Students may be testers through an eligible Google/Google Workspace account sign
 | Item | Status |
 |---|---|
 | Personal-account decision | Confirmed by owner |
-| Account verification/payment | Owner action pending |
+| Account verification/payment | 21 November: owner reports account created and identity documents submitted; Google verification pending. Console state/payment not independently inspected. |
 | Listing text | Prepared above |
 | Privacy/support/age/controller inputs | Owner confirmed: Eran Bongart; eran.bongart@gmail.com; all students older than15. No age gate or Console declaration implemented by this confirmation. |
 | Settings background-location wording | Corrected in local candidate |
