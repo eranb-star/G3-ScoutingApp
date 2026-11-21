@@ -1,5 +1,7 @@
 # G3 6740 Team Hub — privacy-policy draft
 
+See [21 November Hebrew policy and proposed lifecycle](PLAY_STORE_PRIVACY_HE_20261121.md) and [publication/access gates](PLAY_STORE_REVIEW_PACK_20261121.md). Owner has requested advice, not approved a retention/deletion schedule. This English draft still requires alignment after that decision.
+
 **Unpublished draft for owner review, not ready for submission.** Owner/contact and current student ages confirmed on 15 November 2026. Still missing: actual retention schedule, verified deletion-request workflow, complete processor/SDK classification and final audience declarations. Do not upload this draft as a completed privacy policy.
 
 G3 6740 Team Hub supports authorized students, team leaders and mentors in managing robotics-team activities. Eran Bongart is the person responsible for the data, as confirmed by the owner. Contact for support and privacy enquiries: **eran.bongart@gmail.com**.

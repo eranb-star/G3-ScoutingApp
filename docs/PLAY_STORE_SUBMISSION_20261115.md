@@ -2,6 +2,8 @@
 
 ## Decision and status
 
+21 November supplement: [complete materials/status pack](PLAY_STORE_REVIEW_PACK_20261121.md) and [Hebrew privacy/lifecycle proposal](PLAY_STORE_PRIVACY_HE_20261121.md). Owner requested a recommendation on graduating students, not yet approved retention/deletion terms. Actual account screenshots now confirm identity review blocks creation and phone verification. No need to rebuild candidate35 for document preparation.
+
 Owner authorized a **personal Google Play Console account in his own name**, plus preparation for submission without breaking existing sideloaded installations. No account has been verified by this work, no fee paid, no signing key exported, and no app uploaded or submitted. Do not confuse a prepared artifact with store approval.
 
 Latest distributed APK remains 2.8.2/code34. Candidate 2.8.3/code35 has been built as an AAB and matching APK; verification below is complete locally, not in Play. Source changes correct outdated Settings privacy text and clarify the existing opt-in disclosure; no attendance behavior, database, permissions or installed app is changed by preparing these files.

@@ -1,0 +1,19 @@
+// Screenshot-only fixture using unchanged product components and synthetic data.
+// Localhost only; no credentials, Supabase client, production writes or native mocks.
+import fs from 'node:fs';
+import http from 'node:http';
+import path from 'node:path';
+import {createRequire} from 'node:module';
+const require=createRequire(import.meta.url);
+const {build}=createRequire(require.resolve('vite'))('esbuild');
+const app=path.resolve(import.meta.dirname,'..');
+const mocks={
+ memberAuth:`export const useMemberAuth=()=>({profile:{id:'example-student',display_name:'תלמיד לדוגמה',role:'member',subteam:'mechanical',subteams:['mechanical'],active:true},session:null,loading:false,profileError:''});`,
+ localization:`const he=!location.search.includes('lang=en');document.documentElement.dir=he?'rtl':'ltr';document.documentElement.lang=he?'he':'en';export const useLocalization=()=>({language:he?'he':'en',direction:he?'rtl':'ltr',pick:(en,h)=>he?h:en,t:k=>k});`,
+ supabase:`const rows={team_projects:[{id:'example-project',name:'תכנון מערכת הנעה',status:'active',subteam:'mechanical',due_at:null}],training_courses:[{id:'example-course',title:'בטיחות ועבודה בסדנה'}],training_enrollments:[{id:'example-enrollment',course_id:'example-course',status:'active',due_at:null}],training_modules:[{id:'example-module',course_id:'example-course'}]};export const supabase={rpc:async()=>({data:[],error:null}),from(table){const q=new Proxy({},{get(_,key){if(key==='then')return resolve=>Promise.resolve({data:rows[table]??[],error:null}).then(resolve);if(['insert','update','delete','upsert'].includes(key))return()=>{throw Error('Screenshot fixture is read-only')};return()=>q;}});return q;}};`
+};
+const output=await build({stdin:{contents:`import React from 'react';import{createRoot}from'react-dom/client';import{MemoryRouter}from'react-router-dom';import Work from './src/pages/FrcWorkPage';import Mechanical from './src/pages/MechanicalToolsPage';import{LoginPage}from'./src/pages/AuthPages';import './src/index.css';import './src/teamHub.css';const Page=location.pathname==='/work'?Work:location.pathname==='/mechanical'?Mechanical:LoginPage;createRoot(document.getElementById('root')).render(<MemoryRouter><Page/></MemoryRouter>);`,resolveDir:app,loader:'tsx'},bundle:true,write:false,outdir:'fixture',jsx:'automatic',loader:{'.png':'dataurl','.svg':'dataurl','.woff2':'dataurl'},define:{'process.env.NODE_ENV':'"production"'},plugins:[{name:'synthetic-data',setup(b){b.onResolve({filter:/(^|\/)(memberAuth|localization|supabase)(\.tsx?)?$/},a=>({path:a.path.match(/(memberAuth|localization|supabase)(\.tsx?)?$/)[1],namespace:'fixture'}));b.onLoad({filter:/.*/,namespace:'fixture'},a=>({contents:mocks[a.path],loader:'js'}));}}]});
+const js=output.outputFiles.find(f=>f.path.endsWith('.js')).contents;
+const css=output.outputFiles.find(f=>f.path.endsWith('.css')).contents;
+http.createServer((req,res)=>{const url=new URL(req.url,'http://127.0.0.1');if(url.pathname==='/ui.js'){res.setHeader('Content-Type','text/javascript');return res.end(js);}if(url.pathname==='/ui.css'){res.setHeader('Content-Type','text/css');return res.end(css);}if(url.pathname==='/logoG3.png'){res.setHeader('Content-Type','image/png');return res.end(fs.readFileSync(path.join(app,'public/logoG3.png')));}res.setHeader('Content-Type','text/html; charset=utf-8');res.setHeader('Content-Security-Policy',"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'none'");res.end('<!doctype html><html lang="he" dir="rtl"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>G3 screenshot fixture — synthetic data</title><link rel="stylesheet" href="/ui.css"><div id="root"></div><script src="/ui.js"></script></html>');}).listen(8899,'127.0.0.1',()=>console.log('Synthetic product-screen fixture: http://127.0.0.1:8899'));
+
