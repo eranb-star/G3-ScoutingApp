@@ -18,7 +18,9 @@
     "verify:absence-attendance": "node scripts/verify-absence-attendance.mjs",
     "verify:finance-receiving": "node scripts/verify-finance-receiving.mjs",
     "verify:mobile-notification-stability": "node scripts/verify-mobile-notification-stability.mjs",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "prepare:store": "node scripts/build-privacy-pages.mjs && node scripts/build-store-review.mjs",
+    "prebuild": "npm run prepare:store"
   },
   "dependencies": {
     "@capacitor/android": "^8.0.1",

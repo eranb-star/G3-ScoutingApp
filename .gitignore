@@ -53,3 +53,9 @@ docs/research/statbotics-team-years.csv
 # Resumable public source cache (local research, not application seed)
 docs/research/full-collection/
 docs/research/wpilib-reference/
+
+# Generated isolated Play review and public policy pages (prepare:store)
+/apps/dashboard_web/public/store-review/
+/apps/dashboard_web/public/privacy.html
+/apps/dashboard_web/public/data-requests.html
+/apps/dashboard_web/public/privacy-pages.css

@@ -43,7 +43,7 @@ export function LoginPage() {
         </form>
         {message ? <div className="auth-message auth-error">{message}</div> : null}
         {session && profileError ? <div className="auth-message auth-error">{profileError}</div> : null}
-        <small className="auth-help">{pick("Need access or a password reset? Contact a G3 administrator.","צריכים הרשאה או איפוס סיסמה? פנו למנהל G3.")}</small>
+        <nav aria-label={pick("Privacy and review","פרטיות ובדיקה")} style={{display:"flex",gap:16,flexWrap:"wrap",marginTop:20}}><a href="/privacy.html">{pick("Privacy policy","מדיניות פרטיות")}</a><a href="/data-requests.html">{pick("Account / data deletion","מחיקת חשבון / מידע")}</a><a href="/store-review/index.html">{pick("Isolated demo","הדגמה מבודדת")}</a></nav><small className="auth-help">{pick("Need access or a password reset? Contact a G3 administrator.","צריכים הרשאה או איפוס סיסמה? פנו למנהל G3.")}</small>
       </section>
     </main>
   );
